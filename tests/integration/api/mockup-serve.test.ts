@@ -1,12 +1,12 @@
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { GET as serveMockup } from '@/app/_mockups/[mockupId]/[...path]/route';
+import { GET as serveMockup } from '@/app/m/[mockupId]/[...path]/route';
 import { addVersion, createMockupFromZip } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
 
 const fixture = (n: string) => path.resolve('tests/fixtures/mockups', n);
 
-describe('GET /_mockups/[mockupId]/[...path]', () => {
+describe('GET /m/[mockupId]/[...path]', () => {
   beforeEach(async () => {
     await prisma.message.deleteMany();
     await prisma.thread.deleteMany();
@@ -22,7 +22,7 @@ describe('GET /_mockups/[mockupId]/[...path]', () => {
       createdBy: 'u',
       createdByType: 'user',
     });
-    const res = await serveMockup(new Request('http://l/_mockups/x/index.html'), {
+    const res = await serveMockup(new Request('http://l/m/x/index.html'), {
       params: Promise.resolve({ mockupId: created.mockup.id, path: ['index.html'] }),
     });
     expect(res.status).toBe(200);
@@ -40,14 +40,14 @@ describe('GET /_mockups/[mockupId]/[...path]', () => {
       createdBy: 'u',
       createdByType: 'user',
     });
-    const res = await serveMockup(new Request('http://l/_mockups/x/../etc/passwd'), {
+    const res = await serveMockup(new Request('http://l/m/x/../etc/passwd'), {
       params: Promise.resolve({ mockupId: created.mockup.id, path: ['..', 'etc', 'passwd'] }),
     });
     expect(res.status).toBe(400);
   });
 
   it('returns 404 for unknown mockup', async () => {
-    const res = await serveMockup(new Request('http://l/_mockups/x/index.html'), {
+    const res = await serveMockup(new Request('http://l/m/x/index.html'), {
       params: Promise.resolve({ mockupId: 'does-not-exist', path: ['index.html'] }),
     });
     expect(res.status).toBe(404);
@@ -68,7 +68,7 @@ describe('GET /_mockups/[mockupId]/[...path]', () => {
       createdByType: 'user',
     });
     // Request v1 explicitly via ?v=<v1Id>
-    const url = `http://l/_mockups/${mockup.id}/index.html?v=${v1.id}`;
+    const url = `http://l/m/${mockup.id}/index.html?v=${v1.id}`;
     const res = await serveMockup(new Request(url), {
       params: Promise.resolve({ mockupId: mockup.id, path: ['index.html'] }),
     });
@@ -82,7 +82,7 @@ describe('GET /_mockups/[mockupId]/[...path]', () => {
       createdBy: 'u',
       createdByType: 'user',
     });
-    const url = `http://l/_mockups/${mockup.id}/index.html?v=does-not-exist`;
+    const url = `http://l/m/${mockup.id}/index.html?v=does-not-exist`;
     const res = await serveMockup(new Request(url), {
       params: Promise.resolve({ mockupId: mockup.id, path: ['index.html'] }),
     });

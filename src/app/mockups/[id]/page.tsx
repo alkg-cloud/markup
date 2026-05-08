@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { identify } from '@/lib/auth/identify';
+import { resolveDisplayNames } from '@/lib/auth/resolve-display-name';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { env } from '@/lib/env';
 import { thumbnailPath } from '@/lib/mockup/storage';
@@ -40,6 +41,9 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
     return <main style={{ padding: 24 }}>Mockup not found.</main>;
   }
   const hasThumbnail = fs.existsSync(thumbnailPath(env().DATA_DIR, mockup.id));
+  const nameMap = await resolveDisplayNames([
+    ...mockup.versions.map((v) => ({ createdBy: v.createdBy, createdByType: v.createdByType })),
+  ]);
 
   return (
     <MockupViewer
@@ -47,12 +51,15 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
       mockupName={mockup.name}
       currentVersionId={mockup.currentVersionId}
       hasThumbnail={hasThumbnail}
-      versions={mockup.versions.map((v) => ({
-        id: v.id,
-        createdAt: v.createdAt.toISOString(),
-        createdBy: v.createdBy,
-        createdByType: v.createdByType,
-      }))}
+      versions={mockup.versions.map((v) => {
+        const resolved = nameMap.get(v.createdBy);
+        return {
+          id: v.id,
+          createdAt: v.createdAt.toISOString(),
+          authorName: resolved?.name ?? `${v.createdByType} ${v.createdBy.slice(-6)}`,
+          authorKind: (resolved?.kind ?? v.createdByType) as 'user' | 'agent',
+        };
+      })}
       annotations={mockup.annotations.map((a) => ({
         id: a.id,
         createdAt: a.createdAt.toISOString(),
