@@ -37,10 +37,28 @@ test('setup → upload → comment → resolve', async ({ page, request }) => {
   // Comment flow
   await page.click('[data-testid=comment-button]');
   await page.fill('textarea', 'navbar too large');
+
+  // Draw a small stroke on the tldraw canvas so the persisted JSON is non-empty.
+  const canvas = page.locator('canvas').first();
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error('canvas not visible');
+  await page.mouse.move(box.x + 50, box.y + 50);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 200, box.y + 120, { steps: 10 });
+  await page.mouse.up();
+
   await page.click('[data-testid=annotation-save]');
 
   // Open the new annotation, resolve
   await page.click('[data-testid=annotation-card]');
+
+  // Pull the annotation row from the API and assert tldraw JSON is non-empty.
+  const detail = await request.get(`/api/annotations/${(await page.url()).split('/').pop()}`, {
+    headers: { cookie: `mk_session=${sessCookie!.value}` },
+  });
+  const detailBody = await detail.json();
+  expect(detailBody.tldraw).toBeTruthy();
+  expect(JSON.stringify(detailBody.tldraw).length).toBeGreaterThan(50);
 
   // Detail page now overlays a tldraw read-only canvas
   await expect(page.locator('[data-testid=annotation-readonly-canvas]')).toBeVisible();
