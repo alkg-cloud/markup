@@ -5,7 +5,7 @@ next-env.d.ts
 *.log
 .env
 .env.local
-data
+/data
 prisma/dev.db*
 prisma/test.db*
 test-data
