@@ -43,13 +43,13 @@ COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/package.json ./package.json
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/healthcheck.js /app/docker/healthcheck.js
-RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Symlink the globally-installed prisma into /app/node_modules so that
 # prisma.config.ts's `import { defineConfig } from 'prisma/config'` resolves
 # from /app at container start. The global install carries its own deps
 # (@prisma/engines, etc.) under /usr/local/lib/node_modules/prisma/node_modules.
-RUN ln -s /usr/local/lib/node_modules/prisma /app/node_modules/prisma
+RUN chmod +x /usr/local/bin/entrypoint.sh \
+ && ln -s /usr/local/lib/node_modules/prisma /app/node_modules/prisma
 
 VOLUME ["/app/data"]
 EXPOSE 3000
