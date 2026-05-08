@@ -3,10 +3,19 @@ import { z } from 'zod';
 import { verifyPassword } from '@/lib/auth/password';
 import { createSession, SESSION_COOKIE, SESSION_TTL_SECONDS } from '@/lib/auth/session';
 import { prisma } from '@/lib/prisma';
+import { clientIp, loginLimiter } from '@/lib/rate-limit';
 
 const bodySchema = z.object({ email: z.string().email(), password: z.string().min(1) });
 
 export async function POST(req: Request) {
+  const ip = clientIp(req);
+  const limit = loginLimiter.consume(`login:${ip}`);
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfter: limit.retryAfterSeconds },
+      { status: 429, headers: { 'retry-after': String(limit.retryAfterSeconds) } },
+    );
+  }
   const body = bodySchema.safeParse(await req.json().catch(() => ({})));
   if (!body.success) return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
   const user = await prisma.user.findUnique({ where: { email: body.data.email } });
