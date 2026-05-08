@@ -14,21 +14,6 @@ importers:
       '@tldraw/tldraw':
         specifier: latest
         version: 5.0.0(@floating-ui/dom@1.7.6)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@types/bcryptjs':
-        specifier: latest
-        version: 3.0.0
-      '@types/node':
-        specifier: latest
-        version: 25.6.2
-      '@types/react':
-        specifier: latest
-        version: 19.2.14
-      '@types/react-dom':
-        specifier: latest
-        version: 19.2.3(@types/react@19.2.14)
-      '@types/yauzl':
-        specifier: latest
-        version: 2.10.3
       bcryptjs:
         specifier: latest
         version: 3.0.3
@@ -59,9 +44,6 @@ importers:
       react-dom:
         specifier: latest
         version: 19.2.6(react@19.2.6)
-      typescript:
-        specifier: latest
-        version: 6.0.3
       yauzl:
         specifier: latest
         version: 3.3.0
@@ -75,9 +57,24 @@ importers:
       '@playwright/test':
         specifier: latest
         version: 1.59.1
+      '@types/bcryptjs':
+        specifier: latest
+        version: 3.0.0
+      '@types/node':
+        specifier: latest
+        version: 25.6.2
+      '@types/react':
+        specifier: latest
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: latest
+        version: 19.2.3(@types/react@19.2.14)
       '@types/supertest':
         specifier: latest
         version: 7.2.0
+      '@types/yauzl':
+        specifier: latest
+        version: 2.10.3
       '@vitest/coverage-v8':
         specifier: latest
         version: 4.1.5(vitest@4.1.5)
@@ -87,6 +84,9 @@ importers:
       tsx:
         specifier: latest
         version: 4.21.0
+      typescript:
+        specifier: latest
+        version: 6.0.3
       vitest:
         specifier: latest
         version: 4.1.5(@types/node@25.6.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.11(@types/node@25.6.2)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.21.0))
