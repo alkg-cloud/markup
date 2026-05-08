@@ -54,8 +54,21 @@ export function loadEnv(
   return parsed.data;
 }
 
+const BUILD_FALLBACK: Record<string, string> = {
+  AUTH_SECRET: 'build-time-stub-not-used-at-runtime-32chars',
+  DATA_DIR: '/tmp/markup-build',
+};
+
 let cached: Env | null = null;
 export function env(): Env {
-  if (!cached) cached = loadEnv();
+  if (!cached) {
+    // During `next build`, env vars are not available. Return a stub that
+    // prevents validation errors at module load; runtime requests will use
+    // the real process.env.
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return loadEnv({ ...BUILD_FALLBACK, ...process.env });
+    }
+    cached = loadEnv();
+  }
   return cached;
 }
