@@ -22,7 +22,7 @@ function inputStyle(hasError: boolean): React.CSSProperties {
     display: 'block',
     width: '100%',
     padding: '12px 16px',
-    background: hasError ? 'var(--surface-input)' : 'var(--surface-input)',
+    background: 'var(--surface-input)',
     color: 'var(--text-bright)',
     border: `1px solid ${hasError ? 'var(--danger)' : 'var(--border)'}`,
     borderRadius: 'var(--radius-sm)',
