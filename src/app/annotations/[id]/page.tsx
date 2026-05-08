@@ -11,6 +11,7 @@ import { resolveDisplayName, resolveDisplayNames } from '@/lib/auth/resolve-disp
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
+import { rehydrateScreenshotBase64 } from '@/lib/tldraw/snapshot-screenshot';
 import { ReadOnlyAnnotation } from './ReadOnlyAnnotation';
 
 export default async function AnnotationDetailPage({
@@ -194,7 +195,11 @@ export default async function AnnotationDetailPage({
             const screenshotAbs = path.join(env().DATA_DIR, annotation.screenshotPath);
             let tldraw: TLEditorSnapshot | null = null;
             try {
-              tldraw = JSON.parse(fs.readFileSync(tldrawAbs, 'utf8')) as TLEditorSnapshot;
+              const raw = JSON.parse(fs.readFileSync(tldrawAbs, 'utf8'));
+              tldraw = rehydrateScreenshotBase64(
+                raw,
+                `/api/annotations/${annotation.id}/screenshot`,
+              ) as TLEditorSnapshot;
             } catch {}
             const buf = fs.readFileSync(screenshotAbs);
             const width = buf.readUInt32BE(16);
