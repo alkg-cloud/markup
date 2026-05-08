@@ -41,6 +41,10 @@ test('setup → upload → comment → resolve', async ({ page, request }) => {
 
   // Open the new annotation, resolve
   await page.click('[data-testid=annotation-card]');
+
+  // Detail page now overlays a tldraw read-only canvas
+  await expect(page.locator('[data-testid=annotation-readonly-canvas]')).toBeVisible();
+
   await page.click('[data-testid=thread-resolve]');
   await expect(page.locator('[data-testid=thread-status]')).toHaveText(/resolved/i);
 });

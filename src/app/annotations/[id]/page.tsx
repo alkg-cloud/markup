@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { cookies, headers } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -5,6 +7,8 @@ import { ThreadTimeline } from '@/components/ThreadTimeline/ThreadTimeline';
 import { getAnnotation } from '@/lib/annotation/service';
 import { identify } from '@/lib/auth/identify';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
+import { env } from '@/lib/env';
+import { ReadOnlyAnnotation } from './ReadOnlyAnnotation';
 
 export default async function AnnotationDetailPage({
   params,
@@ -52,11 +56,26 @@ export default async function AnnotationDetailPage({
             padding: 12,
           }}
         >
-          <img
-            src={`/api/annotations/${annotation.id}/screenshot`}
-            alt="annotation screenshot"
-            style={{ width: '100%', display: 'block', borderRadius: 'var(--radius-sm)' }}
-          />
+          {(() => {
+            const tldrawAbs = path.join(env().DATA_DIR, annotation.tldrawPath);
+            const screenshotAbs = path.join(env().DATA_DIR, annotation.screenshotPath);
+            let tldraw = null as unknown;
+            try {
+              tldraw = JSON.parse(fs.readFileSync(tldrawAbs, 'utf8'));
+            } catch {}
+            // Probe PNG dimensions from the IHDR header (no extra dep needed).
+            const buf = fs.readFileSync(screenshotAbs);
+            const width = buf.readUInt32BE(16);
+            const height = buf.readUInt32BE(20);
+            return (
+              <ReadOnlyAnnotation
+                screenshotUrl={`/api/annotations/${annotation.id}/screenshot`}
+                width={width}
+                height={height}
+                tldraw={tldraw as never}
+              />
+            );
+          })()}
         </div>
         <ThreadTimeline
           annotationId={annotation.id}
