@@ -9,7 +9,7 @@ export DATABASE_URL="${DATABASE_URL:-file:${DATA_DIR}/db.sqlite}"
 mkdir -p "$DATA_DIR"
 chown -R "$PUID:$PGID" "$DATA_DIR" || true
 
-# Run migrations as the unprivileged user
-su-exec "$PUID:$PGID" ./node_modules/.bin/prisma migrate deploy
+# Run migrations as the unprivileged user (prisma CLI installed globally)
+su-exec "$PUID:$PGID" prisma migrate deploy
 
 exec su-exec "$PUID:$PGID" "$@"
