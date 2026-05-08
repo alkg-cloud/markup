@@ -1,5 +1,14 @@
 @import "../styles/tokens.css";
 
+/*
+ * Markup global styles — v1.3 grapesjs-aligned.
+ *
+ * Manrope is the single typographic voice (loaded via next/font in
+ * layout.tsx). The body carries an atmospheric green-teal mesh on the
+ * near-pure-black canvas, mirroring grapesjs's signature without
+ * borrowing their magenta. AAA contrast on the primary CTA pattern.
+ */
+
 * {
   box-sizing: border-box;
 }
@@ -10,19 +19,190 @@ body {
   padding: 0;
 }
 
+html {
+  background: var(--bg);
+}
+
 body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
+  position: relative;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--type-base);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-normal);
+  font-feature-settings: "ss01", "ss02", "cv11";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* Atmospheric mesh — fixed so it persists through scroll. Two radial
+ * gradients in the accent hue at low alpha + a subtle linear tint to
+ * mirror grapesjs's depth treatment. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 1200px 600px at 88% -8%, oklch(28% 0.16 165 / 0.42) 0%, transparent 60%),
+    radial-gradient(ellipse 800px 600px at -5% 95%, oklch(22% 0.12 165 / 0.32) 0%, transparent 55%),
+    linear-gradient(135.92deg, oklch(15% 0.04 165 / 0.45) 7%, oklch(11% 0.03 165 / 0.45) 98%);
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  color: var(--text-bright);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--type-4xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tighter);
+  line-height: 1.05;
+}
+h2 {
+  font-size: var(--type-2xl);
+}
+h3 {
+  font-size: var(--type-xl);
+}
+h4 {
+  font-size: var(--type-lg);
 }
 
 a {
-  color: var(--accent);
+  color: inherit;
   text-decoration: none;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    opacity var(--motion-fast) var(--ease-standard);
 }
 
-a:hover {
-  text-decoration: underline;
+a.is-link,
+a.link-accent {
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+}
+a.is-link:hover,
+a.link-accent:hover {
+  color: var(--accent-bright);
+}
+
+a:visited {
+  color: inherit;
+}
+a.is-link:visited,
+a.link-accent:visited {
+  color: var(--accent);
+}
+
+button {
+  font: inherit;
+  font-feature-settings: "ss01", "ss02", "cv11";
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Tabular numerics — apply via class .tnum on every timestamp / number
+ * column. Manrope ships with the tnum feature; this just toggles it. */
+.tnum,
+time,
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "ss01";
+}
+
+::selection {
+  background: var(--selection-bg);
+  color: var(--text-bright);
+}
+
+/* Universal focus ring — wins over any component-level outline:none */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+  transition: box-shadow var(--motion-fast) var(--ease-standard);
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  border-color: var(--accent);
+}
+
+/* Scrollbar — thin, recedes, accent-tinted thumb on hover */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: oklch(74.4% 0.193 165 / 0.5);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+/* Reduced motion: collapse pseudo-element transitions too.
+ *
+ * !important is intentional here. The override has to win against every
+ * component-level transition declaration regardless of selector
+ * specificity, and that is exactly the canonical use of !important.
+ * See https://web.dev/articles/prefers-reduced-motion#a_powerful_workaround.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: canonical reduced-motion override */
+    animation-duration: 0.001ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: canonical reduced-motion override */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: canonical reduced-motion override */
+    transition-duration: 0.001ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: canonical reduced-motion override */
+    scroll-behavior: auto !important;
+  }
 }

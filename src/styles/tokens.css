@@ -1,20 +1,191 @@
+/*
+ * Markup — design tokens (v1.3 grapesjs-aligned re-skin)
+ *
+ * Aesthetic thesis: editorial-dense control room. Near-pure-black canvas
+ * with subtle green-teal atmospheric mesh. Manrope as the typographic voice
+ * (single family, weight contrast). Pill buttons with accent TEXT on a
+ * dark-grey button bg — no shouty solid CTAs. Numbers tabular. Motion
+ * deliberate; exit faster than enter.
+ *
+ * Color reference: grapesjs.com sampled live at the magenta accent
+ * (rgb(230,133,246) = oklch(74.4% 0.193 322°)). We rotate the hue to 165°
+ * (teal-leaning green) and keep L+C identical so the perceptual energy
+ * matches grapesjs's brand.
+ */
+
 :root {
-  --bg-primary: #111111;
-  --bg-secondary: #1a1a1a;
-  --bg-tertiary: #232323;
-  --border-primary: #2b2b2b;
-  --border-accent: #3a3a3a;
-  --text-primary: #ffffff;
-  --text-secondary: #9ca3af;
-  --text-tertiary: #6b7280;
-  --accent: #4f46e5;
-  --danger: #ef4444;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --space-xs: 4px;
-  --space-sm: 8px;
+  /* ─── Surface ──────────────────────────────────────────────────────────
+   * Near-pure-black with the same warm-magenta hint grapesjs ships. The
+   * atmospheric body::before in globals.css overlays a green-teal mesh on
+   * top, so the canvas reads neutral-warm rather than blue-cool.
+   */
+  --bg: rgb(6, 4, 6);
+  --bg-elevated: rgb(14, 12, 16);
+  --bg-card: rgb(25, 22, 25);
+  --bg-card-active: rgb(32, 28, 32);
+  --bg-tinted: rgb(19, 16, 22);
+
+  /* Button surface — grapesjs's CTA bg verbatim. Used for the pill CTA
+   * pattern: bg dark-grey + accent text. */
+  --btn-bg: rgb(39, 39, 39);
+  --btn-bg-hover: rgb(48, 48, 48);
+  --btn-bg-active: rgb(56, 56, 56);
+
+  --border-subtle: rgb(35, 32, 38);
+  --border: rgb(45, 42, 48);
+  --border-strong: rgb(64, 60, 66);
+
+  /* ─── Text ─────────────────────────────────────────────────────────────
+   * Light grey (grapesjs's body color) as default body text — softer than
+   * pure white on the warm-tinted black. White reserved for headlines.
+   */
+  --text-bright: rgb(245, 247, 250);
+  --text: rgb(208, 213, 221);
+  --text-dim: rgb(140, 145, 155);
+  --text-muted: rgb(102, 106, 116);
+
+  /* ─── Accent (the one job this color does is be unmistakable) ──────────
+   * oklch(74.4% 0.193 165°) — same L + same C as grapesjs's magenta,
+   * hue rotated to 165° (teal-leaning green; user-selected hue D).
+   * Reserved for: primary CTA text, links, focus rings, pin overlays
+   * (open state), version-current pill, and the wordmark dot. Never used
+   * as a background fill on large surfaces — the dark-grey button bg
+   * (--btn-bg) is the surface; the accent is the typography on top.
+   */
+  --accent: oklch(74.4% 0.193 165);
+  --accent-bright: oklch(82% 0.18 165);
+  --accent-dim: oklch(66% 0.18 165);
+  --accent-on-btn: oklch(74.4% 0.193 165); /* alias for clarity at call sites */
+
+  /* Soft tints used for pills, badges, alerts, semantic-soft backgrounds. */
+  --accent-soft: oklch(28% 0.08 165);
+  --accent-soft-strong: oklch(34% 0.1 165);
+
+  /* ─── Semantic siblings ────────────────────────────────────────────────
+   * All shifted toward the accent-teal hue family so they feel related.
+   * Each comes paired with a -soft variant for chip/alert backgrounds.
+   */
+  --success: oklch(76% 0.16 152);
+  --success-soft: oklch(28% 0.07 152);
+
+  --info: oklch(74% 0.13 200);
+  --info-soft: oklch(26% 0.06 200);
+
+  --warning: oklch(80% 0.15 80);
+  --warning-soft: oklch(30% 0.07 80);
+
+  --danger: oklch(70% 0.2 25);
+  --danger-soft: oklch(28% 0.09 25);
+
+  /* Selection — accent at low alpha so highlighted text reads as a
+   * deliberate moment rather than the browser default blue. */
+  --selection-bg: oklch(74.4% 0.193 165 / 0.32);
+
+  /* ─── Focus ────────────────────────────────────────────────────────────
+   * 2px gap from the element + 2px ring in the accent. Used by every
+   * focusable element via globals.css :focus-visible. AAA-passing on
+   * --bg.
+   */
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+
+  /* ─── Typography ──────────────────────────────────────────────────────
+   * Single family (Manrope) — same choice as grapesjs.com. Manrope's
+   * personality: geometric, friendly, modern, with strong weight contrast.
+   * Avoids the "Inter slop" trap. Loaded via next/font in layout.tsx with
+   * a comment explaining the deliberate single-family pairing.
+   */
+  --font-display: "Manrope", system-ui, sans-serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Menlo", "Consolas", ui-monospace, monospace;
+
+  /* Modular scale — tuned to Manrope's metrics. h1 jumps to 64px to
+   * carry the breathy hero-driven density grapesjs uses. */
+  --type-2xs: 11px;
+  --type-xs: 12px;
+  --type-sm: 13px;
+  --type-base: 14px;
+  --type-md: 16px;
+  --type-lg: 20px;
+  --type-xl: 24px;
+  --type-2xl: 32px;
+  --type-3xl: 48px;
+  --type-4xl: 64px;
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+  --leading-loose: 1.7;
+
+  --tracking-tighter: -0.025em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.06em;
+  --tracking-wider: 0.12em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extra: 800;
+
+  /* ─── Spacing — breathy, grapesjs-aligned ─────────────────────────── */
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
   --space-md: 16px;
-  --space-lg: 24px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+  --space-4xl: 56px;
+  --space-5xl: 72px;
+  --space-6xl: 96px;
+
+  /* ─── Radii — pill is the primary CTA shape, like grapesjs ────────── */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-pill: 9999px;
+  --radius-card: 14px;
+
+  /* ─── Shadows — custom, tuned for the dark canvas ─────────────────── */
+  --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.5);
+  --shadow-sm: 0 2px 6px oklch(0% 0 0 / 0.45);
+  --shadow-md: 0 6px 16px oklch(0% 0 0 / 0.5), 0 2px 4px oklch(0% 0 0 / 0.4);
+  --shadow-lg: 0 18px 44px oklch(0% 0 0 / 0.55), 0 8px 16px oklch(0% 0 0 / 0.4);
+  --shadow-popover:
+    0 14px 32px oklch(0% 0 0 / 0.6), 0 6px 12px oklch(0% 0 0 / 0.45),
+    inset 0 1px 0 oklch(100% 0 0 / 0.06);
+  --shadow-glow: 0 0 0 1px oklch(74.4% 0.193 165 / 0.4), 0 0 24px oklch(74.4% 0.193 165 / 0.18);
+
+  /* ─── Motion — exit ~30% faster than enter (Linear/Vercel discipline) */
+  --ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-exit: cubic-bezier(0.32, 0, 0.67, 0);
+  --ease-spring: cubic-bezier(0.5, 1.4, 0.6, 1);
+  --ease-decel: cubic-bezier(0, 0, 0.2, 1);
+
+  --motion-instant: 90ms;
+  --motion-fast: 160ms;
+  --motion-base: 220ms;
+  --motion-slow: 320ms;
+  --motion-glacial: 480ms;
+
+  /* ─── Layout ──────────────────────────────────────────────────────── */
+  --topbar-height: 60px;
+  --sidebar-width: 320px;
+  --content-max: 1200px;
+  --hero-max: 1280px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-instant: 0ms;
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+    --motion-slow: 0ms;
+    --motion-glacial: 0ms;
+  }
 }
