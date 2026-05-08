@@ -3,11 +3,7 @@ import path from 'node:path';
 import cuid from 'cuid';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
-import {
-  thumbnailPath,
-  versionBuildDir,
-  versionSourceZipPath,
-} from './storage';
+import { thumbnailPath, versionBuildDir, versionSourceZipPath } from './storage';
 import { extractZip } from './zip-extractor';
 
 interface CreateInput {
@@ -112,11 +108,7 @@ export async function getMockup(id: string) {
   });
 }
 
-export async function listMockups(opts: {
-  status: string[];
-  cursor?: string;
-  limit?: number;
-}) {
+export async function listMockups(opts: { status: string[]; cursor?: string; limit?: number }) {
   const limit = Math.min(opts.limit ?? 50, 200);
   const items = await prisma.mockup.findMany({
     where: { status: { in: opts.status } },
