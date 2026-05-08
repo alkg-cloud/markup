@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -109,6 +110,15 @@ export function Versions({ mockupId, currentVersionId, versions }: Props) {
                   Delete
                 </button>
               </div>
+              {!isCurrent && (
+                <Link
+                  href={`/mockups/${mockupId}/diff?from=${v.id}&to=${currentVersionId}`}
+                  style={{ fontSize: 11, color: 'var(--text-secondary)', textAlign: 'center' }}
+                  data-testid={`diff-${v.id}`}
+                >
+                  Diff vs. current
+                </Link>
+              )}
             </li>
           );
         })}
