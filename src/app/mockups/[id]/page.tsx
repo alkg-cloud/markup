@@ -36,7 +36,7 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
       },
     },
   });
-  if (!mockup || !mockup.currentVersionId) {
+  if (!mockup?.currentVersionId) {
     return <main style={{ padding: 24 }}>Mockup not found.</main>;
   }
   const hasThumbnail = fs.existsSync(thumbnailPath(env().DATA_DIR, mockup.id));
