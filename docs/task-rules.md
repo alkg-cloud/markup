@@ -33,7 +33,7 @@ Prefer updating the docs **first** — write the contract, then write the code t
 
 ### Agent-loop docs are the primary contract
 
-Any change to an agent-loop endpoint's response shape, auth model, error code, or cache key must update the matching doc in `docs/agent-loop/` in the same change-set. These contracts are what automation clients (Paperclip and similar) depend on; silent drift breaks them.
+Any change to an agent-loop endpoint's response shape, auth model, error code, or cache key must update the matching doc in `docs/agent-loop/` in the same change-set. These contracts are what automation clients (AI dev assistants, agent frameworks, in-house CI integrations) depend on; silent drift breaks them.
 
 What this looks like:
 

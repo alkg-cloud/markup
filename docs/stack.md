@@ -57,7 +57,7 @@ Markup is a single-process Next.js application served from a Docker container. T
 ## Logging
 
 - **Pino** (`src/lib/logger.ts`) — structured JSON logs, level controlled by `LOG_LEVEL`
-- Loggers are named (`logger.child({ name: 'paperclip' })`) so the agent-token boot seed and other subsystems are filterable
+- Loggers are named (`logger.child({ name: 'agent-seed' })`) so the agent-token boot seed and other subsystems are filterable
 
 ## Deployment
 

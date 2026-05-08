@@ -49,7 +49,7 @@ model AgentToken {
 ```
 
 - Plaintext shown once at creation and never persisted; only the SHA-256 hash is stored
-- `name` is the human-friendly identifier (`paperclip`, `designer-bot`, etc.)
+- `name` is the human-friendly identifier (`claude-code-prod`, `designer-bot`, `ci-builder`, etc.)
 
 ### Mockup
 

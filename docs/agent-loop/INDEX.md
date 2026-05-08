@@ -1,6 +1,6 @@
 # Agent Loop
 
-The agent loop is the **first-class product surface** of Markup. A user creates an annotation; an automation agent (LLM-driven, Paperclip, or other) reads the annotation, applies a fix, and replies. The endpoints under this folder are the contract that automation clients depend on.
+The agent loop is the **first-class product surface** of Markup. A user creates an annotation; an automation client reads the annotation, applies a fix, and replies. The endpoints under this folder are the contract that consumers depend on — AI dev assistants (Claude Code, Cursor, Aider), agent frameworks (LangGraph, CrewAI, AutoGen), and in-house orchestrators alike.
 
 Silent drift in any of these endpoints breaks consumers. See the [agent-loop rule](../../CLAUDE.md#agent-loop-rule-strict--non-negotiable) for the strict-update policy.
 
