@@ -32,10 +32,10 @@ COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/prisma.config.ts ./prisma.config.ts
-COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=build /app/node_modules/@prisma/client ./node_modules/@prisma/client
-COPY --from=build /app/node_modules/@prisma/adapter-better-sqlite3 ./node_modules/@prisma/adapter-better-sqlite3
-COPY --from=build /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
+# Next standalone already bundles @prisma/client, @prisma/adapter-better-sqlite3,
+# better-sqlite3, and sharp into .next/standalone/node_modules — no manual copy
+# needed for runtime deps. We do still need the prisma CLI (and its symlinked
+# bin) for `prisma migrate deploy` at container start.
 COPY --from=build /app/node_modules/prisma ./node_modules/prisma
 COPY --from=build /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
 COPY --from=build /app/scripts ./scripts
