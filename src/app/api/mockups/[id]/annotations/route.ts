@@ -35,6 +35,18 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       return NextResponse.json({ error: 'invalid_pin_coords' }, { status: 400 });
     }
   }
+
+  const VALID_INTENTS = ['visual', 'copy', 'behavior', 'other'] as const;
+  type IntentType = (typeof VALID_INTENTS)[number];
+  const intentRaw = fd.get('intent_type');
+  let intentType: IntentType | undefined;
+  if (typeof intentRaw === 'string' && intentRaw.length > 0) {
+    if (!VALID_INTENTS.includes(intentRaw as IntentType)) {
+      return NextResponse.json({ error: 'invalid_intent_type' }, { status: 400 });
+    }
+    intentType = intentRaw as IntentType;
+  }
+
   const buf = Buffer.from(await screenshot.arrayBuffer());
   const result = await createAnnotation({
     mockupId,
@@ -44,6 +56,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     authorId: id.kind === 'user' ? id.userId : id.tokenId,
     authorType: id.kind,
     pinCoords,
+    intentType,
   });
   return NextResponse.json(
     { id: result.annotation.id, threadId: result.thread.id },
