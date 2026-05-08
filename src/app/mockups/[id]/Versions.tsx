@@ -69,8 +69,8 @@ export function Versions({ mockupId, currentVersionId, versions }: Props) {
           transition: background var(--motion-fast) var(--ease-standard), transform var(--motion-instant) var(--ease-standard);
           border-radius: var(--radius-xs);
         }
-        .versions-toggle-header:hover { background: rgba(255,255,255,0.03); }
-        .versions-toggle-header:active { background: rgba(255,255,255,0.05); transform: translateY(1px); }
+        .versions-toggle-header:hover { background: var(--surface-input); }
+        .versions-toggle-header:active { background: var(--surface-active); transform: translateY(1px); }
         .versions-toggle-left {
           display: flex;
           align-items: center;
@@ -126,7 +126,7 @@ export function Versions({ mockupId, currentVersionId, versions }: Props) {
 
         .version-row {
           padding: var(--space-sm);
-          background: rgba(255,255,255,0.02);
+          background: var(--surface-soft);
           border-radius: var(--radius-sm);
           display: grid;
           gap: 6px;
@@ -177,8 +177,8 @@ export function Versions({ mockupId, currentVersionId, versions }: Props) {
           font-family: inherit;
           transition: background var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard), transform var(--motion-instant) var(--ease-standard);
         }
-        .btn-mini:hover { background: rgba(255,255,255,0.04); color: var(--text-bright); }
-        .btn-mini:active { background: rgba(255,255,255,0.08); transform: scale(0.97); }
+        .btn-mini:hover { background: var(--surface-hover); color: var(--text-bright); }
+        .btn-mini:active { background: var(--surface-active); transform: scale(0.97); }
         .btn-mini.danger { color: var(--danger); border-color: oklch(40% 0.1 25); }
         .btn-mini.danger:hover { background: var(--danger-soft); }
         .btn-mini.danger:active { background: oklch(32% 0.1 25); transform: scale(0.97); }

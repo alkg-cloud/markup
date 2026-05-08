@@ -26,7 +26,7 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
   const color = active ? 'var(--accent)' : hovered ? 'var(--text-bright)' : 'var(--text-dim)';
-  const bg = active ? 'transparent' : hovered ? 'rgba(255, 255, 255, 0.04)' : 'transparent';
+  const bg = active ? 'transparent' : hovered ? 'var(--surface-hover)' : 'transparent';
   return (
     <Link
       href={item.href}

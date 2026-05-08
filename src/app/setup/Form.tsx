@@ -22,7 +22,7 @@ function inputStyle(hasError: boolean): React.CSSProperties {
     display: 'block',
     width: '100%',
     padding: '12px 16px',
-    background: 'rgba(255,255,255,0.03)',
+    background: 'var(--surface-input)',
     color: 'var(--text-bright)',
     border: `1px solid ${hasError ? 'var(--danger)' : 'var(--border)'}`,
     borderRadius: 'var(--radius-sm)',
@@ -60,7 +60,7 @@ const PULSE_STYLE = `
 .mu-setup-input:focus-visible {
   outline: none;
   border-color: var(--accent) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
+  background: var(--surface-strong) !important;
   box-shadow: var(--focus-ring);
 }
 .mu-setup-input::placeholder {

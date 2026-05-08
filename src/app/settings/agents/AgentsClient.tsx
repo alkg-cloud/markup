@@ -183,7 +183,7 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
       {/* Create form card */}
       <section
         style={{
-          background: 'rgba(14, 12, 16, 0.7)',
+          background: 'var(--bg-elevated-soft)',
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius-md)',
           padding: 'var(--space-xl)',
@@ -238,7 +238,7 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
               placeholder="e.g. claude-code-prod, ci-builder, designer-bot"
               style={{
                 padding: '12px 16px',
-                background: 'rgba(255,255,255,0.03)',
+                background: 'var(--surface-input)',
                 border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-sm)',
                 color: 'var(--text-bright)',
@@ -321,7 +321,7 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
       {/* Existing tokens table */}
       <section
         style={{
-          background: 'rgba(14, 12, 16, 0.7)',
+          background: 'var(--bg-elevated-soft)',
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius-md)',
           overflow: 'hidden',
@@ -354,7 +354,7 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
                       textTransform: 'uppercase',
                       color: 'var(--text-dim)',
                       borderBottom: '1px solid var(--border-subtle)',
-                      background: 'rgba(255,255,255,0.02)',
+                      background: 'var(--surface-soft)',
                       padding: 'var(--space-sm) var(--space-lg)',
                     }}
                   >

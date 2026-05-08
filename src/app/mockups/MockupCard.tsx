@@ -47,7 +47,7 @@ const STATUS_CONFIG: Record<string, { variant: PillVariant; label: string }> = {
 const PILL_STYLES: Record<PillVariant, React.CSSProperties> = {
   'pill-info': { background: 'var(--info-soft)', color: 'var(--info)' },
   'pill-success': { background: 'var(--success-soft)', color: 'var(--success)' },
-  'pill-mute': { background: 'rgba(120, 120, 130, 0.15)', color: 'var(--text-dim)' },
+  'pill-mute': { background: 'var(--bg-chip)', color: 'var(--text-dim)' },
 };
 
 interface MockupCardProps {

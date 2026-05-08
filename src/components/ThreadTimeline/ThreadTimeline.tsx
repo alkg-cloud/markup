@@ -96,12 +96,12 @@ export function ThreadTimeline({
             transform var(--motion-instant) var(--ease-standard);
         }
         .tt-btn-ghost:hover:not(:disabled) {
-          background: rgba(255,255,255,0.04);
+          background: var(--surface-hover);
           border-color: var(--border-strong);
           color: var(--text-bright);
         }
         .tt-btn-ghost:active:not(:disabled) {
-          background: rgba(255,255,255,0.07);
+          background: var(--surface-active);
           transform: translateY(1px);
         }
         .tt-btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -269,7 +269,7 @@ export function ThreadTimeline({
                         padding: '2px 6px',
                         borderRadius: 'var(--radius-pill)',
                         textTransform: 'uppercase',
-                        background: 'rgba(120, 120, 130, 0.15)',
+                        background: 'var(--bg-chip)',
                         color: 'var(--text-dim)',
                       }}
                     >
@@ -316,7 +316,7 @@ export function ThreadTimeline({
           style={{
             width: '100%',
             padding: 'var(--space-sm) var(--space-md)',
-            background: 'rgba(255,255,255,0.03)',
+            background: 'var(--surface-input)',
             color: 'var(--text-bright)',
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-sm)',

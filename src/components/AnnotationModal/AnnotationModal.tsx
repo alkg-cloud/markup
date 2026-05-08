@@ -115,7 +115,7 @@ export function AnnotationModal({ mockupId, snapshot, captureCtx, onClose, onSav
         .am-textarea {
           width: 100%;
           padding: var(--space-sm) var(--space-md);
-          background: rgba(255,255,255,0.03);
+          background: var(--surface-input);
           border: 1px solid var(--border);
           border-radius: var(--radius-sm);
           color: var(--text-bright);
@@ -172,8 +172,8 @@ export function AnnotationModal({ mockupId, snapshot, captureCtx, onClose, onSav
           letter-spacing: -0.005em;
           font-family: inherit;
         }
-        .am-btn-ghost:hover { background: rgba(255,255,255,0.04); border-color: var(--border-strong); color: var(--text-bright); }
-        .am-btn-ghost:active:not(:disabled) { background: rgba(255,255,255,0.07); transform: translateY(1px); }
+        .am-btn-ghost:hover { background: var(--surface-hover); border-color: var(--border-strong); color: var(--text-bright); }
+        .am-btn-ghost:active:not(:disabled) { background: var(--surface-active); transform: translateY(1px); }
         .am-btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
       `}</style>
 

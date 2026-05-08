@@ -196,12 +196,12 @@ export function MockupViewer({
           font-family: inherit;
         }
         .mv-btn-ghost:hover {
-          background: rgba(255,255,255,0.04);
+          background: var(--surface-hover);
           border-color: var(--border-strong);
           color: var(--text-bright);
         }
         .mv-btn-ghost:active {
-          background: rgba(255,255,255,0.07);
+          background: var(--surface-active);
           transform: translateY(1px);
         }
 
@@ -215,8 +215,8 @@ export function MockupViewer({
           text-decoration: none;
           color: inherit;
         }
-        .mv-annotation-row:hover { background: rgba(255,255,255,0.03); }
-        .mv-annotation-row:active { border-left-color: var(--accent); background: rgba(255,255,255,0.05); }
+        .mv-annotation-row:hover { background: var(--surface-input); }
+        .mv-annotation-row:active { border-left-color: var(--accent); background: var(--surface-active); }
 
         .mv-version-pill {
           display: inline-flex;
@@ -241,7 +241,7 @@ export function MockupViewer({
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '0 var(--space-xl)',
-            background: 'rgba(14, 12, 16, 0.85)',
+            background: 'var(--bg-elevated-mid)',
             borderBottom: '1px solid var(--border)',
             backdropFilter: 'blur(12px)',
             position: 'sticky',
@@ -317,7 +317,7 @@ export function MockupViewer({
           <aside
             style={{
               width: 'var(--sidebar-width)',
-              background: 'rgba(14, 12, 16, 0.6)',
+              background: 'var(--bg-elevated-soft)',
               borderRight: '1px solid var(--border)',
               overflowY: 'auto',
             }}
@@ -418,7 +418,7 @@ export function MockupViewer({
           <main
             style={{
               position: 'relative',
-              background: 'rgba(20, 18, 22, 0.5)',
+              background: 'var(--bg-iframe)',
             }}
           >
             <iframe
