@@ -3,7 +3,7 @@ import { createRateLimiter } from '@/lib/rate-limit';
 
 describe('createRateLimiter', () => {
   it('allows up to capacity then blocks', () => {
-    let now = 0;
+    const now = 0;
     const rl = createRateLimiter({ capacity: 3, refillPerSecond: 1, now: () => now });
     expect(rl.consume('a').ok).toBe(true);
     expect(rl.consume('a').ok).toBe(true);
@@ -23,7 +23,7 @@ describe('createRateLimiter', () => {
   });
 
   it('isolates keys', () => {
-    let now = 0;
+    const now = 0;
     const rl = createRateLimiter({ capacity: 1, refillPerSecond: 1, now: () => now });
     expect(rl.consume('a').ok).toBe(true);
     expect(rl.consume('b').ok).toBe(true);
