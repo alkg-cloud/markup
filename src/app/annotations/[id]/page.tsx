@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import type { TLEditorSnapshot } from '@tldraw/tldraw';
 import { cookies, headers } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -59,9 +60,9 @@ export default async function AnnotationDetailPage({
           {(() => {
             const tldrawAbs = path.join(env().DATA_DIR, annotation.tldrawPath);
             const screenshotAbs = path.join(env().DATA_DIR, annotation.screenshotPath);
-            let tldraw = null as unknown;
+            let tldraw: TLEditorSnapshot | null = null;
             try {
-              tldraw = JSON.parse(fs.readFileSync(tldrawAbs, 'utf8'));
+              tldraw = JSON.parse(fs.readFileSync(tldrawAbs, 'utf8')) as TLEditorSnapshot;
             } catch {}
             // Probe PNG dimensions from the IHDR header (no extra dep needed).
             const buf = fs.readFileSync(screenshotAbs);
@@ -72,7 +73,7 @@ export default async function AnnotationDetailPage({
                 screenshotUrl={`/api/annotations/${annotation.id}/screenshot`}
                 width={width}
                 height={height}
-                tldraw={tldraw as never}
+                tldraw={tldraw}
               />
             );
           })()}
