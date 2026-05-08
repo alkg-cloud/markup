@@ -175,7 +175,8 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
             lineHeight: 'var(--leading-normal)',
           }}
         >
-          Tokens authenticate non-browser clients (e.g. Paperclip) against the API.
+          Tokens authenticate non-browser clients — AI dev assistants, agent frameworks, CI
+          integrations — against the API.
         </p>
       </div>
 
@@ -234,7 +235,7 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
               maxLength={64}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. paperclip-prod"
+              placeholder="e.g. claude-code-prod, ci-builder, designer-bot"
               style={{
                 padding: '12px 16px',
                 background: 'rgba(255,255,255,0.03)',
