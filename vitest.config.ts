@@ -8,7 +8,8 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.ts', 'tests/integration/**/*.test.ts'],
     coverage: { reporter: ['text', 'lcov'] },
     pool: 'forks',
-    singleFork: true,
+    fileParallelism: false,
+    maxWorkers: 1,
   },
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },
 });
