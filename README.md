@@ -13,7 +13,7 @@ docker run -d --name markup \
   -p 3000:3000 \
   -e AUTH_SECRET=$(openssl rand -hex 32) \
   -v $(pwd)/markup-data:/app/data \
-  ghcr.io/your-org/markup:latest
+  ghcr.io/alexandrecamillo/markup:latest
 ```
 
 Open `http://localhost:3000` and follow the setup wizard.
@@ -33,7 +33,7 @@ docker run -d --name markup \
   -p 3000:3000 \
   -e AUTH_SECRET=$(openssl rand -hex 32) \
   -v $(pwd)/markup-data:/app/data \
-  ghcr.io/your-org/markup:latest
+  ghcr.io/alexandrecamillo/markup:latest
 ```
 
 Or with Compose — see `docker-compose.example.yml`.
@@ -41,7 +41,7 @@ Or with Compose — see `docker-compose.example.yml`.
 ### From source
 
 ```bash
-git clone https://github.com/your-org/markup.git
+git clone https://github.com/AlexandreCamillo/markup.git
 cd markup
 pnpm install
 cp .env.example .env.local
