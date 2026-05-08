@@ -35,6 +35,7 @@
     "pino": "latest",
     "pino-pretty": "latest",
     "prisma": "latest",
+    "puppeteer": "^24.43.0",
     "react": "latest",
     "react-dom": "latest",
     "sharp": "^0.34.5",
