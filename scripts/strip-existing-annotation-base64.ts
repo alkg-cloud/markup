@@ -21,7 +21,7 @@ function main() {
       let raw: unknown;
       try {
         raw = JSON.parse(fs.readFileSync(tldrawPath, 'utf8'));
-      } catch (e) {
+      } catch {
         console.log(`SKIP ${mid.slice(0, 8)}/${aid.slice(0, 8)}: invalid JSON`);
         continue;
       }

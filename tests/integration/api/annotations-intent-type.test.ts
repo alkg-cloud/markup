@@ -43,8 +43,8 @@ async function createBaseMockup(cookie: string) {
 function annFormData(overrides: Record<string, string> = {}) {
   const ann = new FormData();
   const png = Buffer.from([
-    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 73, 72, 68, 82,
-    0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0, 144, 119, 83, 222,
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0,
+    0, 1, 8, 2, 0, 0, 0, 144, 119, 83, 222,
   ]);
   ann.set('screenshot', new Blob([png], { type: 'image/png' }), 's.png');
   ann.set('tldraw', JSON.stringify({ document: { store: {} } }));

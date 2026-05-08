@@ -37,7 +37,7 @@ function probesFromDrawings(drawings: Drawing[]): Array<[number, number]> {
   for (const d of drawings) {
     if (d.kind === 'arrow') {
       out.push(d.to);
-    } else if ('bbox' in d && Array.isArray(d.bbox)) {
+    } else if ('bbox' in d) {
       const [x, y, w, h] = d.bbox;
       out.push([x + w / 2, y + h / 2]);
     }
@@ -110,15 +110,28 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
             const ancestors: string[] = [];
             let p = el.parentElement;
             for (let i = 0; i < 3 && p && p !== document.body; i++) {
-              const cls = (p as HTMLElement).className?.toString().trim().split(/\s+/).filter(Boolean).slice(0, 2).join('.');
-              ancestors.push(p.tagName.toLowerCase() + (cls ? '.' + cls : ''));
+              const cls = (p as HTMLElement).className
+                ?.toString()
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .join('.');
+              ancestors.push(`${p.tagName.toLowerCase()}${cls ? `.${cls}` : ''}`);
               p = p.parentElement;
             }
             const tagSelector = el.tagName.toLowerCase();
-            const cls = (el as HTMLElement).className?.toString().trim().split(/\s+/).filter(Boolean).slice(0, 2).join('.');
+            const cls = (el as HTMLElement).className
+              ?.toString()
+              .trim()
+              .split(/\s+/)
+              .filter(Boolean)
+              .slice(0, 2)
+              .join('.');
             const selector = cls ? `${tagSelector}.${cls}` : tagSelector;
             let text_at_point = '';
             try {
+              // biome-ignore lint/suspicious/noExplicitAny: caretRangeFromPoint is non-standard but supported in headless Chromium
               const range = (document as any).caretRangeFromPoint?.(px, py - window.scrollY);
               if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
                 const node = range.startContainer as Text;

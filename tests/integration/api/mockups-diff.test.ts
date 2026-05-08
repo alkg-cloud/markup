@@ -1,11 +1,9 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
-import { GET } from '@/app/api/mockups/[id]/diff/route';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { POST as setup } from '@/app/api/auth/setup/route';
-import { POST as createMockupRoute } from '@/app/api/mockups/route';
+import { GET } from '@/app/api/mockups/[id]/diff/route';
 import { POST as createVersion } from '@/app/api/mockups/[id]/version/route';
+import { POST as createMockupRoute } from '@/app/api/mockups/route';
 import { prisma } from '@/lib/prisma';
 
 async function adminCookie() {
@@ -34,7 +32,11 @@ async function createMockup(cookie: string, indexHtml: string) {
   fd.set('name', 'D');
   fd.set('build', new Blob([buf], { type: 'application/zip' }), 'm.zip');
   const r = await createMockupRoute(
-    new Request('http://l', { method: 'POST', headers: { cookie: `mk_session=${cookie}` }, body: fd }),
+    new Request('http://l', {
+      method: 'POST',
+      headers: { cookie: `mk_session=${cookie}` },
+      body: fd,
+    }),
   );
   return r.json();
 }
@@ -44,7 +46,11 @@ async function uploadVersion(cookie: string, mockupId: string, indexHtml: string
   const fd = new FormData();
   fd.set('build', new Blob([buf], { type: 'application/zip' }), 'm.zip');
   const r = await createVersion(
-    new Request('http://l', { method: 'POST', headers: { cookie: `mk_session=${cookie}` }, body: fd }),
+    new Request('http://l', {
+      method: 'POST',
+      headers: { cookie: `mk_session=${cookie}` },
+      body: fd,
+    }),
     { params: Promise.resolve({ id: mockupId }) },
   );
   return r.json();

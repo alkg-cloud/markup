@@ -1,7 +1,8 @@
 export type Drawing =
   | { kind: 'arrow'; from: [number, number]; to: [number, number] }
   | {
-      kind: 'rectangle' | 'ellipse' | 'oval' | 'diamond' | 'star' | 'triangle' | string;
+      kind: 'geo';
+      geo: string; // 'rectangle' | 'ellipse' | 'oval' | etc.
       color: string;
       fill: string;
       bbox: [number, number, number, number];
@@ -18,10 +19,15 @@ function extractRichText(rt: unknown): string {
   return matches.join(' ');
 }
 
-function getStore(snapshot: any): Record<string, any> | null {
+function getStore(snapshot: unknown): Record<string, unknown> | null {
   if (!snapshot || typeof snapshot !== 'object') return null;
-  if (snapshot.document?.store) return snapshot.document.store;
-  if (snapshot.store) return snapshot.store;
+  const s = snapshot as { document?: { store?: unknown }; store?: unknown };
+  if (s.document?.store && typeof s.document.store === 'object') {
+    return s.document.store as Record<string, unknown>;
+  }
+  if (s.store && typeof s.store === 'object') {
+    return s.store as Record<string, unknown>;
+  }
   return null;
 }
 
@@ -29,16 +35,17 @@ export function extractDrawings(snapshot: unknown): Drawing[] {
   const store = getStore(snapshot);
   if (!store) return [];
   const out: Drawing[] = [];
-  for (const v of Object.values(store)) {
-    if (!v || typeof v !== 'object') continue;
-    if ((v as any).typeName !== 'shape') continue;
-    const t = (v as any).type;
-    const props = (v as any).props ?? {};
-    const x = Number((v as any).x ?? 0);
-    const y = Number((v as any).y ?? 0);
+  for (const raw of Object.values(store)) {
+    if (!raw || typeof raw !== 'object') continue;
+    const v = raw as Record<string, unknown>;
+    if (v.typeName !== 'shape') continue;
+    const t = v.type as string | undefined;
+    const props = (v.props ?? {}) as Record<string, unknown>;
+    const x = Number(v.x ?? 0);
+    const y = Number(v.y ?? 0);
     if (t === 'arrow') {
-      const s = props.start ?? {};
-      const e = props.end ?? {};
+      const s = (props.start ?? {}) as Record<string, unknown>;
+      const e = (props.end ?? {}) as Record<string, unknown>;
       out.push({
         kind: 'arrow',
         from: [x + Number(s.x ?? 0), y + Number(s.y ?? 0)],
@@ -49,7 +56,8 @@ export function extractDrawings(snapshot: unknown): Drawing[] {
       const w = Number(props.w ?? 0);
       const h = Number(props.h ?? 0);
       out.push({
-        kind: geo,
+        kind: 'geo',
+        geo,
         color: String(props.color ?? 'black'),
         fill: String(props.fill ?? 'none'),
         bbox: [x, y, w, h],

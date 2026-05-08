@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
-import { POST } from '@/app/api/mockups/[id]/version-patch/route';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { POST as setup } from '@/app/api/auth/setup/route';
+import { POST } from '@/app/api/mockups/[id]/version-patch/route';
 import { POST as createMockupRoute } from '@/app/api/mockups/route';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
@@ -66,7 +66,8 @@ describe('PATCH /api/mockups/[id]/version-patch', () => {
     const body = JSON.stringify({
       base_version_id: versionId,
       patches: {
-        'index.html': '--- a/index.html\n+++ b/index.html\n@@ -1,3 +1,3 @@\n line a\n-line b\n+line B\n line c\n',
+        'index.html':
+          '--- a/index.html\n+++ b/index.html\n@@ -1,3 +1,3 @@\n line a\n-line b\n+line B\n line c\n',
       },
     });
     const res = await POST(

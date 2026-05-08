@@ -75,10 +75,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ annotationId: s
 
   // Diff since creation (only when versions differ)
   let diff_since_creation = '';
-  if (
-    annotation.createdOnVersionId &&
-    annotation.createdOnVersionId !== mockup.currentVersionId
-  ) {
+  if (annotation.createdOnVersionId && annotation.createdOnVersionId !== mockup.currentVersionId) {
     const createdDir = path.join(
       env().DATA_DIR,
       'mockups',

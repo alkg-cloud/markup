@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { GET } from '@/app/api/annotations/[id]/region/route';
 import { POST as setup } from '@/app/api/auth/setup/route';
 import { createAnnotation } from '@/lib/annotation/service';
-import { createMockupFromZip } from '@/lib/mockup/service';
 import { env } from '@/lib/env';
+import { createMockupFromZip } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
 
 const fixture = (n: string) => path.resolve('tests/fixtures/mockups', n);
@@ -33,7 +33,12 @@ async function makeAnnotation(opts: { withPinCoords: boolean }) {
     createdByType: 'user',
   });
   const png = await sharp({
-    create: { width: 200, height: 200, channels: 4, background: { r: 100, g: 200, b: 100, alpha: 1 } },
+    create: {
+      width: 200,
+      height: 200,
+      channels: 4,
+      background: { r: 100, g: 200, b: 100, alpha: 1 },
+    },
   })
     .png()
     .toBuffer();

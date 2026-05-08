@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import sharp from 'sharp';
+import { describe, expect, it } from 'vitest';
 import { cropRegion } from '@/lib/region/crop';
 
 async function makeRedSquarePng(w: number, h: number): Promise<Buffer> {

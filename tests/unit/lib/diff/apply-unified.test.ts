@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DiffApplyError, applyUnifiedDiff } from '@/lib/diff/apply-unified';
+import { applyUnifiedDiff, DiffApplyError } from '@/lib/diff/apply-unified';
 
 const ORIG = 'line a\nline b\nline c\n';
 

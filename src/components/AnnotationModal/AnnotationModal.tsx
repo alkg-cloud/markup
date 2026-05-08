@@ -269,6 +269,7 @@ export function AnnotationModal({ mockupId, snapshot, captureCtx, onClose, onSav
             {(['visual', 'copy', 'behavior', 'other'] as const).map((kind) => {
               const active = intentType === kind;
               return (
+                // biome-ignore lint/a11y/useSemanticElements: chip selector — custom styled, native <input type=radio> doesn't allow this treatment
                 <button
                   key={kind}
                   type="button"

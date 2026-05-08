@@ -1,14 +1,14 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { GET } from '@/app/api/annotations/[id]/intent/route';
 import { POST as setup } from '@/app/api/auth/setup/route';
 import { createAnnotation } from '@/lib/annotation/service';
+import { env } from '@/lib/env';
 import { writeIntentCache } from '@/lib/intent/cache';
 import { createMockupFromZip } from '@/lib/mockup/service';
-import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
-import fs from 'node:fs';
 
 const fixture = (n: string) => path.resolve('tests/fixtures/mockups', n);
 
@@ -34,7 +34,12 @@ async function makeAnnotation() {
     createdByType: 'user',
   });
   const png = await sharp({
-    create: { width: 200, height: 200, channels: 4, background: { r: 100, g: 100, b: 100, alpha: 1 } },
+    create: {
+      width: 200,
+      height: 200,
+      channels: 4,
+      background: { r: 100, g: 100, b: 100, alpha: 1 },
+    },
   })
     .png()
     .toBuffer();
@@ -59,7 +64,12 @@ async function makeAnnotation() {
     authorType: 'user',
     intentType: 'visual',
   });
-  return { annotationId: r.annotation.id, mockupId: m.mockup.id, currentVersionId: m.version.id, tldrawPath: r.annotation.tldrawPath };
+  return {
+    annotationId: r.annotation.id,
+    mockupId: m.mockup.id,
+    currentVersionId: m.version.id,
+    tldrawPath: r.annotation.tldrawPath,
+  };
 }
 
 describe('GET /api/annotations/[id]/intent', () => {
@@ -128,7 +138,9 @@ describe('GET /api/annotations/[id]/intent', () => {
     });
     const png = await sharp({
       create: { width: 100, height: 100, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 1 } },
-    }).png().toBuffer();
+    })
+      .png()
+      .toBuffer();
     const r = await createAnnotation({
       mockupId: m.mockup.id,
       screenshotPng: png,

@@ -1,8 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import {
-  stripScreenshotBase64,
-  rehydrateScreenshotBase64,
-} from '@/lib/tldraw/snapshot-screenshot';
+import { describe, expect, it } from 'vitest';
+import { rehydrateScreenshotBase64, stripScreenshotBase64 } from '@/lib/tldraw/snapshot-screenshot';
 
 const BASE64_DATA_URL = `data:image/png;base64,iVBORw0KGgo${'A'.repeat(1000)}`;
 

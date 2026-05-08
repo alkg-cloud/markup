@@ -3,9 +3,9 @@ import path from 'node:path';
 import cuid from 'cuid';
 import { type PinCoords, serializePinCoords } from '@/lib/annotation/pin-coords';
 import { env } from '@/lib/env';
+import { deleteIntentCache } from '@/lib/intent/cache';
 import { annotationDir } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
-import { deleteIntentCache } from '@/lib/intent/cache';
 import { stripScreenshotBase64 } from '@/lib/tldraw/snapshot-screenshot';
 
 export type IntentType = 'visual' | 'copy' | 'behavior' | 'other';
@@ -27,7 +27,7 @@ export async function createAnnotation(input: CreateInput) {
   const dir = annotationDir(env().DATA_DIR, input.mockupId, aid);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'screenshot.png'), input.screenshotPng);
-  const strippedTldraw = stripScreenshotBase64(input.tldrawJson as any);
+  const strippedTldraw = stripScreenshotBase64(input.tldrawJson);
   fs.writeFileSync(path.join(dir, 'tldraw.json'), JSON.stringify(strippedTldraw));
   const screenshotPath = path.posix.join(
     'mockups',
@@ -97,7 +97,7 @@ export async function updateAnnotationTldraw(id: string, snapshot: unknown) {
   // Invalidate intent sidecar BEFORE writing the new tldraw — readers that
   // see the new mtime should never get a stale intent.json with the old key.
   deleteIntentCache(annDir);
-  const stripped = stripScreenshotBase64(snapshot as any);
+  const stripped = stripScreenshotBase64(snapshot);
   fs.writeFileSync(abs, JSON.stringify(stripped));
   return annotation;
 }

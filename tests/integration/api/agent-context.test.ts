@@ -31,7 +31,12 @@ async function makeAnnotation() {
     createdByType: 'user',
   });
   const png = await sharp({
-    create: { width: 100, height: 100, channels: 4, background: { r: 50, g: 100, b: 50, alpha: 1 } },
+    create: {
+      width: 100,
+      height: 100,
+      channels: 4,
+      background: { r: 50, g: 100, b: 50, alpha: 1 },
+    },
   })
     .png()
     .toBuffer();

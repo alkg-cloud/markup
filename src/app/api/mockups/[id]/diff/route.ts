@@ -57,8 +57,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     if (!TEXT_EXTS.has(ext)) {
       const aBuf = fromPath ? fs.readFileSync(fromPath) : null;
       const bBuf = toPath ? fs.readFileSync(toPath) : null;
-      const changed =
-        (aBuf && !bBuf) || (!aBuf && bBuf) || (aBuf && bBuf && !aBuf.equals(bBuf));
+      const changed = (aBuf && !bBuf) || (!aBuf && bBuf) || (aBuf && bBuf && !aBuf.equals(bBuf));
       if (changed) parts.push(`Binary files ${name} differ`);
       continue;
     }
