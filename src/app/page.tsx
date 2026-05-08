@@ -20,3 +20,5 @@ export default async function Root() {
   if (!id) redirect('/login');
   redirect('/mockups');
 }
+
+export const dynamic = 'force-dynamic';

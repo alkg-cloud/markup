@@ -95,3 +95,5 @@ export default async function DiffPage({
     />
   );
 }
+
+export const dynamic = 'force-dynamic';

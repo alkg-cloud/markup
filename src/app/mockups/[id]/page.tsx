@@ -71,3 +71,5 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
     />
   );
 }
+
+export const dynamic = 'force-dynamic';

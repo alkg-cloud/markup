@@ -269,3 +269,5 @@ export default async function AnnotationDetailPage({
     </main>
   );
 }
+
+export const dynamic = 'force-dynamic';
