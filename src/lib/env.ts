@@ -6,6 +6,7 @@ const envSchema = z.object({
   APP_URL: z.string().url().default('http://localhost:3000'),
   AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must be at least 32 characters'),
   DATA_DIR: z.string().min(1),
+  DATABASE_URL: z.string().min(1).default('file:./prisma/dev.db'),
   PUID: z.coerce.number().int().nonnegative().default(1000),
   PGID: z.coerce.number().int().nonnegative().default(1000),
   AGENT_TOKENS: z

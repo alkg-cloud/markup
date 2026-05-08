@@ -6,6 +6,7 @@ node_modules
 .env.local
 data
 prisma/dev.db*
+prisma/test.db*
 test-data
 playwright-report
 test-results

@@ -23,9 +23,11 @@
     "node": ">=22"
   },
   "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@prisma/client": "latest",
     "@tldraw/tldraw": "latest",
     "bcryptjs": "latest",
+    "better-sqlite3": "^12.9.0",
     "cuid": "latest",
     "html2canvas": "latest",
     "jose": "latest",
@@ -52,5 +54,10 @@
     "tsx": "latest",
     "typescript": "latest",
     "vitest": "latest"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3"
+    ]
   }
 }
