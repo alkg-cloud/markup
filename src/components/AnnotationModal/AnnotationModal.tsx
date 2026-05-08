@@ -6,11 +6,12 @@ import { AnnotationCanvas } from '@/components/AnnotationCanvas/AnnotationCanvas
 interface Props {
   mockupId: string;
   snapshot: HTMLCanvasElement;
+  captureCtx: { scrollX: number; scrollY: number; viewportWidth: number; viewportHeight: number };
   onClose: () => void;
   onSaved: (annotation: { id: string }) => void;
 }
 
-export function AnnotationModal({ mockupId, snapshot, onClose, onSaved }: Props) {
+export function AnnotationModal({ mockupId, snapshot, captureCtx, onClose, onSaved }: Props) {
   const editorRef = useRef<Editor | null>(null);
   const [backgroundUrl, setBackgroundUrl] = useState<string | null>(null);
   const [message, setMessage] = useState('');
@@ -24,14 +25,46 @@ export function AnnotationModal({ mockupId, snapshot, onClose, onSaved }: Props)
     if (busy || !editorRef.current) return;
     setBusy(true);
     try {
-      const tldrawJson = editorRef.current.getSnapshot();
-      const blob: Blob = await new Promise((res, rej) => {
-        snapshot.toBlob((b) => (b ? res(b) : rej(new Error('toBlob failed'))), 'image/png');
-      });
+      const editor = editorRef.current;
+      const tldrawJson = editor.getSnapshot();
+      // Compute drawing bbox excluding the locked screenshot image shape
+      const shapes = editor.getCurrentPageShapesSorted().filter((s) => s.type !== 'image');
+      let bbox: { minX: number; minY: number; maxX: number; maxY: number } | null = null;
+      for (const s of shapes) {
+        const b = editor.getShapePageBounds(s.id);
+        if (!b) continue;
+        bbox = bbox
+          ? {
+              minX: Math.min(bbox.minX, b.minX),
+              minY: Math.min(bbox.minY, b.minY),
+              maxX: Math.max(bbox.maxX, b.maxX),
+              maxY: Math.max(bbox.maxY, b.maxY),
+            }
+          : { minX: b.minX, minY: b.minY, maxX: b.maxX, maxY: b.maxY };
+      }
+
       const fd = new FormData();
+      const blob: Blob = await new Promise((res, rej) =>
+        snapshot.toBlob((b) => (b ? res(b) : rej(new Error('toBlob failed'))), 'image/png'),
+      );
       fd.set('screenshot', blob, 'screenshot.png');
       fd.set('tldraw', JSON.stringify(tldrawJson));
       fd.set('message', message);
+      if (bbox) {
+        // bbox is in tldraw page coords; the locked image shape is at (0,0) sized to the snapshot,
+        // so tldraw page coords align 1:1 with snapshot pixel coords. Convert to iframe coords by adding capture scroll.
+        const pinCoords = {
+          scrollX: captureCtx.scrollX,
+          scrollY: captureCtx.scrollY,
+          viewportWidth: captureCtx.viewportWidth,
+          viewportHeight: captureCtx.viewportHeight,
+          bboxX: captureCtx.scrollX + bbox.minX,
+          bboxY: captureCtx.scrollY + bbox.minY,
+          bboxW: bbox.maxX - bbox.minX,
+          bboxH: bbox.maxY - bbox.minY,
+        };
+        fd.set('pinCoords', JSON.stringify(pinCoords));
+      }
       const res = await fetch(`/api/mockups/${mockupId}/annotations`, { method: 'POST', body: fd });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));

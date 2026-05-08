@@ -33,6 +33,12 @@ export function MockupViewer({
   const router = useRouter();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [snapshot, setSnapshot] = useState<HTMLCanvasElement | null>(null);
+  const [captureCtx, setCaptureCtx] = useState<{
+    scrollX: number;
+    scrollY: number;
+    viewportWidth: number;
+    viewportHeight: number;
+  } | null>(null);
   const [busy, setBusy] = useState(false);
 
   // Lazy thumbnail capture
@@ -66,7 +72,14 @@ export function MockupViewer({
     try {
       const html2canvas = (await import('html2canvas')).default;
       const iframe = iframeRef.current;
-      if (!iframe?.contentDocument) return;
+      if (!iframe?.contentDocument || !iframe.contentWindow) return;
+      const win = iframe.contentWindow;
+      setCaptureCtx({
+        scrollX: win.scrollX,
+        scrollY: win.scrollY,
+        viewportWidth: win.innerWidth,
+        viewportHeight: win.innerHeight,
+      });
       const canvas = await html2canvas(iframe.contentDocument.body, {
         useCORS: true,
         backgroundColor: null,
@@ -185,13 +198,18 @@ export function MockupViewer({
         </main>
       </div>
 
-      {snapshot && (
+      {snapshot && captureCtx && (
         <AnnotationModal
           mockupId={mockupId}
           snapshot={snapshot}
-          onClose={() => setSnapshot(null)}
-          onSaved={(_a) => {
+          captureCtx={captureCtx}
+          onClose={() => {
             setSnapshot(null);
+            setCaptureCtx(null);
+          }}
+          onSaved={() => {
+            setSnapshot(null);
+            setCaptureCtx(null);
             router.refresh();
           }}
         />
