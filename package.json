@@ -25,6 +25,11 @@
   "dependencies": {
     "@prisma/client": "latest",
     "@tldraw/tldraw": "latest",
+    "@types/bcryptjs": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/yauzl": "latest",
     "bcryptjs": "latest",
     "cuid": "latest",
     "html2canvas": "latest",
@@ -32,25 +37,20 @@
     "next": "latest",
     "pino": "latest",
     "pino-pretty": "latest",
+    "prisma": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "typescript": "latest",
     "yauzl": "latest",
     "zod": "latest"
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
     "@playwright/test": "latest",
-    "@types/bcryptjs": "latest",
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
     "@types/supertest": "latest",
-    "@types/yauzl": "latest",
     "@vitest/coverage-v8": "latest",
-    "prisma": "latest",
     "supertest": "latest",
     "tsx": "latest",
-    "typescript": "latest",
     "vitest": "latest"
   }
 }
