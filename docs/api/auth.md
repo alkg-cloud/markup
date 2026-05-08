@@ -33,10 +33,10 @@ export async function GET(req: Request) {
 The same routes are consumed by:
 
 - The browser UI (cookie-authenticated)
-- Automation agents like Paperclip (Bearer-authenticated)
+- Automation clients — AI dev assistants (Claude Code, Cursor, Aider), agent frameworks (LangGraph, CrewAI, AutoGen), in-house CI integrations (Bearer-authenticated)
 - The dev's own curl smoke tests (typically cookie via `-b cookies.txt` or Bearer via `-H "Authorization: Bearer …"`)
 
-Splitting the surface by auth mode would force the agent to use a different endpoint than the UI, which doubles the maintenance burden. The single-surface design means **a feature shipped to the UI is automatically available to agents**, and vice versa.
+Splitting the surface by auth mode would force automation clients to use a different endpoint than the UI, which doubles the maintenance burden. The single-surface design means **a feature shipped to the UI is automatically available to agents**, and vice versa.
 
 ## When to require admin
 
