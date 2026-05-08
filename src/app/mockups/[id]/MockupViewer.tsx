@@ -45,6 +45,11 @@ export function MockupViewer({
   const [busy, setBusy] = useState(false);
   const [iframeScroll, setIframeScroll] = useState({ scrollX: 0, scrollY: 0 });
 
+  // current version index for the topbar pill label
+  const currentVersionIndex = versions.findIndex((v) => v.id === currentVersionId);
+  const versionLabel =
+    currentVersionIndex !== -1 ? `v${versions.length - currentVersionIndex} · current` : 'current';
+
   // Track iframe scroll to keep pin overlays aligned
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -115,149 +120,354 @@ export function MockupViewer({
     }
   }
 
-  return (
-    <div style={{ display: 'grid', gridTemplateRows: 'auto 1fr', minHeight: '100vh' }}>
-      <header
+  /* ── Status pill ── */
+  function StatusPill({ status }: { status: string }) {
+    const isResolved = status === 'resolved';
+    return (
+      <span
         style={{
-          display: 'flex',
+          display: 'inline-flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '8px 16px',
-          background: 'var(--bg-secondary)',
-          borderBottom: '1px solid var(--border-primary)',
+          padding: '4px 10px',
+          borderRadius: 'var(--radius-pill)',
+          fontSize: 'var(--type-2xs)',
+          fontWeight: 700,
+          letterSpacing: 'var(--tracking-wide)',
+          textTransform: 'uppercase' as const,
+          background: isResolved ? 'var(--success-soft)' : 'var(--info-soft)',
+          color: isResolved ? 'var(--success)' : 'var(--info)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href="/mockups" style={{ color: 'var(--text-secondary)' }}>
-            ← Mockups
-          </Link>
-          <strong>{mockupName}</strong>
-        </div>
-        <button
-          type="button"
-          onClick={captureScreenshot}
-          disabled={busy}
-          data-testid="comment-button"
-          style={{
-            padding: '6px 12px',
-            background: 'var(--accent)',
-            color: '#fff',
-            border: 0,
-            borderRadius: 'var(--radius-sm)',
-            cursor: 'pointer',
-          }}
-        >
-          {busy ? 'Capturing…' : 'Comment'}
-        </button>
-      </header>
+        {status}
+      </span>
+    );
+  }
 
-      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', minHeight: 0 }}>
-        <aside
+  return (
+    <>
+      <style>{`
+        .mv-back-link {
+          color: var(--text-dim);
+          text-decoration: none;
+          font-size: var(--type-sm);
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          transition: color var(--motion-fast) var(--ease-standard);
+        }
+        .mv-back-link:hover { color: var(--text-bright); }
+
+        .mv-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 9px 16px;
+          background: var(--btn-bg);
+          color: var(--accent);
+          font-weight: 700;
+          font-size: var(--type-xs);
+          border: 0;
+          border-radius: var(--radius-pill);
+          cursor: pointer;
+          transition: background var(--motion-fast) var(--ease-standard), transform var(--motion-instant) var(--ease-standard);
+          white-space: nowrap;
+          letter-spacing: -0.005em;
+          font-family: inherit;
+        }
+        .mv-btn:hover { background: var(--btn-bg-hover); }
+        .mv-btn:active { background: var(--btn-bg-active); transform: translateY(1px); }
+        .mv-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .mv-btn-ghost {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 9px 16px;
+          background: transparent;
+          color: var(--text);
+          font-weight: 700;
+          font-size: var(--type-xs);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-pill);
+          cursor: pointer;
+          transition: background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard);
+          white-space: nowrap;
+          letter-spacing: -0.005em;
+          font-family: inherit;
+        }
+        .mv-btn-ghost:hover {
+          background: rgba(255,255,255,0.04);
+          border-color: var(--border-strong);
+          color: var(--text-bright);
+        }
+        .mv-btn-ghost:active {
+          background: rgba(255,255,255,0.07);
+          transform: translateY(1px);
+        }
+
+        .mv-annotation-row {
+          display: grid;
+          gap: 4px;
+          padding: var(--space-sm) var(--space-lg);
+          border-left: 2px solid transparent;
+          cursor: pointer;
+          transition: background var(--motion-fast) var(--ease-standard), border-color var(--motion-instant) var(--ease-standard);
+          text-decoration: none;
+          color: inherit;
+        }
+        .mv-annotation-row:hover { background: rgba(255,255,255,0.03); }
+        .mv-annotation-row:active { border-left-color: var(--accent); background: rgba(255,255,255,0.05); }
+
+        .mv-version-pill {
+          display: inline-flex;
+          align-items: center;
+          padding: 4px 10px;
+          border-radius: var(--radius-pill);
+          font-size: var(--type-2xs);
+          font-weight: 700;
+          letter-spacing: var(--tracking-wide);
+          text-transform: uppercase;
+          background: var(--accent-soft);
+          color: var(--accent);
+        }
+      `}</style>
+
+      <div style={{ display: 'grid', gridTemplateRows: 'auto 1fr', minHeight: '100vh' }}>
+        {/* ── Topbar ── */}
+        <header
           style={{
-            background: 'var(--bg-secondary)',
-            borderRight: '1px solid var(--border-primary)',
-            overflowY: 'auto',
+            height: 'var(--topbar-height)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 var(--space-xl)',
+            background: 'rgba(14, 12, 16, 0.85)',
+            borderBottom: '1px solid var(--border)',
+            backdropFilter: 'blur(12px)',
+            position: 'sticky',
+            top: 0,
+            zIndex: 100,
           }}
         >
-          <h2 style={{ padding: 16, margin: 0, fontSize: 14, color: 'var(--text-secondary)' }}>
-            Annotations ({annotations.length})
-          </h2>
-          {annotations.length === 0 ? (
-            <p style={{ padding: '0 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>
-              No annotations yet. Click Comment to capture and annotate the current state.
-            </p>
-          ) : (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {annotations.map((a) => (
-                <li
-                  key={a.id}
-                  style={{ padding: 12, borderBottom: '1px solid var(--border-primary)' }}
-                >
-                  <Link
-                    href={`/annotations/${a.id}`}
-                    style={{ color: 'inherit', display: 'block' }}
-                    data-testid="annotation-card"
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
+          {/* Left group */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
+            <Link href="/mockups" className="mv-back-link">
+              ← Mockups
+            </Link>
+
+            {/* Vertical divider */}
+            <span
+              aria-hidden="true"
+              style={{
+                display: 'block',
+                width: 1,
+                height: 22,
+                background: 'var(--border)',
+                flexShrink: 0,
+              }}
+            />
+
+            {/* Title row: name + version pill */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-xs)' }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'var(--type-md)',
+                  fontWeight: 700,
+                  color: 'var(--text-bright)',
+                  letterSpacing: 'var(--tracking-tight)',
+                }}
+              >
+                {mockupName}
+              </span>
+              <span className="mv-version-pill">{versionLabel}</span>
+            </div>
+          </div>
+
+          {/* Right group */}
+          <div style={{ display: 'flex', gap: 'var(--space-xs)' }}>
+            <button
+              type="button"
+              className="mv-btn-ghost"
+              onClick={() => {
+                document
+                  .querySelector('[data-testid="versions-tab"]')
+                  ?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              Versions
+            </button>
+            <button
+              type="button"
+              className="mv-btn"
+              onClick={captureScreenshot}
+              disabled={busy}
+              data-testid="comment-button"
+            >
+              {busy ? 'Capturing…' : '+ Comment'}
+            </button>
+          </div>
+        </header>
+
+        {/* ── Body: sidebar + main ── */}
+        <div
+          style={{ display: 'grid', gridTemplateColumns: 'var(--sidebar-width) 1fr', minHeight: 0 }}
+        >
+          {/* ── Sidebar ── */}
+          <aside
+            style={{
+              width: 'var(--sidebar-width)',
+              background: 'rgba(14, 12, 16, 0.6)',
+              borderRight: '1px solid var(--border)',
+              overflowY: 'auto',
+            }}
+          >
+            {/* Annotations eyebrow */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: 'var(--space-md) var(--space-lg) var(--space-xs)',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 'var(--type-2xs)',
+                  fontWeight: 700,
+                  letterSpacing: 'var(--tracking-wider)',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-dim)',
+                }}
+              >
+                Annotations
+              </span>
+              <span
+                style={{
+                  fontFeatureSettings: "'tnum'",
+                  fontSize: 'var(--type-2xs)',
+                  color: 'var(--text-muted)',
+                }}
+              >
+                {annotations.length}
+              </span>
+            </div>
+
+            {annotations.length === 0 ? (
+              <p
+                style={{
+                  padding: '0 var(--space-lg)',
+                  color: 'var(--text-dim)',
+                  fontSize: 'var(--type-sm)',
+                  lineHeight: 'var(--leading-normal)',
+                  margin: 0,
+                }}
+              >
+                No annotations yet — click + Comment to capture and annotate.
+              </p>
+            ) : (
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {annotations.map((a) => (
+                  <li key={a.id}>
+                    <Link
+                      href={`/annotations/${a.id}`}
+                      data-testid="annotation-card"
+                      className="mv-annotation-row"
                     >
-                      <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                        {new Date(a.createdAt).toLocaleString()}
-                      </span>
-                      <span
+                      {/* Meta row: timestamp + status pill */}
+                      <div
                         style={{
-                          fontSize: 11,
-                          textTransform: 'uppercase',
-                          color:
-                            a.threadStatus === 'resolved'
-                              ? 'var(--success)'
-                              : 'var(--text-secondary)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
                         }}
                       >
-                        {a.threadStatus}
+                        <span
+                          style={{
+                            fontSize: 'var(--type-2xs)',
+                            color: 'var(--text-muted)',
+                            fontFeatureSettings: "'tnum'",
+                            letterSpacing: '0.02em',
+                          }}
+                        >
+                          {new Date(a.createdAt).toLocaleString()}
+                        </span>
+                        <StatusPill status={a.threadStatus} />
+                      </div>
+                      {/* Message preview */}
+                      <span
+                        style={{
+                          fontSize: 'var(--type-sm)',
+                          color: 'var(--text)',
+                          lineHeight: 'var(--leading-snug)',
+                        }}
+                      >
+                        {a.messageCount} {a.messageCount === 1 ? 'message' : 'messages'}
                       </span>
-                    </div>
-                    <div style={{ fontSize: 13, marginTop: 4 }}>
-                      {a.messageCount} {a.messageCount === 1 ? 'message' : 'messages'}
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-          <Versions mockupId={mockupId} currentVersionId={currentVersionId} versions={versions} />
-        </aside>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
 
-        <main style={{ position: 'relative', background: '#000' }}>
-          <iframe
-            ref={iframeRef}
-            title={mockupName}
-            src={`/_mockups/${mockupId}/index.html?v=${currentVersionId}`}
-            sandbox="allow-scripts allow-same-origin"
-            style={{ width: '100%', height: '100%', border: 0, background: '#fff' }}
+            {/* Versions section */}
+            <Versions mockupId={mockupId} currentVersionId={currentVersionId} versions={versions} />
+          </aside>
+
+          {/* ── Main: iframe + pin overlay ── */}
+          <main
+            style={{
+              position: 'relative',
+              background: 'rgba(20, 18, 22, 0.5)',
+            }}
+          >
+            <iframe
+              ref={iframeRef}
+              title={mockupName}
+              src={`/m/${mockupId}/index.html?v=${currentVersionId}`}
+              sandbox="allow-scripts allow-same-origin"
+              style={{ width: '100%', height: '100%', border: 0, background: '#fff' }}
+            />
+            {/* Pin overlay */}
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+              {annotations.map((a, i) => {
+                const pin = parsePinCoords(a.pinCoords);
+                if (!pin) return null;
+                const pos = computePinScreenPosition(pin, iframeScroll);
+                if (!pos.visible) return null;
+                return (
+                  <div key={a.id} className="pin-wrapper" style={{ pointerEvents: 'auto' }}>
+                    <AnnotationPin
+                      index={i + 1}
+                      annotationId={a.id}
+                      x={pos.x}
+                      y={pos.y}
+                      status={a.threadStatus}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </main>
+        </div>
+
+        {snapshot && captureCtx && (
+          <AnnotationModal
+            mockupId={mockupId}
+            snapshot={snapshot}
+            captureCtx={captureCtx}
+            onClose={() => {
+              setSnapshot(null);
+              setCaptureCtx(null);
+            }}
+            onSaved={() => {
+              setSnapshot(null);
+              setCaptureCtx(null);
+              router.refresh();
+            }}
           />
-          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-            {annotations.map((a, i) => {
-              const pin = parsePinCoords(a.pinCoords);
-              if (!pin) return null;
-              const pos = computePinScreenPosition(pin, iframeScroll);
-              if (!pos.visible) return null;
-              return (
-                <div key={a.id} style={{ pointerEvents: 'auto' }}>
-                  <AnnotationPin
-                    index={i + 1}
-                    annotationId={a.id}
-                    x={pos.x}
-                    y={pos.y}
-                    status={a.threadStatus}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </main>
+        )}
       </div>
-
-      {snapshot && captureCtx && (
-        <AnnotationModal
-          mockupId={mockupId}
-          snapshot={snapshot}
-          captureCtx={captureCtx}
-          onClose={() => {
-            setSnapshot(null);
-            setCaptureCtx(null);
-          }}
-          onSaved={() => {
-            setSnapshot(null);
-            setCaptureCtx(null);
-            router.refresh();
-          }}
-        />
-      )}
-    </div>
+    </>
   );
 }

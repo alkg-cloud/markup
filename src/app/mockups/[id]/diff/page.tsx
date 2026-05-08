@@ -1,4 +1,5 @@
 import { cookies, headers } from 'next/headers';
+import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { identify } from '@/lib/auth/identify';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
@@ -24,7 +25,8 @@ export default async function DiffPage({
     },
     headers: { get: (k: string) => hs.get(k) },
   } as Parameters<typeof identify>[0];
-  if (!(await identify(fakeReq))) redirect('/login');
+  const session = await identify(fakeReq);
+  if (!session) redirect('/login');
 
   const { id: mockupId } = await params;
   const { from, to } = await searchParams;
@@ -32,8 +34,54 @@ export default async function DiffPage({
   if (resolved.kind === 'not_found') notFound();
   if (resolved.kind === 'invalid') {
     return (
-      <main style={{ padding: 24 }}>
-        Invalid version IDs. Choose two versions from the mockup viewer&apos;s Versions tab.
+      <main
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          gap: 'var(--space-md)',
+          padding: 'var(--space-xl)',
+          textAlign: 'center',
+          background: 'var(--bg)',
+        }}
+      >
+        <h2
+          style={{
+            margin: 0,
+            fontFamily: 'var(--font-display)',
+            fontSize: 'var(--type-2xl)',
+            fontWeight: 700,
+            color: 'var(--text-bright)',
+            letterSpacing: 'var(--tracking-tight)',
+          }}
+        >
+          Choose two versions
+        </h2>
+        <p
+          style={{
+            margin: 0,
+            fontSize: 'var(--type-md)',
+            color: 'var(--text-dim)',
+            maxWidth: 400,
+            lineHeight: 'var(--leading-normal)',
+          }}
+        >
+          Open the Versions tab in the mockup viewer and select a &quot;from&quot; and
+          &quot;to&quot; version to compare.
+        </p>
+        <Link
+          href={`/mockups/${mockupId}`}
+          style={{
+            marginTop: 'var(--space-xs)',
+            fontSize: 'var(--type-sm)',
+            color: 'var(--text-dim)',
+            textDecoration: 'none',
+          }}
+        >
+          ← Back to mockup
+        </Link>
       </main>
     );
   }
