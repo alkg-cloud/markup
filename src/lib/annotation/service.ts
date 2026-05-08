@@ -6,6 +6,8 @@ import { env } from '@/lib/env';
 import { annotationDir } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
 
+export type IntentType = 'visual' | 'copy' | 'behavior' | 'other';
+
 interface CreateInput {
   mockupId: string;
   screenshotPng: Buffer;
@@ -14,6 +16,8 @@ interface CreateInput {
   authorId: string;
   authorType: 'user' | 'agent';
   pinCoords?: PinCoords | null;
+  intentType?: IntentType;
+  createdOnVersionId?: string | null;
 }
 
 export async function createAnnotation(input: CreateInput) {
@@ -30,6 +34,16 @@ export async function createAnnotation(input: CreateInput) {
     'screenshot.png',
   );
   const tldrawPath = path.posix.join('mockups', input.mockupId, 'annotations', aid, 'tldraw.json');
+
+  let createdOnVersionId = input.createdOnVersionId ?? null;
+  if (createdOnVersionId === null) {
+    const mockup = await prisma.mockup.findUnique({
+      where: { id: input.mockupId },
+      select: { currentVersionId: true },
+    });
+    createdOnVersionId = mockup?.currentVersionId ?? null;
+  }
+
   return prisma.$transaction(async (tx) => {
     const annotation = await tx.annotation.create({
       data: {
@@ -40,6 +54,8 @@ export async function createAnnotation(input: CreateInput) {
         createdBy: input.authorId,
         createdByType: input.authorType,
         pinCoords: input.pinCoords ? serializePinCoords(input.pinCoords) : null,
+        intentType: input.intentType ?? 'other',
+        createdOnVersionId,
       },
     });
     const thread = await tx.thread.create({ data: { annotationId: aid, status: 'open' } });
@@ -68,4 +84,12 @@ export async function getAnnotation(id: string) {
     where: { id },
     include: { thread: { include: { messages: { orderBy: { createdAt: 'asc' } } } } },
   });
+}
+
+export async function updateAnnotationTldraw(id: string, snapshot: unknown) {
+  const annotation = await prisma.annotation.findUnique({ where: { id } });
+  if (!annotation) return null;
+  const abs = path.join(env().DATA_DIR, annotation.tldrawPath);
+  fs.writeFileSync(abs, JSON.stringify(snapshot));
+  return annotation;
 }
