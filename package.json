@@ -49,11 +49,13 @@
     "@types/react-dom": "latest",
     "@types/supertest": "latest",
     "@types/yauzl": "latest",
+    "@types/yazl": "^3.3.1",
     "@vitest/coverage-v8": "latest",
     "supertest": "latest",
     "tsx": "latest",
     "typescript": "latest",
-    "vitest": "latest"
+    "vitest": "latest",
+    "yazl": "^3.3.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
