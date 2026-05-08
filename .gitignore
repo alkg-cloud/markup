@@ -12,3 +12,5 @@ test-data
 playwright-report
 test-results
 coverage
+tsconfig.tsbuildinfo
+*.tsbuildinfo
