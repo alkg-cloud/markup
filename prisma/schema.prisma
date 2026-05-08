@@ -63,6 +63,7 @@ model Annotation {
   mockup         Mockup   @relation(fields: [mockupId], references: [id], onDelete: Cascade)
   screenshotPath String
   tldrawPath     String
+  pinCoords      String?  // JSON: { scrollX, scrollY, viewportWidth, viewportHeight, bboxX, bboxY, bboxW, bboxH }
   createdAt      DateTime @default(now())
   createdBy      String
   createdByType  String
