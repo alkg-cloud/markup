@@ -1,0 +1,27 @@
+name: test
+on:
+  push:
+    branches: [main, feat/**]
+  pull_request:
+
+jobs:
+  unit-and-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma generate
+      - run: pnpm prisma migrate deploy
+        env:
+          DATABASE_URL: file:./prisma/test.db
+      - run: pnpm tsx tests/fixtures/build-fixtures.ts
+      - run: pnpm lint
+      - run: pnpm test
+        env:
+          DATABASE_URL: file:./prisma/test.db
