@@ -2,25 +2,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import cuid from 'cuid';
 import { NextResponse } from 'next/server';
-import { identify, requireIdentity } from '@/lib/auth/identify';
+import { identify } from '@/lib/auth/identify';
 import { env } from '@/lib/env';
 import { createMockupFromZip, listMockups } from '@/lib/mockup/service';
 
 const VALID_STATUSES = ['open', 'resolved', 'archived'] as const;
 type Status = (typeof VALID_STATUSES)[number];
 
-interface ErrorWithStatus extends Error {
-  status?: number;
-}
-
 export async function POST(req: Request) {
-  let id;
-  try {
-    id = await identify(req);
-    requireIdentity(id);
-  } catch (e) {
-    const err = e as ErrorWithStatus;
-    return NextResponse.json({ error: err.message }, { status: err.status ?? 401 });
+  const id = await identify(req);
+  if (!id) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
   const fd = await req.formData();
