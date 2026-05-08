@@ -15,9 +15,24 @@ function isImageScreenshotAsset(record: unknown): boolean {
   );
 }
 
-export function stripScreenshotBase64<T extends Snapshot>(snapshot: T): T {
+function getStore(snapshot: any): Record<string, any> | null {
+  if (!snapshot || typeof snapshot !== 'object') return null;
+  // tldraw v3: { document: { store: {...} } }
+  if (snapshot.document?.store && typeof snapshot.document.store === 'object') {
+    return snapshot.document.store;
+  }
+  // tldraw v2: { store: {...} } (legacy or test snapshots)
+  if (snapshot.store && typeof snapshot.store === 'object') {
+    return snapshot.store;
+  }
+  return null;
+}
+
+export function stripScreenshotBase64<T>(snapshot: T): T {
   const cloned = JSON.parse(JSON.stringify(snapshot)) as T;
-  for (const record of Object.values(cloned.document.store)) {
+  const store = getStore(cloned);
+  if (!store) return cloned;
+  for (const record of Object.values(store)) {
     if (isImageScreenshotAsset(record)) {
       const props = (record as any).props;
       props.src = '';
@@ -27,12 +42,11 @@ export function stripScreenshotBase64<T extends Snapshot>(snapshot: T): T {
   return cloned;
 }
 
-export function rehydrateScreenshotBase64<T extends Snapshot>(
-  snapshot: T,
-  screenshotUrl: string,
-): T {
+export function rehydrateScreenshotBase64<T>(snapshot: T, screenshotUrl: string): T {
   const cloned = JSON.parse(JSON.stringify(snapshot)) as T;
-  for (const record of Object.values(cloned.document.store)) {
+  const store = getStore(cloned);
+  if (!store) return cloned;
+  for (const record of Object.values(store)) {
     if (
       record &&
       typeof record === 'object' &&

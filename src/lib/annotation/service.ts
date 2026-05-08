@@ -5,6 +5,7 @@ import { type PinCoords, serializePinCoords } from '@/lib/annotation/pin-coords'
 import { env } from '@/lib/env';
 import { annotationDir } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
+import { stripScreenshotBase64 } from '@/lib/tldraw/snapshot-screenshot';
 
 export type IntentType = 'visual' | 'copy' | 'behavior' | 'other';
 
@@ -25,7 +26,8 @@ export async function createAnnotation(input: CreateInput) {
   const dir = annotationDir(env().DATA_DIR, input.mockupId, aid);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'screenshot.png'), input.screenshotPng);
-  fs.writeFileSync(path.join(dir, 'tldraw.json'), JSON.stringify(input.tldrawJson));
+  const strippedTldraw = stripScreenshotBase64(input.tldrawJson as any);
+  fs.writeFileSync(path.join(dir, 'tldraw.json'), JSON.stringify(strippedTldraw));
   const screenshotPath = path.posix.join(
     'mockups',
     input.mockupId,
@@ -90,6 +92,7 @@ export async function updateAnnotationTldraw(id: string, snapshot: unknown) {
   const annotation = await prisma.annotation.findUnique({ where: { id } });
   if (!annotation) return null;
   const abs = path.join(env().DATA_DIR, annotation.tldrawPath);
-  fs.writeFileSync(abs, JSON.stringify(snapshot));
+  const stripped = stripScreenshotBase64(snapshot as any);
+  fs.writeFileSync(abs, JSON.stringify(stripped));
   return annotation;
 }
