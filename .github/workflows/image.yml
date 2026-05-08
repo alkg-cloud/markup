@@ -23,11 +23,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Lowercase repo path (Docker refs require lowercase)
+        id: repo
+        run: echo "lc=${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
       - name: Compute tags + labels
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ steps.repo.outputs.lc }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
@@ -70,14 +74,14 @@ jobs:
       - name: Generate build attestation
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ghcr.io/${{ github.repository }}
+          subject-name: ghcr.io/${{ steps.repo.outputs.lc }}
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
 
       - name: Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
+          image-ref: ghcr.io/${{ steps.repo.outputs.lc }}@${{ steps.build.outputs.digest }}
           format: sarif
           output: trivy-results.sarif
           severity: HIGH,CRITICAL
@@ -92,7 +96,7 @@ jobs:
 
       - name: Smoke test
         run: |
-          IMAGE="ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}"
+          IMAGE="ghcr.io/${{ steps.repo.outputs.lc }}@${{ steps.build.outputs.digest }}"
           docker run -d --rm --name markup-smoke -p 3000:3000 \
             -e AUTH_SECRET=$(head -c 48 /dev/urandom | base64 | head -c 48) \
             "$IMAGE"
