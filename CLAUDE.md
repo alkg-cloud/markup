@@ -26,14 +26,14 @@ Every doc under `docs/` is a **snapshot of what ships at HEAD**, not a journal. 
 
 Entries are written in **declarative present tense**. Every paragraph describes only what currently ships. When something is added, removed, or amended, edit the doc body in place — add, restate, or delete. The journal of when each entry changed lives in `git log -- <file>`, not in the file itself.
 
-Point-in-time artefacts (audit reports, brainstorm notes, plan documents) live in dated folders outside the snapshot docs:
+Point-in-time artefacts (audit reports, brainstorm notes, plan documents) live in dated folders **outside the snapshot docs and outside version control**:
 
-- `docs/qa/<date>-…` — visual-QA passes
-- `docs/superpowers/specs/<date>-…` — design specs from brainstorming
-- `docs/superpowers/plans/<date>-…` — implementation plans
-- `docs/future-features.md` — backlog of unbuilt scope, written in declarative form (no dates)
+- `docs/qa/<date>-…` — visual-QA passes (gitignored)
+- `docs/superpowers/specs/<date>-…` — design specs from brainstorming (gitignored)
+- `docs/superpowers/plans/<date>-…` — implementation plans (gitignored)
+- `docs/future-features.md` — backlog of unbuilt scope, written in declarative form (no dates) — this one IS tracked
 
-The snapshot docs link to those when context is needed but never inline their content.
+The gitignored directories hold per-run artefacts that don't belong in shared history; what each run produces of lasting value rolls up into the tracked snapshot docs (`docs/api/`, `docs/agent-loop/`, etc.) or into `docs/future-features.md` for parked scope. The snapshot docs do not link to specific dated artefacts since those references rot every time the local working copy is cleaned.
 
 ## Agent-loop rule (STRICT — non-negotiable)
 

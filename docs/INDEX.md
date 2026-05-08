@@ -44,9 +44,11 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 - [Patch format](agent-loop/patch-format.md) — unified-diff conventions for `/version-patch`
 - [Chips](agent-loop/chips.md) — G1 intent vocabulary (`visual` / `copy` / `behavior` / `other`)
 
-## Process artefacts (point-in-time, dated)
+## Process artefacts (point-in-time, local-only)
 
-- [`docs/superpowers/specs/`](superpowers/specs/) — design specs from brainstorming runs
-- [`docs/superpowers/plans/`](superpowers/plans/) — implementation plans
-- [`docs/qa/`](qa/) — visual-QA reports
-- [`docs/future-features.md`](future-features.md) — parked scope, declarative present tense
+These directories are gitignored — they hold dated, run-scoped artefacts that don't belong in version control:
+
+- `docs/superpowers/specs/` — design specs from brainstorming runs
+- `docs/superpowers/plans/` — implementation plans
+- `docs/qa/` — visual-QA reports
+- [`docs/future-features.md`](future-features.md) — parked scope, declarative present tense (this one IS tracked)

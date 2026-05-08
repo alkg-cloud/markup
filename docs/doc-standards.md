@@ -56,7 +56,7 @@ Docs describe what ships at HEAD. They are not journals. Forbidden in the doc bo
 
 Write in **declarative present tense** — describe only what currently ships. When something changes, edit the body in place: add, restate, or delete. The history of edits lives in `git log -- <file>`, not in the file.
 
-Point-in-time artefacts (audit reports, design explorations, brainstorm notes) live in dated folders outside the snapshot docs — typically `docs/qa/<date>-…`, `docs/superpowers/{specs,plans}/<date>-…`. The snapshot docs link to those when context is needed but never inline their content.
+Point-in-time artefacts (audit reports, design explorations, brainstorm notes) live in dated folders that are **gitignored** — typically `docs/qa/<date>-…`, `docs/superpowers/{specs,plans}/<date>-…`. The snapshot docs do not link to specific dated artefacts since those references rot every time the local working copy is cleaned; what each artefact produces of lasting value rolls up into the tracked snapshot docs.
 
 ## What not to document
 

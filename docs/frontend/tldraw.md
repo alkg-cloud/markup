@@ -68,7 +68,7 @@ The detail page (`ReadOnlyAnnotation.tsx`) starts in read-only mode and exposes 
 
 The canvas wrapper sizes its container via the parent's `aspectRatio: ${width} / ${height}` — the screenshot's intrinsic PNG dimensions read from the IHDR header. This makes the canvas fill the column at the right aspect for the screenshot, regardless of the column width.
 
-Without an explicit aspect ratio, the tldraw container collapses to 0 height (height: 100% of an unsized parent), which was a real bug in v1.2 — the entire annotation page rendered as a 2px-tall strip with the screenshot invisible. See `docs/superpowers/specs/2026-05-08-markup-v1.3-agent-loop-design.md` for the related fix history.
+Without an explicit aspect ratio, the tldraw container collapses to 0 height (`height: 100%` of an unsized parent). This was a real bug in an early v1.2 build — the entire annotation page rendered as a 2px-tall strip with the screenshot invisible. The fix is the parent `aspectRatio` rule above; the bug class is "tldraw mounted but nothing visible" and it always traces back to a missing height somewhere in the chain.
 
 ## Cache invalidation on edit
 

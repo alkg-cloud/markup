@@ -16,3 +16,6 @@ tsconfig.tsbuildinfo
 *.tsbuildinfo
 note.md
 image.png
+docs/qa/
+docs/superpowers/
+.superpowers/
