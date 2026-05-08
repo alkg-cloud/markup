@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { AnnotationModal } from '@/components/AnnotationModal/AnnotationModal';
+import { AnnotationPin } from '@/components/AnnotationPin/AnnotationPin';
+import { computePinScreenPosition, parsePinCoords } from '@/lib/annotation/pin-coords';
 import { type VersionRow, Versions } from './Versions';
 
 interface AnnotationSummary {
@@ -11,6 +13,7 @@ interface AnnotationSummary {
   screenshotPath: string;
   threadStatus: string;
   messageCount: number;
+  pinCoords: string | null;
 }
 
 interface Props {
@@ -40,6 +43,28 @@ export function MockupViewer({
     viewportHeight: number;
   } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [iframeScroll, setIframeScroll] = useState({ scrollX: 0, scrollY: 0 });
+
+  // Track iframe scroll to keep pin overlays aligned
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    const onLoad = () => {
+      const win = iframe.contentWindow;
+      if (!win) return;
+      const onScroll = () => setIframeScroll({ scrollX: win.scrollX, scrollY: win.scrollY });
+      onScroll();
+      win.addEventListener('scroll', onScroll, { passive: true });
+      (iframe as unknown as { _onScroll?: () => void })._onScroll = onScroll;
+    };
+    iframe.addEventListener('load', onLoad);
+    return () => {
+      const win = iframe.contentWindow;
+      const stored = (iframe as unknown as { _onScroll?: () => void })._onScroll;
+      if (win && stored) win.removeEventListener('scroll', stored);
+      iframe.removeEventListener('load', onLoad);
+    };
+  }, [currentVersionId]);
 
   // Lazy thumbnail capture
   useEffect(() => {
@@ -195,6 +220,25 @@ export function MockupViewer({
             sandbox="allow-scripts allow-same-origin"
             style={{ width: '100%', height: '100%', border: 0, background: '#fff' }}
           />
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+            {annotations.map((a, i) => {
+              const pin = parsePinCoords(a.pinCoords);
+              if (!pin) return null;
+              const pos = computePinScreenPosition(pin, iframeScroll);
+              if (!pos.visible) return null;
+              return (
+                <div key={a.id} style={{ pointerEvents: 'auto' }}>
+                  <AnnotationPin
+                    index={i + 1}
+                    annotationId={a.id}
+                    x={pos.x}
+                    y={pos.y}
+                    status={a.threadStatus}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </main>
       </div>
 

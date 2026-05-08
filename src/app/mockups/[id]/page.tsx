@@ -59,6 +59,7 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
         screenshotPath: a.screenshotPath,
         threadStatus: a.thread?.status ?? 'open',
         messageCount: a.thread?._count.messages ?? 0,
+        pinCoords: a.pinCoords, // raw JSON string; parsed in client
       }))}
     />
   );

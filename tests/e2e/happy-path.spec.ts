@@ -49,8 +49,13 @@ test('setup → upload → comment → resolve', async ({ page, request }) => {
 
   await page.click('[data-testid=annotation-save]');
 
-  // Open the new annotation, resolve
-  await page.click('[data-testid=annotation-card]');
+  // Wait for the iframe to settle, then assert the new pin is rendered overlaid.
+  await page.waitForLoadState('networkidle');
+  await expect(page.locator('[data-testid^=pin-]')).toHaveCount(1);
+
+  // Click the pin to navigate to the annotation detail page (exercises the new pin feature).
+  await page.locator('[data-testid^=pin-]').first().click();
+  await page.waitForURL(/\/annotations\//);
 
   // Pull the annotation row from the API and assert tldraw JSON is non-empty.
   const detail = await request.get(`/api/annotations/${(await page.url()).split('/').pop()}`, {
