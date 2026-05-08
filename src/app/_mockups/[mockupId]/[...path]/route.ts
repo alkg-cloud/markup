@@ -29,15 +29,29 @@ const MIME: Record<string, string> = {
 };
 
 export async function GET(
-  _req: Request,
+  req: Request,
   ctx: { params: Promise<{ mockupId: string; path: string[] }> },
 ) {
   const { mockupId, path: segments } = await ctx.params;
-  const mockup = await prisma.mockup.findUnique({ where: { id: mockupId } });
+  const url = new URL(req.url);
+  const requestedVid = url.searchParams.get('v');
+  const mockup = await prisma.mockup.findUnique({
+    where: { id: mockupId },
+    include: { versions: { select: { id: true } } },
+  });
   if (!mockup?.currentVersionId) {
     return new NextResponse('not found', { status: 404 });
   }
-  const buildDir = versionBuildDir(env().DATA_DIR, mockupId, mockup.currentVersionId);
+
+  let serveVid = mockup.currentVersionId;
+  if (requestedVid) {
+    if (!mockup.versions.some((v) => v.id === requestedVid)) {
+      return new NextResponse('version not found', { status: 404 });
+    }
+    serveVid = requestedVid;
+  }
+
+  const buildDir = versionBuildDir(env().DATA_DIR, mockupId, serveVid);
   let target: string;
   try {
     target = resolveServePath(buildDir, segments);
