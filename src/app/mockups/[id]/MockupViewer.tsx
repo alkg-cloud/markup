@@ -186,7 +186,7 @@ export function MockupViewer({
           mockupId={mockupId}
           snapshot={snapshot}
           onClose={() => setSnapshot(null)}
-          onSaved={() => {
+          onSaved={(_a) => {
             setSnapshot(null);
             router.refresh();
           }}

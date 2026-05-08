@@ -1,59 +1,45 @@
 'use client';
+import type { Editor } from '@tldraw/tldraw';
 import { useEffect, useRef, useState } from 'react';
+import { AnnotationCanvas } from '@/components/AnnotationCanvas/AnnotationCanvas';
 
 interface Props {
   mockupId: string;
   snapshot: HTMLCanvasElement;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (annotation: { id: string }) => void;
 }
 
 export function AnnotationModal({ mockupId, snapshot, onClose, onSaved }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<Editor | null>(null);
+  const [backgroundUrl, setBackgroundUrl] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
-  // Mount the snapshot canvas as the locked background.
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const ctx = snapshot.getContext('2d');
-    if (!ctx) return;
-    snapshot.style.maxWidth = '100%';
-    snapshot.style.maxHeight = '70vh';
-    snapshot.style.display = 'block';
-    snapshot.style.background = '#fff';
-    container.appendChild(snapshot);
-    return () => {
-      if (snapshot.parentNode === container) container.removeChild(snapshot);
-    };
+    setBackgroundUrl(snapshot.toDataURL('image/png'));
   }, [snapshot]);
 
   async function save() {
-    if (busy) return;
+    if (busy || !editorRef.current) return;
     setBusy(true);
     try {
+      const tldrawJson = editorRef.current.getSnapshot();
       const blob: Blob = await new Promise((res, rej) => {
-        snapshot.toBlob((b) => {
-          if (b) res(b);
-          else rej(new Error('toBlob failed'));
-        }, 'image/png');
+        snapshot.toBlob((b) => (b ? res(b) : rej(new Error('toBlob failed'))), 'image/png');
       });
       const fd = new FormData();
       fd.set('screenshot', blob, 'screenshot.png');
-      // Phase 8 will integrate tldraw; for now send an empty drawing JSON.
-      fd.set('tldraw', JSON.stringify({ schema: 'placeholder', records: [] }));
+      fd.set('tldraw', JSON.stringify(tldrawJson));
       fd.set('message', message);
-      const res = await fetch(`/api/mockups/${mockupId}/annotations`, {
-        method: 'POST',
-        body: fd,
-      });
+      const res = await fetch(`/api/mockups/${mockupId}/annotations`, { method: 'POST', body: fd });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         alert(`Failed: ${body.error ?? 'unknown'}`);
         return;
       }
-      onSaved();
+      const body = await res.json();
+      onSaved({ id: body.id });
     } finally {
       setBusy(false);
     }
@@ -75,7 +61,7 @@ export function AnnotationModal({ mockupId, snapshot, onClose, onSaved }: Props)
     >
       <div
         style={{
-          width: 'min(900px, 100%)',
+          width: 'min(1100px, 100%)',
           background: 'var(--bg-secondary)',
           border: '1px solid var(--border-primary)',
           borderRadius: 'var(--radius-md)',
@@ -84,7 +70,27 @@ export function AnnotationModal({ mockupId, snapshot, onClose, onSaved }: Props)
           gap: 12,
         }}
       >
-        <div ref={containerRef} style={{ display: 'grid', placeItems: 'center' }} />
+        {backgroundUrl ? (
+          <AnnotationCanvas
+            backgroundUrl={backgroundUrl}
+            width={snapshot.width}
+            height={snapshot.height}
+            onEditorMount={(ed) => {
+              editorRef.current = ed;
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              height: '70vh',
+              display: 'grid',
+              placeItems: 'center',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            Preparing canvas…
+          </div>
+        )}
         <textarea
           placeholder="What's wrong / what to change?"
           value={message}
