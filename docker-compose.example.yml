@@ -1,0 +1,17 @@
+services:
+  markup:
+    image: ghcr.io/your-org/markup:latest
+    container_name: markup
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      APP_URL: "http://markup.local"
+      AUTH_SECRET: "change-me-32-chars-or-more-required-please"
+      AGENT_TOKENS: "paperclip:replace-with-random-secret"
+      PUID: "1000"
+      PGID: "1000"
+      LOG_LEVEL: "info"
+      MAX_UPLOAD_MB: "50"
+    volumes:
+      - ./data:/app/data

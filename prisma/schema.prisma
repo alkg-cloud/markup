@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         String    @default("admin")
+  createdAt    DateTime  @default(now())
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([userId])
+}
+
+model AgentToken {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  tokenHash   String    @unique
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime?
+}
+
+model Mockup {
+  id               String          @id @default(cuid())
+  name             String
+  slug             String          @unique
+  status           String          @default("open")
+  currentVersionId String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  versions         MockupVersion[]
+  annotations      Annotation[]
+  @@index([status])
+}
+
+model MockupVersion {
+  id            String   @id @default(cuid())
+  mockupId      String
+  mockup        Mockup   @relation(fields: [mockupId], references: [id], onDelete: Cascade)
+  path          String
+  createdAt     DateTime @default(now())
+  createdBy     String
+  createdByType String
+  @@index([mockupId])
+}
+
+model Annotation {
+  id             String   @id @default(cuid())
+  mockupId       String
+  mockup         Mockup   @relation(fields: [mockupId], references: [id], onDelete: Cascade)
+  screenshotPath String
+  tldrawPath     String
+  createdAt      DateTime @default(now())
+  createdBy      String
+  createdByType  String
+  thread         Thread?
+  @@index([mockupId])
+}
+
+model Thread {
+  id           String     @id @default(cuid())
+  annotationId String     @unique
+  annotation   Annotation @relation(fields: [annotationId], references: [id], onDelete: Cascade)
+  status       String     @default("open")
+  messages     Message[]
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  threadId   String
+  thread     Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  authorType String
+  authorId   String
+  body       String
+  createdAt  DateTime @default(now())
+  @@index([threadId])
+}
+
+model Config {
+  key   String @id
+  value String
+}

@@ -1,0 +1,65 @@
+{
+  "name": "markup",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "node .next/standalone/server.js",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "reset:auth": "tsx scripts/reset-auth.ts",
+    "reset:tokens": "tsx scripts/reset-tokens.ts",
+    "reset:all": "tsx scripts/reset-all.ts"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/client": "latest",
+    "@tldraw/tldraw": "latest",
+    "bcryptjs": "latest",
+    "better-sqlite3": "^12.9.0",
+    "cuid": "latest",
+    "html2canvas": "latest",
+    "jose": "latest",
+    "next": "latest",
+    "pino": "latest",
+    "pino-pretty": "latest",
+    "prisma": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "yauzl": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "latest",
+    "@playwright/test": "latest",
+    "@types/bcryptjs": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/supertest": "latest",
+    "@types/yauzl": "latest",
+    "@types/yazl": "^3.3.1",
+    "@vitest/coverage-v8": "latest",
+    "supertest": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "latest",
+    "yazl": "^3.3.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3"
+    ]
+  }
+}
