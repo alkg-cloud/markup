@@ -15,20 +15,35 @@ interface Props {
   /** Intrinsic size of the screenshot, used to size the locked image shape. */
   width: number;
   height: number;
-  /** When provided, mounts in read-only mode and replays this snapshot. */
+  /** When provided, replays this snapshot. Read-only by default; pass `editable` to allow edits. */
   snapshot?: TLEditorSnapshot;
+  /** When mounting with a snapshot, allow further edits instead of locking the editor. */
+  editable?: boolean;
   /** When provided, mounts editable; the parent receives the `Editor` ref. */
   onEditorMount?: (editor: Editor) => void;
 }
 
-export function AnnotationCanvas({ backgroundUrl, width, height, snapshot, onEditorMount }: Props) {
+export function AnnotationCanvas({
+  backgroundUrl,
+  width,
+  height,
+  snapshot,
+  editable,
+  onEditorMount,
+}: Props) {
   const handleMount = useCallback(
     (editor: Editor) => {
       if (snapshot) {
         editor.loadSnapshot(snapshot);
-        editor.updateInstanceState({ isReadonly: true });
+        editor.updateInstanceState({ isReadonly: !editable });
       } else {
-        // Insert the screenshot as a locked image asset filling a fixed-size frame.
+        // React StrictMode (dev) fires onMount twice. Skip the second invocation
+        // by checking whether the screenshot asset is already on the editor.
+        const existing = editor
+          .getAssets()
+          .find((a) => a.type === 'image' && a.props.name === 'screenshot');
+        if (existing) return;
+
         const assetId = AssetRecordType.createId();
         editor.createAssets([
           {
@@ -70,12 +85,21 @@ export function AnnotationCanvas({ backgroundUrl, width, height, snapshot, onEdi
       }
       onEditorMount?.(editor);
     },
-    [backgroundUrl, width, height, snapshot, onEditorMount],
+    [backgroundUrl, width, height, snapshot, editable, onEditorMount],
   );
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '70vh' }}>
-      <Tldraw onMount={handleMount} hideUi={Boolean(snapshot)} />
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-md)',
+        overflow: 'hidden',
+      }}
+    >
+      <Tldraw onMount={handleMount} hideUi={Boolean(snapshot) && !editable} />
     </div>
   );
 }
