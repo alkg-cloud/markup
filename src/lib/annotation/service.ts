@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import cuid from 'cuid';
+import { type PinCoords, serializePinCoords } from '@/lib/annotation/pin-coords';
 import { env } from '@/lib/env';
 import { annotationDir } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
@@ -12,6 +13,7 @@ interface CreateInput {
   message: string;
   authorId: string;
   authorType: 'user' | 'agent';
+  pinCoords?: PinCoords | null;
 }
 
 export async function createAnnotation(input: CreateInput) {
@@ -37,6 +39,7 @@ export async function createAnnotation(input: CreateInput) {
         tldrawPath,
         createdBy: input.authorId,
         createdByType: input.authorType,
+        pinCoords: input.pinCoords ? serializePinCoords(input.pinCoords) : null,
       },
     });
     const thread = await tx.thread.create({ data: { annotationId: aid, status: 'open' } });

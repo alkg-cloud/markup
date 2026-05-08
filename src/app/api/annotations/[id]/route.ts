@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
+import { parsePinCoords } from '@/lib/annotation/pin-coords';
 import { getAnnotation } from '@/lib/annotation/service';
 import { identify } from '@/lib/auth/identify';
 import { env } from '@/lib/env';
@@ -26,6 +27,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     createdByType: annotation.createdByType,
     screenshotUrl: `/api/annotations/${annotation.id}/screenshot`,
     tldraw,
+    pinCoords: parsePinCoords(annotation.pinCoords),
     thread: annotation.thread
       ? {
           id: annotation.thread.id,

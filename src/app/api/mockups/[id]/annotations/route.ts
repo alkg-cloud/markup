@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { parsePinCoords } from '@/lib/annotation/pin-coords';
 import { createAnnotation, listAnnotations } from '@/lib/annotation/service';
 import { identify } from '@/lib/auth/identify';
 
@@ -26,6 +27,14 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   } catch {
     return NextResponse.json({ error: 'invalid_tldraw_json' }, { status: 400 });
   }
+  const pinCoordsRaw = fd.get('pinCoords');
+  let pinCoords: ReturnType<typeof parsePinCoords> = null;
+  if (typeof pinCoordsRaw === 'string') {
+    pinCoords = parsePinCoords(pinCoordsRaw);
+    if (!pinCoords) {
+      return NextResponse.json({ error: 'invalid_pin_coords' }, { status: 400 });
+    }
+  }
   const buf = Buffer.from(await screenshot.arrayBuffer());
   const result = await createAnnotation({
     mockupId,
@@ -34,6 +43,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     message: messageRaw,
     authorId: id.kind === 'user' ? id.userId : id.tokenId,
     authorType: id.kind,
+    pinCoords,
   });
   return NextResponse.json(
     { id: result.annotation.id, threadId: result.thread.id },
