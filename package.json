@@ -32,6 +32,7 @@
     "diff": "^9.0.0",
     "html2canvas": "latest",
     "jose": "latest",
+    "jszip": "^3.10.1",
     "next": "latest",
     "pino": "latest",
     "pino-pretty": "latest",

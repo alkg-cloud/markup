@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import cuid from 'cuid';
+import JSZip from 'jszip';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
 import { thumbnailPath, versionBuildDir, versionSourceZipPath } from './storage';
@@ -99,6 +100,37 @@ export async function addVersion(input: {
     data: { currentVersionId: vid },
   });
   return version;
+}
+
+export async function addVersionFromFiles(input: {
+  mockupId: string;
+  files: Record<string, Buffer>;
+  createdBy: string;
+  createdByType: 'user' | 'agent';
+}) {
+  const zip = new JSZip();
+  for (const [name, content] of Object.entries(input.files)) {
+    zip.file(name, content);
+  }
+  const buffer = await zip.generateAsync({ type: 'nodebuffer' });
+  const tmpDir = path.join(env().DATA_DIR, 'tmp');
+  fs.mkdirSync(tmpDir, { recursive: true });
+  const tmpZip = path.join(tmpDir, `version-${cuid()}.zip`);
+  fs.writeFileSync(tmpZip, buffer);
+  try {
+    return await addVersion({
+      mockupId: input.mockupId,
+      zipPath: tmpZip,
+      createdBy: input.createdBy,
+      createdByType: input.createdByType,
+    });
+  } finally {
+    try {
+      fs.unlinkSync(tmpZip);
+    } catch {
+      // ignore
+    }
+  }
 }
 
 export async function getMockup(id: string) {
