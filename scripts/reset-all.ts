@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import readline from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
+import readline from 'node:readline/promises';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
 
