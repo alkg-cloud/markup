@@ -97,12 +97,18 @@ jobs:
       - name: Smoke test
         run: |
           IMAGE="ghcr.io/${{ steps.repo.outputs.lc }}@${{ steps.build.outputs.digest }}"
-          docker run -d --rm --name markup-smoke -p 3000:3000 \
+          docker run -d --name markup-smoke -p 3000:3000 \
             -e AUTH_SECRET=$(head -c 48 /dev/urandom | base64 | head -c 48) \
             "$IMAGE"
+          ok=0
           for i in $(seq 1 30); do
             sleep 2
-            if curl -fsS http://127.0.0.1:3000/api/health; then break; fi
+            if curl -fsS http://127.0.0.1:3000/api/health; then ok=1; break; fi
           done
-          curl -fsS http://127.0.0.1:3000/api/health
+          if [ $ok -eq 0 ]; then
+            echo "::error::health check never passed; container logs:"
+            docker logs markup-smoke || true
+            docker stop markup-smoke || true
+            exit 1
+          fi
           docker stop markup-smoke
