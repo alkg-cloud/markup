@@ -64,7 +64,12 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "better-sqlite3"
+      "@prisma/engines",
+      "better-sqlite3",
+      "esbuild",
+      "prisma",
+      "puppeteer",
+      "sharp"
     ]
   }
 }
