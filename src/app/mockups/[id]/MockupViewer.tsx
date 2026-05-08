@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { AnnotationModal } from '@/components/AnnotationModal/AnnotationModal';
+import { type VersionRow, Versions } from './Versions';
 
 interface AnnotationSummary {
   id: string;
@@ -17,6 +18,7 @@ interface Props {
   mockupName: string;
   currentVersionId: string;
   hasThumbnail: boolean;
+  versions: VersionRow[];
   annotations: AnnotationSummary[];
 }
 
@@ -25,6 +27,7 @@ export function MockupViewer({
   mockupName,
   currentVersionId,
   hasThumbnail,
+  versions,
   annotations,
 }: Props) {
   const router = useRouter();
@@ -168,6 +171,7 @@ export function MockupViewer({
               ))}
             </ul>
           )}
+          <Versions mockupId={mockupId} currentVersionId={currentVersionId} versions={versions} />
         </aside>
 
         <main style={{ position: 'relative', background: '#000' }}>

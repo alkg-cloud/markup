@@ -47,6 +47,12 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
       mockupName={mockup.name}
       currentVersionId={mockup.currentVersionId}
       hasThumbnail={hasThumbnail}
+      versions={mockup.versions.map((v) => ({
+        id: v.id,
+        createdAt: v.createdAt.toISOString(),
+        createdBy: v.createdBy,
+        createdByType: v.createdByType,
+      }))}
       annotations={mockup.annotations.map((a) => ({
         id: a.id,
         createdAt: a.createdAt.toISOString(),

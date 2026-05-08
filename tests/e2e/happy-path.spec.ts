@@ -65,4 +65,24 @@ test('setup → upload → comment → resolve', async ({ page, request }) => {
 
   await page.click('[data-testid=thread-resolve]');
   await expect(page.locator('[data-testid=thread-status]')).toHaveText(/resolved/i);
+
+  // Add a v2, promote v1 back, delete v2
+  const zipBuf2 = fs.readFileSync(zipPath);
+  await request.post(`/api/mockups/${created.id}/version`, {
+    headers: { cookie: `mk_session=${sessCookie!.value}` },
+    multipart: { build: { name: 'mockup.zip', mimeType: 'application/zip', buffer: zipBuf2 } },
+  });
+  await page.goto(`/mockups/${created.id}`);
+  await page.click('[data-testid=versions-tab] summary');
+  // The first row in the versions list is the newest (v2 = current). Promote the second row (v1).
+  const promoteButtons = page.locator('[data-testid^=promote-]:not([disabled])');
+  await expect(promoteButtons).toHaveCount(1);
+  await promoteButtons.first().click();
+  await page.waitForLoadState('networkidle');
+  // Now delete the (formerly-current) v2
+  const deleteButtons = page.locator('[data-testid^=delete-]:not([disabled])');
+  await expect(deleteButtons).toHaveCount(1);
+  page.once('dialog', (d) => d.accept());
+  await deleteButtons.first().click();
+  await page.waitForLoadState('networkidle');
 });
