@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { prisma } from '@/lib/prisma';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { isSetupCompleted, markSetupCompleted } from '@/lib/auth/setup-state';
+import { prisma } from '@/lib/prisma';
 
 describe('setup state', () => {
   beforeEach(async () => {
