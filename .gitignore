@@ -14,3 +14,4 @@ test-results
 coverage
 tsconfig.tsbuildinfo
 *.tsbuildinfo
+note.md
