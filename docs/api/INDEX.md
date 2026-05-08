@@ -1,0 +1,103 @@
+# API
+
+The Markup API is a set of Next.js App Router route handlers under `src/app/api/`. There is no separate backend service — routes share the same Prisma client and filesystem layout as the UI.
+
+## Read first
+
+- [Routes](routes.md) — naming, params handling, `force-dynamic`, error shape
+- [Auth](auth.md) — `identify()` accepts cookie OR Bearer; `kind: 'user' | 'agent'`
+- [Storage](storage.md) — `${DATA_DIR}/` layout, sidecar files, atomic-write pattern
+
+## Surface map
+
+### Auth
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/api/auth/login` | Email + password → session cookie |
+| `POST` | `/api/auth/logout` | Clear session cookie |
+| `POST` | `/api/auth/setup` | First-run admin creation (idempotent) |
+
+### Mockups
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/mockups` | List (cursor-paged by status) |
+| `POST` | `/api/mockups` | Create from zip (multipart, `name` + `build`) |
+| `GET` | `/api/mockups/[id]` | Single mockup metadata |
+| `POST` | `/api/mockups/[id]/version` | Add new version from zip (full upload) |
+| `PATCH` | `/api/mockups/[id]/version-patch` | Add new version from unified diff |
+| `GET` | `/api/mockups/[id]/diff?from=<vid>&to=<vid>&format=unified\|json` | Text-mode diff |
+| `GET` | `/api/mockups/[id]/thumbnail` | PNG thumbnail (sidecar) |
+| `POST` | `/api/mockups/[id]/thumbnail` | Replace thumbnail |
+| `GET` | `/api/mockups/[id]/versions` | List versions |
+| `GET` | `/api/mockups/[id]/versions/[vid]/source` | Inspect a version's files |
+| `POST` | `/api/mockups/[id]/versions/[vid]/promote` | Make a past version current |
+
+### Annotations
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/mockups/[id]/annotations` | List annotations on a mockup |
+| `POST` | `/api/mockups/[id]/annotations` | Create (multipart: screenshot + tldraw + message + intent_type) |
+| `GET` | `/api/annotations/[id]` | Single annotation metadata |
+| `GET` | `/api/annotations/[id]/screenshot` | Full PNG screenshot |
+| `GET` | `/api/annotations/[id]/region` | Bbox-cropped PNG (sidecar-cached) |
+| `GET` | `/api/annotations/[id]/intent` | Server-resolved intent (sidecar-cached) |
+| `PUT` | `/api/annotations/[id]/tldraw` | Persist edited drawings |
+
+### Agent
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/agent/context/[annotationId]` | Single-call aggregator (annotation + intent + thread + inline source + diff_since_creation) |
+
+### Threads
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/threads/[id]` | Thread + messages |
+| `POST` | `/api/threads/[id]/reply` | Append a message |
+| `POST` | `/api/threads/[id]/resolve` | Mark resolved |
+| `POST` | `/api/threads/[id]/reopen` | Reopen a resolved thread |
+
+### Agent tokens
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/agent-tokens` | List (admin only) |
+| `POST` | `/api/agent-tokens` | Create (returns `plaintext` once) |
+| `DELETE` | `/api/agent-tokens/[id]` | Revoke |
+
+### Mockup serve
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/m/[mockupId]/[...path]` | Serve a file from the current (or `?v=<vid>`) version's build |
+
+This is the only non-`/api` route that reads from `${DATA_DIR}` — it powers the iframes used in the viewer and the puppeteer pass that resolves DOM at bbox.
+
+## Cross-cutting
+
+### Auth-required by default
+
+All routes call `identify(req)` first. Routes that intentionally allow unauthenticated access (none currently) document the reason inline.
+
+### Dynamic by default
+
+API routes export `dynamic = 'force-dynamic'`. The Next 16 default ("static if possible") would cache GETs that read cookies/DB rows.
+
+### Error shape
+
+```jsonc
+{
+  "error": "snake_case_code",       // machine-readable, stable across releases
+  "file": "index.html"               // optional context (per-error)
+}
+```
+
+`error` is the primary identifier — clients match on it. Optional fields carry context. Status codes follow HTTP conventions (400 invalid input, 401 unauthenticated, 403 forbidden, 404 missing, 409 conflict, 415 unsupported media, 500 unexpected).
+
+### Rate limiting
+
+Implemented in `src/lib/rate-limit.ts` (token bucket). Applied per-route as needed; not all routes are gated. See the route source for whether a limiter is wired.
