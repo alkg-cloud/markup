@@ -1,5 +1,6 @@
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { AppNav } from '@/components/AppNav/AppNav';
 import { identify } from '@/lib/auth/identify';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { prisma } from '@/lib/prisma';
@@ -30,5 +31,23 @@ export default async function AgentsPage() {
     createdAt: t.createdAt.toISOString(),
     lastUsedAt: t.lastUsedAt ? t.lastUsedAt.toISOString() : null,
   }));
-  return <AgentsClient initial={initial} />;
+  return (
+    <>
+      {/* Top navigation strip — mirrors /mockups so the user can move between
+       * top-level views without relying on the back link inside the client
+       * component. Sticks to the right edge of the page max-width container. */}
+      <div
+        style={{
+          maxWidth: 800,
+          margin: '0 auto',
+          padding: 'var(--space-2xl) var(--space-xl) 0',
+          display: 'flex',
+          justifyContent: 'flex-end',
+        }}
+      >
+        <AppNav />
+      </div>
+      <AgentsClient initial={initial} />
+    </>
+  );
 }

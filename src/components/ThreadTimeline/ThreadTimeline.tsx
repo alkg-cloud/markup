@@ -15,12 +15,25 @@ interface Props {
   threadId: string | null;
   status: string;
   messages: Message[];
+  /** Resolved display names by authorId, pre-fetched server-side. */
+  authorNamesById?: Record<string, string>;
 }
 
-export function ThreadTimeline({ annotationId: _annotationId, threadId, status, messages }: Props) {
+export function ThreadTimeline({
+  annotationId: _annotationId,
+  threadId,
+  status,
+  messages,
+  authorNamesById = {},
+}: Props) {
   const router = useRouter();
   const [body, setBody] = useState('');
   const [busy, setBusy] = useState(false);
+
+  function getAuthorName(m: Message): string {
+    if (authorNamesById[m.authorId]) return authorNamesById[m.authorId];
+    return m.authorType === 'agent' ? 'Agent' : 'User';
+  }
 
   async function reply() {
     if (!threadId || !body.trim() || busy) return;
@@ -51,110 +64,300 @@ export function ThreadTimeline({ annotationId: _annotationId, threadId, status, 
     }
   }
 
+  const isResolved = status === 'resolved';
+
   return (
     <aside
       style={{
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--border-primary)',
-        borderRadius: 'var(--radius-md)',
-        padding: 16,
         display: 'flex',
         flexDirection: 'column',
-        gap: 12,
+        gap: 'var(--space-lg)',
         minHeight: 400,
       }}
     >
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ margin: 0, fontSize: 14 }}>Thread</h2>
+      <style>{`
+        .tt-btn-ghost {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--space-xs);
+          padding: 9px 16px;
+          background: transparent;
+          color: var(--text);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-pill);
+          font-size: var(--type-xs);
+          font-weight: 700;
+          font-family: inherit;
+          transition:
+            background var(--motion-fast) var(--ease-standard),
+            border-color var(--motion-fast) var(--ease-standard),
+            color var(--motion-fast) var(--ease-standard),
+            transform var(--motion-instant) var(--ease-standard);
+        }
+        .tt-btn-ghost:hover:not(:disabled) {
+          background: rgba(255,255,255,0.04);
+          border-color: var(--border-strong);
+          color: var(--text-bright);
+        }
+        .tt-btn-ghost:active:not(:disabled) {
+          background: rgba(255,255,255,0.07);
+          transform: translateY(1px);
+        }
+        .tt-btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .tt-btn-primary {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--space-xs);
+          padding: 9px 16px;
+          background: var(--btn-bg);
+          color: var(--accent);
+          border: 0;
+          border-radius: var(--radius-pill);
+          font-size: var(--type-xs);
+          font-weight: 700;
+          font-family: inherit;
+          transition:
+            background var(--motion-fast) var(--ease-standard),
+            transform var(--motion-instant) var(--ease-standard),
+            opacity var(--motion-fast) var(--ease-standard);
+        }
+        .tt-btn-primary:hover:not(:disabled) { background: var(--btn-bg-hover); }
+        .tt-btn-primary:active:not(:disabled) { background: var(--btn-bg-active); transform: translateY(1px); }
+        .tt-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+      `}</style>
+      {/* Thread header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingBottom: 'var(--space-sm)',
+          borderBottom: '1px solid var(--border-subtle)',
+        }}
+      >
+        <span
+          style={{
+            fontSize: 'var(--type-2xs)',
+            fontWeight: 700,
+            letterSpacing: 'var(--tracking-wider)',
+            textTransform: 'uppercase',
+            color: 'var(--text-dim)',
+          }}
+        >
+          Thread
+        </span>
+
+        {/* Status pill with dot */}
         <span
           data-testid="thread-status"
           style={{
-            fontSize: 11,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: 'var(--type-2xs)',
+            fontWeight: 700,
+            letterSpacing: 'var(--tracking-wide)',
+            padding: '4px 10px',
+            borderRadius: 'var(--radius-pill)',
             textTransform: 'uppercase',
-            color: status === 'resolved' ? 'var(--success)' : 'var(--warning)',
+            background: isResolved ? 'var(--success-soft)' : 'var(--info-soft)',
+            color: isResolved ? 'var(--success)' : 'var(--info)',
           }}
         >
-          {status}
+          <span
+            style={{
+              width: 5,
+              height: 5,
+              borderRadius: '50%',
+              background: 'currentColor',
+              display: 'inline-block',
+              flexShrink: 0,
+            }}
+          />
+          {isResolved ? 'Resolved' : 'Open'}
         </span>
-      </header>
+      </div>
 
+      {/* Messages */}
       <ol
         style={{
           listStyle: 'none',
           padding: 0,
           margin: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 12,
+          display: 'grid',
+          gap: 'var(--space-md)',
           flex: 1,
           overflowY: 'auto',
         }}
       >
-        {messages.map((m) => (
-          <li
-            key={m.id}
-            style={{
-              borderLeft: `2px solid ${m.authorType === 'agent' ? 'var(--accent)' : 'var(--border-accent)'}`,
-              paddingLeft: 12,
-            }}
-          >
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-              {m.authorType} · {new Date(m.createdAt).toLocaleString()}
-            </div>
-            <div style={{ whiteSpace: 'pre-wrap', marginTop: 2 }}>{m.body}</div>
-          </li>
-        ))}
+        {messages.map((m) => {
+          const isAgent = m.authorType === 'agent';
+          const authorName = getAuthorName(m);
+          const avatarLetter = authorName.charAt(0).toUpperCase();
+
+          return (
+            <li
+              key={m.id}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '28px 1fr',
+                gap: 'var(--space-sm)',
+              }}
+            >
+              {/* Avatar */}
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  background: isAgent ? 'var(--accent-soft)' : 'var(--info-soft)',
+                  color: isAgent ? 'var(--accent)' : 'var(--info)',
+                  flexShrink: 0,
+                }}
+                aria-hidden="true"
+              >
+                {avatarLetter}
+              </div>
+
+              {/* Body column */}
+              <div style={{ display: 'grid', gap: 4 }}>
+                {/* Author row */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: 'var(--space-xs)',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 'var(--type-xs)',
+                      fontWeight: 700,
+                      color: 'var(--text-bright)',
+                    }}
+                  >
+                    {authorName}
+                  </span>
+                  <time
+                    dateTime={m.createdAt}
+                    className="tnum"
+                    style={{
+                      fontSize: 'var(--type-2xs)',
+                      color: 'var(--text-muted)',
+                    }}
+                  >
+                    {new Date(m.createdAt).toLocaleString()}
+                  </time>
+                  {/* Kind chip — agent only */}
+                  {isAgent && (
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        fontSize: 9,
+                        fontWeight: 700,
+                        letterSpacing: 'var(--tracking-wide)',
+                        padding: '2px 6px',
+                        borderRadius: 'var(--radius-pill)',
+                        textTransform: 'uppercase',
+                        background: 'rgba(120, 120, 130, 0.15)',
+                        color: 'var(--text-dim)',
+                      }}
+                    >
+                      agent
+                    </span>
+                  )}
+                </div>
+
+                {/* Message text */}
+                <div
+                  style={{
+                    fontSize: 'var(--type-sm)',
+                    color: 'var(--text)',
+                    lineHeight: 'var(--leading-snug)',
+                    whiteSpace: 'pre-wrap',
+                    ...(isAgent
+                      ? {
+                          paddingLeft: 'var(--space-sm)',
+                          borderLeft: '2px solid oklch(74.4% 0.193 165 / 0.35)',
+                        }
+                      : {}),
+                  }}
+                >
+                  {m.body}
+                </div>
+              </div>
+            </li>
+          );
+        })}
       </ol>
 
-      <textarea
-        placeholder="Reply…"
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        rows={3}
-        style={{
-          width: '100%',
-          padding: 8,
-          background: 'var(--bg-primary)',
-          color: 'var(--text-primary)',
-          border: '1px solid var(--border-primary)',
-          borderRadius: 'var(--radius-sm)',
-          resize: 'vertical',
+      {/* Reply form */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void reply();
         }}
-      />
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-        <button
-          type="button"
-          onClick={toggleResolve}
-          disabled={busy || !threadId}
-          data-testid="thread-resolve"
+        style={{ display: 'grid', gap: 'var(--space-sm)' }}
+      >
+        <textarea
+          placeholder="Reply…"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
           style={{
-            padding: '6px 12px',
-            background: 'transparent',
-            color: 'var(--text-primary)',
-            border: '1px solid var(--border-primary)',
+            width: '100%',
+            padding: 'var(--space-sm) var(--space-md)',
+            background: 'rgba(255,255,255,0.03)',
+            color: 'var(--text-bright)',
+            border: '1px solid var(--border)',
             borderRadius: 'var(--radius-sm)',
-            cursor: 'pointer',
+            font: 'inherit',
+            fontSize: 'var(--type-base)',
+            minHeight: 64,
+            resize: 'vertical',
+          }}
+        />
+
+        {/* Action row */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
           }}
         >
-          {status === 'resolved' ? 'Reopen' : 'Resolve'}
-        </button>
-        <button
-          type="button"
-          onClick={reply}
-          disabled={busy || !body.trim() || !threadId}
-          style={{
-            padding: '6px 12px',
-            background: 'var(--accent)',
-            color: '#fff',
-            border: 0,
-            borderRadius: 'var(--radius-sm)',
-            cursor: busy ? 'not-allowed' : 'pointer',
-            opacity: busy || !body.trim() ? 0.5 : 1,
-          }}
-        >
-          Reply
-        </button>
-      </div>
+          {/* Resolve / Reopen — ghost */}
+          <button
+            type="button"
+            onClick={toggleResolve}
+            disabled={busy || !threadId}
+            data-testid="thread-resolve"
+            className="tt-btn-ghost"
+            style={{ cursor: busy || !threadId ? 'not-allowed' : 'pointer' }}
+          >
+            {isResolved ? 'Reopen' : 'Resolve'}
+          </button>
+
+          {/* Reply primary */}
+          <button
+            type="submit"
+            disabled={busy || !body.trim() || !threadId}
+            className="tt-btn-primary"
+            style={{ cursor: busy || !body.trim() || !threadId ? 'not-allowed' : 'pointer' }}
+          >
+            Reply →
+          </button>
+        </div>
+      </form>
     </aside>
   );
 }
