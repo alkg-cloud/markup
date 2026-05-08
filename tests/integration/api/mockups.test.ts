@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { POST as setup } from '@/app/api/auth/setup/route';
-import { GET as listMockups, POST as createMockup } from '@/app/api/mockups/route';
+import { POST as createMockup, GET as listMockups } from '@/app/api/mockups/route';
 import { prisma } from '@/lib/prisma';
 
 const fixture = (n: string) => path.resolve('tests/fixtures/mockups', n);
