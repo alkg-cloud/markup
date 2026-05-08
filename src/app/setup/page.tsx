@@ -188,3 +188,5 @@ export default async function SetupPage() {
     </>
   );
 }
+
+export const dynamic = 'force-dynamic';

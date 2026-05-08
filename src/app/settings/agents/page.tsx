@@ -51,3 +51,5 @@ export default async function AgentsPage() {
     </>
   );
 }
+
+export const dynamic = 'force-dynamic';

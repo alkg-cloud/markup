@@ -220,3 +220,5 @@ export default async function MockupsPage() {
     </main>
   );
 }
+
+export const dynamic = 'force-dynamic';
