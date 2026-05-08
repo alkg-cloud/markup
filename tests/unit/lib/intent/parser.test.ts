@@ -56,7 +56,14 @@ describe('extractDrawings', () => {
 
   it('extracts geo rectangle with bbox + color/fill', () => {
     expect(extractDrawings(geoSnap)).toEqual([
-      { kind: 'geo', geo: 'rectangle', color: 'red', fill: 'none', bbox: [880, 1149, 72, 30], text: '' },
+      {
+        kind: 'geo',
+        geo: 'rectangle',
+        color: 'red',
+        fill: 'none',
+        bbox: [880, 1149, 72, 30],
+        text: '',
+      },
     ]);
   });
 

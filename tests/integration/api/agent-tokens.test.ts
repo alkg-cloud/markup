@@ -28,7 +28,7 @@ describe('agent tokens API', () => {
       new Request('http://l', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ name: 'paperclip' }),
+        body: JSON.stringify({ name: 'primary-agent' }),
       }),
     );
     expect(created.status).toBe(201);
@@ -38,7 +38,7 @@ describe('agent tokens API', () => {
     const listed = await listTokens(new Request('http://l', { headers }));
     const tokens = (await listed.json()).tokens;
     expect(tokens).toHaveLength(1);
-    expect(tokens[0].name).toBe('paperclip');
+    expect(tokens[0].name).toBe('primary-agent');
     expect(tokens[0].plaintext).toBeUndefined();
 
     const del = await deleteToken(new Request('http://l', { method: 'DELETE', headers }), {

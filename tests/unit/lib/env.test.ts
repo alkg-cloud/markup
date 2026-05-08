@@ -22,10 +22,10 @@ describe('loadEnv', () => {
     const env = loadEnv({
       AUTH_SECRET: 'a'.repeat(32),
       DATA_DIR: '/tmp/data',
-      AGENT_TOKENS: 'paperclip:abc123,backup-agent:def456',
+      AGENT_TOKENS: 'primary-agent:abc123,backup-agent:def456',
     });
     expect(env.AGENT_TOKENS).toEqual([
-      { name: 'paperclip', secret: 'abc123' },
+      { name: 'primary-agent', secret: 'abc123' },
       { name: 'backup-agent', secret: 'def456' },
     ]);
   });

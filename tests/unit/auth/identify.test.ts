@@ -8,7 +8,7 @@ vi.mock('@/lib/auth/session', () => ({
 }));
 vi.mock('@/lib/auth/agent-token', () => ({
   verifyAgentToken: vi.fn(async (t: string) =>
-    t === 'mk_xxx' ? { id: 'a', name: 'paperclip' } : null,
+    t === 'mk_xxx' ? { id: 'a', name: 'primary-agent' } : null,
   ),
 }));
 
@@ -39,7 +39,7 @@ describe('identify', () => {
 
   it('returns agent identity from bearer token', async () => {
     const id = await identify(fakeReq({ authorization: 'Bearer mk_xxx' }));
-    expect(id).toEqual({ kind: 'agent', tokenId: 'a', name: 'paperclip' });
+    expect(id).toEqual({ kind: 'agent', tokenId: 'a', name: 'primary-agent' });
   });
 
   it('returns null when no credentials', async () => {
