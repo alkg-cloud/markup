@@ -8,7 +8,7 @@ interface Props {
   snapshot: HTMLCanvasElement;
   captureCtx: { scrollX: number; scrollY: number; viewportWidth: number; viewportHeight: number };
   onClose: () => void;
-  onSaved: (annotation: { id: string }) => void;
+  onSaved: () => void;
 }
 
 export function AnnotationModal({ mockupId, snapshot, captureCtx, onClose, onSaved }: Props) {
@@ -71,8 +71,8 @@ export function AnnotationModal({ mockupId, snapshot, captureCtx, onClose, onSav
         alert(`Failed: ${body.error ?? 'unknown'}`);
         return;
       }
-      const body = await res.json();
-      onSaved({ id: body.id });
+      await res.json();
+      onSaved();
     } finally {
       setBusy(false);
     }
