@@ -97,6 +97,46 @@ describe('annotation service', () => {
     expect(got?.thread?.messages[0].body).toBe('hi');
   });
 
+  it('persists intentType and createdOnVersionId from input', async () => {
+    const m = await createMockupFromZip({
+      name: 'IntentExplicit',
+      zipPath: fixture('valid-simple.zip'),
+      createdBy: 'u',
+      createdByType: 'user',
+    });
+    const r = await createAnnotation({
+      mockupId: m.mockup.id,
+      screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+      tldrawJson: { document: { store: {} } },
+      message: 'visual change needed',
+      authorId: 'u',
+      authorType: 'user',
+      intentType: 'visual',
+      createdOnVersionId: m.version.id,
+    });
+    expect(r.annotation.intentType).toBe('visual');
+    expect(r.annotation.createdOnVersionId).toBe(m.version.id);
+  });
+
+  it('defaults intentType to "other" and stamps current mockup version when omitted', async () => {
+    const m = await createMockupFromZip({
+      name: 'IntentDefault',
+      zipPath: fixture('valid-simple.zip'),
+      createdBy: 'u',
+      createdByType: 'user',
+    });
+    const r = await createAnnotation({
+      mockupId: m.mockup.id,
+      screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+      tldrawJson: { document: { store: {} } },
+      message: 'no chip picked',
+      authorId: 'u',
+      authorType: 'user',
+    });
+    expect(r.annotation.intentType).toBe('other');
+    expect(r.annotation.createdOnVersionId).toBe(m.version.id);
+  });
+
   it('persists arbitrary tldraw JSON verbatim (no placeholder rewriting)', async () => {
     const m = await createMockupFromZip({
       name: 'Q',
