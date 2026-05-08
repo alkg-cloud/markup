@@ -34,7 +34,7 @@ export async function GET(
 ) {
   const { mockupId, path: segments } = await ctx.params;
   const mockup = await prisma.mockup.findUnique({ where: { id: mockupId } });
-  if (!mockup || !mockup.currentVersionId) {
+  if (!mockup?.currentVersionId) {
     return new NextResponse('not found', { status: 404 });
   }
   const buildDir = versionBuildDir(env().DATA_DIR, mockupId, mockup.currentVersionId);
