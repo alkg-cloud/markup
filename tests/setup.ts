@@ -18,7 +18,7 @@ const SHARED_TEST_DB = path.resolve(process.cwd(), 'prisma/test.db');
 fs.mkdirSync(TEST_ROOT, { recursive: true });
 process.env.DATA_DIR ??= TEST_ROOT;
 process.env.AUTH_SECRET ??= 'test-secret-do-not-use-in-prod-must-be-32+chars-long';
-process.env.NODE_ENV = 'test';
+(process.env as Record<string, string>).NODE_ENV = 'test';
 process.env.DATABASE_URL ??= `file:${SHARED_TEST_DB}`;
 
 if (!fs.existsSync(SHARED_TEST_DB)) {
@@ -34,7 +34,7 @@ beforeEach(() => {
   fs.mkdirSync(TEST_ROOT, { recursive: true });
   process.env.DATA_DIR = TEST_ROOT;
   process.env.AUTH_SECRET = 'test-secret-do-not-use-in-prod-must-be-32+chars-long';
-  process.env.NODE_ENV = 'test';
+  (process.env as Record<string, string>).NODE_ENV = 'test';
 });
 
 afterEach(() => {
