@@ -1,5 +1,11 @@
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { GET } from '@/app/api/health/route';
 
 describe('GET /api/health', () => {
-  it.todo('integration test re-enables after Phase 1 prisma migration applied');
+  it('returns 200 ok in test environment', async () => {
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+  });
 });
