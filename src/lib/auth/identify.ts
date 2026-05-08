@@ -11,8 +11,28 @@ interface ErrorWithStatus extends Error {
   status: number;
 }
 
-export async function identify(req: NextRequest): Promise<Identity | null> {
-  const cookieToken = req.cookies.get(SESSION_COOKIE)?.value;
+type CookieJar = { get(name: string): { value: string } | undefined };
+
+interface MaybeCookieRequest {
+  cookies?: CookieJar;
+  headers: Headers;
+}
+
+function readCookie(req: MaybeCookieRequest, name: string): string | undefined {
+  const fromJar = req.cookies?.get(name)?.value;
+  if (fromJar) return fromJar;
+  const header = req.headers.get('cookie');
+  if (!header) return undefined;
+  for (const part of header.split(/;\s*/)) {
+    const eq = part.indexOf('=');
+    if (eq < 0) continue;
+    if (part.slice(0, eq) === name) return decodeURIComponent(part.slice(eq + 1));
+  }
+  return undefined;
+}
+
+export async function identify(req: NextRequest | Request): Promise<Identity | null> {
+  const cookieToken = readCookie(req as MaybeCookieRequest, SESSION_COOKIE);
   if (cookieToken) {
     const sess = await getSession(cookieToken);
     if (sess) return { kind: 'user', userId: sess.userId, sessionId: sess.sessionId };
