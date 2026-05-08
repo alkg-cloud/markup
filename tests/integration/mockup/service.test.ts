@@ -1,12 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import {
-  addVersion,
-  createMockupFromZip,
-  getMockup,
-  listMockups,
-} from '@/lib/mockup/service';
+import { addVersion, createMockupFromZip, getMockup, listMockups } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
 
 const fixture = (n: string) => path.resolve('tests/fixtures/mockups', n);
@@ -47,12 +42,7 @@ describe('mockup service', () => {
       createdBy: 'u1',
       createdByType: 'user',
     });
-    const tp = path.join(
-      process.env.DATA_DIR ?? '',
-      'mockups',
-      result.mockup.id,
-      'thumbnail.png',
-    );
+    const tp = path.join(process.env.DATA_DIR ?? '', 'mockups', result.mockup.id, 'thumbnail.png');
     expect(fs.existsSync(tp)).toBe(true);
   });
 
