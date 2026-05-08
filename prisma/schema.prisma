@@ -47,28 +47,33 @@ model Mockup {
 }
 
 model MockupVersion {
-  id            String   @id @default(cuid())
-  mockupId      String
-  mockup        Mockup   @relation(fields: [mockupId], references: [id], onDelete: Cascade)
-  path          String
-  createdAt     DateTime @default(now())
-  createdBy     String
-  createdByType String
+  id                   String       @id @default(cuid())
+  mockupId             String
+  mockup               Mockup       @relation(fields: [mockupId], references: [id], onDelete: Cascade)
+  path                 String
+  createdAt            DateTime     @default(now())
+  createdBy            String
+  createdByType        String
+  annotationsCreatedOn Annotation[] @relation("CreatedOnVersion")
   @@index([mockupId])
 }
 
 model Annotation {
-  id             String   @id @default(cuid())
-  mockupId       String
-  mockup         Mockup   @relation(fields: [mockupId], references: [id], onDelete: Cascade)
-  screenshotPath String
-  tldrawPath     String
-  pinCoords      String?  // JSON: { scrollX, scrollY, viewportWidth, viewportHeight, bboxX, bboxY, bboxW, bboxH }
-  createdAt      DateTime @default(now())
-  createdBy      String
-  createdByType  String
-  thread         Thread?
+  id                 String         @id @default(cuid())
+  mockupId           String
+  mockup             Mockup         @relation(fields: [mockupId], references: [id], onDelete: Cascade)
+  screenshotPath     String
+  tldrawPath         String
+  pinCoords          String?        // JSON: { scrollX, scrollY, viewportWidth, viewportHeight, bboxX, bboxY, bboxW, bboxH }
+  intentType         String         @default("other")
+  createdOnVersionId String?
+  createdOnVersion   MockupVersion? @relation("CreatedOnVersion", fields: [createdOnVersionId], references: [id])
+  createdAt          DateTime       @default(now())
+  createdBy          String
+  createdByType      String
+  thread             Thread?
   @@index([mockupId])
+  @@index([createdOnVersionId])
 }
 
 model Thread {
