@@ -7,8 +7,9 @@ import { deleteIntentCache } from '@/lib/intent/cache';
 import { annotationDir } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
 import { stripScreenshotBase64 } from '@/lib/tldraw/snapshot-screenshot';
+import type { IntentType } from './intent';
 
-export type IntentType = 'visual' | 'copy' | 'behavior' | 'other';
+export type { IntentType };
 
 interface CreateInput {
   mockupId: string;

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { type IntentType, isIntentType } from '@/lib/annotation/intent';
 import { parsePinCoords } from '@/lib/annotation/pin-coords';
 import { createAnnotation, listAnnotations } from '@/lib/annotation/service';
 import { identify } from '@/lib/auth/identify';
@@ -36,15 +37,13 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     }
   }
 
-  const VALID_INTENTS = ['visual', 'copy', 'behavior', 'other'] as const;
-  type IntentType = (typeof VALID_INTENTS)[number];
   const intentRaw = fd.get('intent_type');
   let intentType: IntentType | undefined;
   if (typeof intentRaw === 'string' && intentRaw.length > 0) {
-    if (!VALID_INTENTS.includes(intentRaw as IntentType)) {
+    if (!isIntentType(intentRaw)) {
       return NextResponse.json({ error: 'invalid_intent_type' }, { status: 400 });
     }
-    intentType = intentRaw as IntentType;
+    intentType = intentRaw;
   }
 
   const buf = Buffer.from(await screenshot.arrayBuffer());
