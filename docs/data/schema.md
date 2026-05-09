@@ -156,13 +156,13 @@ model Message {
 
 ```prisma
 model Config {
-  id    String @id @default(cuid())
-  key   String @unique
+  key   String @id
   value String
 }
 ```
 
 - Key/value blob for one-off settings (e.g. `setup_completed=true`)
+- The key itself is the primary key — there is no separate cuid id, since the table is small and the natural key is unique
 - Not used for user-visible configuration
 
 ## Relationships at a glance
