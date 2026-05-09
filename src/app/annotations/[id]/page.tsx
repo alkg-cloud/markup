@@ -5,6 +5,7 @@ import { cookies, headers } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ThreadTimeline } from '@/components/ThreadTimeline/ThreadTimeline';
+import { INTENT_PILL_COLORS, isIntentType } from '@/lib/annotation/intent';
 import { getAnnotation } from '@/lib/annotation/service';
 import { identify } from '@/lib/auth/identify';
 import { resolveDisplayName, resolveDisplayNames } from '@/lib/auth/resolve-display-name';
@@ -130,14 +131,8 @@ export default async function AnnotationDetailPage({
 
           {/* Intent type pill */}
           {(() => {
-            const intent = annotation.intentType || 'other';
-            const colors: Record<string, { bg: string; fg: string }> = {
-              visual: { bg: 'var(--accent-overlay-soft)', fg: 'var(--accent-bright)' },
-              copy: { bg: 'var(--info-soft)', fg: 'var(--info)' },
-              behavior: { bg: 'var(--warning-soft)', fg: 'var(--warning)' },
-              other: { bg: 'var(--bg-elevated)', fg: 'var(--text-dim)' },
-            };
-            const c = colors[intent] ?? colors.other;
+            const intent = isIntentType(annotation.intentType) ? annotation.intentType : 'other';
+            const c = INTENT_PILL_COLORS[intent];
             return (
               <span
                 style={{

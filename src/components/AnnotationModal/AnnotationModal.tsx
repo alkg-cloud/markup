@@ -2,6 +2,7 @@
 import type { Editor } from '@tldraw/tldraw';
 import { useEffect, useRef, useState } from 'react';
 import { AnnotationCanvas } from '@/components/AnnotationCanvas/AnnotationCanvas';
+import { INTENT_KINDS, type IntentType } from '@/lib/annotation/intent';
 
 interface Props {
   mockupId: string;
@@ -17,7 +18,7 @@ export function AnnotationModal({ mockupId, snapshot, captureCtx, onClose, onSav
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [intentType, setIntentType] = useState<'visual' | 'copy' | 'behavior' | 'other'>('other');
+  const [intentType, setIntentType] = useState<IntentType>('other');
 
   // Trigger enter animation on first render
   useEffect(() => {
@@ -265,7 +266,7 @@ export function AnnotationModal({ mockupId, snapshot, captureCtx, onClose, onSav
               flexWrap: 'wrap',
             }}
           >
-            {(['visual', 'copy', 'behavior', 'other'] as const).map((kind) => {
+            {INTENT_KINDS.map((kind) => {
               const active = intentType === kind;
               return (
                 // biome-ignore lint/a11y/useSemanticElements: chip selector — custom styled, native <input type=radio> doesn't allow this treatment
