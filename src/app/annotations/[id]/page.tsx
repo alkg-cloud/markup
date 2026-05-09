@@ -132,7 +132,7 @@ export default async function AnnotationDetailPage({
           {(() => {
             const intent = annotation.intentType || 'other';
             const colors: Record<string, { bg: string; fg: string }> = {
-              visual: { bg: 'oklch(74.4% 0.193 165 / 0.18)', fg: 'var(--accent-bright)' },
+              visual: { bg: 'var(--accent-overlay-soft)', fg: 'var(--accent-bright)' },
               copy: { bg: 'var(--info-soft)', fg: 'var(--info)' },
               behavior: { bg: 'var(--warning-soft)', fg: 'var(--warning)' },
               other: { bg: 'var(--bg-elevated)', fg: 'var(--text-dim)' },

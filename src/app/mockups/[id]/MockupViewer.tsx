@@ -426,7 +426,12 @@ export function MockupViewer({
               title={mockupName}
               src={`/m/${mockupId}/index.html?v=${currentVersionId}`}
               sandbox="allow-scripts allow-same-origin"
-              style={{ width: '100%', height: '100%', border: 0, background: '#fff' }}
+              style={{
+                width: '100%',
+                height: '100%',
+                border: 0,
+                background: 'var(--bg-iframe-white)',
+              }}
             />
             {/* Pin overlay */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>

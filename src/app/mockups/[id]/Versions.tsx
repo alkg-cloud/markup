@@ -179,9 +179,9 @@ export function Versions({ mockupId, currentVersionId, versions }: Props) {
         }
         .btn-mini:hover { background: var(--surface-hover); color: var(--text-bright); }
         .btn-mini:active { background: var(--surface-active); transform: scale(0.97); }
-        .btn-mini.danger { color: var(--danger); border-color: oklch(40% 0.1 25); }
+        .btn-mini.danger { color: var(--danger); border-color: var(--danger-border); }
         .btn-mini.danger:hover { background: var(--danger-soft); }
-        .btn-mini.danger:active { background: oklch(32% 0.1 25); transform: scale(0.97); }
+        .btn-mini.danger:active { background: var(--danger-press); transform: scale(0.97); }
         .btn-mini:disabled { opacity: 0.4; cursor: not-allowed; }
         .version-diff-link {
           font-size: var(--type-xs);

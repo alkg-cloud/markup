@@ -49,8 +49,7 @@ export default async function SetupPage() {
             flex-direction: column;
             justify-content: space-between;
             padding: 64px 56px;
-            background:
-              radial-gradient(ellipse 600px 400px at 30% 70%, oklch(28% 0.18 165 / 0.4), transparent 60%);
+            background: var(--gradient-auth-mesh);
             border-right: 1px solid var(--border);
             position: relative;
             overflow: hidden;

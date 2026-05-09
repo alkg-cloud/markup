@@ -7,10 +7,7 @@ import { useState } from 'react';
 const HUE_PALETTE = [80, 25, 200, 165, 322, 270];
 
 function slugHash(slug: string): number {
-  let h = 0;
-  for (let i = 0; i < slug.length; i++) {
-    h = (Math.imul(31, h) + slug.charCodeAt(i)) | 0;
-  }
+  const h = [...slug].reduce((acc, c) => (Math.imul(31, acc) + c.charCodeAt(0)) | 0, 0);
   return Math.abs(h);
 }
 
@@ -71,9 +68,8 @@ export default function MockupCard({ id, name, slug, status, updatedAt }: Mockup
   /* Active state shows a slight settle (less lift than hover) */
   const translateY = pressed ? '-1px' : hovered ? '-3px' : '0';
   const cardStyle: React.CSSProperties = {
-    background:
-      'linear-gradient(135.92deg, oklch(20% 0.025 322 / 0.85) 7%, oklch(15% 0.02 322 / 0.85) 98%)',
-    border: `1px solid ${hovered ? 'oklch(74.4% 0.193 165 / 0.4)' : 'var(--border)'}`,
+    background: 'var(--gradient-card-soft)',
+    border: `1px solid ${hovered ? 'var(--accent-overlay-strong)' : 'var(--border)'}`,
     borderRadius: 'var(--radius-card)',
     overflow: 'visible',
     transition: `transform var(--motion-base) var(--ease-emphasized), border-color var(--motion-base) var(--ease-emphasized), box-shadow var(--motion-base) var(--ease-emphasized)`,
@@ -133,8 +129,7 @@ export default function MockupCard({ id, name, slug, status, updatedAt }: Mockup
             style={{
               position: 'absolute',
               inset: 0,
-              background:
-                'radial-gradient(circle at 50% 30%, transparent 30%, oklch(0% 0 0 / 0.5))',
+              background: 'var(--gradient-thumb-vignette)',
               pointerEvents: 'none',
             }}
           />

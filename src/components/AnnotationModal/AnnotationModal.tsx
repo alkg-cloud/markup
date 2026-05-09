@@ -187,7 +187,7 @@ export function AnnotationModal({ mockupId, snapshot, captureCtx, onClose, onSav
           inset: 0,
           zIndex: 1000,
           padding: 'var(--space-2xl)',
-          background: 'oklch(0% 0 0 / 0.65)',
+          background: 'var(--scrim-strong)',
           display: 'grid',
           placeItems: 'center',
           opacity: mounted ? 1 : 0,
@@ -204,8 +204,7 @@ export function AnnotationModal({ mockupId, snapshot, captureCtx, onClose, onSav
           onKeyDown={(e) => e.stopPropagation()}
           style={{
             width: 'min(920px, 100%)',
-            background:
-              'linear-gradient(135.92deg, oklch(20% 0.025 322 / 0.95) 7%, oklch(15% 0.02 322 / 0.95) 98%)',
+            background: 'var(--gradient-card-strong)',
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-lg)',
             boxShadow: 'var(--shadow-popover)',
@@ -282,7 +281,7 @@ export function AnnotationModal({ mockupId, snapshot, captureCtx, onClose, onSav
                     borderRadius: 'var(--radius-pill)',
                     border: '1px solid var(--border-strong)',
                     background: active ? 'var(--accent)' : 'transparent',
-                    color: active ? 'oklch(15% 0.005 165)' : 'var(--text)',
+                    color: active ? 'var(--text-on-accent)' : 'var(--text)',
                     fontWeight: active ? 700 : 500,
                     fontSize: 'var(--type-sm)',
                     cursor: 'pointer',
