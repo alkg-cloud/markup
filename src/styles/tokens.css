@@ -96,6 +96,53 @@
    * deliberate moment rather than the browser default blue. */
   --selection-bg: oklch(74.4% 0.193 165 / 0.32);
 
+  /* Translucent accent overlays for borders, soft pills, and hover halos.
+   * Lightness/chroma match --accent; alpha tunes the prominence. The solid
+   * --accent-soft above is for backgrounds that need full opacity. */
+  --accent-overlay-soft: oklch(74.4% 0.193 165 / 0.18);
+  --accent-overlay-mid: oklch(74.4% 0.193 165 / 0.35);
+  --accent-overlay-strong: oklch(74.4% 0.193 165 / 0.4);
+
+  /* Ink colour reserved for text on the accent fill (chip selectors, pin
+   * numerals, primary CTAs). Near-black with the accent hue, so it harmonises
+   * instead of reading as a dropped foreign tone. */
+  --text-on-accent: oklch(15% 0.005 165);
+
+  /* Modal / overlay scrims — neutral black at varying alpha. */
+  --scrim-strong: oklch(0% 0 0 / 0.65);
+  --scrim-mid: oklch(0% 0 0 / 0.45);
+
+  /* Danger button states — border + active-press companion to --danger and
+   * --danger-soft, used by the small revoke/delete buttons in Versions and
+   * AgentsClient. */
+  --danger-border: oklch(40% 0.1 25);
+  --danger-press: oklch(32% 0.1 25);
+
+  /* Pin shadow — combines an outer drop shadow with an inset top highlight
+   * so the teardrop pin reads as physical against the iframe. */
+  --shadow-pin: 0 4px 12px oklch(0% 0 0 / 0.55), inset 0 1px 0 oklch(100% 0 0 / 0.18);
+
+  /* Iframe backgrounds — light surface for diff/viewer panes that render
+   * end-user mockups. Two near-white tones because some mockups expect pure
+   * white while others sit on a ~98% off-white. */
+  --bg-iframe-light: oklch(98% 0 0);
+  --bg-iframe-white: oklch(100% 0 0);
+
+  /* Edit button on the read-only annotation page — sits over the screenshot
+   * column header, slightly translucent so it lifts off the screenshot but
+   * stays unobtrusive. */
+  --bg-edit-button: oklch(20% 0.01 165 / 0.9);
+
+  /* Card gradient — shared between MockupCard (0.85 alpha) and
+   * AnnotationModal dialog (0.95 alpha). Hue 322 is a deliberate violet
+   * counter-tone to the teal accent, giving cards a separate tonal family. */
+  --gradient-card-soft: linear-gradient(135.92deg, oklch(20% 0.025 322 / 0.85) 7%, oklch(15% 0.02 322 / 0.85) 98%);
+  --gradient-card-strong: linear-gradient(135.92deg, oklch(20% 0.025 322 / 0.95) 7%, oklch(15% 0.02 322 / 0.95) 98%);
+
+  /* Auth-page atmospheric mesh — single radial used by /login and /setup
+   * to layer a soft accent glow over the body mesh from globals.css. */
+  --gradient-auth-mesh: radial-gradient(ellipse 600px 400px at 30% 70%, oklch(28% 0.18 165 / 0.4), transparent 60%);
+
   /* ─── Focus ────────────────────────────────────────────────────────────
    * 2px gap from the element + 2px ring in the accent. Used by every
    * focusable element via globals.css :focus-visible. AAA-passing on
