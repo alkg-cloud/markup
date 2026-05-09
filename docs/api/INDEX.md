@@ -81,7 +81,15 @@ This is the only non-`/api` route that reads from `${DATA_DIR}` — it powers th
 
 ### Auth-required by default
 
-All routes call `identify(req)` first. Routes that intentionally allow unauthenticated access (none currently) document the reason inline.
+All routes call `identify(req)` first, except for three documented public surfaces:
+
+| Route | Why public |
+|---|---|
+| `GET /api/health` | Container healthcheck — must respond before any session can exist |
+| `POST /api/auth/login` | Entry point that establishes the session |
+| `POST /api/auth/setup` | First-run admin creation; no identity exists yet |
+
+Each of these routes carries an inline comment documenting the reason. Any new public surface must do the same.
 
 ### Dynamic by default
 

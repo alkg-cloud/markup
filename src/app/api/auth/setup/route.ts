@@ -11,6 +11,8 @@ const bodySchema = z.object({
   name: z.string().min(1).max(100),
 });
 
+// Public — first-run admin creation; no identity exists yet. Idempotent: the
+// `setup_already_completed` 403 guards against re-running after the admin is in.
 export async function POST(req: Request) {
   if (await isSetupCompleted()) {
     return NextResponse.json({ error: 'setup_already_completed' }, { status: 403 });

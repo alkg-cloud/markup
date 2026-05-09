@@ -7,6 +7,7 @@ import { clientIp, loginLimiter } from '@/lib/rate-limit';
 
 const bodySchema = z.object({ email: z.string().email(), password: z.string().min(1) });
 
+// Public — entry point that establishes the session; no identity exists yet.
 export async function POST(req: Request) {
   const ip = clientIp(req);
   const limit = loginLimiter.consume(`login:${ip}`);
