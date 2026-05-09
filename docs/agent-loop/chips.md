@@ -69,10 +69,12 @@ The pill colours match the chip strip's active state:
 
 | Chip | Pill bg | Pill fg |
 |---|---|---|
-| `visual` | `oklch(74.4% 0.193 165 / 0.18)` | `var(--accent-bright)` |
+| `visual` | `var(--accent-overlay-soft)` | `var(--accent-bright)` |
 | `copy` | `var(--info-soft)` | `var(--info)` |
 | `behavior` | `var(--warning-soft)` | `var(--warning)` |
 | `other` | `var(--bg-elevated)` | `var(--text-dim)` |
+
+The single source of truth for this mapping is `INTENT_PILL_COLORS` in `src/lib/annotation/intent.ts`. The annotation detail page reads from that constant; new consumers should too.
 
 ## Why coarse
 
