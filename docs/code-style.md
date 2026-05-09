@@ -85,6 +85,8 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
 
 `identify` is the single source of truth — see [`docs/api/auth.md`](api/auth.md). Never reimplement the cookie / Bearer parsing locally.
 
+The only routes that skip this check are the three documented public surfaces (`GET /api/health`, `POST /api/auth/login`, `POST /api/auth/setup`) — see [`docs/api/INDEX.md`](api/INDEX.md#auth-required-by-default). New public surfaces must be added to that table and carry an inline comment explaining why no identity is required.
+
 ## Error responses follow the snake_case-code shape
 
 ```ts

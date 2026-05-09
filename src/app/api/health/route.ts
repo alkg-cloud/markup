@@ -10,6 +10,7 @@ function getProbe() {
   return probe;
 }
 
+// Public — container healthcheck must respond before any session can exist.
 export async function GET() {
   try {
     await prisma.$queryRaw`SELECT 1`;
