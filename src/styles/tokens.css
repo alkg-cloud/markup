@@ -96,9 +96,8 @@
    * deliberate moment rather than the browser default blue. */
   --selection-bg: oklch(74.4% 0.193 165 / 0.32);
 
-  /* Translucent accent overlays for borders, soft pills, and hover halos.
-   * Lightness/chroma match --accent; alpha tunes the prominence. The solid
-   * --accent-soft above is for backgrounds that need full opacity. */
+  /* Translucent siblings of the solid --accent-soft above; reserved for
+   * borders, hover halos, and pill backgrounds layered over dark surfaces. */
   --accent-overlay-soft: oklch(74.4% 0.193 165 / 0.18);
   --accent-overlay-mid: oklch(74.4% 0.193 165 / 0.35);
   --accent-overlay-strong: oklch(74.4% 0.193 165 / 0.4);
@@ -108,7 +107,6 @@
    * instead of reading as a dropped foreign tone. */
   --text-on-accent: oklch(15% 0.005 165);
 
-  /* Modal / overlay scrims — neutral black at varying alpha. */
   --scrim-strong: oklch(0% 0 0 / 0.65);
   --scrim-mid: oklch(0% 0 0 / 0.45);
 
