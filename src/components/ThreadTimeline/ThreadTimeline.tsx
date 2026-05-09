@@ -288,7 +288,7 @@ export function ThreadTimeline({
                     ...(isAgent
                       ? {
                           paddingLeft: 'var(--space-sm)',
-                          borderLeft: '2px solid oklch(74.4% 0.193 165 / 0.35)',
+                          borderLeft: '2px solid var(--accent-overlay-mid)',
                         }
                       : {}),
                   }}

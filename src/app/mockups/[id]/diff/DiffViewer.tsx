@@ -221,7 +221,7 @@ export function DiffViewer({ mockupId, fromVid, toVid, fromCreatedAt, toCreatedA
           style={{
             display: overlay ? undefined : 'grid',
             gridTemplateRows: overlay ? undefined : '32px 1fr',
-            background: 'oklch(98% 0 0)',
+            background: 'var(--bg-iframe-light)',
             position: overlay ? 'absolute' : 'static',
             inset: overlay ? 0 : undefined,
           }}
@@ -255,7 +255,7 @@ export function DiffViewer({ mockupId, fromVid, toVid, fromCreatedAt, toCreatedA
               width: '100%',
               height: '100%',
               border: 0,
-              background: '#fff',
+              background: 'var(--bg-iframe-white)',
               display: 'block',
             }}
           />
@@ -266,7 +266,7 @@ export function DiffViewer({ mockupId, fromVid, toVid, fromCreatedAt, toCreatedA
           style={{
             display: overlay ? undefined : 'grid',
             gridTemplateRows: overlay ? undefined : '32px 1fr',
-            background: 'oklch(98% 0 0)',
+            background: 'var(--bg-iframe-light)',
             position: overlay ? 'absolute' : 'static',
             inset: overlay ? 0 : undefined,
             opacity: overlay ? 0.5 : 1,
@@ -301,7 +301,7 @@ export function DiffViewer({ mockupId, fromVid, toVid, fromCreatedAt, toCreatedA
               width: '100%',
               height: '100%',
               border: 0,
-              background: '#fff',
+              background: 'var(--bg-iframe-white)',
               display: 'block',
             }}
           />

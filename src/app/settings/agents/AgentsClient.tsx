@@ -133,7 +133,7 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
           font-size: var(--type-2xs);
           border-radius: var(--radius-pill);
           background: transparent;
-          border: 1px solid oklch(40% 0.1 25);
+          border: 1px solid var(--danger-border);
           color: var(--danger);
           font-weight: 600;
           cursor: pointer;
@@ -143,7 +143,7 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
             transform var(--motion-instant) var(--ease-standard);
         }
         .ac-btn-revoke:hover { background: var(--danger-soft); }
-        .ac-btn-revoke:active { background: oklch(32% 0.1 25); transform: scale(0.97); }
+        .ac-btn-revoke:active { background: var(--danger-press); transform: scale(0.97); }
 
         .ac-token-input:focus-visible {
           outline: none;

@@ -136,12 +136,33 @@
   /* Card gradient — shared between MockupCard (0.85 alpha) and
    * AnnotationModal dialog (0.95 alpha). Hue 322 is a deliberate violet
    * counter-tone to the teal accent, giving cards a separate tonal family. */
-  --gradient-card-soft: linear-gradient(135.92deg, oklch(20% 0.025 322 / 0.85) 7%, oklch(15% 0.02 322 / 0.85) 98%);
-  --gradient-card-strong: linear-gradient(135.92deg, oklch(20% 0.025 322 / 0.95) 7%, oklch(15% 0.02 322 / 0.95) 98%);
+  --gradient-card-soft: linear-gradient(
+    135.92deg,
+    oklch(20% 0.025 322 / 0.85) 7%,
+    oklch(15% 0.02 322 / 0.85) 98%
+  );
+  --gradient-card-strong: linear-gradient(
+    135.92deg,
+    oklch(20% 0.025 322 / 0.95) 7%,
+    oklch(15% 0.02 322 / 0.95) 98%
+  );
 
   /* Auth-page atmospheric mesh — single radial used by /login and /setup
    * to layer a soft accent glow over the body mesh from globals.css. */
-  --gradient-auth-mesh: radial-gradient(ellipse 600px 400px at 30% 70%, oklch(28% 0.18 165 / 0.4), transparent 60%);
+  --gradient-auth-mesh: radial-gradient(
+    ellipse 600px 400px at 30% 70%,
+    oklch(28% 0.18 165 / 0.4),
+    transparent 60%
+  );
+
+  /* Thumbnail vignette — circular dark gradient layered over the monogram
+   * thumb in MockupCard so the letters read as carved into a sphere instead
+   * of stamped flat. */
+  --gradient-thumb-vignette: radial-gradient(
+    circle at 50% 30%,
+    transparent 30%,
+    oklch(0% 0 0 / 0.5)
+  );
 
   /* ─── Focus ────────────────────────────────────────────────────────────
    * 2px gap from the element + 2px ring in the accent. Used by every
