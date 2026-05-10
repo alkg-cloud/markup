@@ -12,6 +12,7 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 ## Whole project
 
 - [Stack](stack.md) — frameworks, libraries, runtime, container layout
+- [Recovery](recovery.md) — rollback, reset scripts, data restore, smoke test
 - [Code Style](code-style.md) — TypeScript + biome conventions
 - [Testing](testing.md) — Vitest patterns, fixtures, the shared `prisma/test.db` rule
 - [Tooling](tooling.md) — pnpm scripts, Prisma migrate, one-shot scripts under `scripts/`

@@ -241,6 +241,27 @@ The full stack and folder layout are documented in [`docs/stack.md`](docs/stack.
 - [`docs/frontend/`](docs/frontend/INDEX.md) — components, styling tokens, tldraw integration
 - [`docs/ci.md`](docs/ci.md) — CI rules and pre-push checklist
 
+## Releases
+
+Every semver tag (`v*`) pushed to `main` triggers the image workflow and publishes to `ghcr.io/alexandrecamillo/markup`:
+
+| Tag | When published |
+|-----|----------------|
+| `vX.Y.Z` | On semver tag push — multi-arch (amd64 + arm64) |
+| `vX.Y`, `vX` | Floating aliases updated on each patch/minor tag |
+| `latest` | Points to the most recent `main`-green release |
+| `sha-<7>` | Every `main` push for debugging |
+
+Images pass a mandatory smoke test (`/api/health` 200) before the release is created. No manual approval needed — a green tag is a published release.
+
+To install a specific version:
+
+```bash
+docker pull ghcr.io/alexandrecamillo/markup:v1.2.3
+```
+
+Release notes are auto-generated on the [GitHub releases page](https://github.com/AlexandreCamillo/markup/releases).
+
 ## Contributing
 
 Markup is open source under the MIT licence. Contributions of any size are welcome.
