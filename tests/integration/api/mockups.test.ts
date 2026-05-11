@@ -1,9 +1,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST as setup } from '@/app/api/auth/setup/route';
 import { POST as createMockup, GET as listMockups } from '@/app/api/mockups/route';
+import { GET as getMockupResource } from '@/app/m/[mockupId]/[...path]/route';
 import { prisma } from '@/lib/prisma';
+
+vi.mock('next/headers', () => ({
+  cookies: () => ({
+    get: (name: string) => {
+      if (name === 'mk_session') {
+        return { name: 'mk_session', value: 'test-cookie' };
+      }
+    },
+  }),
+}));
 
 const fixture = (n: string) => path.resolve('tests/fixtures/mockups', n);
 
@@ -28,10 +39,13 @@ async function adminCookie() {
 async function multipart(
   zip: string,
   name: string,
-  opts?: { projectId?: string; folderId?: string },
+  opts?: { projectId?: string; folderId?: string; slug?: string },
 ) {
   const fd = new FormData();
   fd.set('name', name);
+  if (opts?.slug) {
+    fd.set('slug', opts.slug);
+  }
   fd.set('build', new Blob([fs.readFileSync(zip)], { type: 'application/zip' }), 'mockup.zip');
   if (opts?.projectId) fd.set('projectId', opts.projectId);
   if (opts?.folderId) fd.set('folderId', opts.folderId);
@@ -156,5 +170,44 @@ describe('POST /api/mockups', () => {
     const body = await res.json();
     expect(body.projectId).toBeNull();
     expect(body.folderId).toBeNull();
+  });
+});
+
+describe('Slug support', () => {
+  let mockupId: string;
+  const slug = 'my-awesome-mockup';
+
+  beforeEach(async () => {
+    await prisma.mockupVersion.deleteMany();
+    await prisma.mockup.deleteMany();
+    const cookie = await adminCookie();
+    const fd = await multipart(fixture('valid-simple.zip'), 'My Mockup', { slug });
+    const res = await createMockup(
+      new Request('http://l/api/mockups', {
+        method: 'POST',
+        headers: { cookie: `mk_session=${cookie}` },
+        body: fd,
+      }),
+    );
+    const body = await res.json();
+    mockupId = body.id;
+  });
+
+  it('should be able to get a mockup resource by slug from /m/[slug]', async () => {
+    const response = await getMockupResource(new Request(`http://l/m/${slug}/index.html`), {
+      params: Promise.resolve({ mockupId: slug, path: ['index.html'] }),
+    });
+    expect(response.status).toBe(200);
+    const text = await response.text();
+    expect(text).toContain('hi');
+  });
+
+  it('should be able to get a mockup resource by id from /m/[id]', async () => {
+    const response = await getMockupResource(new Request(`http://l/m/${mockupId}/index.html`), {
+      params: Promise.resolve({ mockupId: mockupId, path: ['index.html'] }),
+    });
+    expect(response.status).toBe(200);
+    const text = await response.text();
+    expect(text).toContain('hi');
   });
 });

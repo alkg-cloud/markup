@@ -25,9 +25,11 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
   const id = await identify(fakeReq);
   if (!id) redirect('/login');
 
-  const { id: mockupId } = await params;
-  const mockup = await prisma.mockup.findUnique({
-    where: { id: mockupId },
+  const { id: mockupIdOrSlug } = await params;
+  const mockup = await prisma.mockup.findFirst({
+    where: /^c[a-z0-9]{24}$/.test(mockupIdOrSlug)
+      ? { id: mockupIdOrSlug }
+      : { slug: mockupIdOrSlug },
     include: {
       versions: { orderBy: { createdAt: 'desc' } },
       annotations: {
