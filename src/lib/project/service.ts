@@ -1,9 +1,8 @@
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
+import { MAX_ANCESTOR_ITERATIONS, MAX_FOLDER_DEPTH } from './constants';
 
 const log = logger.child({ name: 'project-service' });
-
-const MAX_FOLDER_DEPTH = 4;
 
 // ---------------------------------------------------------------------------
 // Slug
@@ -84,7 +83,10 @@ export async function deleteProject(id: string) {
 async function getFolderDepth(folderId: string): Promise<number> {
   let depth = 0;
   let currentId: string | null = folderId;
-  while (currentId) {
+  const seen = new Set<string>();
+  while (currentId && depth < MAX_ANCESTOR_ITERATIONS) {
+    if (seen.has(currentId)) break;
+    seen.add(currentId);
     const row: { parentId: string | null } | null = await prisma.folder.findUnique({
       where: { id: currentId },
       select: { parentId: true },
@@ -96,14 +98,15 @@ async function getFolderDepth(folderId: string): Promise<number> {
   return depth;
 }
 
-async function getSubtreeMaxDepth(folderId: string): Promise<number> {
+async function getSubtreeMaxDepth(folderId: string, currentDepth = 0): Promise<number> {
+  if (currentDepth >= MAX_FOLDER_DEPTH) return 0;
   let maxDepth = 0;
   const children = await prisma.folder.findMany({
     where: { parentId: folderId },
     select: { id: true },
   });
   for (const child of children) {
-    const childDepth = await getSubtreeMaxDepth(child.id);
+    const childDepth = await getSubtreeMaxDepth(child.id, currentDepth + 1);
     maxDepth = Math.max(maxDepth, childDepth + 1);
   }
   return maxDepth;
@@ -218,7 +221,7 @@ interface TreeFolder {
   id: string;
   name: string;
   position: number;
-  folders: TreeFolder[];
+  children: TreeFolder[];
   mockups: TreeMockup[];
 }
 
@@ -252,7 +255,7 @@ export async function getProjectTree(projectId: string): Promise<ProjectTree | n
   });
 
   const allMockups = await prisma.mockup.findMany({
-    where: { projectId },
+    where: { projectId, status: { not: 'archived' } },
     orderBy: { position: 'asc' },
     select: {
       id: true,
@@ -279,13 +282,13 @@ export async function getProjectTree(projectId: string): Promise<ProjectTree | n
   }
 
   function buildFolder(f: (typeof allFolders)[number]): TreeFolder {
-    const children = folderMap.get(f.id) ?? [];
+    const childFolders = folderMap.get(f.id) ?? [];
     const mockups = mockupMap.get(f.id) ?? [];
     return {
       id: f.id,
       name: f.name,
       position: f.position,
-      folders: children.map(buildFolder),
+      children: childFolders.map(buildFolder),
       mockups: mockups.map(({ folderId: _, ...m }) => m),
     };
   }
@@ -309,8 +312,11 @@ export async function getProjectTree(projectId: string): Promise<ProjectTree | n
 
 async function isDescendantOf(folderId: string, ancestorId: string): Promise<boolean> {
   let currentId: string | null = folderId;
+  const seen = new Set<string>();
   while (currentId) {
     if (currentId === ancestorId) return true;
+    if (seen.has(currentId)) return false;
+    seen.add(currentId);
     const row: { parentId: string | null } | null = await prisma.folder.findUnique({
       where: { id: currentId },
       select: { parentId: true },
@@ -361,9 +367,11 @@ export async function moveFolder(input: {
   });
   if (duplicate) return { error: 'name_exists' as const };
 
-  const updated = await prisma.folder.update({
-    where: { id: input.folderId },
-    data: { parentId: input.parentId, position: input.position },
+  const updated = await prisma.$transaction(async (tx) => {
+    return tx.folder.update({
+      where: { id: input.folderId },
+      data: { parentId: input.parentId, position: input.position },
+    });
   });
   log.info({ folderId: input.folderId, parentId: input.parentId }, 'folder_moved');
   return { folder: updated };

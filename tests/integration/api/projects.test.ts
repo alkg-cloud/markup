@@ -240,8 +240,8 @@ describe('tree API', () => {
     expect(body.name).toBe('TreeTest');
     expect(body.folders).toHaveLength(1);
     expect(body.folders[0].name).toBe('Section');
-    expect(body.folders[0].folders).toHaveLength(1);
-    expect(body.folders[0].folders[0].name).toBe('SubSection');
+    expect(body.folders[0].children).toHaveLength(1);
+    expect(body.folders[0].children[0].name).toBe('SubSection');
     expect(body.folders[0].mockups).toHaveLength(1);
     expect(body.folders[0].mockups[0].name).toBe('M1');
   });

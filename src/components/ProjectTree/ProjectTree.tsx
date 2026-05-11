@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { MAX_FOLDER_DEPTH } from '@/lib/project/constants';
 import { InlineFolderCreate } from './InlineFolderCreate';
 import type { DnDNode } from './useTreeDnD';
 import { useTreeDnD } from './useTreeDnD';
@@ -465,7 +466,7 @@ export function ProjectTree({
     getDescendantIds,
     getNodeDepth,
     getSubtreeDepth,
-    maxDepth: 5,
+    maxDepth: MAX_FOLDER_DEPTH,
     onToggleExpand: toggleExpand,
     onMove: handleMove,
     announceRef,

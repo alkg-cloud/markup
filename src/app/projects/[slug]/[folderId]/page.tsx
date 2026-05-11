@@ -71,15 +71,19 @@ async function buildAncestors(
 ): Promise<Array<{ id: string; name: string }>> {
   if (!parentId) return [];
   const ancestors: Array<{ id: string; name: string }> = [];
-  let current = parentId;
+  let current: string | null = parentId;
+  const seen = new Set<string>();
   while (current) {
-    const f = await prisma.folder.findUnique({
-      where: { id: current },
-      select: { id: true, name: true, parentId: true },
-    });
+    if (seen.has(current)) break;
+    seen.add(current);
+    const f: { id: string; name: string; parentId: string | null } | null =
+      await prisma.folder.findUnique({
+        where: { id: current },
+        select: { id: true, name: true, parentId: true },
+      });
     if (!f) break;
     ancestors.unshift({ id: f.id, name: f.name });
-    current = f.parentId as string;
+    current = f.parentId;
   }
   return ancestors;
 }

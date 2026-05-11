@@ -15,12 +15,14 @@ async function buildFolderPath(folderId: string | null): Promise<string> {
   if (!folderId) return '';
   const segments: string[] = [];
   let currentId: string | null = folderId;
+  const seen = new Set<string>();
   while (currentId) {
-    const row: { name: string; parentId: string | null } | null =
-      await prisma.folder.findUnique({
-        where: { id: currentId },
-        select: { name: true, parentId: true },
-      });
+    if (seen.has(currentId)) break;
+    seen.add(currentId);
+    const row: { name: string; parentId: string | null } | null = await prisma.folder.findUnique({
+      where: { id: currentId },
+      select: { name: true, parentId: true },
+    });
     if (!row) break;
     segments.unshift(row.name);
     currentId = row.parentId;

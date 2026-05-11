@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { identify } from '@/lib/auth/identify';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { prisma } from '@/lib/prisma';
+import { getProjectTree, listProjects } from '@/lib/project/service';
 import { ProjectSidebar } from './ProjectSidebar';
 
 export default async function ProjectsLayout({ children }: { children: ReactNode }) {
@@ -22,43 +23,10 @@ export default async function ProjectsLayout({ children }: { children: ReactNode
   const id = await identify(fakeReq);
   if (!id) redirect('/login');
 
-  const projects = await prisma.project.findMany({
-    orderBy: { position: 'asc' },
-    include: {
-      folders: {
-        where: { parentId: null },
-        orderBy: { position: 'asc' },
-        include: {
-          children: {
-            orderBy: { position: 'asc' },
-            include: {
-              children: {
-                orderBy: { position: 'asc' },
-                include: {
-                  children: {
-                    orderBy: { position: 'asc' },
-                    include: {
-                      mockups: {
-                        orderBy: { position: 'asc' },
-                        where: { status: { not: 'archived' } },
-                      },
-                    },
-                  },
-                  mockups: { orderBy: { position: 'asc' }, where: { status: { not: 'archived' } } },
-                },
-              },
-              mockups: { orderBy: { position: 'asc' }, where: { status: { not: 'archived' } } },
-            },
-          },
-          mockups: { orderBy: { position: 'asc' }, where: { status: { not: 'archived' } } },
-        },
-      },
-      mockups: {
-        where: { folderId: null, status: { not: 'archived' } },
-        orderBy: { position: 'asc' },
-      },
-    },
-  });
+  const projectList = await listProjects();
+  const treeProjects = (await Promise.all(projectList.map((p) => getProjectTree(p.id)))).filter(
+    (t) => t !== null,
+  );
 
   const allMockups = await prisma.mockup.findMany({
     where: { status: { not: 'archived' } },
@@ -66,39 +34,6 @@ export default async function ProjectsLayout({ children }: { children: ReactNode
   });
   const mockupNames: Record<string, string> = {};
   for (const m of allMockups) mockupNames[m.id] = m.name;
-
-  function serializeFolder(
-    f: (typeof projects)[0]['folders'][0],
-  ): import('@/components/ProjectTree/ProjectTree').TreeFolder {
-    return {
-      id: f.id,
-      name: f.name,
-      position: f.position,
-      children: (f.children as (typeof projects)[0]['folders']).map(serializeFolder),
-      mockups: f.mockups.map((m) => ({
-        id: m.id,
-        name: m.name,
-        slug: m.slug,
-        status: m.status,
-        position: m.position,
-      })),
-    };
-  }
-
-  const treeProjects = projects.map((p) => ({
-    id: p.id,
-    name: p.name,
-    slug: p.slug,
-    position: p.position,
-    folders: p.folders.map(serializeFolder),
-    mockups: p.mockups.map((m) => ({
-      id: m.id,
-      name: m.name,
-      slug: m.slug,
-      status: m.status,
-      position: m.position,
-    })),
-  }));
 
   return (
     <div

@@ -38,6 +38,9 @@ export async function POST(req: Request) {
   if (typeof folderId === 'string') {
     const folder = await prisma.folder.findUnique({ where: { id: folderId } });
     if (!folder) return NextResponse.json({ error: 'folder_not_found' }, { status: 400 });
+    if (typeof projectId === 'string' && folder.projectId !== projectId) {
+      return NextResponse.json({ error: 'folder_project_mismatch' }, { status: 400 });
+    }
   }
 
   const tmpDir = path.join(env().DATA_DIR, 'tmp');
