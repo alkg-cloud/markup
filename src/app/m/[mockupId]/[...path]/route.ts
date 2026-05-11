@@ -32,11 +32,13 @@ export async function GET(
   req: Request,
   ctx: { params: Promise<{ mockupId: string; path: string[] }> },
 ) {
-  const { mockupId, path: segments } = await ctx.params;
+  const { mockupId: mockupIdOrSlug, path: segments } = await ctx.params;
   const url = new URL(req.url);
   const requestedVid = url.searchParams.get('v');
-  const mockup = await prisma.mockup.findUnique({
-    where: { id: mockupId },
+  const mockup = await prisma.mockup.findFirst({
+    where: /^c[a-z0-9]{24}$/.test(mockupIdOrSlug)
+      ? { id: mockupIdOrSlug }
+      : { slug: mockupIdOrSlug },
     include: { versions: { select: { id: true } } },
   });
   if (!mockup?.currentVersionId) {
@@ -51,7 +53,7 @@ export async function GET(
     serveVid = requestedVid;
   }
 
-  const buildDir = versionBuildDir(env().DATA_DIR, mockupId, serveVid);
+  const buildDir = versionBuildDir(env().DATA_DIR, mockup.id, serveVid);
   let target: string;
   try {
     target = resolveServePath(buildDir, segments);
