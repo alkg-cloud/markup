@@ -11,6 +11,7 @@ interface NavItem {
 }
 
 const ITEMS: NavItem[] = [
+  { href: '/projects', label: 'Projetos', matchPrefix: '/projects' },
   { href: '/mockups', label: 'Mockups', matchPrefix: '/mockups' },
   { href: '/settings/agents', label: 'Agents', matchPrefix: '/settings/agents' },
 ];
