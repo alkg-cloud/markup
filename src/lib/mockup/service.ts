@@ -5,6 +5,7 @@ import JSZip from 'jszip';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
 import { thumbnailPath, versionBuildDir, versionSourceZipPath } from './storage';
+import { generateThumbnailFromBuildDir } from './thumbnail-generator';
 import { extractZip } from './zip-extractor';
 
 interface CreateInput {
@@ -50,8 +51,9 @@ export async function createMockupFromZip(input: CreateInput) {
   fs.mkdirSync(buildPath, { recursive: true });
   const result = await extractZip(input.zipPath, buildPath, buildLimits());
   fs.copyFileSync(input.zipPath, versionSourceZipPath(root, mid, vid));
-  if (result.thumbnail) {
-    fs.writeFileSync(thumbnailPath(root, mid), result.thumbnail);
+  const thumb = result.thumbnail ?? (await generateThumbnailFromBuildDir(buildPath));
+  if (thumb) {
+    fs.writeFileSync(thumbnailPath(root, mid), thumb);
   }
   const slug = await ensureUniqueSlug(input.name);
   await prisma.mockup.create({
@@ -92,8 +94,9 @@ export async function addVersion(input: {
   fs.mkdirSync(buildPath, { recursive: true });
   const result = await extractZip(input.zipPath, buildPath, buildLimits());
   fs.copyFileSync(input.zipPath, versionSourceZipPath(root, input.mockupId, vid));
-  if (result.thumbnail) {
-    fs.writeFileSync(thumbnailPath(root, input.mockupId), result.thumbnail);
+  const thumb = result.thumbnail ?? (await generateThumbnailFromBuildDir(buildPath));
+  if (thumb) {
+    fs.writeFileSync(thumbnailPath(root, input.mockupId), thumb);
   }
   const version = await prisma.mockupVersion.create({
     data: {
