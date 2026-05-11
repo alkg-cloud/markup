@@ -66,7 +66,7 @@ describe('GET /api/agent/context/[annotationId]', () => {
     await prisma.mockupVersion.deleteMany();
     await prisma.mockup.deleteMany();
     await prisma.folder.deleteMany();
-    await prisma.project.deleteMany();
+    await prisma.project.deleteMany({ where: { slug: { not: 'unsorted' } } });
   });
 
   it('returns aggregated annotation + intent + thread + current_version inline', async () => {

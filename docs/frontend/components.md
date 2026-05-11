@@ -33,6 +33,17 @@ src/components/
     AnnotationPin.tsx       # 'use client' — hover/active state on the pin
   ThreadTimeline/
     ThreadTimeline.tsx      # 'use client' — reply textarea
+  ProjectTree/
+    ProjectTree.tsx         # 'use client' — ARIA tree with keyboard nav + DnD
+    useTreeDnD.ts           # hook — HTML5 Drag API + keyboard move mode
+    InlineFolderCreate.tsx  # 'use client' — inline input for folder creation
+    RecentsSection.tsx      # 'use client' — useRecents hook + section UI
+  Breadcrumbs/
+    Breadcrumbs.tsx         # 'use client' — breadcrumb nav with truncation
+  EmptyState/
+    EmptyState.tsx          # 'use client' — project/folder empty states
+  Statusbar/
+    Statusbar.tsx           # 'use client' — 24px bar with project stats
 ```
 
 Page-scoped components (used only by one page) live next to the page file:
@@ -48,6 +59,15 @@ src/app/mockups/
     diff/
       page.tsx               # server
       DiffViewer.tsx         # 'use client' — side-by-side iframes
+src/app/projects/
+  layout.tsx                 # server — auth + Prisma tree fetch → grid shell
+  page.tsx                   # server — redirect to first project
+  ProjectSidebar.tsx         # 'use client' — sidebar wrapper, folder create, move, mobile drawer
+  [slug]/
+    page.tsx                 # server — project root content
+    ProjectContent.tsx       # 'use client' — toolbar, folder/mockup card grid, statusbar
+    [folderId]/
+      page.tsx               # server — folder content with ancestor breadcrumbs
 ```
 
 The page-scoped pattern means `MockupCard.tsx` is co-located with `page.tsx` in `src/app/mockups/`. This keeps the import surface obvious and prevents `src/components/` from accumulating one-off pieces.
