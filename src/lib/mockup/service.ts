@@ -10,6 +10,7 @@ import { extractZip } from './zip-extractor';
 
 interface CreateInput {
   name: string;
+  slug?: string;
   zipPath: string;
   createdBy: string;
   createdByType: 'user' | 'agent';
@@ -55,7 +56,7 @@ export async function createMockupFromZip(input: CreateInput) {
   if (thumb) {
     fs.writeFileSync(thumbnailPath(root, mid), thumb);
   }
-  const slug = await ensureUniqueSlug(input.name);
+  const slug = await ensureUniqueSlug(input.slug || input.name);
   await prisma.mockup.create({
     data: {
       id: mid,

@@ -18,8 +18,12 @@ export async function POST(req: Request) {
 
   const fd = await req.formData();
   const name = fd.get('name');
+  const slug = fd.get('slug');
   const file = fd.get('build');
   if (typeof name !== 'string' || !(file instanceof Blob)) {
+    return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+  }
+  if (slug != null && typeof slug !== 'string') {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
   }
 
@@ -51,6 +55,7 @@ export async function POST(req: Request) {
   try {
     const result = await createMockupFromZip({
       name,
+      slug: typeof slug === 'string' ? slug : undefined,
       zipPath: tmp,
       createdBy: id.kind === 'user' ? id.userId : id.tokenId,
       createdByType: id.kind,
