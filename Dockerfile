@@ -24,6 +24,7 @@ RUN apk add --no-cache tini su-exec curl
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 ENV DATA_DIR=/app/data
 
 # Install Prisma CLI globally for `prisma migrate deploy` at container start.
@@ -42,7 +43,7 @@ COPY --from=build /app/prisma.config.ts ./prisma.config.ts
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/package.json ./package.json
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-COPY docker/healthcheck.js /app/docker/healthcheck.js
+COPY docker/healthcheck.cjs /app/docker/healthcheck.cjs
 
 # Symlink the globally-installed prisma into /app/node_modules so that
 # prisma.config.ts's `import { defineConfig } from 'prisma/config'` resolves
@@ -55,7 +56,7 @@ VOLUME ["/app/data"]
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node /app/docker/healthcheck.js
+  CMD node /app/docker/healthcheck.cjs
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/entrypoint.sh"]
 CMD ["node", "server.js"]
