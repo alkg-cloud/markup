@@ -3,7 +3,7 @@ import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST as setup } from '@/app/api/auth/setup/route';
 import { POST as createMockup, GET as listMockups } from '@/app/api/mockups/route';
-import { GET as getMockupResource } from '@/app/m/[mockupId]/[...path]/route';
+import { GET as getMockupResource } from '@/app/m/[mockupId]/[[...path]]/route';
 import { prisma } from '@/lib/prisma';
 
 vi.mock('next/headers', () => ({
