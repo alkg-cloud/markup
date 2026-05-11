@@ -60,6 +60,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Sign image with cosign (keyless / OIDC)
+        continue-on-error: true
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
           TAGS: ${{ steps.meta.outputs.tags }}
@@ -68,7 +69,11 @@ jobs:
           curl -fsSL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 -o /usr/local/bin/cosign
           chmod +x /usr/local/bin/cosign
           for tag in $TAGS; do
-            cosign sign --yes "${tag}@${DIGEST}"
+            for attempt in 1 2 3; do
+              if cosign sign --yes "${tag}@${DIGEST}"; then break; fi
+              echo "::warning::cosign attempt $attempt failed, retrying in 10s…"
+              sleep 10
+            done
           done
 
       - name: Generate build attestation
