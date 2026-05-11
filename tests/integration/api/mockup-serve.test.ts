@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { GET as serveMockup } from '@/app/m/[mockupId]/[...path]/route';
+import { GET as serveMockup } from '@/app/m/[mockupId]/[[...path]]/route';
 import { addVersion, createMockupFromZip } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
 
