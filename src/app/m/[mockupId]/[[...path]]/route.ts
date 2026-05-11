@@ -30,9 +30,10 @@ const MIME: Record<string, string> = {
 
 export async function GET(
   req: Request,
-  ctx: { params: Promise<{ mockupId: string; path: string[] }> },
+  ctx: { params: Promise<{ mockupId: string; path?: string[] }> },
 ) {
-  const { mockupId: mockupIdOrSlug, path: segments } = await ctx.params;
+  const { mockupId: mockupIdOrSlug, path: rawSegments } = await ctx.params;
+  const segments = rawSegments ?? ['index.html'];
   const url = new URL(req.url);
   const requestedVid = url.searchParams.get('v');
   const mockup = await prisma.mockup.findFirst({
