@@ -12,6 +12,8 @@ interface CreateInput {
   zipPath: string;
   createdBy: string;
   createdByType: 'user' | 'agent';
+  projectId?: string;
+  folderId?: string;
 }
 
 function buildLimits() {
@@ -53,7 +55,14 @@ export async function createMockupFromZip(input: CreateInput) {
   }
   const slug = await ensureUniqueSlug(input.name);
   await prisma.mockup.create({
-    data: { id: mid, name: input.name, slug, status: 'open' },
+    data: {
+      id: mid,
+      name: input.name,
+      slug,
+      status: 'open',
+      projectId: input.projectId ?? null,
+      folderId: input.folderId ?? null,
+    },
   });
   const version = await prisma.mockupVersion.create({
     data: {

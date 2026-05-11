@@ -45,7 +45,7 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/api/mockups` | List (cursor-paged by status) |
-| `POST` | `/api/mockups` | Create from zip (multipart, `name` + `build`) |
+| `POST` | `/api/mockups` | Create from zip (multipart: `name` + `build`, optional `projectId` + `folderId`) |
 | `GET` | `/api/mockups/[id]` | Single mockup metadata |
 | `POST` | `/api/mockups/[id]/move` | Move mockup (`projectId`, `folderId`, `position`) |
 | `POST` | `/api/mockups/[id]/version` | Add new version from zip (full upload) |
@@ -73,7 +73,7 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/api/agent/context/[annotationId]` | Single-call aggregator (annotation + intent + thread + inline source + diff_since_creation) |
+| `GET` | `/api/agent/context/[annotationId]` | Single-call aggregator (annotation + intent + thread + inline source + diff_since_creation + project + folder_path) |
 
 ### Threads
 
