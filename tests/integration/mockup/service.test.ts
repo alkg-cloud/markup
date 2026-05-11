@@ -1,8 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { addVersion, createMockupFromZip, getMockup, listMockups } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
+
+vi.mock('@/lib/mockup/thumbnail-generator', () => {
+  const buf = Buffer.alloc(64);
+  buf.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  return { generateThumbnailFromBuildDir: vi.fn().mockResolvedValue(buf) };
+});
 
 const fixture = (n: string) => path.resolve('tests/fixtures/mockups', n);
 
@@ -43,6 +49,35 @@ describe('mockup service', () => {
       createdByType: 'user',
     });
     const tp = path.join(process.env.DATA_DIR ?? '', 'mockups', result.mockup.id, 'thumbnail.png');
+    expect(fs.existsSync(tp)).toBe(true);
+  });
+
+  it('generates thumbnail automatically when zip has no thumbnail', async () => {
+    const result = await createMockupFromZip({
+      name: 'AutoThumb',
+      zipPath: fixture('valid-simple.zip'),
+      createdBy: 'u1',
+      createdByType: 'user',
+    });
+    const tp = path.join(process.env.DATA_DIR ?? '', 'mockups', result.mockup.id, 'thumbnail.png');
+    expect(fs.existsSync(tp)).toBe(true);
+  });
+
+  it('addVersion generates thumbnail automatically when zip has no thumbnail', async () => {
+    const r1 = await createMockupFromZip({
+      name: 'V',
+      zipPath: fixture('valid-simple.zip'),
+      createdBy: 'u',
+      createdByType: 'user',
+    });
+    const tp = path.join(process.env.DATA_DIR ?? '', 'mockups', r1.mockup.id, 'thumbnail.png');
+    fs.rmSync(tp, { force: true });
+    await addVersion({
+      mockupId: r1.mockup.id,
+      zipPath: fixture('valid-simple.zip'),
+      createdBy: 'u',
+      createdByType: 'user',
+    });
     expect(fs.existsSync(tp)).toBe(true);
   });
 
