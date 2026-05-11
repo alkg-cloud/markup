@@ -56,13 +56,19 @@ Single-call aggregator. Reads everything an agent needs to start working on a fi
     "files": { "index.html": "<!DOCTYPE html>\n…" },
     "binary_files": ["thumbnail.png"]
   },
-  "diff_since_creation": "--- index.html (cmoxatba)\n+++ index.html (cmoxawxz)\n@@ -14,7 +14,9 @@\n …"
+  "diff_since_creation": "--- index.html (cmoxatba)\n+++ index.html (cmoxawxz)\n@@ -14,7 +14,9 @@\n …",
+  "project": { "id": "cmox…", "name": "SaaS App", "slug": "saas-app" },
+  "folder_path": "Landing Page/Hero Section"
 }
 ```
 
 **`current_version.files`** inlines text files only (extensions: `.html`, `.htm`, `.css`, `.js`, `.mjs`, `.json`, `.svg`, `.txt`, `.md`). Binaries are listed by name in `binary_files` — fetch them separately if needed.
 
 **`diff_since_creation`** is empty string when the annotation was created on the current version. When non-empty, it's a unified diff of `index.html` between the creation version and the current version.
+
+**`project`** is `null` when the mockup has no project. When present, contains `{ id, name, slug }`.
+
+**`folder_path`** is the `/`-separated path from the project root to the mockup's folder (e.g. `"Landing Page/Hero Section"`). Empty string when the mockup is at the project root or has no folder.
 
 **ETag:** `"<sha256(tldraw_mtime + current_version_id + last_message_id) prefix>"`. Use `If-None-Match` to short-circuit:
 

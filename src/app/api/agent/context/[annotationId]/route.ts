@@ -11,6 +11,25 @@ import { prisma } from '@/lib/prisma';
 
 const TEXT_EXTS = new Set(['.html', '.htm', '.css', '.js', '.mjs', '.json', '.svg', '.txt', '.md']);
 
+async function buildFolderPath(folderId: string | null): Promise<string> {
+  if (!folderId) return '';
+  const segments: string[] = [];
+  let currentId: string | null = folderId;
+  const seen = new Set<string>();
+  while (currentId) {
+    if (seen.has(currentId)) break;
+    seen.add(currentId);
+    const row: { name: string; parentId: string | null } | null = await prisma.folder.findUnique({
+      where: { id: currentId },
+      select: { name: true, parentId: true },
+    });
+    if (!row) break;
+    segments.unshift(row.name);
+    currentId = row.parentId;
+  }
+  return segments.join('/');
+}
+
 function listVersionFiles(buildDir: string): { text: Record<string, string>; binary: string[] } {
   const text: Record<string, string> = {};
   const binary: string[] = [];
@@ -44,7 +63,12 @@ export async function GET(req: Request, ctx: { params: Promise<{ annotationId: s
 
   const mockup = await prisma.mockup.findUnique({
     where: { id: annotation.mockupId },
-    select: { currentVersionId: true },
+    select: {
+      currentVersionId: true,
+      projectId: true,
+      project: { select: { id: true, name: true, slug: true } },
+      folderId: true,
+    },
   });
   if (!mockup?.currentVersionId) {
     return NextResponse.json({ error: 'no_current_version' }, { status: 404 });
@@ -148,6 +172,8 @@ export async function GET(req: Request, ctx: { params: Promise<{ annotationId: s
         binary_files,
       },
       diff_since_creation,
+      project: mockup.project ?? null,
+      folder_path: await buildFolderPath(mockup.folderId),
     },
     { headers: { ETag: etag } },
   );

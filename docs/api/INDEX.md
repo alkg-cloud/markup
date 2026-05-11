@@ -18,13 +18,36 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 | `POST` | `/api/auth/logout` | Clear session cookie |
 | `POST` | `/api/auth/setup` | First-run admin creation (idempotent) |
 
+### Projects
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/projects` | List all projects ordered by position |
+| `POST` | `/api/projects` | Create project (`name`) |
+| `GET` | `/api/projects/[id]` | Single project metadata |
+| `PATCH` | `/api/projects/[id]` | Update project (`name`) |
+| `DELETE` | `/api/projects/[id]` | Delete project (mockups orphaned via SetNull) |
+| `GET` | `/api/projects/[id]/tree` | Full recursive tree (folders + mockups) for sidebar |
+| `POST` | `/api/projects/[id]/folders` | Create folder (`name`, optional `parentId`) |
+| `POST` | `/api/projects/reorder` | Reorder projects (`ids` array) |
+
+### Folders
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/folders/[id]` | Single folder with children + mockups |
+| `PATCH` | `/api/folders/[id]` | Update folder (`name`) |
+| `DELETE` | `/api/folders/[id]` | Delete folder (children cascade, mockups orphaned) |
+| `POST` | `/api/folders/[id]/move` | Move folder (`parentId`, `position`) with cycle detection |
+
 ### Mockups
 
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/api/mockups` | List (cursor-paged by status) |
-| `POST` | `/api/mockups` | Create from zip (multipart, `name` + `build`) |
+| `POST` | `/api/mockups` | Create from zip (multipart: `name` + `build`, optional `projectId` + `folderId`) |
 | `GET` | `/api/mockups/[id]` | Single mockup metadata |
+| `POST` | `/api/mockups/[id]/move` | Move mockup (`projectId`, `folderId`, `position`) |
 | `POST` | `/api/mockups/[id]/version` | Add new version from zip (full upload) |
 | `PATCH` | `/api/mockups/[id]/version-patch` | Add new version from unified diff |
 | `GET` | `/api/mockups/[id]/diff?from=<vid>&to=<vid>&format=unified\|json` | Text-mode diff |
@@ -50,7 +73,7 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/api/agent/context/[annotationId]` | Single-call aggregator (annotation + intent + thread + inline source + diff_since_creation) |
+| `GET` | `/api/agent/context/[annotationId]` | Single-call aggregator (annotation + intent + thread + inline source + diff_since_creation + project + folder_path) |
 
 ### Threads
 

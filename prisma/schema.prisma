@@ -33,17 +33,54 @@ model AgentToken {
   lastUsedAt  DateTime?
 }
 
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  folders   Folder[]
+  mockups   Mockup[]
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Folder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[] @relation("FolderTree")
+  name      String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  mockups   Mockup[]
+
+  @@unique([projectId, parentId, name])
+  @@index([projectId])
+  @@index([parentId])
+}
+
 model Mockup {
   id               String          @id @default(cuid())
   name             String
   slug             String          @unique
   status           String          @default("open")
   currentVersionId String?
+  projectId        String?
+  project          Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  folderId         String?
+  folder           Folder?         @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  position         Int             @default(0)
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   versions         MockupVersion[]
   annotations      Annotation[]
+
   @@index([status])
+  @@index([projectId])
+  @@index([folderId])
 }
 
 model MockupVersion {

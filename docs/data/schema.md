@@ -51,6 +51,51 @@ model AgentToken {
 - Plaintext shown once at creation and never persisted; only the SHA-256 hash is stored
 - `name` is the human-friendly identifier (`claude-code-prod`, `designer-bot`, `ci-builder`, etc.)
 
+### Project
+
+```prisma
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  folders   Folder[]
+  mockups   Mockup[]
+}
+```
+
+- Organizes mockups into named projects
+- `slug` is unique, used in URLs
+- `position` controls display order in the sidebar
+- A seed project `"Unsorted"` (slug `unsorted`) is created by migration and receives all pre-existing mockups
+
+### Folder
+
+```prisma
+model Folder {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Folder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[] @relation("FolderTree")
+  name      String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  mockups   Mockup[]
+  @@unique([projectId, parentId, name])
+  @@index([projectId])
+  @@index([parentId])
+}
+```
+
+- Nested folders within a project via self-referencing `parentId`
+- `@@unique([projectId, parentId, name])` prevents sibling folders with the same name (note: SQLite treats NULL parentId as distinct, so root-level duplicates are not caught by the DB constraint alone — enforce in the service layer)
+- Cascade: deleting a Project deletes all its Folders; deleting a Folder deletes its children
+
 ### Mockup
 
 ```prisma
@@ -60,17 +105,26 @@ model Mockup {
   slug             String          @unique
   status           String          @default("open")
   currentVersionId String?
+  projectId        String?
+  project          Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  folderId         String?
+  folder           Folder?         @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  position         Int             @default(0)
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   versions         MockupVersion[]
   annotations      Annotation[]
   @@index([status])
+  @@index([projectId])
+  @@index([folderId])
 }
 ```
 
 - `status` is `'open' | 'resolved' | 'archived'` (string, not enum, to keep migrations cheap)
 - `currentVersionId` is a soft pointer (no FK) — the row referenced is the version currently served at `/m/<id>/index.html`
 - `slug` is unique-per-mockup, derived from `name` at creation
+- `projectId` and `folderId` are nullable FKs with `onDelete: SetNull` — deleting a Project or Folder orphans the mockup rather than cascading deletion
+- `position` controls display order within its folder/project
 
 ### MockupVersion
 
@@ -170,6 +224,12 @@ model Config {
 ```
 User ─┬─< Session
       │
+Project ─┬─< Folder (self-referencing parentId)
+         │
+         └─<? Mockup (SetNull)
+                │
+Folder ──<? Mockup (SetNull)
+                │
 Mockup ─┬─< MockupVersion (optional FK from Annotation.createdOnVersionId)
         │
         └─< Annotation ─── Thread ─< Message
@@ -180,6 +240,8 @@ Mockup ─┬─< MockupVersion (optional FK from Annotation.createdOnVersionId)
 Cascade rules:
 
 - Deleting a `User` cascades to their `Session`s
+- Deleting a `Project` cascades to its `Folder`s; sets `Mockup.projectId` to `NULL`
+- Deleting a `Folder` cascades to its child `Folder`s; sets `Mockup.folderId` to `NULL`
 - Deleting a `Mockup` cascades to its `MockupVersion`s and `Annotation`s
 - Deleting an `Annotation` cascades to its `Thread` and `Message`s
 - Deleting a `MockupVersion` sets `Annotation.createdOnVersionId` to `NULL` (`onDelete: SetNull`)

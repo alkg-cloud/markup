@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { identify } from '@/lib/auth/identify';
 import { env } from '@/lib/env';
 import { createMockupFromZip, listMockups } from '@/lib/mockup/service';
+import { prisma } from '@/lib/prisma';
 
 const VALID_STATUSES = ['open', 'resolved', 'archived'] as const;
 type Status = (typeof VALID_STATUSES)[number];
@@ -22,6 +23,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
   }
 
+  const projectId = fd.get('projectId');
+  const folderId = fd.get('folderId');
+  if (projectId != null && typeof projectId !== 'string') {
+    return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+  }
+  if (folderId != null && typeof folderId !== 'string') {
+    return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+  }
+  if (typeof projectId === 'string') {
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) return NextResponse.json({ error: 'project_not_found' }, { status: 400 });
+  }
+  if (typeof folderId === 'string') {
+    const folder = await prisma.folder.findUnique({ where: { id: folderId } });
+    if (!folder) return NextResponse.json({ error: 'folder_not_found' }, { status: 400 });
+    if (typeof projectId === 'string' && folder.projectId !== projectId) {
+      return NextResponse.json({ error: 'folder_project_mismatch' }, { status: 400 });
+    }
+  }
+
   const tmpDir = path.join(env().DATA_DIR, 'tmp');
   fs.mkdirSync(tmpDir, { recursive: true });
   const tmp = path.join(tmpDir, `mk-upload-${cuid()}.zip`);
@@ -33,6 +54,8 @@ export async function POST(req: Request) {
       zipPath: tmp,
       createdBy: id.kind === 'user' ? id.userId : id.tokenId,
       createdByType: id.kind,
+      projectId: typeof projectId === 'string' ? projectId : undefined,
+      folderId: typeof folderId === 'string' ? folderId : undefined,
     });
     return NextResponse.json(
       {
@@ -41,6 +64,8 @@ export async function POST(req: Request) {
         slug: result.mockup.slug,
         name: result.mockup.name,
         status: result.mockup.status,
+        projectId: result.mockup.projectId,
+        folderId: result.mockup.folderId,
       },
       { status: 201 },
     );

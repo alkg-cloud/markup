@@ -23,14 +23,8 @@ async function adminCookie() {
   return r.headers.get('set-cookie')!.match(/mk_session=([^;]+)/)![1];
 }
 
-async function makeAnnotation() {
-  const m = await createMockupFromZip({
-    name: 'CtxTest',
-    zipPath: fixture('valid-simple.zip'),
-    createdBy: 'u',
-    createdByType: 'user',
-  });
-  const png = await sharp({
+async function makePng() {
+  return sharp({
     create: {
       width: 100,
       height: 100,
@@ -40,6 +34,18 @@ async function makeAnnotation() {
   })
     .png()
     .toBuffer();
+}
+
+async function makeAnnotation(opts?: { projectId?: string; folderId?: string }) {
+  const m = await createMockupFromZip({
+    name: 'CtxTest',
+    zipPath: fixture('valid-simple.zip'),
+    createdBy: 'u',
+    createdByType: 'user',
+    projectId: opts?.projectId,
+    folderId: opts?.folderId,
+  });
+  const png = await makePng();
   const r = await createAnnotation({
     mockupId: m.mockup.id,
     screenshotPng: png,
@@ -59,6 +65,8 @@ describe('GET /api/agent/context/[annotationId]', () => {
     await prisma.annotation.deleteMany();
     await prisma.mockupVersion.deleteMany();
     await prisma.mockup.deleteMany();
+    await prisma.folder.deleteMany();
+    await prisma.project.deleteMany({ where: { slug: { not: 'unsorted' } } });
   });
 
   it('returns aggregated annotation + intent + thread + current_version inline', async () => {
@@ -141,5 +149,43 @@ describe('GET /api/agent/context/[annotationId]', () => {
       { params: Promise.resolve({ annotationId: 'no-such-id' }) },
     );
     expect(res.status).toBe(404);
+  });
+
+  it('returns project and folder_path for mockup in nested folder', async () => {
+    const cookie = await adminCookie();
+    const project = await prisma.project.create({
+      data: { name: 'SaaS App', slug: 'saas-app' },
+    });
+    const rootFolder = await prisma.folder.create({
+      data: { name: 'Landing Page', projectId: project.id },
+    });
+    const childFolder = await prisma.folder.create({
+      data: { name: 'Hero Section', projectId: project.id, parentId: rootFolder.id },
+    });
+    const { annotationId } = await makeAnnotation({
+      projectId: project.id,
+      folderId: childFolder.id,
+    });
+    const res = await GET(
+      new Request('http://l', { headers: { cookie: `mk_session=${cookie}` } }),
+      { params: Promise.resolve({ annotationId }) },
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.project).toEqual({ id: project.id, name: 'SaaS App', slug: 'saas-app' });
+    expect(body.folder_path).toBe('Landing Page/Hero Section');
+  });
+
+  it('returns project null and folder_path empty for mockup without project', async () => {
+    const cookie = await adminCookie();
+    const { annotationId } = await makeAnnotation();
+    const res = await GET(
+      new Request('http://l', { headers: { cookie: `mk_session=${cookie}` } }),
+      { params: Promise.resolve({ annotationId }) },
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.project).toBeNull();
+    expect(body.folder_path).toBe('');
   });
 });
