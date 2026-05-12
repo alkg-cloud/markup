@@ -9,4 +9,14 @@ describe('buildMockupCSP', () => {
     expect(csp).toContain("style-src 'self' 'unsafe-inline'");
     expect(csp).toContain("frame-ancestors 'self'");
   });
+
+  it('allows Google Fonts in style-src and font-src', () => {
+    const csp = buildMockupCSP();
+    expect(csp).toContain('https://fonts.googleapis.com');
+    expect(csp).toContain('https://fonts.gstatic.com');
+    const styleSrc = csp.split(';').find((d) => d.trim().startsWith('style-src'));
+    expect(styleSrc).toContain('https://fonts.googleapis.com');
+    const fontSrc = csp.split(';').find((d) => d.trim().startsWith('font-src'));
+    expect(fontSrc).toContain('https://fonts.gstatic.com');
+  });
 });

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnnotationModal } from '@/components/AnnotationModal/AnnotationModal';
 import { AnnotationPin } from '@/components/AnnotationPin/AnnotationPin';
 import { computePinScreenPosition, parsePinCoords } from '@/lib/annotation/pin-coords';
+import { sanitizeOklchInDocument } from '@/lib/oklch-sanitize';
 import { type VersionRow, Versions } from './Versions';
 
 interface AnnotationSummary {
@@ -82,7 +83,11 @@ export function MockupViewer({
         const html2canvas = (await import('html2canvas')).default;
         const doc = iframe.contentDocument;
         if (!doc) return;
-        const canvas = await html2canvas(doc.body, { useCORS: true, backgroundColor: null });
+        const canvas = await html2canvas(doc.body, {
+          useCORS: true,
+          backgroundColor: null,
+          onclone: (_doc: Document) => sanitizeOklchInDocument(_doc),
+        });
         canvas.toBlob(async (blob) => {
           if (!blob) return;
           const fd = new FormData();
@@ -113,6 +118,7 @@ export function MockupViewer({
       const canvas = await html2canvas(iframe.contentDocument.body, {
         useCORS: true,
         backgroundColor: null,
+        onclone: (_doc: Document) => sanitizeOklchInDocument(_doc),
       });
       setSnapshot(canvas);
     } finally {
