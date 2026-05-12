@@ -12,7 +12,7 @@ export function Statusbar({ projectName, itemCount = 0, folderCount = 0 }: Statu
       style={{
         height: 24,
         background: 'var(--accent-soft)',
-        borderTop: '1px solid oklch(74.4% 0.193 165 / 0.25)',
+        borderTop: '1px solid var(--accent-overlay-soft)',
         display: 'flex',
         alignItems: 'center',
         padding: '0 var(--space-md)',
@@ -41,7 +41,7 @@ export function Statusbar({ projectName, itemCount = 0, folderCount = 0 }: Statu
           gap: 4,
           fontSize: 'var(--type-xs)',
           fontFamily: 'var(--font-mono)',
-          color: 'oklch(74.4% 0.193 165 / 0.7)',
+          color: 'var(--accent-dim)',
         }}
       >
         {itemCount} mockup{itemCount !== 1 ? 's' : ''}
@@ -54,7 +54,7 @@ export function Statusbar({ projectName, itemCount = 0, folderCount = 0 }: Statu
             gap: 4,
             fontSize: 'var(--type-xs)',
             fontFamily: 'var(--font-mono)',
-            color: 'oklch(74.4% 0.193 165 / 0.7)',
+            color: 'var(--accent-dim)',
           }}
         >
           {folderCount} pasta{folderCount !== 1 ? 's' : ''}
