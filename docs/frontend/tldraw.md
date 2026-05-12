@@ -17,7 +17,7 @@ The screenshot itself is a tldraw image asset + image shape pair, locked at posi
 
 Tldraw embeds image asset `src` as a `data:image/png;base64,…` URL inside the snapshot. For the screenshot — a ~600 KB PNG — this means every save serialises the screenshot **twice**: once as the file `screenshot.png` on disk, once as base64 inside `tldraw.json`. A 600 KB PNG becomes ~800 KB base64.
 
-The wrapper in `src/lib/tldraw/snapshot-screenshot.ts` strips the screenshot's `src` at save time and replaces it with a marker `meta.externalRef = 'screenshot'`. At read time, the marker is rehydrated to the actual screenshot URL (`/api/annotations/[id]/screenshot`). The on-disk `tldraw.json` shrinks ~99% — typical sizes are 2–5 KB instead of 640 KB+.
+The wrapper in `src/lib/tldraw/snapshot-screenshot.ts` strips the screenshot's `src` at save time and replaces it with a marker on the top-level asset `meta` field: `asset.meta.externalRef = 'screenshot'`. At read time, the marker is rehydrated to the actual screenshot URL (`/api/annotations/[id]/screenshot`). The marker lives on `asset.meta` (not `asset.props.meta`) because tldraw validates `props` strictly against its schema. The on-disk `tldraw.json` shrinks ~99% — typical sizes are 2–5 KB instead of 640 KB+.
 
 ```ts
 // At save:
