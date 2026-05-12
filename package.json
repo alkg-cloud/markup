@@ -72,6 +72,9 @@
       "prisma",
       "puppeteer",
       "sharp"
-    ]
+    ],
+    "patchedDependencies": {
+      "@tldraw/editor": "patches/@tldraw__editor.patch"
+    }
   }
 }
