@@ -85,7 +85,7 @@ export function MockupViewer({
         if (!doc) return;
         const canvas = await html2canvas(doc.body, {
           useCORS: true,
-          backgroundColor: null,
+          backgroundColor: '#ffffff',
           onclone: (_doc: Document) => sanitizeOklchInDocument(_doc),
         });
         canvas.toBlob(async (blob) => {
@@ -117,7 +117,7 @@ export function MockupViewer({
       });
       const canvas = await html2canvas(iframe.contentDocument.body, {
         useCORS: true,
-        backgroundColor: null,
+        backgroundColor: '#ffffff',
         onclone: (_doc: Document) => sanitizeOklchInDocument(_doc),
       });
       setSnapshot(canvas);
