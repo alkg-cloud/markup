@@ -1,40 +1,57 @@
 import { describe, expect, it } from 'vitest';
 import { stripOklch } from '@/lib/oklch-sanitize';
 
+function parseRgb(s: string): { r: number; g: number; b: number; a?: number } | null {
+  const m = s.match(/rgba?\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)/);
+  if (!m) return null;
+  return { r: +m[1], g: +m[2], b: +m[3], a: m[4] !== undefined ? +m[4] : undefined };
+}
+
 describe('stripOklch', () => {
-  it('replaces oklch() with a visible grayscale fallback', () => {
+  it('replaces oklch() with a visible rgb fallback', () => {
     const result = stripOklch('oklch(74.4% 0.193 165)');
     expect(result).not.toContain('oklch');
     expect(result).toMatch(/rgb\(/);
     expect(result).not.toBe('rgba(0,0,0,0)');
   });
 
-  it('preserves lightness: dark oklch → dark gray', () => {
-    const result = stripOklch('oklch(11% 0.03 165)');
-    const m = result.match(/rgb\((\d+),\1,\1\)/);
-    expect(m).toBeTruthy();
-    expect(Number(m![1])).toBeLessThan(80);
+  it('converts accent teal oklch(74.4% 0.193 165) to a greenish rgb', () => {
+    const c = parseRgb(stripOklch('oklch(74.4% 0.193 165)'));
+    expect(c).toBeTruthy();
+    expect(c!.g).toBeGreaterThan(c!.r);
+    expect(c!.g).toBeGreaterThan(c!.b);
   });
 
-  it('preserves lightness: bright oklch → light gray', () => {
-    const result = stripOklch('oklch(96% 0.02 165)');
-    const m = result.match(/rgb\((\d+),\1,\1\)/);
-    expect(m).toBeTruthy();
-    expect(Number(m![1])).toBeGreaterThan(200);
+  it('preserves lightness: dark oklch → dark rgb', () => {
+    const c = parseRgb(stripOklch('oklch(11% 0.03 165)'));
+    expect(c).toBeTruthy();
+    expect(c!.r).toBeLessThan(30);
+    expect(c!.g).toBeLessThan(40);
+    expect(c!.b).toBeLessThan(30);
+  });
+
+  it('preserves lightness: bright oklch → light rgb', () => {
+    const c = parseRgb(stripOklch('oklch(96% 0.02 165)'));
+    expect(c).toBeTruthy();
+    expect(c!.r).toBeGreaterThan(220);
+    expect(c!.g).toBeGreaterThan(220);
+    expect(c!.b).toBeGreaterThan(220);
   });
 
   it('handles oklch with alpha channel', () => {
     const result = stripOklch('oklch(74.4% 0.193 165 / 0.5)');
     expect(result).not.toContain('oklch');
-    expect(result).toMatch(/rgba\(\d+,\d+,\d+,0\.5\)/);
+    const c = parseRgb(result);
+    expect(c).toBeTruthy();
+    expect(c!.a).toBe(0.5);
   });
 
   it('handles oklch with 0-1 lightness (no %)', () => {
     const result = stripOklch('oklch(0.744 0.193 165)');
     expect(result).not.toContain('oklch');
-    const m = result.match(/rgb\((\d+),/);
-    expect(m).toBeTruthy();
-    expect(Number(m![1])).toBeGreaterThan(150);
+    const c = parseRgb(result);
+    expect(c).toBeTruthy();
+    expect(c!.g).toBeGreaterThan(c!.r);
   });
 
   it('handles nested calc() inside oklch without leaving leftovers', () => {
@@ -54,6 +71,20 @@ describe('stripOklch', () => {
   it('100% lightness produces white', () => {
     const result = stripOklch('oklch(100% 0 0 / 0.18)');
     expect(result).toBe('rgba(255,255,255,0.18)');
+  });
+
+  it('pure red hue produces reddish color', () => {
+    const c = parseRgb(stripOklch('oklch(63% 0.26 29)'));
+    expect(c).toBeTruthy();
+    expect(c!.r).toBeGreaterThan(c!.g);
+    expect(c!.r).toBeGreaterThan(c!.b);
+  });
+
+  it('pure blue hue produces bluish color', () => {
+    const c = parseRgb(stripOklch('oklch(45% 0.31 264)'));
+    expect(c).toBeTruthy();
+    expect(c!.b).toBeGreaterThan(c!.r);
+    expect(c!.b).toBeGreaterThan(c!.g);
   });
 
   it('replaces multiple oklch occurrences in a single value', () => {

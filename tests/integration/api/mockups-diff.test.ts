@@ -30,7 +30,7 @@ async function createMockup(cookie: string, indexHtml: string) {
   const buf = await buildZip({ 'index.html': indexHtml });
   const fd = new FormData();
   fd.set('name', 'D');
-  fd.set('build', new Blob([buf], { type: 'application/zip' }), 'm.zip');
+  fd.set('build', new Blob([new Uint8Array(buf)], { type: 'application/zip' }), 'm.zip');
   const r = await createMockupRoute(
     new Request('http://l', {
       method: 'POST',
@@ -44,7 +44,7 @@ async function createMockup(cookie: string, indexHtml: string) {
 async function uploadVersion(cookie: string, mockupId: string, indexHtml: string) {
   const buf = await buildZip({ 'index.html': indexHtml });
   const fd = new FormData();
-  fd.set('build', new Blob([buf], { type: 'application/zip' }), 'm.zip');
+  fd.set('build', new Blob([new Uint8Array(buf)], { type: 'application/zip' }), 'm.zip');
   const r = await createVersion(
     new Request('http://l', {
       method: 'POST',

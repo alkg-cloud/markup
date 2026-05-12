@@ -33,22 +33,24 @@ function fakeReq(
 
 describe('identify', () => {
   it('returns user identity from session cookie', async () => {
-    const id = await identify(fakeReq({}, { mk_session: 'good' }));
+    const id = await identify(fakeReq({}, { mk_session: 'good' }) as unknown as Request);
     expect(id).toEqual({ kind: 'user', userId: 'u', sessionId: 's' });
   });
 
   it('returns agent identity from bearer token', async () => {
-    const id = await identify(fakeReq({ authorization: 'Bearer mk_xxx' }));
+    const id = await identify(fakeReq({ authorization: 'Bearer mk_xxx' }) as unknown as Request);
     expect(id).toEqual({ kind: 'agent', tokenId: 'a', name: 'primary-agent' });
   });
 
   it('returns null when no credentials', async () => {
-    const id = await identify(fakeReq({}));
+    const id = await identify(fakeReq({}) as unknown as Request);
     expect(id).toBeNull();
   });
 
   it('prefers session cookie over bearer when both present', async () => {
-    const id = await identify(fakeReq({ authorization: 'Bearer mk_xxx' }, { mk_session: 'good' }));
+    const id = await identify(
+      fakeReq({ authorization: 'Bearer mk_xxx' }, { mk_session: 'good' }) as unknown as Request,
+    );
     expect(id?.kind).toBe('user');
   });
 });
