@@ -9,12 +9,12 @@ const sampleSnapshot = {
       'asset:abc': {
         typeName: 'asset' as const,
         type: 'image' as const,
+        meta: {} as Record<string, unknown>,
         props: {
           name: 'screenshot',
           src: BASE64_DATA_URL,
           w: 800,
           h: 600,
-          meta: undefined as Record<string, unknown> | undefined,
         },
       },
       'asset:other': {
@@ -32,7 +32,10 @@ describe('stripScreenshotBase64', () => {
     const stripped = stripScreenshotBase64(sampleSnapshot);
     const screenshotAsset = stripped.document.store['asset:abc'];
     expect(screenshotAsset.props.src).toBe('');
-    expect(screenshotAsset.props.meta?.externalRef).toBe('screenshot');
+    expect((screenshotAsset as { meta?: Record<string, unknown> }).meta?.externalRef).toBe(
+      'screenshot',
+    );
+    expect(screenshotAsset.props).not.toHaveProperty('meta');
     expect(stripped.document.store['asset:other'].props.src).toMatch(/^data:image/);
   });
 
@@ -54,6 +57,15 @@ describe('rehydrateScreenshotBase64', () => {
     const stripped = stripScreenshotBase64(sampleSnapshot);
     const rehydrated = rehydrateScreenshotBase64(stripped, '/api/foo/screenshot');
     expect(rehydrated.document.store['asset:abc'].props.src).toBe('/api/foo/screenshot');
+  });
+
+  it('rehydrates legacy props.meta marker and cleans it up', () => {
+    const legacy = JSON.parse(JSON.stringify(sampleSnapshot));
+    legacy.document.store['asset:abc'].props.src = '';
+    legacy.document.store['asset:abc'].props.meta = { externalRef: 'screenshot' };
+    const rehydrated = rehydrateScreenshotBase64(legacy, '/api/foo/screenshot');
+    expect(rehydrated.document.store['asset:abc'].props.src).toBe('/api/foo/screenshot');
+    expect(rehydrated.document.store['asset:abc'].props).not.toHaveProperty('meta');
   });
 
   it('leaves snapshots with no externalRef untouched', () => {

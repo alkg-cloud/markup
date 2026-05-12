@@ -8,10 +8,10 @@ const SCREENSHOT_NAME = 'screenshot';
 interface ImageAssetRecord {
   typeName: 'asset';
   type: 'image';
+  meta?: Record<string, unknown>;
   props: {
     name?: string;
     src?: string;
-    meta?: Record<string, unknown>;
     [k: string]: unknown;
   };
 }
@@ -46,7 +46,8 @@ export function stripScreenshotBase64<T>(snapshot: T): T {
   for (const record of Object.values(store)) {
     if (isImageScreenshotAsset(record)) {
       record.props.src = '';
-      record.props.meta = { ...(record.props.meta ?? {}), externalRef: SCREENSHOT_NAME };
+      record.meta = { ...(record.meta ?? {}), externalRef: SCREENSHOT_NAME };
+      delete record.props.meta;
     }
   }
   return cloned;
@@ -59,12 +60,12 @@ export function rehydrateScreenshotBase64<T>(snapshot: T, screenshotUrl: string)
   for (const record of Object.values(store)) {
     if (!record || typeof record !== 'object') continue;
     const r = record as ImageAssetRecord;
-    if (
-      r.typeName === 'asset' &&
-      r.type === 'image' &&
-      (r.props?.meta as { externalRef?: string } | undefined)?.externalRef === SCREENSHOT_NAME
-    ) {
+    if (r.typeName !== 'asset' || r.type !== 'image') continue;
+    const topMeta = r.meta as { externalRef?: string } | undefined;
+    const propsMeta = (r.props as { meta?: { externalRef?: string } }).meta;
+    if (topMeta?.externalRef === SCREENSHOT_NAME || propsMeta?.externalRef === SCREENSHOT_NAME) {
       r.props.src = screenshotUrl;
+      delete (r.props as { meta?: unknown }).meta;
     }
   }
   return cloned;
