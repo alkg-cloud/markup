@@ -7,13 +7,19 @@ const sampleSnapshot = {
   document: {
     store: {
       'asset:abc': {
-        typeName: 'asset',
-        type: 'image',
-        props: { name: 'screenshot', src: BASE64_DATA_URL, w: 800, h: 600 },
+        typeName: 'asset' as const,
+        type: 'image' as const,
+        props: {
+          name: 'screenshot',
+          src: BASE64_DATA_URL,
+          w: 800,
+          h: 600,
+          meta: undefined as Record<string, unknown> | undefined,
+        },
       },
       'asset:other': {
-        typeName: 'asset',
-        type: 'image',
+        typeName: 'asset' as const,
+        type: 'image' as const,
         props: { name: 'pasted-image', src: 'data:image/png;base64,XYZ' },
       },
       'shape:s1': { typeName: 'shape', type: 'arrow', props: {} },

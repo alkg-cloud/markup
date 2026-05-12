@@ -34,7 +34,7 @@ async function createBaseMockup(cookie: string, indexHtml: string) {
   const zipBuf = await buildZip({ 'index.html': indexHtml });
   const fd = new FormData();
   fd.set('name', 'Patcher');
-  fd.set('build', new Blob([zipBuf], { type: 'application/zip' }), 'm.zip');
+  fd.set('build', new Blob([new Uint8Array(zipBuf)], { type: 'application/zip' }), 'm.zip');
   const res = await createMockupRoute(
     new Request('http://l/api/mockups', {
       method: 'POST',
