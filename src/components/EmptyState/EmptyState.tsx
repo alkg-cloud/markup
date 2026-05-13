@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import styles from './EmptyState.module.css';
 
 interface EmptyStateProps {
   variant: 'project' | 'folder';
@@ -16,124 +16,53 @@ export function EmptyState({ variant, onUpload, onCreateFolder }: EmptyStateProp
       : 'Crie uma subpasta ou faça upload de um mockup.';
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 'var(--space-2xl)',
-        gap: 'var(--space-xl)',
-        minHeight: 400,
-        textAlign: 'center',
-      }}
-    >
-      {/* Illustration */}
+    <div className={styles.container}>
       <svg
-        width="80"
-        height="80"
-        viewBox="0 0 80 80"
+        width="48"
+        height="48"
+        viewBox="0 0 48 48"
         fill="none"
         aria-hidden="true"
-        style={{ opacity: 0.4 }}
+        className={styles.icon}
       >
         <rect
-          x="12"
-          y="20"
-          width="56"
-          height="40"
-          rx="6"
+          x="7"
+          y="12"
+          width="34"
+          height="24"
+          rx="4"
           stroke="var(--border-strong)"
           strokeWidth="2"
         />
-        <rect x="8" y="15" width="56" height="40" rx="6" stroke="var(--border)" strokeWidth="1.5" />
+        <rect x="5" y="9" width="34" height="24" rx="4" stroke="var(--border)" strokeWidth="1.5" />
         <rect
-          x="4"
-          y="10"
-          width="56"
-          height="40"
-          rx="6"
+          x="3"
+          y="6"
+          width="34"
+          height="24"
+          rx="4"
           stroke="var(--border-subtle)"
           strokeWidth="1"
         />
-        <rect x="20" y="32" width="20" height="2.5" rx="1.25" fill="var(--border-strong)" />
-        <rect x="20" y="39" width="32" height="2.5" rx="1.25" fill="var(--border)" />
-        <rect x="20" y="46" width="26" height="2.5" rx="1.25" fill="var(--border)" />
+        <rect x="12" y="19" width="12" height="2" rx="1" fill="var(--border-strong)" />
+        <rect x="12" y="23" width="20" height="2" rx="1" fill="var(--border)" />
       </svg>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
-        <h2
-          style={{
-            fontSize: 'var(--type-md)',
-            fontWeight: 'var(--weight-bold)',
-            color: 'var(--text-bright)',
-            margin: 0,
-          }}
-        >
-          {title}
-        </h2>
-        <p
-          style={{
-            fontSize: 'var(--type-sm)',
-            color: 'var(--text-muted)',
-            maxWidth: 320,
-            lineHeight: 1.6,
-            margin: 0,
-          }}
-        >
-          {subtitle}
-        </p>
-      </div>
+      <h2 className={styles.title}>{title}</h2>
+      <p className={styles.desc}>{subtitle}</p>
 
-      <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-        {onUpload && <EmptyStateButton label="Fazer upload de mockup" primary onClick={onUpload} />}
-        {onCreateFolder && <EmptyStateButton label="Criar pasta" onClick={onCreateFolder} />}
+      <div className={styles.actions}>
+        {onUpload && (
+          <button type="button" className={styles.btnAccent} onClick={onUpload}>
+            Fazer upload de mockup
+          </button>
+        )}
+        {onCreateFolder && (
+          <button type="button" className={styles.btnSecondary} onClick={onCreateFolder}>
+            Criar pasta
+          </button>
+        )}
       </div>
     </div>
-  );
-}
-
-function EmptyStateButton({
-  label,
-  primary,
-  onClick,
-}: {
-  label: string;
-  primary?: boolean;
-  onClick: () => void;
-}) {
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 'var(--space-xs)',
-        padding: '6px var(--space-sm)',
-        borderRadius: 'var(--radius-xs)',
-        fontSize: 'var(--type-sm)',
-        fontWeight: 'var(--weight-medium)',
-        border: 'none',
-        cursor: 'pointer',
-        transition: 'background var(--motion-fast) var(--ease-standard)',
-        ...(primary
-          ? {
-              background: hovered ? 'var(--accent-bright)' : 'var(--accent)',
-              color: 'var(--text-on-accent)',
-              fontWeight: 'var(--weight-semibold)',
-            }
-          : {
-              background: hovered ? 'var(--btn-bg-hover)' : 'var(--btn-bg)',
-              color: 'var(--text-dim)',
-            }),
-      }}
-    >
-      {label}
-    </button>
   );
 }

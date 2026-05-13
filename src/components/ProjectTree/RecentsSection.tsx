@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import styles from './RecentsSection.module.css';
+import { formatRelativeTime } from '@/lib/relative-time';
+import listStyles from './RecentList.module.css';
+import headerStyles from './RecentsSection.module.css';
 
 const MAX_RECENTS = 5;
 const STORAGE_PREFIX = 'markup_recents_';
@@ -37,24 +39,52 @@ export function useRecents(projectSlug: string): [string[], (mockupId: string) =
   return [ids, recordAccess];
 }
 
-interface RecentsSectionProps {
-  projectSlug: string;
-  mockupNames: Record<string, string>;
+export interface RecentMockup {
+  id: string;
+  name: string;
+  path?: string;
+  updatedAt: string;
 }
 
-export function RecentsSection({ projectSlug, mockupNames }: RecentsSectionProps) {
-  const [ids] = useRecents(projectSlug);
+interface RecentsSectionProps {
+  projectSlug: string;
+  mockups: Record<string, RecentMockup>;
+}
 
-  if (ids.length === 0) return null;
+export function RecentsSection({ projectSlug, mockups }: RecentsSectionProps) {
+  const [ids] = useRecents(projectSlug);
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const visibleIds = ids.filter((id) => mockups[id]);
+  if (visibleIds.length === 0) return null;
 
   return (
     <section aria-label="Recentes">
-      <div className={styles.header}>Recentes</div>
-      {ids.map((id) => (
-        <a key={id} href={`/mockups/${id}`} className={styles.link}>
-          <span className={styles.linkLabel}>{mockupNames[id] ?? id.slice(0, 8)}</span>
-        </a>
-      ))}
+      <div className={headerStyles.header}>Recentes</div>
+      <div className={listStyles.list}>
+        {visibleIds.map((id) => {
+          const m = mockups[id];
+          return (
+            <a key={id} href={`/mockups/${id}`} className={listStyles.item}>
+              <span className={listStyles.itemIcon} aria-hidden="true">
+                📄
+              </span>
+              <div className={listStyles.itemInfo}>
+                <div className={listStyles.itemName}>{m.name}</div>
+                {m.path && <div className={listStyles.itemPath}>{m.path}</div>}
+              </div>
+              <span className={listStyles.itemTime}>
+                {formatRelativeTime(new Date(m.updatedAt), now)}
+              </span>
+            </a>
+          );
+        })}
+      </div>
     </section>
   );
 }
