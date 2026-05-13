@@ -1,10 +1,12 @@
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
 import { identify } from '@/lib/auth/identify';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { prisma } from '@/lib/prisma';
 import { getProjectTree, listProjects } from '@/lib/project/service';
+import styles from './layout.module.css';
 import { ProjectSidebar } from './ProjectSidebar';
 
 export default async function ProjectsLayout({ children }: { children: ReactNode }) {
@@ -30,32 +32,32 @@ export default async function ProjectsLayout({ children }: { children: ReactNode
 
   const allMockups = await prisma.mockup.findMany({
     where: { status: { not: 'archived' } },
-    select: { id: true, name: true },
+    select: { id: true, name: true, updatedAt: true, folder: { select: { name: true } } },
   });
   const mockupNames: Record<string, string> = {};
-  for (const m of allMockups) mockupNames[m.id] = m.name;
+  const recentMockups: Record<
+    string,
+    { id: string; name: string; path?: string; updatedAt: string }
+  > = {};
+  for (const m of allMockups) {
+    mockupNames[m.id] = m.name;
+    recentMockups[m.id] = {
+      id: m.id,
+      name: m.name,
+      path: m.folder?.name,
+      updatedAt: m.updatedAt.toISOString(),
+    };
+  }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        height: '100vh',
-        position: 'relative',
-      }}
-    >
-      <ProjectSidebar projects={treeProjects} mockupNames={mockupNames} />
-      <main
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          background: 'var(--bg)',
-          minWidth: 0,
-        }}
-      >
-        {children}
-      </main>
+    <div className={styles.shell}>
+      <ProjectSidebar
+        projects={treeProjects}
+        mockupNames={mockupNames}
+        recentMockups={recentMockups}
+      />
+      <main className={styles.main}>{children}</main>
+      <CommandPalette projects={treeProjects} />
     </div>
   );
 }

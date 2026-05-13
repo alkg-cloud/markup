@@ -4,14 +4,18 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TreeProject } from '@/components/ProjectTree/ProjectTree';
 import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
+import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
+import { RecentsSection } from '@/components/ProjectTree/RecentsSection';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
+import sidebarStyles from './ProjectSidebar.module.css';
 
 interface ProjectSidebarProps {
   projects: TreeProject[];
   mockupNames: Record<string, string>;
+  recentMockups: Record<string, RecentMockup>;
 }
 
-export function ProjectSidebar({ projects, mockupNames }: ProjectSidebarProps) {
+export function ProjectSidebar({ projects, mockupNames, recentMockups }: ProjectSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
@@ -81,18 +85,34 @@ export function ProjectSidebar({ projects, mockupNames }: ProjectSidebarProps) {
   }, []);
 
   const treeContent = (
-    <ProjectTree
-      projects={projects}
-      mockupNames={mockupNames}
-      onCreateFolder={handleCreateFolder}
-      onMove={handleMove}
-    />
+    <>
+      <ProjectTree
+        projects={projects}
+        mockupNames={mockupNames}
+        onCreateFolder={handleCreateFolder}
+        onMove={handleMove}
+      />
+      {projects.length > 0 && (
+        <RecentsSection projectSlug={projects[0].slug} mockups={recentMockups} />
+      )}
+    </>
+  );
+
+  const footerContent = (
+    <div className={sidebarStyles.footer}>
+      <button type="button" className={sidebarStyles.btnNewProject} aria-label="New project">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
+        </svg>
+        New Project
+      </button>
+    </div>
   );
 
   return (
     <>
       {/* Desktop: pill-morph sidebar */}
-      <Sidebar>{treeContent}</Sidebar>
+      <Sidebar footer={footerContent}>{treeContent}</Sidebar>
 
       {/* Mobile hamburger */}
       <button
@@ -228,6 +248,7 @@ export function ProjectSidebar({ projects, mockupNames }: ProjectSidebarProps) {
           >
             {treeContent}
           </div>
+          {footerContent}
         </div>
       </dialog>
 

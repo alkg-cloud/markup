@@ -1,0 +1,138 @@
+.container {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  z-index: 950;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+  font-size: var(--type-sm);
+  pointer-events: auto;
+  animation: toastIn var(--motion-base) var(--ease-spring) forwards;
+  max-width: 380px;
+}
+
+.toast[data-exiting="true"] {
+  animation: toastOut var(--motion-fast) var(--ease-exit) forwards;
+}
+
+.success {
+  border-color: var(--success-border);
+}
+
+.error {
+  border-color: var(--danger-border);
+}
+
+.warning {
+  border-color: var(--warning-border);
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.iconSuccess {
+  color: var(--success);
+}
+
+.iconError {
+  color: var(--danger);
+}
+
+.iconWarning {
+  color: var(--warning);
+}
+
+.iconInfo {
+  color: var(--info);
+}
+
+.message {
+  flex: 1;
+  min-width: 0;
+}
+
+.dismiss {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xs);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
+.dismiss:hover {
+  color: var(--text);
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+@media (max-width: 767px) {
+  .container {
+    left: var(--space-sm);
+    right: var(--space-sm);
+    bottom: var(--space-sm);
+  }
+
+  .toast {
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+    opacity: 1;
+  }
+
+  .toast[data-exiting="true"] {
+    animation: none;
+    opacity: 0;
+  }
+
+  .dismiss {
+    transition: none;
+  }
+}

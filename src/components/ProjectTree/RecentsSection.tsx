@@ -1,6 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { formatRelativeTime } from '@/lib/relative-time';
+import listStyles from './RecentList.module.css';
+import headerStyles from './RecentsSection.module.css';
 
 const MAX_RECENTS = 5;
 const STORAGE_PREFIX = 'markup_recents_';
@@ -36,66 +39,52 @@ export function useRecents(projectSlug: string): [string[], (mockupId: string) =
   return [ids, recordAccess];
 }
 
-interface RecentsSectionProps {
-  projectSlug: string;
-  mockupNames: Record<string, string>;
+export interface RecentMockup {
+  id: string;
+  name: string;
+  path?: string;
+  updatedAt: string;
 }
 
-export function RecentsSection({ projectSlug, mockupNames }: RecentsSectionProps) {
-  const [ids] = useRecents(projectSlug);
+interface RecentsSectionProps {
+  projectSlug: string;
+  mockups: Record<string, RecentMockup>;
+}
 
-  if (ids.length === 0) return null;
+export function RecentsSection({ projectSlug, mockups }: RecentsSectionProps) {
+  const [ids] = useRecents(projectSlug);
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const visibleIds = ids.filter((id) => mockups[id]);
+  if (visibleIds.length === 0) return null;
 
   return (
     <section aria-label="Recentes">
-      <div
-        style={{
-          padding: '2px var(--space-xs) 2px 24px',
-          fontSize: 'var(--type-2xs)',
-          textTransform: 'uppercase',
-          letterSpacing: 'var(--tracking-wide)',
-          color: 'var(--text-muted)',
-          fontWeight: 'var(--weight-semibold)',
-          fontFamily: 'var(--font-mono)',
-        }}
-      >
-        Recentes
+      <div className={headerStyles.header}>Recentes</div>
+      <div className={listStyles.list}>
+        {visibleIds.map((id) => {
+          const m = mockups[id];
+          return (
+            <a key={id} href={`/mockups/${id}`} className={listStyles.item}>
+              <span className={listStyles.itemIcon} aria-hidden="true">
+                📄
+              </span>
+              <div className={listStyles.itemInfo}>
+                <div className={listStyles.itemName}>{m.name}</div>
+                {m.path && <div className={listStyles.itemPath}>{m.path}</div>}
+              </div>
+              <span className={listStyles.itemTime}>
+                {formatRelativeTime(new Date(m.updatedAt), now)}
+              </span>
+            </a>
+          );
+        })}
       </div>
-      {ids.map((id) => (
-        <a
-          key={id}
-          href={`/mockups/${id}`}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            height: 28,
-            paddingLeft: 36,
-            paddingRight: 'var(--space-sm)',
-            fontSize: 'var(--type-sm)',
-            color: 'var(--text-dim)',
-            textDecoration: 'none',
-            cursor: 'pointer',
-            transition: 'background var(--motion-fast) var(--ease-standard)',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = 'var(--surface-hover)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = 'transparent';
-          }}
-        >
-          <span
-            style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {mockupNames[id] ?? id.slice(0, 8)}
-          </span>
-        </a>
-      ))}
     </section>
   );
 }
