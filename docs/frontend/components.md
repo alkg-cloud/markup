@@ -68,6 +68,16 @@ src/components/
   Dialog/
     Dialog.tsx              # 'use client' — modal dialog with scrim, title, field/input helpers, actions row
     Dialog.module.css       # scrim, dialog card, title, field, label, input, actions styles + scale-in animation
+  Toast/
+    Toast.tsx               # 'use client' — ToastProvider renders a portal container fixed bottom-center (z-2000); pill toasts auto-dismiss
+    Toast.module.css        # container, toast pill, toastIn/toastOut keyframes + prefers-reduced-motion override
+    useToast.ts             # ToastContext + useToast() consumer hook + useToastState() internal state hook
+  IconPicker/
+    IconPicker.tsx          # 'use client' — tabbed icon grid (Code/Brands/UI/Emoji) with search filter and selected-token footer
+    IconPicker.module.css   # popover, search, tabs, grid, cell, cellSelected, footer, token styles
+    icons.ts                # PICKER_ICONS data map + ICON_TABS tab list (pure data, no React)
+  NewProjectDialog/
+    NewProjectDialog.tsx    # 'use client' — composes Dialog + IconPicker; POSTs to /api/projects; calls onCreated + shows toast
 ```
 
 Page-scoped components (used only by one page) live next to the page file:
@@ -87,7 +97,7 @@ src/app/mockups/
 src/app/projects/
   layout.tsx                 # server — auth + Prisma tree fetch → grid shell
   page.tsx                   # server — redirect to first project
-  ProjectSidebar.tsx         # 'use client' — sidebar wrapper, folder create, move, mobile drawer, footer with New Project button
+  ProjectSidebar.tsx         # 'use client' — sidebar wrapper, folder create, move, mobile drawer, footer with New Project button wired to NewProjectDialog
   ProjectSidebar.module.css  # footer + btn-new-project styles
   [slug]/
     page.tsx                 # server — project root content

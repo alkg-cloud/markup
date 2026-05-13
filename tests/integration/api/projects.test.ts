@@ -117,6 +117,34 @@ describe('projects API', () => {
     expect(gone.status).toBe(404);
   });
 
+  it('creates project with icon', async () => {
+    const cookie = await adminCookie();
+    const res = await createProjectRoute(
+      new Request('http://l', jsonReq(cookie, { name: 'Iconic', icon: 'vsc:VscFile' })),
+    );
+    expect(res.status).toBe(201);
+    const project = await res.json();
+    expect(project.icon).toBe('vsc:VscFile');
+  });
+
+  it('creates project without icon — icon is null', async () => {
+    const cookie = await adminCookie();
+    const res = await createProjectRoute(
+      new Request('http://l', jsonReq(cookie, { name: 'NoIcon' })),
+    );
+    expect(res.status).toBe(201);
+    const project = await res.json();
+    expect(project.icon).toBeNull();
+  });
+
+  it('rejects icon longer than 100 chars', async () => {
+    const cookie = await adminCookie();
+    const res = await createProjectRoute(
+      new Request('http://l', jsonReq(cookie, { name: 'Bad', icon: 'x'.repeat(101) })),
+    );
+    expect(res.status).toBe(400);
+  });
+
   it('rejects unauthenticated', async () => {
     const r = await listProjectsRoute(new Request('http://l'));
     expect(r.status).toBe(401);
