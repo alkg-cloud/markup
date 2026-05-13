@@ -1,6 +1,7 @@
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
 import { identify } from '@/lib/auth/identify';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { prisma } from '@/lib/prisma';
@@ -72,6 +73,7 @@ export default async function ProjectsLayout({ children }: { children: ReactNode
       >
         {children}
       </main>
+      <CommandPalette projects={treeProjects} />
     </div>
   );
 }
