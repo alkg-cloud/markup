@@ -84,23 +84,41 @@ const editorRef = useRef<Editor | null>(null);
 <AnnotationCanvas onEditorMount={(ed) => { editorRef.current = ed; }} />
 ```
 
-## Inline styles + tokens
+## Styling: CSS Modules + tokens
 
-Components are styled via inline `style={{...}}` referencing CSS variables defined in `src/styles/tokens.css`. There are no CSS Modules, no styled-components, and no Tailwind. Global rules (focus-visible, scrollbar, `body::before` mesh) live in `src/app/globals.css`.
+New components use **CSS Modules** (`.module.css` co-located with the `.tsx` file). Existing components migrate to CSS Modules when touched. Untouched components keep their inline `style={{…}}` until a PR touches them. Global rules (focus-visible, scrollbar, `body::before` mesh) live in `src/app/globals.css`.
+
+```tsx
+// New component pattern
+import styles from './CommandPalette.module.css';
+
+<div className={styles.panel}>…</div>
+```
+
+```css
+/* CommandPalette.module.css */
+.panel {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+}
+```
+
+Legacy inline style pattern (existing components not yet migrated):
 
 ```tsx
 <button style={{
   padding: '8px 16px',
   borderRadius: 'var(--radius-pill)',
-  border: '1px solid var(--accent)',
-  background: 'var(--accent)',
-  color: 'oklch(15% 0.005 165)',
+  background: 'var(--btn-bg)',
+  color: 'var(--accent-on-btn)',
   fontWeight: 700,
   fontSize: 'var(--type-sm)',
 }}>
 ```
 
-If a value isn't a token, the token is missing. Add it to `tokens.css` first, then reference it. Hardcoded literals are a code smell.
+All values reference tokens via `var(--…)`. If a value isn't a token, the token is missing — add it to `tokens.css` first. No styled-components, no Tailwind.
 
 ## State coverage per interactive element
 
@@ -149,6 +167,6 @@ There is no form library. Inputs are uncontrolled or controlled with `useState` 
 
 ## Animation
 
-- Transitions use `var(--motion-fast)` (~120ms), `var(--motion-base)` (~180ms), `var(--motion-emphasized)` (~250ms) with `var(--ease-standard)` or `var(--ease-spring)`
+- Transitions use `var(--motion-fast)` (160ms), `var(--motion-base)` (220ms), `var(--motion-slow)` (320ms) with `var(--ease-standard)` or `var(--ease-spring)`
 - New `@keyframes` rules ship with a matching `@media (prefers-reduced-motion: reduce)` override that zeros the animation
 - Tldraw owns its own animations; we don't try to override them
