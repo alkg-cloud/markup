@@ -30,10 +30,22 @@ export default async function ProjectsLayout({ children }: { children: ReactNode
 
   const allMockups = await prisma.mockup.findMany({
     where: { status: { not: 'archived' } },
-    select: { id: true, name: true },
+    select: { id: true, name: true, updatedAt: true, folder: { select: { name: true } } },
   });
   const mockupNames: Record<string, string> = {};
-  for (const m of allMockups) mockupNames[m.id] = m.name;
+  const recentMockups: Record<
+    string,
+    { id: string; name: string; path?: string; updatedAt: string }
+  > = {};
+  for (const m of allMockups) {
+    mockupNames[m.id] = m.name;
+    recentMockups[m.id] = {
+      id: m.id,
+      name: m.name,
+      path: m.folder?.name,
+      updatedAt: m.updatedAt.toISOString(),
+    };
+  }
 
   return (
     <div
@@ -45,7 +57,11 @@ export default async function ProjectsLayout({ children }: { children: ReactNode
         overflow: 'hidden',
       }}
     >
-      <ProjectSidebar projects={treeProjects} mockupNames={mockupNames} />
+      <ProjectSidebar
+        projects={treeProjects}
+        mockupNames={mockupNames}
+        recentMockups={recentMockups}
+      />
       <main
         style={{
           display: 'flex',

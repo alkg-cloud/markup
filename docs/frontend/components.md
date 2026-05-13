@@ -39,8 +39,9 @@ src/components/
     useTreeDnD.ts           # hook — HTML5 Drag API + keyboard move mode
     InlineFolderCreate.tsx  # 'use client' — inline input for folder creation
     InlineFolderCreate.module.css  # input, error styles
-    RecentsSection.tsx      # 'use client' — useRecents hook + section UI
-    RecentsSection.module.css  # header, link styles
+    RecentsSection.tsx      # 'use client' — useRecents hook + recent-item list with icon/info/timestamp
+    RecentsSection.module.css  # header label styles
+    RecentList.module.css   # list, item, icon, info, name, path, time styles
   Breadcrumbs/
     Breadcrumbs.tsx         # 'use client' — breadcrumb nav with truncation
     Breadcrumbs.module.css  # nav, list, link, separator, current styles
@@ -52,6 +53,7 @@ src/components/
     FolderCard.module.css   # card, icon, info, name, meta styles
   EmptyState/
     EmptyState.tsx          # 'use client' — project/folder empty states
+    EmptyState.module.css   # container, icon, title, desc, actions, btn-accent, btn-secondary styles
   Statusbar/
     Statusbar.tsx           # 'use client' — 24px bar with project stats
     Statusbar.module.css    # bar + segment styles

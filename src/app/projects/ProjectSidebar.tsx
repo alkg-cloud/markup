@@ -4,14 +4,17 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TreeProject } from '@/components/ProjectTree/ProjectTree';
 import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
+import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
+import { RecentsSection } from '@/components/ProjectTree/RecentsSection';
 import sidebarStyles from './ProjectSidebar.module.css';
 
 interface ProjectSidebarProps {
   projects: TreeProject[];
   mockupNames: Record<string, string>;
+  recentMockups: Record<string, RecentMockup>;
 }
 
-export function ProjectSidebar({ projects, mockupNames }: ProjectSidebarProps) {
+export function ProjectSidebar({ projects, mockupNames, recentMockups }: ProjectSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
@@ -107,7 +110,7 @@ export function ProjectSidebar({ projects, mockupNames }: ProjectSidebarProps) {
         </span>
       </div>
 
-      {/* Tree */}
+      {/* Tree + Recents */}
       <div
         style={{
           flex: 1,
@@ -122,6 +125,9 @@ export function ProjectSidebar({ projects, mockupNames }: ProjectSidebarProps) {
           onCreateFolder={handleCreateFolder}
           onMove={handleMove}
         />
+        {projects.length > 0 && (
+          <RecentsSection projectSlug={projects[0].slug} mockups={recentMockups} />
+        )}
       </div>
 
       {/* Footer */}
