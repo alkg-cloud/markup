@@ -38,20 +38,20 @@ export default async function ProjectsLayout({ children }: { children: ReactNode
   return (
     <div
       style={{
-        display: 'grid',
-        gridTemplateColumns: 'var(--sidebar-width) 1fr',
-        gridTemplateRows: '1fr',
+        display: 'flex',
         height: '100vh',
-        overflow: 'hidden',
+        position: 'relative',
       }}
     >
       <ProjectSidebar projects={treeProjects} mockupNames={mockupNames} />
       <main
         style={{
+          flex: 1,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
           background: 'var(--bg)',
+          minWidth: 0,
         }}
       >
         {children}
