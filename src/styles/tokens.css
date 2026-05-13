@@ -1,29 +1,28 @@
 /*
- * Markup — design tokens (v1.3 grapesjs-aligned re-skin)
+ * Markup — design tokens (frozen prototype)
  *
  * Aesthetic thesis: editorial-dense control room. Near-pure-black canvas
- * with subtle green-teal atmospheric mesh. Manrope as the typographic voice
+ * tinted at hue 165° (teal-leaning green). Manrope as the typographic voice
  * (single family, weight contrast). Pill buttons with accent TEXT on a
  * dark-grey button bg — no shouty solid CTAs. Numbers tabular. Motion
  * deliberate; exit faster than enter.
  *
- * Color reference: grapesjs.com sampled live at the magenta accent
- * (rgb(230,133,246) = oklch(74.4% 0.193 322°)). We rotate the hue to 165°
- * (teal-leaning green) and keep L+C identical so the perceptual energy
- * matches grapesjs's brand.
+ * Every surface, border, and text token shares hue 165° so the palette
+ * feels unified with the accent. OKLCH for perceptual uniformity; btn-bg
+ * and surface-alpha tokens stay RGB/rgba since they are hue-neutral.
  */
 
 :root {
   /* ─── Surface ──────────────────────────────────────────────────────────
-   * Near-pure-black with the same warm-magenta hint grapesjs ships. The
-   * atmospheric body::before in globals.css overlays a green-teal mesh on
-   * top, so the canvas reads neutral-warm rather than blue-cool.
+   * Near-pure-black tinted at hue 165° so surfaces harmonise with the
+   * accent. The atmospheric body::before in globals.css layers a mesh on
+   * top for depth.
    */
-  --bg: rgb(6, 4, 6);
-  --bg-elevated: rgb(14, 12, 16);
-  --bg-card: rgb(25, 22, 25);
-  --bg-card-active: rgb(32, 28, 32);
-  --bg-tinted: rgb(19, 16, 22);
+  --bg: oklch(11% 0.03 165);
+  --bg-elevated: oklch(7% 0.02 165);
+  --bg-card: oklch(12% 0.02 165);
+  --bg-card-active: oklch(15% 0.025 165);
+  --bg-tinted: oklch(9% 0.02 165);
 
   /* Button surface — grapesjs's CTA bg verbatim. Used for the pill CTA
    * pattern: bg dark-grey + accent text. */
@@ -37,27 +36,26 @@
   --surface-soft: rgba(255, 255, 255, 0.02);
   --surface-strong: rgba(255, 255, 255, 0.06);
 
-  --bg-elevated-soft: rgba(14, 12, 16, 0.7);
-  --bg-elevated-mid: rgba(14, 12, 16, 0.85);
-  --bg-elevated-strong: rgba(14, 12, 16, 0.95);
+  --bg-elevated-soft: oklch(7% 0.02 165 / 0.7);
+  --bg-elevated-mid: oklch(7% 0.02 165 / 0.85);
+  --bg-elevated-strong: oklch(7% 0.02 165 / 0.95);
 
   --bg-chip: rgba(120, 120, 130, 0.15);
 
-  /* Distinct hue from --bg-elevated so the iframe frame reads as a different surface. */
-  --bg-iframe: rgba(20, 18, 22, 0.5);
+  --bg-iframe: oklch(10% 0.02 165 / 0.5);
 
-  --border-subtle: rgb(35, 32, 38);
-  --border: rgb(45, 42, 48);
-  --border-strong: rgb(64, 60, 66);
+  --border-subtle: oklch(17% 0.02 165);
+  --border: oklch(21% 0.025 165);
+  --border-strong: oklch(28% 0.025 165);
 
   /* ─── Text ─────────────────────────────────────────────────────────────
-   * Light grey (grapesjs's body color) as default body text — softer than
-   * pure white on the warm-tinted black. White reserved for headlines.
+   * Light grey as default body text — softer than pure white on the
+   * teal-tinted black. White reserved for headlines.
    */
-  --text-bright: rgb(245, 247, 250);
-  --text: rgb(208, 213, 221);
-  --text-dim: rgb(140, 145, 155);
-  --text-muted: rgb(102, 106, 116);
+  --text-bright: oklch(97% 0.01 165);
+  --text: oklch(82% 0.04 165);
+  --text-dim: oklch(60% 0.02 165);
+  --text-muted: oklch(47% 0.02 165);
 
   /* ─── Accent (the one job this color does is be unmistakable) ──────────
    * oklch(74.4% 0.193 165°) — same L + same C as grapesjs's magenta,
@@ -255,10 +253,19 @@
   --motion-glacial: 480ms;
 
   /* ─── Layout ──────────────────────────────────────────────────────── */
-  --topbar-height: 60px;
-  --sidebar-width: 320px;
+  --topbar-height: 52px;
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 52px;
   --content-max: 1200px;
   --hero-max: 1280px;
+
+  /* ─── Sidebar pill-morph ─────────────────────────────────────────── */
+  --pill-width: 84px;
+  --pill-height: 40px;
+  --pill-top: 5px;
+  --pill-left: 5px;
+  --morph-dur: 360ms;
+  --morph-ease: cubic-bezier(0.4, 0.8, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -268,5 +275,6 @@
     --motion-base: 0ms;
     --motion-slow: 0ms;
     --motion-glacial: 0ms;
+    --morph-dur: 0ms;
   }
 }
