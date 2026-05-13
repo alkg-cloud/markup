@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TreeProject } from '@/components/ProjectTree/ProjectTree';
 import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
+import { Sidebar } from '@/components/Sidebar/Sidebar';
 
 interface ProjectSidebarProps {
   projects: TreeProject[];
@@ -79,67 +80,19 @@ export function ProjectSidebar({ projects, mockupNames }: ProjectSidebarProps) {
     return () => dialog.removeEventListener('close', onClose);
   }, []);
 
-  const sidebarContent = (
-    <>
-      {/* Sidebar header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: 'var(--space-xs) var(--space-sm) var(--space-xs) var(--space-md)',
-          borderBottom: '1px solid var(--border-subtle)',
-          flexShrink: 0,
-        }}
-      >
-        <span
-          style={{
-            fontSize: 'var(--type-xs)',
-            fontWeight: 'var(--weight-bold)',
-            letterSpacing: 'var(--tracking-wide)',
-            textTransform: 'uppercase',
-            color: 'var(--text-muted)',
-            fontFamily: 'var(--font-mono)',
-          }}
-        >
-          Projetos
-        </span>
-      </div>
-
-      {/* Tree */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          scrollbarWidth: 'thin',
-          scrollbarColor: 'var(--border) transparent',
-        }}
-      >
-        <ProjectTree
-          projects={projects}
-          mockupNames={mockupNames}
-          onCreateFolder={handleCreateFolder}
-          onMove={handleMove}
-        />
-      </div>
-    </>
+  const treeContent = (
+    <ProjectTree
+      projects={projects}
+      mockupNames={mockupNames}
+      onCreateFolder={handleCreateFolder}
+      onMove={handleMove}
+    />
   );
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          background: 'var(--bg-elevated)',
-          borderRight: '1px solid var(--border-subtle)',
-          overflow: 'hidden',
-        }}
-        className="project-sidebar-desktop"
-      >
-        {sidebarContent}
-      </aside>
+      {/* Desktop: pill-morph sidebar */}
+      <Sidebar>{treeContent}</Sidebar>
 
       {/* Mobile hamburger */}
       <button
@@ -242,13 +195,44 @@ export function ProjectSidebar({ projects, mockupNames }: ProjectSidebarProps) {
           >
             ✕
           </button>
-          {sidebarContent}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 'var(--space-xs) var(--space-sm) var(--space-xs) var(--space-md)',
+              borderBottom: '1px solid var(--border-subtle)',
+              flexShrink: 0,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 'var(--type-xs)',
+                fontWeight: 'var(--weight-bold)',
+                letterSpacing: 'var(--tracking-wide)',
+                textTransform: 'uppercase',
+                color: 'var(--text-muted)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              Projetos
+            </span>
+          </div>
+          <div
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'var(--border) transparent',
+            }}
+          >
+            {treeContent}
+          </div>
         </div>
       </dialog>
 
       <style>{`
         @media (max-width: 767px) {
-          .project-sidebar-desktop { display: none !important; }
           .project-sidebar-hamburger { display: flex !important; }
         }
         @media (min-width: 768px) {
