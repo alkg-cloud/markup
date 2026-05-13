@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import styles from './Breadcrumbs.module.css';
 
 export interface BreadcrumbSegment {
   label: string;
@@ -23,37 +24,16 @@ export function Breadcrumbs({ segments }: BreadcrumbsProps) {
     : segments;
 
   return (
-    <nav aria-label="Navegação estrutural">
-      <ol
-        style={{
-          listStyle: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--space-2xs)',
-          margin: 0,
-          padding: 0,
-          flexWrap: 'wrap',
-        }}
-      >
+    <nav className={styles.nav} aria-label="Navegação estrutural">
+      <ol className={styles.list}>
         {visible.map((seg, i) => {
           const isLast = i === visible.length - 1;
           const isEllipsis = seg.label === '…';
 
           return (
-            <li
-              key={`${seg.href}-${i}`}
-              style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2xs)' }}
-            >
+            <li key={`${seg.href}-${i}`} className={styles.item}>
               {i > 0 && (
-                <span
-                  aria-hidden="true"
-                  style={{
-                    color: 'var(--text-muted)',
-                    fontSize: 'var(--type-xs)',
-                    fontFamily: 'var(--font-mono)',
-                    flexShrink: 0,
-                  }}
-                >
+                <span aria-hidden="true" className={styles.separator}>
                   /
                 </span>
               )}
@@ -62,68 +42,23 @@ export function Breadcrumbs({ segments }: BreadcrumbsProps) {
                   type="button"
                   onClick={() => setShowAll(true)}
                   aria-label="Expandir navegação completa"
-                  style={{
-                    fontSize: 'var(--type-sm)',
-                    color: 'var(--text-dim)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '2px 4px',
-                    borderRadius: 'var(--radius-xs)',
-                    transition: 'background var(--motion-fast) var(--ease-standard)',
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = 'var(--surface-hover)';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = 'transparent';
-                  }}
+                  className={styles.ellipsisBtn}
                 >
                   …
                 </button>
               ) : isLast ? (
-                <span
-                  aria-current="page"
-                  style={{
-                    fontSize: 'var(--type-sm)',
-                    color: 'var(--text-bright)',
-                    fontWeight: 'var(--weight-semibold)',
-                    padding: '2px 4px',
-                  }}
-                >
+                <span aria-current="page" className={styles.current}>
                   {seg.label}
                 </span>
               ) : (
-                <CrumbLink href={seg.href} label={seg.label} />
+                <Link href={seg.href} className={styles.link}>
+                  {seg.label}
+                </Link>
               )}
             </li>
           );
         })}
       </ol>
     </nav>
-  );
-}
-
-function CrumbLink({ href, label }: { href: string; label: string }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <Link
-      href={href}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        fontSize: 'var(--type-sm)',
-        color: hovered ? 'var(--text)' : 'var(--text-dim)',
-        textDecoration: 'none',
-        padding: '2px 4px',
-        borderRadius: 'var(--radius-xs)',
-        background: hovered ? 'var(--surface-hover)' : 'transparent',
-        transition:
-          'color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard)',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {label}
-    </Link>
   );
 }

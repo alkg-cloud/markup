@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import MockupCard from '@/app/mockups/MockupCard';
-import { type BreadcrumbSegment, Breadcrumbs } from '@/components/Breadcrumbs/Breadcrumbs';
+import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { Statusbar } from '@/components/Statusbar/Statusbar';
+import { Topbar } from '@/components/Topbar/Topbar';
 
 interface FolderSummary {
   id: string;
@@ -41,20 +42,7 @@ export function ProjectContent({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-      {/* Toolbar with breadcrumbs */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--space-sm)',
-          padding: 'var(--space-sm) var(--space-xl)',
-          borderBottom: '1px solid var(--border-subtle)',
-          flexShrink: 0,
-          background: 'var(--bg-elevated)',
-        }}
-      >
-        <Breadcrumbs segments={breadcrumbs} />
-      </div>
+      <Topbar breadcrumbs={breadcrumbs} userName={projectName} />
 
       {/* Content */}
       <div

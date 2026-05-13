@@ -40,6 +40,10 @@ src/components/
     RecentsSection.tsx      # 'use client' — useRecents hook + section UI
   Breadcrumbs/
     Breadcrumbs.tsx         # 'use client' — breadcrumb nav with truncation
+    Breadcrumbs.module.css  # nav, list, link, separator, current styles
+  Topbar/
+    Topbar.tsx              # 'use client' — 52px topbar with search pill + avatar + breadcrumb
+    Topbar.module.css       # topbar, searchPill, avatarBtn styles
   EmptyState/
     EmptyState.tsx          # 'use client' — project/folder empty states
   Statusbar/
