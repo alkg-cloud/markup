@@ -6,6 +6,7 @@ import { identify } from '@/lib/auth/identify';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { prisma } from '@/lib/prisma';
 import { getProjectTree, listProjects } from '@/lib/project/service';
+import styles from './layout.module.css';
 import { ProjectSidebar } from './ProjectSidebar';
 
 export default async function ProjectsLayout({ children }: { children: ReactNode }) {
@@ -49,30 +50,13 @@ export default async function ProjectsLayout({ children }: { children: ReactNode
   }
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'var(--sidebar-width) 1fr',
-        gridTemplateRows: '1fr',
-        height: '100vh',
-        overflow: 'hidden',
-      }}
-    >
+    <div className={styles.shell}>
       <ProjectSidebar
         projects={treeProjects}
         mockupNames={mockupNames}
         recentMockups={recentMockups}
       />
-      <main
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          background: 'var(--bg)',
-        }}
-      >
-        {children}
-      </main>
+      <main className={styles.main}>{children}</main>
       <CommandPalette projects={treeProjects} />
     </div>
   );

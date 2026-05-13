@@ -110,3 +110,9 @@
   color: var(--success);
   border: 1px solid var(--success-border);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

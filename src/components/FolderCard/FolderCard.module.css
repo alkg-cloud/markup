@@ -43,3 +43,9 @@
   font-size: 10px;
   color: var(--text-muted);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

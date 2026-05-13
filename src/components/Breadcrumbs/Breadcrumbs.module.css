@@ -67,3 +67,29 @@
   color: var(--text);
   background: var(--surface-hover);
 }
+
+@media (max-width: 767px) {
+  .list {
+    flex-wrap: nowrap;
+  }
+
+  .current {
+    max-width: 120px;
+  }
+
+  .link {
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ellipsisBtn {
+    transition: none;
+  }
+
+  .link {
+    transition: none;
+  }
+}
