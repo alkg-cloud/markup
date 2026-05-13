@@ -2,10 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { NewProjectDialog } from '@/components/NewProjectDialog/NewProjectDialog';
 import type { TreeProject } from '@/components/ProjectTree/ProjectTree';
 import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
 import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
 import { RecentsSection } from '@/components/ProjectTree/RecentsSection';
+import { ToastProvider } from '@/components/Toast/useToast';
 import sidebarStyles from './ProjectSidebar.module.css';
 
 interface ProjectSidebarProps {
@@ -16,9 +18,18 @@ interface ProjectSidebarProps {
 
 export function ProjectSidebar({ projects, mockupNames, recentMockups }: ProjectSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [newProjectOpen, setNewProjectOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
+
+  const handleProjectCreated = useCallback(
+    (project: { id: string; slug: string }) => {
+      router.push(`/projects/${project.slug}`);
+      router.refresh();
+    },
+    [router],
+  );
 
   const handleCreateFolder = useCallback(
     async (projectId: string, parentId: string | null, name: string) => {
@@ -132,7 +143,12 @@ export function ProjectSidebar({ projects, mockupNames, recentMockups }: Project
 
       {/* Footer */}
       <div className={sidebarStyles.footer}>
-        <button type="button" className={sidebarStyles.btnNewProject} aria-label="New project">
+        <button
+          type="button"
+          className={sidebarStyles.btnNewProject}
+          aria-label="New project"
+          onClick={() => setNewProjectOpen(true)}
+        >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
             <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
           </svg>
@@ -143,7 +159,12 @@ export function ProjectSidebar({ projects, mockupNames, recentMockups }: Project
   );
 
   return (
-    <>
+    <ToastProvider>
+      <NewProjectDialog
+        open={newProjectOpen}
+        onClose={() => setNewProjectOpen(false)}
+        onCreated={handleProjectCreated}
+      />
       {/* Desktop sidebar */}
       <aside
         style={{
@@ -273,6 +294,6 @@ export function ProjectSidebar({ projects, mockupNames, recentMockups }: Project
         }
         .project-sidebar-drawer::backdrop { background: transparent; }
       `}</style>
-    </>
+    </ToastProvider>
   );
 }
