@@ -35,8 +35,10 @@ Every visual constant is a CSS custom property defined in `src/styles/tokens.css
 
   /* Semantic */
   --success: oklch(76% 0.16 152);
+  --success-border: oklch(76% 0.16 152 / 0.25);
   --info: oklch(74% 0.13 200);
   --warning: oklch(80% 0.15 80);
+  --warning-border: oklch(80% 0.15 80 / 0.3);
   --danger: oklch(70% 0.2 25);
   --danger-soft: oklch(28% 0.09 25);
   --danger-border: oklch(40% 0.1 25);
