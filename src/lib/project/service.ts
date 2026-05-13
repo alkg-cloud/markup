@@ -45,14 +45,14 @@ export async function listProjects() {
   });
 }
 
-export async function createProject(input: { name: string }) {
+export async function createProject(input: { name: string; icon?: string }) {
   const slug = await ensureUniqueProjectSlug(input.name);
   const maxPos = await prisma.project.aggregate({
     _max: { position: true },
   });
   const position = (maxPos._max.position ?? 0) + 1024;
   const project = await prisma.project.create({
-    data: { name: input.name, slug, position },
+    data: { name: input.name, slug, position, icon: input.icon ?? null },
   });
   log.info({ projectId: project.id }, 'project_created');
   return project;
