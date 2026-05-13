@@ -45,6 +45,11 @@ src/components/
   Breadcrumbs/
     Breadcrumbs.tsx         # 'use client' — breadcrumb nav with truncation
     Breadcrumbs.module.css  # nav, list, link, separator, current styles
+  CommandPalette/
+    CommandPalette.tsx         # 'use client' — ⌘K overlay with search + keyboard nav
+    CommandPalette.module.css  # glassmorphism panel, scrim, animations
+    flatten.ts                 # pure util — ProjectTree[] → FlatSearchItem[]
+    filter.ts                  # pure util — filter + group by type
   Topbar/
     Topbar.tsx              # 'use client' — 52px topbar with search pill + avatar + breadcrumb
     Topbar.module.css       # topbar, searchPill, avatarBtn styles
