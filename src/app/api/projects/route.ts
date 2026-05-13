@@ -9,6 +9,7 @@ interface ErrorWithStatus extends Error {
 
 const createSchema = z.object({
   name: z.string().min(1).max(200),
+  icon: z.string().max(100).optional(),
 });
 
 export async function GET(req: Request) {
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
   }
   const parsed = createSchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
-  const project = await createProject({ name: parsed.data.name });
+  const project = await createProject({ name: parsed.data.name, icon: parsed.data.icon });
   return NextResponse.json(project, { status: 201 });
 }
 
