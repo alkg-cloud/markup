@@ -35,9 +35,12 @@ src/components/
     ThreadTimeline.tsx      # 'use client' — reply textarea
   ProjectTree/
     ProjectTree.tsx         # 'use client' — ARIA tree with keyboard nav + DnD
+    ProjectTree.module.css  # tree items, chevron, count badge, kebab hover-swap, accent bar, indentation
     useTreeDnD.ts           # hook — HTML5 Drag API + keyboard move mode
     InlineFolderCreate.tsx  # 'use client' — inline input for folder creation
+    InlineFolderCreate.module.css  # input, error styles
     RecentsSection.tsx      # 'use client' — useRecents hook + section UI
+    RecentsSection.module.css  # header, link styles
   Breadcrumbs/
     Breadcrumbs.tsx         # 'use client' — breadcrumb nav with truncation
     Breadcrumbs.module.css  # nav, list, link, separator, current styles
