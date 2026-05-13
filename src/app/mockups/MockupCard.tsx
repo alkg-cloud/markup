@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import styles from './MockupCard.module.css';
 
-/* ── Deterministic hue from slug ─────────────────────────────────────────── */
 const HUE_PALETTE = [80, 25, 200, 165, 322, 270];
 
 function slugHash(slug: string): number {
@@ -15,7 +15,6 @@ function hueForSlug(slug: string): number {
   return HUE_PALETTE[slugHash(slug) % HUE_PALETTE.length];
 }
 
-/* ── Relative time helper ─────────────────────────────────────────────────── */
 function relativeTime(date: Date): string {
   const now = Date.now();
   const diff = now - date.getTime();
@@ -32,203 +31,47 @@ function relativeTime(date: Date): string {
   return `${Math.floor(mo / 12)}y ago`;
 }
 
-/* ── Status pill config ───────────────────────────────────────────────────── */
-type PillVariant = 'pill-info' | 'pill-success' | 'pill-mute';
-
-const STATUS_CONFIG: Record<string, { variant: PillVariant; label: string }> = {
-  open: { variant: 'pill-info', label: 'Open' },
-  resolved: { variant: 'pill-success', label: 'Resolved' },
-  archived: { variant: 'pill-mute', label: 'Archived' },
-};
-
-const PILL_STYLES: Record<PillVariant, React.CSSProperties> = {
-  'pill-info': { background: 'var(--info-soft)', color: 'var(--info)' },
-  'pill-success': { background: 'var(--success-soft)', color: 'var(--success)' },
-  'pill-mute': { background: 'var(--bg-chip)', color: 'var(--text-dim)' },
-};
-
 interface MockupCardProps {
   id: string;
   name: string;
   slug: string;
   status: string;
-  updatedAt: string; // ISO string (serialized from server)
+  updatedAt: string;
 }
 
 export default function MockupCard({ id, name, slug, status, updatedAt }: MockupCardProps) {
-  const [hovered, setHovered] = useState(false);
-  const [pressed, setPressed] = useState(false);
   const [imgError, setImgError] = useState(false);
 
   const hue = hueForSlug(slug);
   const monogram = name.trim().slice(0, 2).toUpperCase();
-  const pill = STATUS_CONFIG[status] ?? STATUS_CONFIG.open;
-  const pillVariantStyle = PILL_STYLES[pill.variant];
 
-  /* Active state shows a slight settle (less lift than hover) */
-  const translateY = pressed ? '-1px' : hovered ? '-3px' : '0';
-  const cardStyle: React.CSSProperties = {
-    background: 'var(--gradient-card-soft)',
-    border: `1px solid ${hovered ? 'var(--accent-overlay-strong)' : 'var(--border)'}`,
-    borderRadius: 'var(--radius-card)',
-    overflow: 'visible',
-    transition: `transform var(--motion-base) var(--ease-emphasized), border-color var(--motion-base) var(--ease-emphasized), box-shadow var(--motion-base) var(--ease-emphasized)`,
-    transform: `translateY(${translateY})`,
-    boxShadow: hovered ? 'var(--shadow-md)' : 'none',
-    display: 'block',
-    color: 'inherit',
-    textDecoration: 'none',
-  };
-
-  /* Monogram thumb: radial gradient from the slug-derived hue */
-  const thumbBg = `radial-gradient(ellipse at 25% 35%, oklch(38% 0.16 ${hue} / 0.55), transparent 65%), oklch(20% 0.03 165)`;
+  const thumbBg = `radial-gradient(ellipse at 25% 35%, oklch(38% 0.16 ${hue} / 0.55), transparent 65%), var(--bg-card-active)`;
 
   return (
-    <Link
-      href={`/mockups/${id}`}
-      style={cardStyle}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => {
-        setHovered(false);
-        setPressed(false);
-      }}
-      onMouseDown={() => setPressed(true)}
-      onMouseUp={() => setPressed(false)}
-      onTouchStart={() => setPressed(true)}
-      onTouchEnd={() => setPressed(false)}
-    >
-      {/* ── Thumbnail / monogram fallback ───────────────────────────────── */}
-      <div
-        style={{
-          position: 'relative',
-          aspectRatio: '16 / 10',
-          overflow: 'hidden',
-          borderRadius: 'var(--radius-card) var(--radius-card) 0 0',
-        }}
-      >
-        {/* Monogram layer — always present, covered by img when available */}
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'grid',
-            placeItems: 'center',
-            background: thumbBg,
-            fontFamily: 'var(--font-display)',
-            fontSize: '64px',
-            fontWeight: 'var(--weight-extra)',
-            letterSpacing: 'var(--tracking-tighter)',
-            color: 'var(--accent)',
-            userSelect: 'none',
-          }}
-        >
-          {/* depth overlay ::after emulated inline via second absolute div */}
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'var(--gradient-thumb-vignette)',
-              pointerEvents: 'none',
-            }}
-          />
-          <span style={{ position: 'relative', zIndex: 1 }}>{monogram}</span>
+    <Link href={`/mockups/${id}`} className={styles.card}>
+      <div className={styles.thumb}>
+        <div className={styles.monogram} aria-hidden="true" style={{ background: thumbBg }}>
+          {monogram}
         </div>
 
-        {/* Actual thumbnail — covers monogram when available.
-         * Z-index 2 wins over the monogram's inner <span> which is zIndex 1
-         * (it has to ride above the depth overlay). Without this the
-         * monogram letters stayed visible on top of the screenshot. */}
         {!imgError && (
           <img
             src={`/api/mockups/${id}/thumbnail`}
             alt=""
             onError={() => setImgError(true)}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 2,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'top center',
-              display: 'block',
-            }}
+            className={styles.thumbnailImg}
           />
         )}
       </div>
 
-      {/* ── Meta row ────────────────────────────────────────────────────── */}
-      <div
-        style={{
-          padding: 'var(--space-md) var(--space-lg)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: 'var(--space-md)',
-        }}
-      >
-        {/* Left: title + subtitle */}
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'var(--type-md)',
-              fontWeight: 'var(--weight-bold)',
-              color: 'var(--text-bright)',
-              letterSpacing: 'var(--tracking-tight)',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {name}
-          </div>
-          <div
-            className="tnum"
-            style={{
-              fontSize: 'var(--type-xs)',
-              color: 'var(--text-dim)',
-              marginTop: 2,
-              fontFeatureSettings: "'tnum'",
-            }}
-          >
-            Updated {relativeTime(new Date(updatedAt))}
-          </div>
-        </div>
+      <div className={styles.body}>
+        <div className={styles.name}>{name}</div>
+        <div className={styles.meta}>Updated {relativeTime(new Date(updatedAt))}</div>
 
-        {/* Right: status pill */}
-        <span
-          style={{
-            flexShrink: 0,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 4,
-            fontSize: 'var(--type-2xs)',
-            fontWeight: 'var(--weight-bold)',
-            letterSpacing: 'var(--tracking-wide)',
-            padding: '4px 10px',
-            borderRadius: 'var(--radius-pill)',
-            textTransform: 'uppercase',
-            ...pillVariantStyle,
-          }}
-        >
-          {/* dot */}
-          <span
-            aria-hidden="true"
-            style={{
-              display: 'inline-block',
-              width: 5,
-              height: 5,
-              borderRadius: '50%',
-              background: 'currentColor',
-              marginRight: 2,
-              flexShrink: 0,
-            }}
-          />
-          {pill.label}
-        </span>
+        {status === 'open' && <div className={`${styles.badge} ${styles.badgeWarning}`}>Open</div>}
+        {status === 'resolved' && (
+          <div className={`${styles.badge} ${styles.badgeSuccess}`}>Resolved</div>
+        )}
       </div>
     </Link>
   );

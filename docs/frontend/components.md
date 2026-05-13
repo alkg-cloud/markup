@@ -56,7 +56,8 @@ Page-scoped components (used only by one page) live next to the page file:
 ```
 src/app/mockups/
   page.tsx                   # server — list grid
-  MockupCard.tsx             # 'use client' — hover/focus/active per card
+  MockupCard.tsx             # 'use client' — card with badge, monogram fallback
+  MockupCard.module.css      # card + thumb + badge styles
   [id]/
     page.tsx                 # server — fetches the mockup + annotations
     MockupViewer.tsx         # 'use client' — iframe + pin overlay
