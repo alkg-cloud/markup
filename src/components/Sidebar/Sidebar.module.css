@@ -1,0 +1,211 @@
+/* ─── SIDEBAR SPACER (maintains layout while sidebar is fixed) ── */
+.spacer {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  flex-shrink: 0;
+  transition:
+    width var(--morph-dur) var(--morph-ease),
+    min-width var(--morph-dur) var(--morph-ease);
+}
+
+.spacerCollapsed {
+  width: 0;
+  min-width: 0;
+}
+
+/* ─── SIDEBAR (position: fixed, morphs into pill) ────────── */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: rgba(14, 12, 16, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--border-subtle);
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition:
+    width var(--morph-dur) var(--morph-ease),
+    height var(--morph-dur) var(--morph-ease),
+    top var(--morph-dur) var(--morph-ease),
+    left var(--morph-dur) var(--morph-ease),
+    border-radius var(--morph-dur) var(--morph-ease),
+    border-color var(--morph-dur) var(--morph-ease),
+    box-shadow var(--morph-dur) var(--morph-ease);
+}
+
+.sidebarCollapsed {
+  width: var(--pill-width);
+  height: var(--pill-height);
+  top: var(--pill-top);
+  left: var(--pill-left);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  box-shadow:
+    var(--shadow-sm),
+    0 0 0 1px oklch(100% 0 0 / 0.04);
+}
+
+/* ─── HEADER ────────── */
+.header {
+  height: var(--topbar-height);
+  min-height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 6px;
+  flex-shrink: 0;
+  transition:
+    height var(--morph-dur) var(--morph-ease),
+    min-height var(--morph-dur) var(--morph-ease),
+    padding var(--morph-dur) var(--morph-ease);
+}
+
+.headerCollapsed {
+  height: var(--pill-height);
+  min-height: var(--pill-height);
+  padding: 0 10px;
+}
+
+/* ─── LOGO ────────── */
+.logo {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-bright);
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  display: flex;
+  align-items: baseline;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.logoFull {
+  display: inline-block;
+  max-width: 100px;
+  overflow: hidden;
+  transition:
+    max-width var(--morph-dur) var(--morph-ease),
+    opacity calc(var(--morph-dur) * 0.5) var(--ease-exit);
+}
+
+.logoFullCollapsed {
+  max-width: 0;
+  opacity: 0;
+}
+
+.logoFullExpanded {
+  transition:
+    max-width var(--morph-dur) var(--morph-ease),
+    opacity calc(var(--morph-dur) * 0.5) var(--ease-standard) calc(var(--morph-dur) * 0.4);
+}
+
+.logoDot {
+  color: var(--accent);
+  font-size: 1.5em;
+  line-height: 0;
+  vertical-align: baseline;
+}
+
+/* ─── COLLAPSE BUTTON ────────── */
+.collapseBtn {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: auto;
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast),
+    margin var(--morph-dur) var(--morph-ease);
+}
+
+.collapseBtn:hover {
+  background: var(--surface-hover);
+  color: var(--text-dim);
+}
+
+.iconExpand {
+  display: none;
+  height: 14px;
+}
+
+.iconCollapse {
+  display: block;
+  height: 14px;
+}
+
+.collapseBtnCollapsed .iconExpand {
+  display: block;
+}
+
+.collapseBtnCollapsed .iconCollapse {
+  display: none;
+}
+
+/* ─── SCROLL + FOOTER: phased fade for morph ────────── */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 0;
+  opacity: 1;
+  transition: opacity calc(var(--morph-dur) * 0.35) var(--ease-exit);
+}
+
+.scrollCollapsed {
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.scrollExpanded {
+  transition: opacity calc(var(--morph-dur) * 0.4) var(--ease-standard)
+    calc(var(--morph-dur) * 0.55);
+}
+
+.footer {
+  padding: 8px;
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  opacity: 1;
+  transition: opacity calc(var(--morph-dur) * 0.35) var(--ease-exit);
+}
+
+.footerCollapsed {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.footerExpanded {
+  transition: opacity calc(var(--morph-dur) * 0.4) var(--ease-standard)
+    calc(var(--morph-dur) * 0.55);
+}
+
+/* ─── MOBILE ────────── */
+@media (max-width: 767px) {
+  .spacer {
+    display: none;
+  }
+
+  .sidebar {
+    display: none;
+  }
+}
