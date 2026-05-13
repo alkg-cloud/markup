@@ -66,7 +66,7 @@ export function ProjectContent({
                   style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap: 'var(--space-md)',
+                    gap: 'var(--space-sm)',
                   }}
                 >
                   {folders.map((f) => (
@@ -84,7 +84,7 @@ export function ProjectContent({
                   style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap: 'var(--space-md)',
+                    gap: 'var(--space-sm)',
                   }}
                 >
                   {mockups.map((m) => (

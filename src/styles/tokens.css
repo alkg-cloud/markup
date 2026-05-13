@@ -80,12 +80,14 @@
    */
   --success: oklch(76% 0.16 152);
   --success-soft: oklch(28% 0.07 152);
+  --success-border: oklch(76% 0.16 152 / 0.25);
 
   --info: oklch(74% 0.13 200);
   --info-soft: oklch(26% 0.06 200);
 
   --warning: oklch(80% 0.15 80);
   --warning-soft: oklch(30% 0.07 80);
+  --warning-border: oklch(80% 0.15 80 / 0.3);
 
   --danger: oklch(70% 0.2 25);
   --danger-soft: oklch(28% 0.09 25);
