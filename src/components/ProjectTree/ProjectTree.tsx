@@ -4,8 +4,13 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MAX_FOLDER_DEPTH } from '@/lib/project/constants';
 import { InlineFolderCreate } from './InlineFolderCreate';
+import styles from './ProjectTree.module.css';
 import type { DnDNode } from './useTreeDnD';
 import { useTreeDnD } from './useTreeDnD';
+
+const cx = (...classes: (string | false | undefined | null)[]) => classes.filter(Boolean).join(' ');
+
+const INDENT_PX = [0, 12, 28, 44, 60];
 
 /* ── Types ────────────────────────────────────────────────────────────────── */
 
@@ -48,24 +53,14 @@ interface FlatNode {
   projectSlug: string;
   projectId: string;
   mockupId?: string;
+  childCount?: number;
 }
 
 /* ── Icons ────────────────────────────────────────────────────────────────── */
 
-function ChevronIcon({ expanded }: { expanded: boolean }) {
+function ChevronIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="currentColor"
-      aria-hidden="true"
-      style={{
-        transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
-        transition: 'transform var(--motion-fast) var(--ease-standard)',
-        flexShrink: 0,
-      }}
-    >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
       <path
         d="M6 4l4 4-4 4"
         fill="none"
@@ -80,14 +75,7 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
 
 function ProjectIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-      style={{ flexShrink: 0 }}
-    >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" strokeWidth="1.3" />
       <path d="M2 6h12" stroke="currentColor" strokeWidth="1.3" />
     </svg>
@@ -97,14 +85,7 @@ function ProjectIcon() {
 function FolderIcon({ open }: { open: boolean }) {
   if (open) {
     return (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        aria-hidden="true"
-        style={{ flexShrink: 0 }}
-      >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path
           d="M2 5V4a1 1 0 011-1h3.5l1.5 1.5H13a1 1 0 011 1V6H3.5L2 5z"
           fill="currentColor"
@@ -115,14 +96,7 @@ function FolderIcon({ open }: { open: boolean }) {
     );
   }
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-      style={{ flexShrink: 0 }}
-    >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
         d="M2 4a1 1 0 011-1h3.5l1.5 1.5H13a1 1 0 011 1V12a1 1 0 01-1 1H3a1 1 0 01-1-1V4z"
         stroke="currentColor"
@@ -134,17 +108,33 @@ function FolderIcon({ open }: { open: boolean }) {
 
 function MockupIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-      style={{ flexShrink: 0 }}
-    >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <rect x="3" y="2" width="10" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
       <rect x="5" y="5" width="4" height="1.5" rx="0.75" fill="currentColor" />
       <rect x="5" y="8" width="6" height="1.5" rx="0.75" fill="currentColor" opacity="0.5" />
+    </svg>
+  );
+}
+
+function KebabIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <circle cx="8" cy="4" r="1.2" />
+      <circle cx="8" cy="8" r="1.2" />
+      <circle cx="8" cy="12" r="1.2" />
+    </svg>
+  );
+}
+
+function DragHandleIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+      <circle cx="4" cy="3" r="1" />
+      <circle cx="8" cy="3" r="1" />
+      <circle cx="4" cy="6" r="1" />
+      <circle cx="8" cy="6" r="1" />
+      <circle cx="4" cy="9" r="1" />
+      <circle cx="8" cy="9" r="1" />
     </svg>
   );
 }
@@ -174,6 +164,7 @@ function flattenProjects(
       posInSet: pi + 1,
       projectSlug: p.slug,
       projectId: p.id,
+      childCount: p.folders.length + p.mockups.length,
     });
 
     if (!pExpanded) continue;
@@ -256,12 +247,10 @@ function flattenChildren(
       posInSet: posCounter++,
       projectSlug,
       projectId,
+      childCount: f.children.length + f.mockups.length,
     });
     if (fExpanded) {
       const childTotal = f.children.length + f.mockups.length;
-      if (childTotal === 0) {
-        // empty folder marker handled in render
-      }
       flattenChildren(
         nodes,
         f.children,
@@ -295,26 +284,6 @@ function flattenChildren(
 }
 
 /* ── Tree Component ───────────────────────────────────────────────────────── */
-
-function DragHandleIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="currentColor"
-      aria-hidden="true"
-      style={{ flexShrink: 0 }}
-    >
-      <circle cx="4" cy="3" r="1" />
-      <circle cx="8" cy="3" r="1" />
-      <circle cx="4" cy="6" r="1" />
-      <circle cx="8" cy="6" r="1" />
-      <circle cx="4" cy="9" r="1" />
-      <circle cx="8" cy="9" r="1" />
-    </svg>
-  );
-}
 
 interface ProjectTreeProps {
   projects: TreeProject[];
@@ -582,93 +551,69 @@ export function ProjectTree({
 
   return (
     <>
-      <div
-        ref={announceRef}
-        aria-live="assertive"
-        aria-atomic="true"
-        style={{
-          position: 'absolute',
-          width: 1,
-          height: 1,
-          padding: 0,
-          margin: -1,
-          overflow: 'hidden',
-          clip: 'rect(0,0,0,0)',
-          whiteSpace: 'nowrap',
-          border: 0,
-        }}
-      />
+      <div ref={announceRef} aria-live="assertive" aria-atomic="true" className={styles.srOnly} />
       <div
         ref={treeRef}
         role="tree"
         aria-label="Projetos"
         onKeyDown={handleKeyDown}
-        style={{ listStyle: 'none', margin: 0, padding: 'var(--space-xs) 0' }}
+        className={styles.tree}
       >
         {nodes.map((node, index) => {
           if (node.type === 'recents-header') {
             return (
-              <li
-                key={node.id}
-                role="none"
-                style={{
-                  padding: '2px var(--space-xs) 2px 24px',
-                  fontSize: 'var(--type-2xs)',
-                  textTransform: 'uppercase',
-                  letterSpacing: 'var(--tracking-wide)',
-                  color: 'var(--text-muted)',
-                  fontWeight: 'var(--weight-semibold)',
-                  fontFamily: 'var(--font-mono)',
-                }}
-              >
+              <li key={node.id} role="none" className={styles.sectionLabel}>
                 Recentes
               </li>
             );
           }
 
-          const indent = (node.level - 1) * 12;
+          const indentLevel = Math.min(node.level, 4);
+          const indentPx = INDENT_PX[indentLevel] ?? 60;
+          const indentClass =
+            indentLevel === 1
+              ? styles.indent1
+              : indentLevel === 2
+                ? styles.indent2
+                : indentLevel === 3
+                  ? styles.indent3
+                  : styles.indent4;
+
           const active = isActive(node.href);
           const displayLabel =
             node.type === 'recents-item' && node.mockupId
               ? (mockupNames[node.mockupId] ?? node.mockupId.slice(0, 8))
               : node.label;
 
-          const icon =
+          const iconClass =
+            node.type === 'project'
+              ? styles.iconProject
+              : node.type === 'folder'
+                ? styles.iconFolder
+                : styles.iconMockup;
+
+          const iconElement =
             node.type === 'project' ? (
-              <span style={{ color: 'var(--accent)' }}>
-                <ProjectIcon />
-              </span>
+              <ProjectIcon />
             ) : node.type === 'folder' ? (
-              <span style={{ color: 'oklch(80% 0.15 65)' }}>
-                <FolderIcon open={node.expanded} />
-              </span>
+              <FolderIcon open={node.expanded} />
             ) : (
-              <span style={{ color: 'var(--text-muted)' }}>
-                <MockupIcon />
-              </span>
+              <MockupIcon />
             );
 
           const showEmptyFolder =
             node.type === 'folder' && node.expanded && !nodes.some((n) => n.parentId === node.id);
 
           const isDragging = dnd.dragState.draggingId === node.id;
-          const dropIndicator = dnd.getDropIndicatorStyle(node.id);
+          const isDropTarget = dnd.getDropIndicatorStyle(node.id) != null;
           const dropLine = dnd.getDropLinePosition(node.id);
 
           return (
-            <li key={node.id} role="none" style={{ position: 'relative' }}>
+            <li key={node.id} role="none" className={styles.item}>
               {dropLine === 'before' && (
                 <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: indent + 16,
-                    right: 8,
-                    height: 2,
-                    background: 'var(--accent)',
-                    borderRadius: 1,
-                    zIndex: 1,
-                  }}
+                  className={cx(styles.dropLine, styles.dropLineBefore)}
+                  style={{ left: indentPx + 16 }}
                 />
               )}
               {/* biome-ignore lint/a11y/useKeyWithClickEvents: keyboard handled by parent tree onKeyDown */}
@@ -695,132 +640,71 @@ export function ProjectTree({
                 onDragLeave={dnd.handleDragLeave}
                 onDrop={(e) => dnd.handleDrop(e, dndNodes[index])}
                 onDragEnd={dnd.handleDragEnd}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  height: 28,
-                  paddingLeft: indent,
-                  paddingRight: 'var(--space-sm)',
-                  cursor: isDragging ? 'grabbing' : 'pointer',
-                  background: active ? 'var(--accent-overlay-soft)' : 'transparent',
-                  opacity: isDragging ? 0.4 : 1,
-                  transition:
-                    'background var(--motion-fast) var(--ease-standard), opacity var(--motion-fast) var(--ease-standard)',
-                  outline: 'none',
-                  ...dropIndicator,
-                }}
-                onMouseEnter={(e) => {
-                  if (!active && !isDragging)
-                    (e.currentTarget as HTMLElement).style.background = 'var(--surface-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = active
-                    ? 'var(--accent-overlay-soft)'
-                    : 'transparent';
-                }}
+                className={cx(
+                  styles.treeItem,
+                  indentClass,
+                  active && styles.active,
+                  isDragging && styles.dragging,
+                  isDropTarget && styles.dropTarget,
+                )}
               >
-                {/* Drag handle */}
                 {canDrag(node) ? (
                   <button
                     type="button"
                     tabIndex={-1}
-                    style={{
-                      width: 12,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--text-muted)',
-                      cursor: 'grab',
-                      flexShrink: 0,
-                      opacity: 0,
-                      transition: 'opacity var(--motion-fast) var(--ease-standard)',
-                      background: 'none',
-                      border: 'none',
-                      padding: 0,
-                    }}
-                    className="drag-handle"
+                    className={styles.dragHandle}
                     aria-label={`Arrastar ${displayLabel}`}
                   >
                     <DragHandleIcon />
                   </button>
                 ) : null}
 
-                {/* Chevron or spacer */}
                 {node.expandable ? (
                   <button
                     type="button"
                     tabIndex={-1}
                     aria-hidden="true"
-                    style={{
-                      width: 16,
-                      height: 16,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--text-muted)',
-                      flexShrink: 0,
-                      background: 'none',
-                      border: 'none',
-                      padding: 0,
-                      cursor: 'pointer',
-                    }}
+                    className={cx(styles.chevron, node.expanded && styles.chevronOpen)}
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleExpand(node.id);
                     }}
                   >
-                    <ChevronIcon expanded={node.expanded} />
+                    <ChevronIcon />
                   </button>
                 ) : (
-                  <span style={{ width: 16, flexShrink: 0 }} />
+                  <span className={styles.chevronSpacer} />
                 )}
 
-                {/* Icon */}
-                {icon}
+                <span className={cx(styles.icon, iconClass)}>{iconElement}</span>
 
-                {/* Label */}
-                <span
-                  style={{
-                    flex: 1,
-                    fontSize: 'var(--type-sm)',
-                    color: active ? 'var(--accent)' : 'var(--text)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    lineHeight: 1,
-                  }}
-                >
-                  {displayLabel}
-                </span>
+                <span className={styles.label}>{displayLabel}</span>
+
+                {node.childCount != null && node.childCount > 0 && (
+                  <span className={styles.count}>{node.childCount}</span>
+                )}
+
+                {node.type !== 'recents-item' && (
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    className={styles.kebab}
+                    aria-label={`Menu de ${displayLabel}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <KebabIcon />
+                  </button>
+                )}
               </div>
               {dropLine === 'after' && (
                 <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: indent + 16,
-                    right: 8,
-                    height: 2,
-                    background: 'var(--accent)',
-                    borderRadius: 1,
-                    zIndex: 1,
-                  }}
+                  className={cx(styles.dropLine, styles.dropLineAfter)}
+                  style={{ left: indentPx + 16 }}
                 />
               )}
 
               {showEmptyFolder && (
-                <div
-                  style={{
-                    paddingLeft: indent + 34,
-                    fontSize: 'var(--type-xs)',
-                    color: 'var(--text-muted)',
-                    height: 28,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-xs)',
-                  }}
-                >
+                <div className={styles.emptyFolder} style={{ paddingLeft: indentPx + 34 }}>
                   <span>Pasta vazia</span>
                   {onCreateFolder && (
                     <button
@@ -829,14 +713,7 @@ export function ProjectTree({
                         e.stopPropagation();
                         setCreatingIn({ projectId: node.projectSlug, parentId: node.id });
                       }}
-                      style={{
-                        fontSize: 'var(--type-xs)',
-                        color: 'var(--accent)',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                      }}
+                      className={styles.emptyFolderAction}
                     >
                       + Adicionar mockup
                     </button>
@@ -849,7 +726,7 @@ export function ProjectTree({
                 creatingIn.parentId === node.id &&
                 node.expanded && (
                   <InlineFolderCreate
-                    indent={indent + 12}
+                    indent={indentPx + 12}
                     onConfirm={async (name) => {
                       if (onCreateFolder) {
                         const proj = projects.find((p) => p.slug === node.projectSlug);
@@ -865,12 +742,6 @@ export function ProjectTree({
           );
         })}
       </div>
-
-      <style>{`
-        [role="treeitem"]:hover .drag-handle { opacity: 1 !important; }
-        @media (max-width: 767px) { [draggable="true"] { -webkit-user-drag: none; } }
-        @media (prefers-reduced-motion: reduce) { [role="treeitem"] { transition: none !important; } }
-      `}</style>
     </>
   );
 }
