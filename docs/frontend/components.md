@@ -44,6 +44,7 @@ src/components/
     EmptyState.tsx          # 'use client' — project/folder empty states
   Statusbar/
     Statusbar.tsx           # 'use client' — 24px bar with project stats
+    Statusbar.module.css    # bar + segment styles
 ```
 
 Page-scoped components (used only by one page) live next to the page file:
@@ -62,7 +63,8 @@ src/app/mockups/
 src/app/projects/
   layout.tsx                 # server — auth + Prisma tree fetch → grid shell
   page.tsx                   # server — redirect to first project
-  ProjectSidebar.tsx         # 'use client' — sidebar wrapper, folder create, move, mobile drawer
+  ProjectSidebar.tsx         # 'use client' — sidebar wrapper, folder create, move, mobile drawer, footer with New Project button
+  ProjectSidebar.module.css  # footer + btn-new-project styles
   [slug]/
     page.tsx                 # server — project root content
     ProjectContent.tsx       # 'use client' — toolbar, folder/mockup card grid, statusbar
