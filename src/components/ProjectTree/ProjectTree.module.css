@@ -1,0 +1,335 @@
+/* ── Screen reader only ──────────────────────────────────────────────── */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Tree container ─────────────────────────────────────────────────── */
+
+.tree {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-xs) 0;
+}
+
+/* ── Section labels (e.g. "Recentes") ───────────────────────────────── */
+
+.sectionLabel {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 10px 16px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* ── Item wrapper (li) ──────────────────────────────────────────────── */
+
+.item {
+  position: relative;
+}
+
+/* ── Tree item (main interactive row) ───────────────────────────────── */
+
+.treeItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px 0 0;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard),
+    opacity var(--motion-fast) var(--ease-standard);
+  user-select: none;
+  margin: 0 4px;
+  outline: none;
+}
+
+.treeItem:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+/* ── Active state ───────────────────────────────────────────────────── */
+
+.active {
+  background: var(--accent-overlay-soft);
+  color: var(--accent-bright);
+}
+
+.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+
+.active:hover {
+  background: var(--accent-overlay-soft);
+  color: var(--accent-bright);
+}
+
+/* ── Indentation levels ─────────────────────────────────────────────── */
+
+.indent1 {
+  padding-left: 12px;
+}
+
+.indent2 {
+  padding-left: 28px;
+}
+
+.indent3 {
+  padding-left: 44px;
+}
+
+.indent4 {
+  padding-left: 60px;
+}
+
+/* ── Chevron ────────────────────────────────────────────────────────── */
+
+.chevron {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+  color: var(--accent);
+}
+
+.chevronSpacer {
+  width: 16px;
+  flex-shrink: 0;
+}
+
+/* ── Icon ───────────────────────────────────────────────────────────── */
+
+.icon {
+  flex-shrink: 0;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.iconProject {
+  color: var(--accent);
+}
+
+.iconFolder {
+  color: oklch(80% 0.15 65);
+}
+
+.iconMockup {
+  color: var(--text-muted);
+}
+
+/* ── Label ──────────────────────────────────────────────────────────── */
+
+.label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1;
+  color: inherit;
+}
+
+/* ── Count badge ────────────────────────────────────────────────────── */
+
+.count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 1px 5px;
+  flex-shrink: 0;
+  transition:
+    opacity var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+/* ── Kebab menu button ──────────────────────────────────────────────── */
+
+.kebab {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  opacity: 0;
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    opacity var(--motion-fast) var(--ease-standard),
+    background var(--motion-fast) var(--ease-standard);
+}
+
+.kebab:hover {
+  background: var(--surface-active);
+  color: var(--text);
+}
+
+/* Hover swap: hide count, show kebab */
+.treeItem:hover .count {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.treeItem:hover .kebab {
+  opacity: 1;
+}
+
+/* ── Drag handle ────────────────────────────────────────────────────── */
+
+.dragHandle {
+  width: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: grab;
+  flex-shrink: 0;
+  opacity: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+
+.treeItem:hover .dragHandle {
+  opacity: 1;
+}
+
+/* ── Drag state ─────────────────────────────────────────────────────── */
+
+.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+.dragging:hover {
+  background: transparent;
+}
+
+/* ── Drop target ────────────────────────────────────────────────────── */
+
+.dropTarget {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-radius: var(--radius-xs);
+}
+
+/* ── Drop line ──────────────────────────────────────────────────────── */
+
+.dropLine {
+  position: absolute;
+  right: 8px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  z-index: 1;
+}
+
+.dropLineBefore {
+  top: 0;
+}
+
+.dropLineAfter {
+  bottom: 0;
+}
+
+/* ── Empty folder ───────────────────────────────────────────────────── */
+
+.emptyFolder {
+  font-size: var(--type-xs);
+  color: var(--text-muted);
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.emptyFolderAction {
+  font-size: var(--type-xs);
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .treeItem {
+    transition: none;
+  }
+
+  .chevron {
+    transition: none;
+  }
+
+  .count {
+    transition: none;
+  }
+
+  .kebab {
+    transition: none;
+  }
+
+  .dragHandle {
+    transition: none;
+  }
+}
+
+/* ── Mobile ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .treeItem[draggable="true"] {
+    -webkit-user-drag: none;
+  }
+}

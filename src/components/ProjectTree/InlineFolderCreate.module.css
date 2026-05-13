@@ -1,0 +1,27 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  padding-right: var(--space-sm);
+}
+
+.input {
+  height: 24px;
+  font-size: var(--type-sm);
+  font-family: var(--font-body);
+  background: var(--surface-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  color: var(--text);
+  padding: 0 var(--space-xs);
+  outline: none;
+}
+
+.inputError {
+  border-color: var(--danger);
+}
+
+.error {
+  font-size: var(--type-2xs);
+  color: var(--danger);
+  margin-top: 2px;
+}

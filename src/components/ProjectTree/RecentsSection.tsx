@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import styles from './RecentsSection.module.css';
 
 const MAX_RECENTS = 5;
 const STORAGE_PREFIX = 'markup_recents_';
@@ -48,52 +49,10 @@ export function RecentsSection({ projectSlug, mockupNames }: RecentsSectionProps
 
   return (
     <section aria-label="Recentes">
-      <div
-        style={{
-          padding: '2px var(--space-xs) 2px 24px',
-          fontSize: 'var(--type-2xs)',
-          textTransform: 'uppercase',
-          letterSpacing: 'var(--tracking-wide)',
-          color: 'var(--text-muted)',
-          fontWeight: 'var(--weight-semibold)',
-          fontFamily: 'var(--font-mono)',
-        }}
-      >
-        Recentes
-      </div>
+      <div className={styles.header}>Recentes</div>
       {ids.map((id) => (
-        <a
-          key={id}
-          href={`/mockups/${id}`}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            height: 28,
-            paddingLeft: 36,
-            paddingRight: 'var(--space-sm)',
-            fontSize: 'var(--type-sm)',
-            color: 'var(--text-dim)',
-            textDecoration: 'none',
-            cursor: 'pointer',
-            transition: 'background var(--motion-fast) var(--ease-standard)',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = 'var(--surface-hover)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = 'transparent';
-          }}
-        >
-          <span
-            style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {mockupNames[id] ?? id.slice(0, 8)}
-          </span>
+        <a key={id} href={`/mockups/${id}`} className={styles.link}>
+          <span className={styles.linkLabel}>{mockupNames[id] ?? id.slice(0, 8)}</span>
         </a>
       ))}
     </section>
