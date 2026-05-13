@@ -76,6 +76,34 @@ beforeEach(async () => {
 });
 
 describe('projects API', () => {
+  it('creates project with icon', async () => {
+    const cookie = await adminCookie();
+    const r = await createProjectRoute(
+      new Request('http://l', jsonReq(cookie, { name: 'Iconized', icon: 'vsc:VscFile' })),
+    );
+    expect(r.status).toBe(201);
+    const project = await r.json();
+    expect(project.icon).toBe('vsc:VscFile');
+  });
+
+  it('creates project without icon (icon is null)', async () => {
+    const cookie = await adminCookie();
+    const r = await createProjectRoute(
+      new Request('http://l', jsonReq(cookie, { name: 'NoIcon' })),
+    );
+    expect(r.status).toBe(201);
+    const project = await r.json();
+    expect(project.icon).toBeNull();
+  });
+
+  it('rejects project with icon longer than 100 chars', async () => {
+    const cookie = await adminCookie();
+    const r = await createProjectRoute(
+      new Request('http://l', jsonReq(cookie, { name: 'BadIcon', icon: 'x'.repeat(101) })),
+    );
+    expect(r.status).toBe(400);
+  });
+
   it('CRUD happy-path', async () => {
     const cookie = await adminCookie();
 

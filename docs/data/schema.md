@@ -58,6 +58,7 @@ model Project {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+  icon      String?
   position  Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,6 +69,7 @@ model Project {
 
 - Organizes mockups into named projects
 - `slug` is unique, used in URLs
+- `icon` is an optional token string (e.g. `vsc:VscFile`, `emoji:🎨`) chosen in the New Project dialog; null when no icon is set
 - `position` controls display order in the sidebar
 - A seed project `"Unsorted"` (slug `unsorted`) is created by migration and receives all pre-existing mockups
 

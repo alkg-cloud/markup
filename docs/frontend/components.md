@@ -72,8 +72,16 @@ src/components/
     Dialog.tsx              # 'use client' — modal dialog with scrim, title, field/input helpers, actions row
     Dialog.module.css       # scrim, dialog card, title, field, label, input, actions styles + scale-in animation
   Toast/
-    Toast.tsx               # 'use client' — ToastProvider (root layout) + useToast() hook; 4 variants (success/error/warning/info)
-    Toast.module.css        # container, toast card, icon, dismiss, slide-in/out animation
+    useToast.ts             # 'use client' — ToastProvider (context + reducer) + useToast() hook; show(message, duration?)
+    Toast.tsx               # re-exports ToastProvider + useToast
+    Toast.module.css        # fixed bottom-center container, pill shape, in/out animations, prefers-reduced-motion override
+  IconPicker/
+    IconPicker.tsx          # 'use client' — tabbed icon picker (Code/Brands/UI/Emoji) with search and selection
+    IconPicker.module.css   # popover, tabs, search row, 8-column grid, cell hover/selected, footer mono styles
+    icons.ts                # PICKER_ICONS data map + filterIcons() pure utility
+  NewProjectDialog/
+    NewProjectDialog.tsx    # 'use client' — dialog with project name input + IconPicker; calls POST /api/projects on submit
+    NewProjectDialog.module.css  # btn-secondary, btn-accent styles
 ```
 
 Page-scoped components (used only by one page) live next to the page file:
