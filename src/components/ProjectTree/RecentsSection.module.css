@@ -1,0 +1,43 @@
+.header {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 10px 16px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding-left: 36px;
+  padding-right: var(--space-sm);
+  font-size: var(--type-sm);
+  color: var(--text-dim);
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  margin: 0 4px;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.link:hover {
+  background: var(--surface-hover);
+}
+
+.linkLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition: none;
+  }
+}

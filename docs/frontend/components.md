@@ -35,18 +35,45 @@ src/components/
     ThreadTimeline.tsx      # 'use client' — reply textarea
   ProjectTree/
     ProjectTree.tsx         # 'use client' — ARIA tree with keyboard nav + DnD
+    ProjectTree.module.css  # tree items, chevron, count badge, kebab hover-swap, accent bar, indentation
     useTreeDnD.ts           # hook — HTML5 Drag API + keyboard move mode
     InlineFolderCreate.tsx  # 'use client' — inline input for folder creation
-    RecentsSection.tsx      # 'use client' — useRecents hook + section UI
+    InlineFolderCreate.module.css  # input, error styles
+    RecentsSection.tsx      # 'use client' — useRecents hook + recent-item list with icon/info/timestamp
+    RecentsSection.module.css  # header label styles
+    RecentList.module.css   # list, item, icon, info, name, path, time styles
   Breadcrumbs/
     Breadcrumbs.tsx         # 'use client' — breadcrumb nav with truncation
+    Breadcrumbs.module.css  # nav, list, link, separator, current styles
+  CommandPalette/
+    CommandPalette.tsx         # 'use client' — ⌘K overlay with search + keyboard nav
+    CommandPalette.module.css  # glassmorphism panel, scrim, animations
+    flatten.ts                 # pure util — ProjectTree[] → FlatSearchItem[]
+    filter.ts                  # pure util — filter + group by type
+  Topbar/
+    Topbar.tsx              # 'use client' — 52px topbar with search pill + avatar + breadcrumb
+    Topbar.module.css       # topbar, searchPill, avatarBtn styles
+  FolderCard/
+    FolderCard.tsx          # server-safe — folder card with CSS Modules (Link + SVG icon)
+    FolderCard.module.css   # card, icon, info, name, meta styles
   EmptyState/
     EmptyState.tsx          # 'use client' — project/folder empty states
+    EmptyState.module.css   # container, icon, title, desc, actions, btn-accent, btn-secondary styles
   Statusbar/
     Statusbar.tsx           # 'use client' — 24px bar with project stats
+    Statusbar.module.css    # bar + segment styles
   Sidebar/
     Sidebar.tsx              # 'use client' — pill-morph sidebar shell with collapse toggle
     Sidebar.module.css       # phased morph transitions
+  Dropdown/
+    Dropdown.tsx            # 'use client' — positioned popover menu with items, divider, danger variant
+    Dropdown.module.css     # menu, item, itemDanger, divider styles + spring animation
+  Dialog/
+    Dialog.tsx              # 'use client' — modal dialog with scrim, title, field/input helpers, actions row
+    Dialog.module.css       # scrim, dialog card, title, field, label, input, actions styles + scale-in animation
+  Toast/
+    Toast.tsx               # 'use client' — ToastProvider (root layout) + useToast() hook; 4 variants (success/error/warning/info)
+    Toast.module.css        # container, toast card, icon, dismiss, slide-in/out animation
 ```
 
 Page-scoped components (used only by one page) live next to the page file:
@@ -54,7 +81,8 @@ Page-scoped components (used only by one page) live next to the page file:
 ```
 src/app/mockups/
   page.tsx                   # server — list grid
-  MockupCard.tsx             # 'use client' — hover/focus/active per card
+  MockupCard.tsx             # 'use client' — card with badge, monogram fallback
+  MockupCard.module.css      # card + thumb + badge styles
   [id]/
     page.tsx                 # server — fetches the mockup + annotations
     MockupViewer.tsx         # 'use client' — iframe + pin overlay
@@ -63,9 +91,11 @@ src/app/mockups/
       page.tsx               # server
       DiffViewer.tsx         # 'use client' — side-by-side iframes
 src/app/projects/
-  layout.tsx                 # server — auth + Prisma tree fetch → grid shell
+  layout.tsx                 # server — auth + Prisma tree fetch → grid shell (CSS module for responsive grid)
+  layout.module.css          # responsive grid: sidebar + main on desktop, single column on mobile <768px
   page.tsx                   # server — redirect to first project
-  ProjectSidebar.tsx         # 'use client' — thin wrapper: passes tree to Sidebar shell, owns mobile drawer
+  ProjectSidebar.tsx         # 'use client' — sidebar wrapper using Sidebar shell, folder create, move, mobile drawer, footer with New Project button
+  ProjectSidebar.module.css  # footer + btn-new-project styles
   [slug]/
     page.tsx                 # server — project root content
     ProjectContent.tsx       # 'use client' — toolbar, folder/mockup card grid, statusbar

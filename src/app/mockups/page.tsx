@@ -201,8 +201,8 @@ export default async function MockupsPage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: 'var(--space-xl)',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: 'var(--space-sm)',
           }}
         >
           {mockups.map((m) => (
