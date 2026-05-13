@@ -237,6 +237,7 @@ export interface ProjectTree {
   id: string;
   name: string;
   slug: string;
+  icon: string | null;
   position: number;
   folders: TreeFolder[];
   mockups: TreeMockup[];
@@ -300,6 +301,7 @@ export async function getProjectTree(projectId: string): Promise<ProjectTree | n
     id: project.id,
     name: project.name,
     slug: project.slug,
+    icon: project.icon,
     position: project.position,
     folders: rootFolders.map(buildFolder),
     mockups: rootMockups,
