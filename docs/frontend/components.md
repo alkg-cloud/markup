@@ -62,6 +62,12 @@ src/components/
   Statusbar/
     Statusbar.tsx           # 'use client' — 24px bar with project stats
     Statusbar.module.css    # bar + segment styles
+  Dropdown/
+    Dropdown.tsx            # 'use client' — positioned popover menu with items, divider, danger variant
+    Dropdown.module.css     # menu, item, itemDanger, divider styles + spring animation
+  Dialog/
+    Dialog.tsx              # 'use client' — modal dialog with scrim, title, field/input helpers, actions row
+    Dialog.module.css       # scrim, dialog card, title, field, label, input, actions styles + scale-in animation
 ```
 
 Page-scoped components (used only by one page) live next to the page file:
