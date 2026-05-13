@@ -34,6 +34,7 @@ export interface TreeProject {
   id: string;
   name: string;
   slug: string;
+  icon: string | null;
   position: number;
   folders: TreeFolder[];
   mockups: TreeMockup[];
@@ -43,6 +44,7 @@ interface FlatNode {
   id: string;
   type: 'project' | 'folder' | 'mockup' | 'recents-header' | 'recents-item';
   label: string;
+  icon?: string | null;
   level: number;
   expandable: boolean;
   expanded: boolean;
@@ -155,6 +157,7 @@ function flattenProjects(
       id: p.id,
       type: 'project',
       label: p.name,
+      icon: p.icon,
       level: 1,
       expandable: true,
       expanded: pExpanded,
@@ -593,7 +596,9 @@ export function ProjectTree({
                 : styles.iconMockup;
 
           const iconElement =
-            node.type === 'project' ? (
+            node.type === 'project' && node.icon ? (
+              <span aria-hidden="true">{node.icon}</span>
+            ) : node.type === 'project' ? (
               <ProjectIcon />
             ) : node.type === 'folder' ? (
               <FolderIcon open={node.expanded} />
