@@ -68,6 +68,9 @@ src/components/
   Dialog/
     Dialog.tsx              # 'use client' — modal dialog with scrim, title, field/input helpers, actions row
     Dialog.module.css       # scrim, dialog card, title, field, label, input, actions styles + scale-in animation
+  Toast/
+    Toast.tsx               # 'use client' — ToastProvider (root layout) + useToast() hook; 4 variants (success/error/warning/info)
+    Toast.module.css        # container, toast card, icon, dismiss, slide-in/out animation
 ```
 
 Page-scoped components (used only by one page) live next to the page file:
@@ -85,7 +88,8 @@ src/app/mockups/
       page.tsx               # server
       DiffViewer.tsx         # 'use client' — side-by-side iframes
 src/app/projects/
-  layout.tsx                 # server — auth + Prisma tree fetch → grid shell
+  layout.tsx                 # server — auth + Prisma tree fetch → grid shell (CSS module for responsive grid)
+  layout.module.css          # responsive grid: sidebar + main on desktop, single column on mobile <768px
   page.tsx                   # server — redirect to first project
   ProjectSidebar.tsx         # 'use client' — sidebar wrapper, folder create, move, mobile drawer, footer with New Project button
   ProjectSidebar.module.css  # footer + btn-new-project styles

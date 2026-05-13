@@ -32,6 +32,7 @@ The naming convention is **`page.tsx` is a server component**, **`*Client.tsx` o
 | `AnnotationCanvas` | `src/components/AnnotationCanvas/AnnotationCanvas.tsx` | Tldraw wrapper — handles screenshot bg, edit mode, StrictMode dedup |
 | `AnnotationPin` | `src/components/AnnotationPin/AnnotationPin.tsx` | Numbered teardrop pin overlaid on iframe coordinates |
 | `ThreadTimeline` | `src/components/ThreadTimeline/ThreadTimeline.tsx` | Message list with avatar chips and reply textarea |
+| `ToastProvider` | `src/components/Toast/Toast.tsx` | Root-level toast notification provider; `useToast()` hook for success/error/warning/info |
 
 ## Image strategy
 

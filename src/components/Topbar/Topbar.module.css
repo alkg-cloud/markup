@@ -94,3 +94,36 @@
 .avatarBtn:hover {
   border-color: var(--accent);
 }
+
+@media (max-width: 767px) {
+  .topbar {
+    padding: 0 var(--space-sm);
+  }
+
+  .searchPill {
+    position: static;
+    transform: none;
+    min-width: 0;
+    max-width: none;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .pillText {
+    display: none;
+  }
+
+  .pillKbd {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .searchPill {
+    transition: none;
+  }
+
+  .avatarBtn {
+    transition: none;
+  }
+}

@@ -1,5 +1,6 @@
 import { JetBrains_Mono, Manrope } from 'next/font/google';
 import type { ReactNode } from 'react';
+import { ToastProvider } from '@/components/Toast/Toast';
 import './globals.css';
 
 /*
@@ -48,7 +49,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             --font-mono: var(--font-mono-loaded), "JetBrains Mono", ui-monospace, monospace;
           }
         `}</style>
-        {children}
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );
