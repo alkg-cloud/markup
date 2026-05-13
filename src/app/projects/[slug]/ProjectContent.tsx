@@ -1,10 +1,9 @@
 'use client';
 
-import Link from 'next/link';
-import { useState } from 'react';
 import MockupCard from '@/app/mockups/MockupCard';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { FolderCard } from '@/components/FolderCard/FolderCard';
 import { Statusbar } from '@/components/Statusbar/Statusbar';
 import { Topbar } from '@/components/Topbar/Topbar';
 
@@ -147,61 +146,5 @@ function SectionHeader({ title, count }: { title: string; count: number }) {
         {count}
       </span>
     </div>
-  );
-}
-
-function FolderCard({ folder, projectSlug }: { folder: FolderSummary; projectSlug: string }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <Link
-      href={`/projects/${projectSlug}/${folder.id}`}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 'var(--space-sm)',
-        padding: 'var(--space-md)',
-        background: hovered ? 'var(--surface-hover)' : 'var(--bg-card)',
-        border: `1px solid ${hovered ? 'var(--border)' : 'var(--border-subtle)'}`,
-        borderRadius: 'var(--radius-card)',
-        textDecoration: 'none',
-        color: 'inherit',
-        transition:
-          'background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard)',
-      }}
-    >
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 16 16"
-        fill="none"
-        aria-hidden="true"
-        style={{ color: 'oklch(80% 0.15 65)', flexShrink: 0 }}
-      >
-        <path
-          d="M2 4a1 1 0 011-1h3.5l1.5 1.5H13a1 1 0 011 1V12a1 1 0 01-1 1H3a1 1 0 01-1-1V4z"
-          stroke="currentColor"
-          strokeWidth="1.3"
-        />
-      </svg>
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <div
-          style={{
-            fontSize: 'var(--type-sm)',
-            fontWeight: 'var(--weight-semibold)',
-            color: 'var(--text-bright)',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {folder.name}
-        </div>
-        <div style={{ fontSize: 'var(--type-xs)', color: 'var(--text-muted)', marginTop: 2 }}>
-          {folder.childCount} {folder.childCount === 1 ? 'item' : 'itens'}
-        </div>
-      </div>
-    </Link>
   );
 }

@@ -47,6 +47,9 @@ src/components/
   Topbar/
     Topbar.tsx              # 'use client' — 52px topbar with search pill + avatar + breadcrumb
     Topbar.module.css       # topbar, searchPill, avatarBtn styles
+  FolderCard/
+    FolderCard.tsx          # server-safe — folder card with CSS Modules (Link + SVG icon)
+    FolderCard.module.css   # card, icon, info, name, meta styles
   EmptyState/
     EmptyState.tsx          # 'use client' — project/folder empty states
   Statusbar/
