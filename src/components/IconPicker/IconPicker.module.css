@@ -1,0 +1,123 @@
+.popover {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  max-height: 380px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 280px;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 4px;
+}
+
+.tab {
+  flex: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  padding: 8px 4px 6px;
+  border-bottom: 2px solid transparent;
+  transition:
+    color 0.12s,
+    border-color 0.12s;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tabActive {
+  color: var(--accent-bright);
+  border-bottom-color: var(--accent-bright);
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.searchIcon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 12px;
+  color: var(--text);
+  min-width: 0;
+}
+
+.searchInput::placeholder {
+  color: var(--text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  padding: 6px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  color: var(--text-muted);
+  transition:
+    background 0.1s,
+    border-color 0.1s,
+    color 0.1s;
+}
+
+.cell:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.cellSelected {
+  border-color: var(--accent);
+  background: var(--accent-overlay-soft);
+  color: var(--accent);
+}
+
+.emoji {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 4px 8px;
+  min-height: 24px;
+}
+
+.footerToken {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
