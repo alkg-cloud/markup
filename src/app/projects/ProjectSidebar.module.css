@@ -1,9 +1,7 @@
-.footer {
+.mobileFooter {
   padding: 8px;
   border-top: 1px solid var(--border-subtle);
   flex-shrink: 0;
-  opacity: 1;
-  transition: opacity calc(var(--morph-dur) * 0.35) var(--ease-exit);
 }
 
 .btnNewProject {
@@ -42,10 +40,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .footer {
-    transition: none;
-  }
-
   .btnNewProject {
     transition: none;
   }
