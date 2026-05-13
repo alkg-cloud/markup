@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import styles from './InlineFolderCreate.module.css';
 
 interface InlineFolderCreateProps {
   indent: number;
@@ -41,13 +42,8 @@ export function InlineFolderCreate({ indent, onConfirm, onCancel }: InlineFolder
 
   return (
     <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        paddingLeft: indent + 34,
-        paddingRight: 'var(--space-sm)',
-        height: error ? 'auto' : 28,
-      }}
+      className={styles.wrapper}
+      style={{ paddingLeft: indent + 34, height: error ? 'auto' : 28 }}
     >
       <input
         ref={inputRef}
@@ -68,29 +64,9 @@ export function InlineFolderCreate({ indent, onConfirm, onCancel }: InlineFolder
           }
         }}
         disabled={submitting}
-        style={{
-          height: 24,
-          fontSize: 'var(--type-sm)',
-          fontFamily: 'var(--font-body)',
-          background: 'var(--surface-input)',
-          border: error ? '1px solid var(--danger)' : '1px solid var(--border)',
-          borderRadius: 'var(--radius-xs)',
-          color: 'var(--text)',
-          padding: '0 var(--space-xs)',
-          outline: 'none',
-        }}
+        className={`${styles.input}${error ? ` ${styles.inputError}` : ''}`}
       />
-      {error && (
-        <span
-          style={{
-            fontSize: 'var(--type-2xs)',
-            color: 'var(--danger)',
-            marginTop: 2,
-          }}
-        >
-          {error}
-        </span>
-      )}
+      {error && <span className={styles.error}>{error}</span>}
     </div>
   );
 }
