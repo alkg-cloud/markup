@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TreeProject } from '@/components/ProjectTree/ProjectTree';
 import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
+import sidebarStyles from './ProjectSidebar.module.css';
 
 interface ProjectSidebarProps {
   projects: TreeProject[];
@@ -121,6 +122,16 @@ export function ProjectSidebar({ projects, mockupNames }: ProjectSidebarProps) {
           onCreateFolder={handleCreateFolder}
           onMove={handleMove}
         />
+      </div>
+
+      {/* Footer */}
+      <div className={sidebarStyles.footer}>
+        <button type="button" className={sidebarStyles.btnNewProject} aria-label="New project">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
+          </svg>
+          New Project
+        </button>
       </div>
     </>
   );
