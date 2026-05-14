@@ -1,4 +1,6 @@
+import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
+import { identify } from '@/lib/auth/identify';
 import { prisma } from '@/lib/prisma';
 import { ProjectContent } from './ProjectContent';
 
@@ -30,6 +32,29 @@ export default async function ProjectPage({ params }: Props) {
 
   if (!project) notFound();
 
+  const cs = await cookies();
+  const hs = await headers();
+  const fakeReq = {
+    cookies: {
+      get: (k: string) => {
+        const c = cs.get(k);
+        return c ? { value: c.value } : undefined;
+      },
+    },
+    headers: { get: (k: string) => hs.get(k) },
+  } as Parameters<typeof identify>[0];
+  const identity = await identify(fakeReq);
+  let userName: string | undefined;
+  let userEmail: string | undefined;
+  if (identity?.kind === 'user') {
+    const user = await prisma.user.findUnique({
+      where: { id: identity.userId },
+      select: { name: true, email: true },
+    });
+    userName = user?.name ?? undefined;
+    userEmail = user?.email ?? undefined;
+  }
+
   const folders = project.folders.map((f) => ({
     id: f.id,
     name: f.name,
@@ -52,6 +77,8 @@ export default async function ProjectPage({ params }: Props) {
       folders={folders}
       mockups={mockups}
       breadcrumbs={[{ label: project.name, href: `/projects/${project.slug}` }]}
+      userName={userName}
+      userEmail={userEmail}
     />
   );
 }

@@ -81,33 +81,113 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 160px;
+  min-width: 220px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glow), var(--shadow-popover);
   padding: 4px;
   z-index: 200;
+  animation: menuIn var(--motion-fast) var(--ease-spring) both;
+}
+
+@keyframes menuIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.menuHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.menuAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  border: 1.5px solid var(--accent-overlay-mid);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--weight-bold);
+  font-size: var(--type-xs);
+  flex-shrink: 0;
+}
+
+.menuHeaderInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.menuHeaderName {
+  font-size: var(--type-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menuHeaderEmail {
+  font-size: var(--type-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menuItem {
   display: flex;
   align-items: center;
+  gap: 10px;
   width: 100%;
   padding: 8px 12px;
   font-size: var(--type-sm);
   font-family: var(--font-body);
-  color: var(--text-dim);
+  font-weight: var(--weight-medium);
+  color: var(--text);
   background: none;
   border: none;
   border-radius: var(--radius-xs);
   cursor: pointer;
   text-align: left;
+  transition: background var(--motion-fast);
 }
 
 .menuItem:hover {
   background: var(--surface-hover);
   color: var(--text);
+}
+
+.menuItem svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.menuItemDanger {
+  color: var(--danger);
+}
+
+.menuItemDanger:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.menuItemDanger svg {
+  color: var(--danger);
 }
 
 .menuDivider {
@@ -166,5 +246,9 @@
 
   .avatarBtn {
     transition: none;
+  }
+
+  .accountMenu {
+    animation: none;
   }
 }

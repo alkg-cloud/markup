@@ -161,11 +161,13 @@
 
 .label {
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 1;
   color: inherit;
+  padding-right: 28px;
 }
 
 /* ── Count badge ────────────────────────────────────────────────────── */
@@ -198,6 +200,8 @@
   opacity: 0;
   position: absolute;
   right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   padding: 0;
@@ -228,11 +232,13 @@
   position: absolute;
   top: calc(100% + 2px);
   right: 0;
-  min-width: 140px;
+  min-width: 160px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glow), var(--shadow-popover);
   padding: 4px;
   z-index: 200;
 }
@@ -255,6 +261,22 @@
 .kebabMenuItem:hover {
   background: var(--surface-hover);
   color: var(--text);
+}
+
+.kebabMenuDivider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px 0;
+}
+
+.kebabMenuItemDanger {
+  composes: kebabMenuItem;
+  color: var(--danger);
+}
+
+.kebabMenuItemDanger:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 /* ── Drag handle ────────────────────────────────────────────────────── */
