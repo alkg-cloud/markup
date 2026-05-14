@@ -321,6 +321,7 @@ interface ProjectTreeProps {
     targetProjectId: string,
     position: number,
   ) => Promise<void>;
+  onDelete?: (nodeId: string, nodeType: 'project' | 'folder' | 'mockup') => void;
 }
 
 export function ProjectTree({
@@ -329,6 +330,7 @@ export function ProjectTree({
   mockupNames = {},
   onCreateFolder,
   onMove,
+  onDelete,
 }: ProjectTreeProps) {
   const [expanded, setExpanded] = useState<Set<string>>(() => {
     const s = new Set<string>();
@@ -778,6 +780,23 @@ export function ProjectTree({
                             New subfolder
                           </button>
                         )}
+                        <div className={styles.kebabMenuDivider} />
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className={styles.kebabMenuItemDanger}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMenuOpenId(null);
+                            onDelete?.(node.id, node.type as 'project' | 'folder' | 'mockup');
+                          }}
+                        >
+                          {node.type === 'project'
+                            ? 'Delete project'
+                            : node.type === 'folder'
+                              ? 'Delete folder'
+                              : 'Delete mockup'}
+                        </button>
                       </div>
                     )}
                   </div>

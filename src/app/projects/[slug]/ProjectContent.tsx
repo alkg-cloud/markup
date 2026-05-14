@@ -28,6 +28,8 @@ interface ProjectContentProps {
   folders: FolderSummary[];
   mockups: MockupSummary[];
   breadcrumbs: BreadcrumbSegment[];
+  userName?: string;
+  userEmail?: string;
 }
 
 export function ProjectContent({
@@ -36,12 +38,14 @@ export function ProjectContent({
   folders,
   mockups,
   breadcrumbs,
+  userName,
+  userEmail,
 }: ProjectContentProps) {
   const isEmpty = folders.length === 0 && mockups.length === 0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-      <Topbar breadcrumbs={breadcrumbs} userName={projectName} />
+      <Topbar breadcrumbs={breadcrumbs} userName={userName} userEmail={userEmail} />
 
       {/* Content */}
       <div
