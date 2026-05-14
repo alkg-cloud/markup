@@ -45,6 +45,10 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 - [Patch format](agent-loop/patch-format.md) — unified-diff conventions for `/version-patch`
 - [Chips](agent-loop/chips.md) — G1 intent vocabulary (`visual` / `copy` / `behavior` / `other`)
 
+## Feature catalog
+
+- [Feature Catalog](feature-catalog.md) — exhaustive inventory of every user-visible surface, interaction, state, and animation; single source of truth for visual-QA
+
 ## Design
 
 - [Full prototype](design/full-prototype.html) — the authoritative full-fidelity prototype
