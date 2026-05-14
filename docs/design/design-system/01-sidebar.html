@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>01-sidebar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--pill-width:84px;--pill-height:40px;--pill-top:5px;--pill-left:5px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0%,0,0/0.45);--shadow-md:0 6px 16px oklch(0%,0,0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0%,0,0/0.6),0 6px 12px oklch(0%,0,0/0.45),inset 0 1px 0 oklch(100%,0,0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);--morph-dur:360ms;--morph-ease:cubic-bezier(0.4,0.8,0.2,1)}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms;--morph-dur:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
+.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
+
+/* ─── LAYOUT ─── */
+#demo{display:flex;height:100vh}
+.spacer{
+  width:var(--sidebar-width);min-width:var(--sidebar-width);flex-shrink:0;
+  transition:width var(--morph-dur) var(--morph-ease),min-width var(--morph-dur) var(--morph-ease);
+}
+.spacer.collapsed{width:0;min-width:0}
+.preview-area{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px}
+
+/* ─── SIDEBAR (position: fixed, morphs into pill) ─── */
+#sidebar{
+  position:fixed;top:0;left:0;z-index:100;
+  width:var(--sidebar-width);height:100vh;
+  background:rgba(14,12,16,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--border-subtle);border-top:none;border-left:none;border-bottom:none;
+  border-radius:0;
+  box-shadow:none;
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:
+    width var(--morph-dur) var(--morph-ease),
+    height var(--morph-dur) var(--morph-ease),
+    top var(--morph-dur) var(--morph-ease),
+    left var(--morph-dur) var(--morph-ease),
+    border-radius var(--morph-dur) var(--morph-ease),
+    border-color var(--morph-dur) var(--morph-ease),
+    box-shadow var(--morph-dur) var(--morph-ease);
+}
+#sidebar.collapsed{
+  width:var(--pill-width);height:var(--pill-height);
+  top:var(--pill-top);left:var(--pill-left);
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-sm),0 0 0 1px oklch(100% 0 0/0.04);
+}
+
+/* ─── HEADER ─── */
+.sidebar-header{
+  height:var(--topbar-height);min-height:var(--topbar-height);
+  display:flex;align-items:center;padding:0 12px;gap:6px;flex-shrink:0;
+  transition:height var(--morph-dur) var(--morph-ease),min-height var(--morph-dur) var(--morph-ease),padding var(--morph-dur) var(--morph-ease);
+}
+#sidebar.collapsed .sidebar-header{
+  height:var(--pill-height);min-height:var(--pill-height);
+  padding:0 10px;
+}
+
+/* ─── LOGO ─── */
+.sidebar-logo{
+  font-weight:700;font-size:16px;color:var(--text-bright);letter-spacing:-0.02em;
+  cursor:pointer;white-space:nowrap;overflow:hidden;display:flex;align-items:baseline;
+}
+.logo-full{
+  display:inline-block;max-width:100px;overflow:hidden;
+  transition:max-width var(--morph-dur) var(--morph-ease),opacity calc(var(--morph-dur)*0.5) var(--ease-exit);
+}
+#sidebar.collapsed .logo-full{max-width:0;opacity:0}
+.logo-dot{color:var(--accent);font-size:1.5em;line-height:0;vertical-align:baseline}
+
+/* ─── COLLAPSE BUTTON ─── */
+.collapse-btn{
+  width:26px;height:26px;border-radius:var(--radius-xs);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-muted);
+  transition:background var(--motion-fast),color var(--motion-fast),margin var(--morph-dur) var(--morph-ease);
+  flex-shrink:0;margin-left:auto;
+}
+.collapse-btn:hover{background:var(--surface-hover);color:var(--text)}
+.collapse-btn .icon-expand{display:none;height:14px}
+.collapse-btn .icon-collapse{display:block;height:14px}
+#sidebar.collapsed .collapse-btn .icon-expand{display:block}
+#sidebar.collapsed .collapse-btn .icon-collapse{display:none}
+
+/* ─── SCROLL + FOOTER: fade out before morph ─── */
+.sidebar-scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0;
+  opacity:1;
+  transition:opacity calc(var(--morph-dur)*0.35) var(--ease-exit);
+}
+.sidebar-footer{
+  padding:12px;border-top:1px solid var(--border-subtle);flex-shrink:0;
+  opacity:1;
+  transition:opacity calc(var(--morph-dur)*0.35) var(--ease-exit);
+}
+#sidebar.collapsed .sidebar-scroll{opacity:0;pointer-events:none;overflow:hidden}
+#sidebar.collapsed .sidebar-footer{opacity:0;pointer-events:none}
+
+/* Expanding: content fades IN after morph completes */
+#sidebar:not(.collapsed) .sidebar-scroll{
+  transition:opacity calc(var(--morph-dur)*0.4) var(--ease-standard) calc(var(--morph-dur)*0.55);
+}
+#sidebar:not(.collapsed) .sidebar-footer{
+  transition:opacity calc(var(--morph-dur)*0.4) var(--ease-standard) calc(var(--morph-dur)*0.55);
+}
+/* Expanding: logo-full appears after morph */
+#sidebar:not(.collapsed) .logo-full{
+  transition:max-width var(--morph-dur) var(--morph-ease),opacity calc(var(--morph-dur)*0.5) var(--ease-standard) calc(var(--morph-dur)*0.4);
+}
+
+/* ─── TREE ITEMS ─── */
+.sidebar-section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);padding:12px 16px 4px;white-space:nowrap}
+.tree-item{display:flex;align-items:center;gap:6px;padding:4px 10px;height:32px;font-size:13px;color:var(--text-dim);cursor:pointer;transition:background var(--motion-fast);white-space:nowrap;position:relative;margin:0 4px;border-radius:var(--radius-sm);user-select:none}
+.tree-item:hover{background:var(--surface-hover);color:var(--text)}
+.tree-item.active{background:var(--accent-overlay-soft);color:var(--accent-bright)}
+.tree-item.active::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:2px;background:var(--accent);border-radius:0 2px 2px 0}
+.tree-indent-1{padding-left:12px}.tree-indent-2{padding-left:28px}.tree-indent-3{padding-left:44px}
+.tree-chevron{width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-muted);transition:transform var(--motion-fast) var(--ease-standard),color var(--motion-fast)}
+.tree-chevron.open{transform:rotate(90deg);color:var(--accent)}
+.tree-icon{flex-shrink:0;font-size:14px;display:flex;align-items:center}
+.tree-label{flex:1;overflow:hidden;text-overflow:ellipsis}
+.tree-count{font-size:10px;font-family:var(--font-mono);color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-pill);padding:1px 6px;flex-shrink:0;transition:opacity var(--motion-fast),transform var(--motion-fast)}
+.tree-kebab{width:20px;height:20px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;color:var(--text-muted);opacity:0;transition:opacity var(--motion-fast),background var(--motion-fast);flex-shrink:0;position:absolute;right:6px}
+.tree-item:hover .tree-count{opacity:0;transform:scale(0.8)}
+.tree-item:hover .tree-kebab{opacity:1}
+.tree-kebab:hover{background:var(--surface-active);color:var(--text)}
+.tree-children{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--motion-base) var(--ease-standard)}
+.tree-children>*{overflow:hidden}
+.tree-children.open{grid-template-rows:1fr}
+
+/* New project button */
+.btn-new-project{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;font-size:13px;font-weight:600;background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);color:var(--accent);border-radius:var(--radius-sm);transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast)}
+.btn-new-project:hover{background:var(--accent-overlay-mid);border-color:var(--accent);color:var(--accent-bright)}
+</style>
+</head>
+<body>
+
+<div id="demo">
+  <div class="spacer" id="spacer"></div>
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-logo" title="Go to home">M<span class="logo-full">arkup</span><span class="logo-dot">.</span></span>
+      <button class="collapse-btn" id="collapseBtn" aria-label="Toggle sidebar">
+        <span class="icon-collapse"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M2 1L1 2V14L2 15H14L15 14V2L14 1H2ZM14 14H7V2H14V14Z"/></svg></span>
+        <span class="icon-expand"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.00073L1 2.00073V14.0007L2 15.0007H14L15 14.0007V2.00073L14 1.00073H2ZM2 14.0007V2.00073H6V14.0007H2ZM7 14.0007V2.00073H14V14.0007H7Z"/></svg></span>
+      </button>
+    </div>
+    <div class="sidebar-scroll">
+      <div class="sidebar-section-label">Projects</div>
+
+      <div class="tree-item tree-indent-1" onclick="toggle('alpha')">
+        <span class="tree-chevron open" id="chev-alpha"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span>
+        <span class="tree-icon">🎨</span>
+        <span class="tree-label">Project Alpha</span>
+        <span class="tree-count">8</span>
+        <button class="tree-kebab" onclick="event.stopPropagation()"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></button>
+      </div>
+      <div class="tree-children open" id="children-alpha"><div>
+        <div class="tree-item tree-indent-2" onclick="toggle('landing')">
+          <span class="tree-chevron open" id="chev-landing"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span>
+          <span class="tree-icon" style="color:var(--text-muted)"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 14h11l.48-.37 2.63-7-.48-.63H14V3.5l-.5-.5H7.71l-.86-.85L6.5 2h-5l-.5.5v11l.5.5zM2 3h4.29l.86.85.35.15H13v2H8.5l-.35.15-.86.85H3.5l-.47.34-1 3.08L2 3zm10.13 10H2.19l1.67-5H7.5l.35-.15.86-.85h5.79l-2.37 6z"/></svg></span>
+          <span class="tree-label">Landing</span>
+        </div>
+        <div class="tree-children open" id="children-landing"><div>
+          <div class="tree-item tree-indent-3 active">
+            <span style="width:16px;flex-shrink:0"></span>
+            <span class="tree-icon" style="color:var(--text-muted)"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.85 4.44L10.57 1.14L10.22 1H2.5L2 1.5V14.5L2.5 15H13.5L14 14.5V4.8L13.85 4.44ZM13 5H10V2L13 5ZM3 14V2H9V5.5L9.5 6H13V14H3Z"/></svg></span>
+            <span class="tree-label">Hero Banner</span>
+          </div>
+        </div></div>
+        <div class="tree-item tree-indent-2">
+          <span class="tree-chevron" id="chev-pricing" onclick="event.stopPropagation();toggle('pricing')"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span>
+          <span class="tree-icon" style="color:var(--text-muted)"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 3H7.71l-.85-.85L6.51 2h-5l-.5.5v11l.5.5h13l.5-.5v-10L14.5 3zm-.51 8.49V13h-12V7h4.49l.35-.15.86-.86H14v1.5l-.01 4zm0-6.49h-6.5l-.35.15-.86.86H2v-3h4.29l.85.85.36.15H14l-.01.99z"/></svg></span>
+          <span class="tree-label">Pricing</span>
+        </div>
+        <div class="tree-children" id="children-pricing"><div></div></div>
+        <div class="tree-item tree-indent-2">
+          <span style="width:16px;flex-shrink:0"></span>
+          <span class="tree-icon" style="color:var(--text-muted)"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.85 4.44L10.57 1.14L10.22 1H2.5L2 1.5V14.5L2.5 15H13.5L14 14.5V4.8L13.85 4.44ZM13 5H10V2L13 5ZM3 14V2H9V5.5L9.5 6H13V14H3Z"/></svg></span>
+          <span class="tree-label">Presentation</span>
+        </div>
+      </div></div>
+
+      <div class="tree-item tree-indent-1" onclick="toggle('beta')">
+        <span class="tree-chevron" id="chev-beta"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span>
+        <span class="tree-icon">📐</span>
+        <span class="tree-label">Project Beta</span>
+        <span class="tree-count">1</span>
+        <button class="tree-kebab" onclick="event.stopPropagation()"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></button>
+      </div>
+      <div class="tree-children" id="children-beta"><div>
+        <div class="tree-item tree-indent-2">
+          <span style="width:16px;flex-shrink:0"></span>
+          <span class="tree-icon" style="color:var(--text-muted)"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.85 4.44L10.57 1.14L10.22 1H2.5L2 1.5V14.5L2.5 15H13.5L14 14.5V4.8L13.85 4.44ZM13 5H10V2L13 5ZM3 14V2H9V5.5L9.5 6H13V14H3Z"/></svg></span>
+          <span class="tree-label">Mobile</span>
+        </div>
+      </div></div>
+
+      <div class="sidebar-section-label" style="margin-top:4px">No Project</div>
+      <div class="tree-item tree-indent-1">
+        <span style="width:16px;flex-shrink:0"></span>
+        <span class="tree-icon" style="color:var(--text-muted)"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.85 4.44L10.57 1.14L10.22 1H2.5L2 1.5V14.5L2.5 15H13.5L14 14.5V4.8L13.85 4.44ZM13 5H10V2L13 5ZM3 14V2H9V5.5L9.5 6H13V14H3Z"/></svg></span>
+        <span class="tree-label">Draft sketch</span>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-new-project"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New Project</button>
+    </div>
+  </aside>
+  <div class="preview-area">Click the collapse button to see the morph animation</div>
+</div>
+<div class="demo-label">01-sidebar</div>
+<script>
+document.getElementById('collapseBtn').addEventListener('click', function(){
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  document.getElementById('spacer').classList.toggle('collapsed');
+});
+function toggle(id) {
+  var c = document.getElementById('chev-'+id);
+  var ch = document.getElementById('children-'+id);
+  if(c && ch) { c.classList.toggle('open'); ch.classList.toggle('open'); }
+}
+</script>
+</body>
+</html>
