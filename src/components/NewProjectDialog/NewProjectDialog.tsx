@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogField, DialogInput } from '@/components/Dialog/Dialog';
 import { IconPicker } from '@/components/IconPicker/IconPicker';
 import { useToast } from '@/components/Toast/useToast';
@@ -9,14 +9,22 @@ import styles from './NewProjectDialog.module.css';
 interface NewProjectDialogProps {
   open: boolean;
   onClose: () => void;
-  onCreated: (project: { id: string; slug: string }) => void;
+  onSaved: (project: { id: string; slug: string }) => void;
+  project?: { id: string; name: string; slug: string; icon: string | null };
 }
 
-export function NewProjectDialog({ open, onClose, onCreated }: NewProjectDialogProps) {
+export function NewProjectDialog({ open, onClose, onSaved, project }: NewProjectDialogProps) {
   const [name, setName] = useState('');
   const [icon, setIcon] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const { show } = useToast();
+  const isEdit = project != null;
+
+  useEffect(() => {
+    if (!open) return;
+    setName(project?.name ?? '');
+    setIcon(project?.icon ?? undefined);
+  }, [open, project]);
 
   function handleClose() {
     setName('');
@@ -28,18 +36,19 @@ export function NewProjectDialog({ open, onClose, onCreated }: NewProjectDialogP
     if (!name.trim() || loading) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/projects', {
-        method: 'POST',
+      const res = await fetch(isEdit ? `/api/projects/${project.id}` : '/api/projects', {
+        method: isEdit ? 'PATCH' : 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), icon }),
       });
-      if (!res.ok) throw new Error('Failed to create project');
-      const project = await res.json();
+      if (!res.ok)
+        throw new Error(isEdit ? 'Failed to update project' : 'Failed to create project');
+      const saved = await res.json();
       handleClose();
-      show('Project created');
-      onCreated(project);
+      show(isEdit ? 'Project updated' : 'Project created');
+      onSaved(saved);
     } catch {
-      show('Failed to create project');
+      show(isEdit ? 'Failed to update project' : 'Failed to create project');
     } finally {
       setLoading(false);
     }
@@ -49,7 +58,7 @@ export function NewProjectDialog({ open, onClose, onCreated }: NewProjectDialogP
     <Dialog
       open={open}
       onClose={handleClose}
-      title="New Project"
+      title={isEdit ? 'Edit Project' : 'New Project'}
       actions={
         <>
           <button type="button" className={styles.btnSecondary} onClick={handleClose}>
@@ -61,7 +70,7 @@ export function NewProjectDialog({ open, onClose, onCreated }: NewProjectDialogP
             disabled={!name.trim() || loading}
             onClick={handleSubmit}
           >
-            Create project
+            {isEdit ? 'Update project' : 'Create project'}
           </button>
         </>
       }

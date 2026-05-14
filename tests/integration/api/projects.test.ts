@@ -127,11 +127,13 @@ describe('projects API', () => {
     expect((await got.json()).name).toBe('Alpha');
 
     const patched = await patchProjectRoute(
-      new Request('http://l', patchReq(cookie, { name: 'Alpha Renamed' })),
+      new Request('http://l', patchReq(cookie, { name: 'Alpha Renamed', icon: 'emoji:🚀' })),
       { params: Promise.resolve({ id: project.id }) },
     );
     expect(patched.status).toBe(200);
-    expect((await patched.json()).name).toBe('Alpha Renamed');
+    const patchedBody = await patched.json();
+    expect(patchedBody.name).toBe('Alpha Renamed');
+    expect(patchedBody.icon).toBe('emoji:🚀');
 
     const deleted = await deleteProjectRoute(new Request('http://l', deleteReq(cookie)), {
       params: Promise.resolve({ id: project.id }),

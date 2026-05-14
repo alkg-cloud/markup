@@ -9,7 +9,7 @@ describe('NewProjectDialog SSR', () => {
       createElement(NewProjectDialog, {
         open: true,
         onClose: vi.fn(),
-        onCreated: vi.fn(),
+        onSaved: vi.fn(),
       }),
     );
     expect(html).toContain('dialog');
@@ -21,7 +21,7 @@ describe('NewProjectDialog SSR', () => {
       createElement(NewProjectDialog, {
         open: false,
         onClose: vi.fn(),
-        onCreated: vi.fn(),
+        onSaved: vi.fn(),
       }),
     );
     expect(html).toBe('');
@@ -33,7 +33,7 @@ describe('NewProjectDialog SSR', () => {
       createElement(NewProjectDialog, {
         open: true,
         onClose: vi.fn(),
-        onCreated: vi.fn(),
+        onSaved: vi.fn(),
       }),
     );
     expect(html).toContain('Project name');
@@ -46,7 +46,7 @@ describe('NewProjectDialog SSR', () => {
       createElement(NewProjectDialog, {
         open: true,
         onClose: vi.fn(),
-        onCreated: vi.fn(),
+        onSaved: vi.fn(),
       }),
     );
     expect(html).toContain('Cancel');
@@ -59,7 +59,7 @@ describe('NewProjectDialog SSR', () => {
       createElement(NewProjectDialog, {
         open: true,
         onClose: vi.fn(),
-        onCreated: vi.fn(),
+        onSaved: vi.fn(),
       }),
     );
     // IconPicker renders tabs: Code, Brands, UI, Emoji

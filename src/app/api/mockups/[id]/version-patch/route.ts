@@ -31,7 +31,7 @@ function listFiles(dir: string, prefix = ''): Record<string, Buffer> {
   return out;
 }
 
-export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+async function applyVersionPatch(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const ident = await identify(req);
   if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id: mockupId } = await ctx.params;
@@ -97,5 +97,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     { status: 201 },
   );
 }
+
+export const POST = applyVersionPatch;
+export const PATCH = applyVersionPatch;
 
 export const dynamic = 'force-dynamic';

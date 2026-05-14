@@ -3,7 +3,7 @@ import path from 'node:path';
 import JSZip from 'jszip';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { POST as setup } from '@/app/api/auth/setup/route';
-import { POST } from '@/app/api/mockups/[id]/version-patch/route';
+import { PATCH, POST } from '@/app/api/mockups/[id]/version-patch/route';
 import { POST as createMockupRoute } from '@/app/api/mockups/route';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
@@ -81,6 +81,26 @@ describe('PATCH /api/mockups/[id]/version-patch', () => {
     expect(res.status).toBe(201);
     const { id: newVid } = await res.json();
     expect(readVersionFile(mockupId, newVid, 'index.html')).toBe('line a\nline B\nline c\n');
+  });
+
+  it('accepts PATCH for documented agent clients', async () => {
+    const cookie = await adminCookie();
+    const { mockupId, versionId } = await createBaseMockup(cookie, 'one\ntwo\n');
+    const body = JSON.stringify({
+      base_version_id: versionId,
+      patches: {
+        'index.html': '--- a/index.html\n+++ b/index.html\n@@ -1,2 +1,2 @@\n one\n-two\n+three\n',
+      },
+    });
+    const res = await PATCH(
+      new Request('http://l', {
+        method: 'PATCH',
+        headers: { cookie: `mk_session=${cookie}`, 'content-type': 'application/json' },
+        body,
+      }),
+      { params: Promise.resolve({ id: mockupId }) },
+    );
+    expect(res.status).toBe(201);
   });
 
   it('returns 409 on conflict', async () => {

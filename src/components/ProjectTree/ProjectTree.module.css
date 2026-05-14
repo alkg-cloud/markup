@@ -358,6 +358,18 @@
   padding: 0;
 }
 
+.renameInput {
+  min-width: 0;
+  flex: 1;
+  height: 24px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+  background: var(--bg-elevated);
+  color: var(--text-bright);
+  font: inherit;
+  padding: 0 var(--space-2xs);
+}
+
 /* ── Reduced motion ─────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

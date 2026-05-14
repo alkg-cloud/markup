@@ -95,7 +95,7 @@ export function Form() {
       setError(body.error ?? 'unknown_error');
       return;
     }
-    router.replace('/mockups');
+    router.replace('/');
   }
 
   return (

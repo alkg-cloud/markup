@@ -1,4 +1,5 @@
 import type { TreeProject } from '@/components/ProjectTree/ProjectTree';
+import { projectHref } from '@/lib/project/routes';
 
 export interface FlatSearchItem {
   id: string;
@@ -18,7 +19,7 @@ export function flattenProjectTree(projects: TreeProject[]): FlatSearchItem[] {
       name: project.name,
       path: '',
       type: 'project',
-      href: `/projects/${project.slug}`,
+      href: projectHref(project.slug),
       projectSlug: project.slug,
     });
 
@@ -51,7 +52,7 @@ function walkFolders(
       name: folder.name,
       path,
       type: 'folder',
-      href: `/projects/${projectSlug}`,
+      href: projectHref(projectSlug, folder.id),
       projectSlug,
     });
 
