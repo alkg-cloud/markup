@@ -63,6 +63,7 @@ The migration file in `prisma/migrations/<timestamp>_<name>/migration.sql` and t
 
 ### Frontend change
 
+- [`docs/feature-catalog.md`](feature-catalog.md) updated if the change adds, removes, or alters a user-visible surface, interaction, state, or animation
 - Component states cover `:hover`, `:focus-visible`, `:active`
 - New design tokens go in `src/styles/tokens.css`, not inline
 - `prefers-reduced-motion` overrides accompany every new `@keyframes` rule

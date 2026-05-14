@@ -57,6 +57,22 @@ The endpoints that compose the agent loop are documented in [`docs/agent-loop/`]
 
 The contract docs make the agent loop **predictable for automation clients that aren't this agent**. Silent drift in any of these endpoints breaks the orchestrators that depend on the published shape — whether they're AI dev assistants (Claude Code, Cursor, Aider), agent frameworks (LangGraph, CrewAI, AutoGen), or in-house CI integrations.
 
+## Feature-catalog freshness (STRICT — non-negotiable)
+
+[`docs/feature-catalog.md`](docs/feature-catalog.md) is the **exhaustive inventory of every user-visible surface** in Markup. Visual-QA, visual-refine, and any UI-touching task tests against it.
+
+Any PR that **adds, removes, or changes a user-visible interaction, state, animation, or surface** MUST update `docs/feature-catalog.md` in the same changeset:
+
+1. **New surface** → add a row with a stable kebab-case ID, surface description, and states.
+2. **Removed surface** → delete the row (no tombstone).
+3. **Changed behaviour** → rewrite the row to match the new behaviour.
+4. **New animation** → add to the Animation inventory table.
+5. **New agent-loop surface** → add to the Agent-loop surfaces table.
+
+The catalog uses stable IDs (e.g. `sidebar-tree-expand`, `annotation-modal-chip`) so issues, screenshots, and QA reports can reference surfaces durably across time. Never rename an ID without grepping for references first.
+
+Reference the catalog in issue titles and descriptions using the `[fc:<id>]` convention (e.g. `[fc:sidebar-tree-dnd-keyboard]`).
+
 ## Mockup-replication rule (when the user points at a fixture)
 
 When the user points at a fixture under `tests/fixtures/mockups/<name>.zip` (e.g. `lumen-coffee.zip`, `helio-pricing.zip`, `drone-console.zip`) and asks the agent to replicate it, modify it, or use it as a visual reference for a feature, the agent MUST:
@@ -78,4 +94,5 @@ Eyeballing the fixture and writing code without enumerating its surface produces
 - **Frontend:** [`docs/frontend/INDEX.md`](docs/frontend/INDEX.md)
 - **Schema + migrations:** [`docs/data/schema.md`](docs/data/schema.md)
 - **Git conventions:** [`docs/git/conventions.md`](docs/git/conventions.md)
+- **Feature catalog (visual-QA source of truth):** [`docs/feature-catalog.md`](docs/feature-catalog.md)
 - **Backlog (parked features):** [`docs/future-features.md`](docs/future-features.md)
