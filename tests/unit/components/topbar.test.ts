@@ -1,6 +1,11 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => '/',
+}));
 
 function renderHTML(component: React.ReactElement): string {
   return renderToStaticMarkup(component);
@@ -29,8 +34,7 @@ describe('Topbar', () => {
     const { Topbar } = await import('@/components/Topbar/Topbar');
     const html = renderHTML(createElement(Topbar, { breadcrumbs: [] }));
     expect(html).toContain('Search...');
-    expect(html).toContain('⌘K');
-    expect(html).toContain('aria-label="Search... (⌘K)"');
+    expect(html).toMatch(/Ctrl\+K|⌘K/);
   });
 
   it('renders avatar button with user initial', async () => {

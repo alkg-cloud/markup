@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { PICKER_ICONS } from '@/components/IconPicker/icons';
 import { MAX_FOLDER_DEPTH } from '@/lib/project/constants';
 import { InlineFolderCreate } from './InlineFolderCreate';
 import styles from './ProjectTree.module.css';
@@ -121,9 +122,9 @@ function MockupIcon() {
 function KebabIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <circle cx="8" cy="4" r="1.2" />
+      <circle cx="4" cy="8" r="1.2" />
       <circle cx="8" cy="8" r="1.2" />
-      <circle cx="8" cy="12" r="1.2" />
+      <circle cx="12" cy="8" r="1.2" />
     </svg>
   );
 }
@@ -139,6 +140,26 @@ function DragHandleIcon() {
       <circle cx="8" cy="9" r="1" />
     </svg>
   );
+}
+
+function resolveIconToken(token: string): { type: 'svg' | 'emoji'; content: string } | null {
+  if (token.startsWith('emoji:')) {
+    return { type: 'emoji', content: token.slice(6) };
+  }
+  for (const group of Object.values(PICKER_ICONS)) {
+    const entry = group.find((e) => e.token === token);
+    if (entry?.svg) return { type: 'svg', content: entry.svg };
+    if (entry?.label) return { type: 'emoji', content: entry.label };
+  }
+  return null;
+}
+
+function ProjectIconResolved({ token }: { token: string }) {
+  const resolved = resolveIconToken(token);
+  if (!resolved) return <ProjectIcon />;
+  if (resolved.type === 'emoji') return <span aria-hidden="true">{resolved.content}</span>;
+  // biome-ignore lint/security/noDangerouslySetInnerHtml: hardcoded SVG from PICKER_ICONS
+  return <span aria-hidden="true" dangerouslySetInnerHTML={{ __html: resolved.content }} />;
 }
 
 /* ── Flatten tree into navigable list ─────────────────────────────────────── */
@@ -319,10 +340,23 @@ export function ProjectTree({
     projectId: string;
     parentId: string | null;
   } | null>(null);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<HTMLDivElement>(null);
   const announceRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname() ?? '';
   const router = useRouter();
+
+  useEffect(() => {
+    if (!menuOpenId) return;
+    const handle = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpenId(null);
+      }
+    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, [menuOpenId]);
 
   const nodes = flattenProjects(projects, expanded, recents);
 
@@ -596,10 +630,12 @@ export function ProjectTree({
                 : styles.iconMockup;
 
           const iconElement =
-            node.type === 'project' && node.icon ? (
-              <span aria-hidden="true">{node.icon}</span>
-            ) : node.type === 'project' ? (
-              <ProjectIcon />
+            node.type === 'project' ? (
+              node.icon ? (
+                <ProjectIconResolved token={node.icon} />
+              ) : (
+                <ProjectIcon />
+              )
             ) : node.type === 'folder' ? (
               <FolderIcon open={node.expanded} />
             ) : (
@@ -690,15 +726,61 @@ export function ProjectTree({
                 )}
 
                 {node.type !== 'recents-item' && (
-                  <button
-                    type="button"
-                    tabIndex={-1}
-                    className={styles.kebab}
-                    aria-label={`Menu de ${displayLabel}`}
-                    onClick={(e) => e.stopPropagation()}
+                  <div
+                    style={{ position: 'relative' }}
+                    ref={menuOpenId === node.id ? menuRef : undefined}
                   >
-                    <KebabIcon />
-                  </button>
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      className={styles.kebab}
+                      aria-label={`Menu de ${displayLabel}`}
+                      aria-haspopup="true"
+                      aria-expanded={menuOpenId === node.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpenId(menuOpenId === node.id ? null : node.id);
+                      }}
+                    >
+                      <KebabIcon />
+                    </button>
+                    {menuOpenId === node.id && (
+                      <div className={styles.kebabMenu} role="menu">
+                        {node.href && (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            className={styles.kebabMenuItem}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuOpenId(null);
+                              router.push(node.href);
+                            }}
+                          >
+                            Open
+                          </button>
+                        )}
+                        {node.type === 'folder' && onCreateFolder && (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            className={styles.kebabMenuItem}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuOpenId(null);
+                              const proj = projects.find((p) => p.slug === node.projectSlug);
+                              if (proj) {
+                                toggleExpand(node.id);
+                                setCreatingIn({ projectId: proj.slug, parentId: node.id });
+                              }
+                            }}
+                          >
+                            New subfolder
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
               {dropLine === 'after' && (
