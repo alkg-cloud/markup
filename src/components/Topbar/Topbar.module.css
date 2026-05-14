@@ -5,8 +5,9 @@
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
-  padding: 0 var(--space-md);
+  padding: 0 var(--space-md) 0 max(var(--space-md), var(--sidebar-inset, 0px));
   gap: var(--space-xs);
+  transition: padding-left var(--morph-dur) var(--morph-ease);
   position: relative;
   z-index: 90;
   flex-shrink: 0;
@@ -73,6 +74,46 @@
   gap: 6px;
   flex-shrink: 0;
   margin-left: auto;
+  position: relative;
+}
+
+.accountMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 160px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  padding: 4px;
+  z-index: 200;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: var(--type-sm);
+  font-family: var(--font-body);
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  text-align: left;
+}
+
+.menuItem:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.menuDivider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px 0;
 }
 
 .avatarBtn {

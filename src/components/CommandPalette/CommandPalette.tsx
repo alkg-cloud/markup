@@ -105,8 +105,15 @@ export function CommandPalette({ projects }: CommandPaletteProps) {
         else openPalette();
       }
     }
+    const handleCustomOpen = () => {
+      if (!open) openPalette();
+    };
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('open-command-palette', handleCustomOpen);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('open-command-palette', handleCustomOpen);
+    };
   }, [open, openPalette, closePalette]);
 
   const handlePanelKeyDown = useCallback(
