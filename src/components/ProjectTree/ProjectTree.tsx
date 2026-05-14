@@ -1,9 +1,10 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PICKER_ICONS } from '@/components/IconPicker/icons';
 import { MAX_FOLDER_DEPTH } from '@/lib/project/constants';
+import { projectHref } from '@/lib/project/routes';
 import { InlineFolderCreate } from './InlineFolderCreate';
 import styles from './ProjectTree.module.css';
 import type { DnDNode } from './useTreeDnD';
@@ -158,7 +159,6 @@ function ProjectIconResolved({ token }: { token: string }) {
   const resolved = resolveIconToken(token);
   if (!resolved) return <ProjectIcon />;
   if (resolved.type === 'emoji') return <span aria-hidden="true">{resolved.content}</span>;
-  // biome-ignore lint/security/noDangerouslySetInnerHtml: hardcoded SVG from PICKER_ICONS
   return <span aria-hidden="true" dangerouslySetInnerHTML={{ __html: resolved.content }} />;
 }
 
@@ -183,7 +183,7 @@ function flattenProjects(
       expandable: true,
       expanded: pExpanded,
       parentId: null,
-      href: `/projects/${p.slug}`,
+      href: projectHref(p.slug),
       setSize: projects.length,
       posInSet: pi + 1,
       projectSlug: p.slug,
@@ -266,7 +266,7 @@ function flattenChildren(
       expandable: true,
       expanded: fExpanded,
       parentId,
-      href: `/projects/${projectSlug}/${f.id}`,
+      href: projectHref(projectSlug, f.id),
       setSize: totalSiblings,
       posInSet: posCounter++,
       projectSlug,
@@ -321,6 +321,8 @@ interface ProjectTreeProps {
     targetProjectId: string,
     position: number,
   ) => Promise<void>;
+  onRename?: (nodeId: string, nodeType: 'folder' | 'mockup', name: string) => Promise<void>;
+  onEditProject?: (projectId: string) => void;
   onDelete?: (nodeId: string, nodeType: 'project' | 'folder' | 'mockup') => void;
 }
 
@@ -330,6 +332,8 @@ export function ProjectTree({
   mockupNames = {},
   onCreateFolder,
   onMove,
+  onRename,
+  onEditProject,
   onDelete,
 }: ProjectTreeProps) {
   const [expanded, setExpanded] = useState<Set<string>>(() => {
@@ -343,10 +347,13 @@ export function ProjectTree({
     parentId: string | null;
   } | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [renaming, setRenaming] = useState<{ id: string; type: 'folder' | 'mockup' } | null>(null);
+  const [renameValue, setRenameValue] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<HTMLDivElement>(null);
   const announceRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname() ?? '';
+  const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
@@ -572,7 +579,7 @@ export function ProjectTree({
 
   useEffect(() => {
     for (const p of projects) {
-      if (pathname.startsWith(`/projects/${p.slug}`)) {
+      if (searchParams.get('project') === p.slug || pathname.startsWith(`/projects/${p.slug}`)) {
         setExpanded((prev) => {
           if (prev.has(p.id)) return prev;
           const next = new Set(prev);
@@ -581,9 +588,19 @@ export function ProjectTree({
         });
       }
     }
-  }, [pathname, projects]);
+  }, [pathname, projects, searchParams]);
 
-  const isActive = (href: string) => pathname === href;
+  const isActive = (href: string) => {
+    if (href.startsWith('/?')) {
+      const params = new URLSearchParams(href.slice(2));
+      return (
+        pathname === '/' &&
+        searchParams.get('project') === params.get('project') &&
+        (searchParams.get('folder') ?? null) === (params.get('folder') ?? null)
+      );
+    }
+    return pathname === href;
+  };
 
   const canDrag = (node: FlatNode) =>
     onMove != null && (node.type === 'folder' || node.type === 'mockup');
@@ -623,6 +640,7 @@ export function ProjectTree({
             node.type === 'recents-item' && node.mockupId
               ? (mockupNames[node.mockupId] ?? node.mockupId.slice(0, 8))
               : node.label;
+          const isRenaming = renaming?.id === node.id;
 
           const iconClass =
             node.type === 'project'
@@ -721,7 +739,39 @@ export function ProjectTree({
 
                 <span className={cx(styles.icon, iconClass)}>{iconElement}</span>
 
-                <span className={styles.label}>{displayLabel}</span>
+                {isRenaming ? (
+                  <input
+                    className={styles.renameInput}
+                    value={renameValue}
+                    ref={(el) => el?.focus()}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onBlur={async () => {
+                      const nextName = renameValue.trim();
+                      setRenaming(null);
+                      if (nextName && nextName !== displayLabel && onRename) {
+                        await onRename(node.id, renaming.type, nextName);
+                      }
+                    }}
+                    onKeyDown={async (e) => {
+                      if (e.key === 'Escape') {
+                        e.stopPropagation();
+                        setRenaming(null);
+                        return;
+                      }
+                      if (e.key === 'Enter') {
+                        e.stopPropagation();
+                        const nextName = renameValue.trim();
+                        setRenaming(null);
+                        if (nextName && nextName !== displayLabel && onRename) {
+                          await onRename(node.id, renaming.type, nextName);
+                        }
+                      }
+                    }}
+                  />
+                ) : (
+                  <span className={styles.label}>{displayLabel}</span>
+                )}
 
                 {node.childCount != null && node.childCount > 0 && (
                   <span className={styles.count}>{node.childCount}</span>
@@ -760,6 +810,36 @@ export function ProjectTree({
                             }}
                           >
                             Open
+                          </button>
+                        )}
+                        {node.type === 'project' && onEditProject && (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            className={styles.kebabMenuItem}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuOpenId(null);
+                              onEditProject(node.id);
+                            }}
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {(node.type === 'folder' || node.type === 'mockup') && onRename && (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            className={styles.kebabMenuItem}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuOpenId(null);
+                              const renameType = node.type as 'folder' | 'mockup';
+                              setRenaming({ id: node.id, type: renameType });
+                              setRenameValue(displayLabel);
+                            }}
+                          >
+                            Rename
                           </button>
                         )}
                         {node.type === 'folder' && onCreateFolder && (

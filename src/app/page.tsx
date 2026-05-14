@@ -1,24 +1,170 @@
-import { cookies, headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { identify } from '@/lib/auth/identify';
-import { isSetupCompleted } from '@/lib/auth/setup-state';
+import { notFound } from 'next/navigation';
+import { Topbar } from '@/components/Topbar/Topbar';
+import { prisma } from '@/lib/prisma';
+import { projectDisplayName, projectHref } from '@/lib/project/routes';
+import { AppShell, getAuthenticatedIdentity } from './AppShell';
+import { ProjectContent } from './projects/[slug]/ProjectContent';
 
-export default async function Root() {
-  if (!(await isSetupCompleted())) redirect('/setup');
-  const cookieStore = await cookies();
-  const headerStore = await headers();
-  const fakeReq = {
-    cookies: {
-      get: (k: string) => {
-        const c = cookieStore.get(k);
-        return c ? { value: c.value } : undefined;
+interface Props {
+  searchParams: Promise<{ project?: string; folder?: string }>;
+}
+
+export default async function Root({ searchParams }: Props) {
+  const identity = await getAuthenticatedIdentity();
+  const params = await searchParams;
+  const selectedProject =
+    (params.project
+      ? await prisma.project.findUnique({ where: { slug: params.project } })
+      : null) ??
+    (await prisma.project.findFirst({
+      orderBy: { position: 'asc' },
+    }));
+
+  let userName: string | undefined;
+  let userEmail: string | undefined;
+  if (identity.kind === 'user') {
+    const user = await prisma.user.findUnique({
+      where: { id: identity.userId },
+      select: { name: true, email: true },
+    });
+    userName = user?.name ?? undefined;
+    userEmail = user?.email ?? undefined;
+  }
+
+  if (!selectedProject) {
+    return (
+      <AppShell>
+        <Topbar breadcrumbs={[]} userName={userName} userEmail={userEmail} />
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-muted)',
+            fontSize: 'var(--type-sm)',
+          }}
+        >
+          Nenhum projeto encontrado.
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (params.folder) {
+    const folder = await prisma.folder.findUnique({
+      where: { id: params.folder },
+      include: {
+        children: {
+          orderBy: { position: 'asc' },
+          include: { _count: { select: { children: true, mockups: true } } },
+        },
+        mockups: {
+          where: { status: { not: 'archived' } },
+          orderBy: { position: 'asc' },
+          include: { _count: { select: { annotations: true } } },
+        },
+      },
+    });
+    if (!folder || folder.projectId !== selectedProject.id) notFound();
+
+    const ancestors = await buildAncestors(folder.parentId);
+    return (
+      <AppShell>
+        <ProjectContent
+          projectName={projectDisplayName(selectedProject)}
+          projectSlug={selectedProject.slug}
+          folders={folder.children.map((f) => ({
+            id: f.id,
+            name: f.name,
+            childCount: f._count.children + f._count.mockups,
+          }))}
+          mockups={folder.mockups.map((m) => ({
+            id: m.id,
+            name: m.name,
+            slug: m.slug,
+            status: m.status,
+            updatedAt: m.updatedAt.toISOString(),
+            annotationCount: m._count.annotations,
+          }))}
+          breadcrumbs={[
+            { label: projectDisplayName(selectedProject), href: projectHref(selectedProject.slug) },
+            ...ancestors.map((a) => ({
+              label: a.name,
+              href: projectHref(selectedProject.slug, a.id),
+            })),
+            { label: folder.name, href: projectHref(selectedProject.slug, folder.id) },
+          ]}
+          userName={userName}
+          userEmail={userEmail}
+        />
+      </AppShell>
+    );
+  }
+
+  const project = await prisma.project.findUnique({
+    where: { id: selectedProject.id },
+    include: {
+      folders: {
+        where: { parentId: null },
+        orderBy: { position: 'asc' },
+        include: { _count: { select: { children: true, mockups: true } } },
+      },
+      mockups: {
+        where: { folderId: null, status: { not: 'archived' } },
+        orderBy: { position: 'asc' },
+        include: { _count: { select: { annotations: true } } },
       },
     },
-    headers: { get: (k: string) => headerStore.get(k) },
-  } as unknown as Parameters<typeof identify>[0];
-  const id = await identify(fakeReq);
-  if (!id) redirect('/login');
-  redirect('/mockups');
+  });
+  if (!project) notFound();
+
+  return (
+    <AppShell>
+      <ProjectContent
+        projectName={projectDisplayName(project)}
+        projectSlug={project.slug}
+        folders={project.folders.map((f) => ({
+          id: f.id,
+          name: f.name,
+          childCount: f._count.children + f._count.mockups,
+        }))}
+        mockups={project.mockups.map((m) => ({
+          id: m.id,
+          name: m.name,
+          slug: m.slug,
+          status: m.status,
+          updatedAt: m.updatedAt.toISOString(),
+          annotationCount: m._count.annotations,
+        }))}
+        breadcrumbs={[{ label: projectDisplayName(project), href: projectHref(project.slug) }]}
+        userName={userName}
+        userEmail={userEmail}
+      />
+    </AppShell>
+  );
+}
+
+async function buildAncestors(
+  parentId: string | null,
+): Promise<Array<{ id: string; name: string }>> {
+  if (!parentId) return [];
+  const ancestors: Array<{ id: string; name: string }> = [];
+  let current: string | null = parentId;
+  const seen = new Set<string>();
+  while (current) {
+    if (seen.has(current)) break;
+    seen.add(current);
+    const f: { id: string; name: string; parentId: string | null } | null =
+      await prisma.folder.findUnique({
+        where: { id: current },
+        select: { id: true, name: true, parentId: true },
+      });
+    if (!f) break;
+    ancestors.unshift({ id: f.id, name: f.name });
+    current = f.parentId;
+  }
+  return ancestors;
 }
 
 export const dynamic = 'force-dynamic';

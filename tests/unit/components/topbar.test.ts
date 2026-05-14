@@ -1,6 +1,9 @@
-import { createElement } from 'react';
+// @vitest-environment jsdom
+
+import { act, createElement } from 'react';
+import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
@@ -12,6 +15,10 @@ function renderHTML(component: React.ReactElement): string {
 }
 
 describe('Topbar', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
   it('renders without crash with empty breadcrumbs', async () => {
     const { Topbar } = await import('@/components/Topbar/Topbar');
     const html = renderHTML(createElement(Topbar, { breadcrumbs: [] }));
@@ -54,6 +61,30 @@ describe('Topbar', () => {
     const html = renderHTML(createElement(Topbar, { breadcrumbs: [] }));
     expect(html).toContain('aria-label="User menu"');
     expect(html).toContain('aria-haspopup="true"');
+  });
+
+  it('closes avatar menu when command palette opens', async () => {
+    const { Topbar } = await import('@/components/Topbar/Topbar');
+    const container = document.createElement('div');
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(createElement(Topbar, { breadcrumbs: [], userName: 'Maria' }));
+    });
+
+    const avatar = container.querySelector('button[aria-label="User menu"]') as HTMLButtonElement;
+    await act(async () => {
+      avatar.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(container.textContent).toContain('Agent Tokens');
+
+    await act(async () => {
+      document.dispatchEvent(new CustomEvent('open-command-palette'));
+    });
+
+    expect(container.textContent).not.toContain('Agent Tokens');
+    root.unmount();
   });
 
   it('renders search icon SVG', async () => {

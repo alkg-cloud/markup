@@ -238,7 +238,7 @@ export function MockupViewer({
         }
       `}</style>
 
-      <div style={{ display: 'grid', gridTemplateRows: 'auto 1fr', minHeight: '100vh' }}>
+      <div style={{ display: 'grid', gridTemplateRows: 'auto 1fr', minHeight: 0, height: '100%' }}>
         {/* ── Topbar ── */}
         <header
           style={{
@@ -257,8 +257,8 @@ export function MockupViewer({
         >
           {/* Left group */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
-            <Link href="/mockups" className="mv-back-link">
-              ← Mockups
+            <Link href="/" className="mv-back-link">
+              ← Projects
             </Link>
 
             {/* Vertical divider */}

@@ -62,10 +62,16 @@ export async function getProject(id: string) {
   return prisma.project.findUnique({ where: { id } });
 }
 
-export async function updateProject(id: string, input: { name?: string }) {
+export async function updateProject(id: string, input: { name?: string; icon?: string | null }) {
   const existing = await prisma.project.findUnique({ where: { id } });
   if (!existing) return null;
-  return prisma.project.update({ where: { id }, data: { name: input.name } });
+  return prisma.project.update({
+    where: { id },
+    data: {
+      name: input.name,
+      icon: input.icon,
+    },
+  });
 }
 
 export async function deleteProject(id: string) {

@@ -1,9 +1,10 @@
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { AppNav } from '@/components/AppNav/AppNav';
+import { Topbar } from '@/components/Topbar/Topbar';
 import { identify } from '@/lib/auth/identify';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { prisma } from '@/lib/prisma';
+import { AppShell } from '../../AppShell';
 import { AgentsClient } from './AgentsClient';
 
 export default async function AgentsPage() {
@@ -31,24 +32,20 @@ export default async function AgentsPage() {
     createdAt: t.createdAt.toISOString(),
     lastUsedAt: t.lastUsedAt ? t.lastUsedAt.toISOString() : null,
   }));
+  const user = await prisma.user.findUnique({
+    where: { id: id.userId },
+    select: { name: true, email: true },
+  });
+
   return (
-    <>
-      {/* Top navigation strip — mirrors /mockups so the user can move between
-       * top-level views without relying on the back link inside the client
-       * component. Sticks to the right edge of the page max-width container. */}
-      <div
-        style={{
-          maxWidth: 800,
-          margin: '0 auto',
-          padding: 'var(--space-2xl) var(--space-xl) 0',
-          display: 'flex',
-          justifyContent: 'flex-end',
-        }}
-      >
-        <AppNav />
-      </div>
+    <AppShell>
+      <Topbar
+        breadcrumbs={[{ label: 'Agent tokens', href: '/settings/agents' }]}
+        userName={user?.name ?? undefined}
+        userEmail={user?.email ?? undefined}
+      />
       <AgentsClient initial={initial} />
-    </>
+    </AppShell>
   );
 }
 

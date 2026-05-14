@@ -9,6 +9,7 @@ import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
 import { RecentsSection } from '@/components/ProjectTree/RecentsSection';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { ToastProvider } from '@/components/Toast/useToast';
+import { projectHref } from '@/lib/project/routes';
 import sidebarStyles from './ProjectSidebar.module.css';
 
 interface ProjectSidebarProps {
@@ -20,13 +21,14 @@ interface ProjectSidebarProps {
 export function ProjectSidebar({ projects, mockupNames, recentMockups }: ProjectSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [newProjectOpen, setNewProjectOpen] = useState(false);
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
 
-  const handleProjectCreated = useCallback(
+  const handleProjectSaved = useCallback(
     (project: { id: string; slug: string }) => {
-      router.push(`/projects/${project.slug}`);
+      router.push(projectHref(project.slug));
       router.refresh();
     },
     [router],
@@ -76,6 +78,25 @@ export function ProjectSidebar({ projects, mockupNames, recentMockups }: Project
     [router],
   );
 
+  const handleRename = useCallback(
+    async (nodeId: string, nodeType: 'folder' | 'mockup', name: string) => {
+      const res = await fetch(
+        nodeType === 'folder' ? `/api/folders/${nodeId}` : `/api/mockups/${nodeId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name }),
+        },
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? 'Erro ao renomear item');
+      }
+      router.refresh();
+    },
+    [router],
+  );
+
   useEffect(() => {
     if (mobileOpen && dialogRef.current && !dialogRef.current.open) {
       dialogRef.current.showModal();
@@ -102,6 +123,8 @@ export function ProjectSidebar({ projects, mockupNames, recentMockups }: Project
         mockupNames={mockupNames}
         onCreateFolder={handleCreateFolder}
         onMove={handleMove}
+        onRename={handleRename}
+        onEditProject={setEditingProjectId}
       />
       {projects.length > 0 && (
         <RecentsSection projectSlug={projects[0].slug} mockups={recentMockups} />
@@ -129,7 +152,13 @@ export function ProjectSidebar({ projects, mockupNames, recentMockups }: Project
         <NewProjectDialog
           open={newProjectOpen}
           onClose={() => setNewProjectOpen(false)}
-          onCreated={handleProjectCreated}
+          onSaved={handleProjectSaved}
+        />
+        <NewProjectDialog
+          open={editingProjectId != null}
+          onClose={() => setEditingProjectId(null)}
+          onSaved={handleProjectSaved}
+          project={projects.find((project) => project.id === editingProjectId)}
         />
         {/* Desktop: pill-morph sidebar */}
         <Sidebar footer={footerContent}>{treeContent}</Sidebar>

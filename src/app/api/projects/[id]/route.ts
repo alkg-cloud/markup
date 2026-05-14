@@ -9,6 +9,7 @@ interface ErrorWithStatus extends Error {
 
 const patchSchema = z.object({
   name: z.string().min(1).max(200).optional(),
+  icon: z.string().max(100).nullable().optional(),
 });
 
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
