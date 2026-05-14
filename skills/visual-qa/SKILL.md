@@ -19,14 +19,24 @@ Perform a systematic visual and functional audit of the live Markup application 
 
 Use [/frontend-design](skill://c150f394-1353-4ba9-bf7f-85f3b36ff431?s=frontend-design) to load the design quality reference before evaluating.
 
-### 2. Open Markup online and catalog the DS
+### 2. Read the feature-catalog
+
+Read [`docs/feature-catalog.md`](docs/feature-catalog.md) end to end. This is the exhaustive inventory of every user-visible surface, interaction, state, and animation. Use it as a checklist during the audit:
+
+- Every surface listed in the catalog must be tested.
+- Every state and animation documented must be verified.
+- Findings should reference catalog IDs using the `[fc:<id>]` convention (e.g. `[fc:sidebar-tree-expand]`).
+- If the live app has surfaces not in the catalog, flag them as "undocumented surface" in the report.
+- If the catalog lists surfaces not found in the live app, flag them as "missing implementation".
+
+### 3. Open Markup online and catalog the DS
 
 1. Navigate to `https://markup.alego.cloud` in Chrome.
 2. Open the "Markup Dev" project.
 3. Identify every DS component mockup (buttons, inputs, dropdowns, modals, toasts, topbar, sidebar, tree, cards, etc.).
 4. For each component, note: visual style, spacing, typography, colors, border-radius, shadows, hover/focus/active states, responsive behavior.
 
-### 3. Audit the live app against the DS
+### 4. Audit the live app against the DS
 
 For each DS component found in Step 2:
 
@@ -41,7 +51,7 @@ For each DS component found in Step 2:
    - **Actual** (what the live app shows)
    - **Severity**: `critical` (broken/unusable), `major` (clearly wrong), `minor` (subtle mismatch)
 
-### 4. Compare full-prototype vs live app
+### 5. Compare full-prototype vs live app
 
 1. Open the full-prototype mockup in "Markup Dev".
 2. Walk through every screen/view in the prototype.
@@ -49,7 +59,7 @@ For each DS component found in Step 2:
 4. Record layout, spacing, element presence/absence, interaction flow divergences.
 5. Test all interactive flows: navigation, create/edit/delete projects, annotations, toolbar actions, keyboard shortcuts, context menus.
 
-### 5. Functional testing
+### 6. Functional testing
 
 While navigating the live app, also test:
 
@@ -61,7 +71,7 @@ While navigating the live app, also test:
 - Toast/notification behavior matches DS.
 - Keyboard navigation and accessibility basics.
 
-### 6. Generate report
+### 7. Generate report
 
 Produce a structured markdown report:
 
@@ -88,6 +98,11 @@ Produce a structured markdown report:
 | # | Location | Description | Severity | Steps to Reproduce |
 |---|----------|-------------|----------|--------------------|
 | 1 | ...      | ...         | ...      | ...                |
+
+## Feature Catalog Coverage
+| fc ID | Surface | Tested | Issues |
+|-------|---------|--------|--------|
+| sidebar-tree-expand | ... | ✅/❌ | ... |
 
 ## Detailed Findings
 ### [Component/Screen Name]

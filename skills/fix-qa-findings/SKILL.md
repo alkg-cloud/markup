@@ -40,7 +40,18 @@ For each finding, in priority order:
 - Use CSS modules / existing style patterns. Don't introduce new styling approaches.
 - If a finding requires a design decision (ambiguous DS reference), note it and skip — escalate to the user.
 
-### 4. Request code review
+### 4. Update feature-catalog
+
+After all fixes are committed, check whether any fix adds, removes, or changes a user-visible surface, interaction, state, or animation. If so, update [`docs/feature-catalog.md`](docs/feature-catalog.md) in the same commit:
+
+- **New surface** → add a row with a stable kebab-case ID.
+- **Removed surface** → delete the row.
+- **Changed behaviour** → rewrite the row to match.
+- **New animation** → add to the Animation inventory table.
+
+Reference the catalog's `[fc:<id>]` convention when naming findings.
+
+### 5. Request code review
 
 After all fixes are committed:
 
@@ -48,13 +59,13 @@ Use [/requesting-code-review](skill://233c1325-61f0-4d42-92eb-18f57d3816e3?s=req
 
 Address any review feedback and re-commit as needed.
 
-### 5. Deploy
+### 6. Deploy
 
 After code review is approved:
 
 Use [/bump-markup-version](skill://d9978923-185e-444f-b41c-433e271c0a76?s=bump-markup-version) with the project environment variables from the [Markup project configuration](https://paperclip-r7fv.srv1650819.hstgr.cloud/MARA/projects/markup/configuration) to deploy the updated version.
 
-### 6. Re-run visual-qa
+### 7. Re-run visual-qa
 
 After deployment is confirmed healthy:
 
