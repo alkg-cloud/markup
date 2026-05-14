@@ -9,7 +9,7 @@
       "!!**/data",
       "!!**/playwright-report",
       "!!next-env.d.ts",
-      "!!**/prototypes",
+      "!!**/docs/design",
       "!!**/.worktrees",
       "!!**/.claude/worktrees"
     ]

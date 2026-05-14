@@ -45,6 +45,12 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 - [Patch format](agent-loop/patch-format.md) — unified-diff conventions for `/version-patch`
 - [Chips](agent-loop/chips.md) — G1 intent vocabulary (`visual` / `copy` / `behavior` / `other`)
 
+## Design
+
+- [Full prototype](design/full-prototype.html) — the authoritative full-fidelity prototype
+- [Design system spec](design/design-system/UX_SPEC.md) — UX spec with design tokens, patterns, and component inventory
+- `design/ideias/` — navigation variant explorations (finder, miller, card-drilldown, hybrid, command-palette)
+
 ## Process artefacts (point-in-time, local-only)
 
 These directories are gitignored — they hold dated, run-scoped artefacts that don't belong in version control:
