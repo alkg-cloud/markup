@@ -1,0 +1,2311 @@
+<!DOCTYPE html>
+<!--
+  VARIANTE B — MILLER COLUMNS: EDITORIAL CASCADE
+  Markup Protótipos v2 — baseado em UX Spec formal MARA-19
+
+  Direção estética: Colunas progressivas horizontais — limpo, espacioso, arquitetônico
+
+  Tipografia:
+  - Headers de coluna: Manrope 600, 12px, uppercase, tracking 0.12em
+  - Lista items: Manrope 400/500, 14px
+  - Paths: JetBrains Mono 400, 12px, --text-muted
+
+  Palette: tokens do design sistema apenas. Colunas separadas por --border-subtle 1px.
+  Item ativo: border-left 2px --accent + --surface-active background.
+
+  Motion:
+  - Coluna nova desliza da direita: 220ms ease-standard translateX
+  - Coluna removida fade-out: 160ms ease-exit
+  - Item hover: 90ms instant
+  - Toast: 150ms in / 250ms out
+
+  Spec: MARA-19 ux-spec (3 níveis max, home root /, finder ≥3 chars,
+  logout sem modal, toast undo 5s, Unsorted virtual project)
+-->
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MARA — Miller Columns · Variante B</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── DESIGN TOKENS ─────────────────────────────────────────────────────────── */
+:root {
+  --bg: oklch(11% 0.03 165);
+  --bg-elevated: oklch(7% 0.02 165);
+  --bg-card: oklch(12% 0.02 165);
+  --bg-card-active: oklch(15% 0.025 165);
+  --bg-tinted: oklch(9% 0.02 165);
+  --btn-bg: rgb(39, 39, 39);
+  --btn-bg-hover: rgb(48, 48, 48);
+  --btn-bg-active: rgb(56, 56, 56);
+  --surface-hover: rgba(255,255,255,0.04);
+  --surface-active: rgba(255,255,255,0.07);
+  --border-subtle: oklch(17% 0.02 165);
+  --border: oklch(21% 0.025 165);
+  --border-strong: oklch(28% 0.025 165);
+  --text-bright: oklch(97% 0.01 165);
+  --text: oklch(82% 0.04 165);
+  --text-dim: oklch(60% 0.02 165);
+  --text-muted: oklch(47% 0.02 165);
+  --accent: oklch(74.4% 0.193 165);
+  --accent-bright: oklch(82% 0.18 165);
+  --accent-soft: oklch(28% 0.08 165);
+  --accent-overlay-soft: oklch(74.4% 0.193 165 / 0.18);
+  --accent-overlay-mid: oklch(74.4% 0.193 165 / 0.35);
+  --success: oklch(76% 0.16 152);
+  --warning: oklch(80% 0.15 80);
+  --danger: oklch(70% 0.2 25);
+  --danger-soft: oklch(28% 0.09 25);
+  --danger-border: oklch(40% 0.1 25);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+  --shadow-glow: 0 0 0 1px oklch(74.4% 0.193 165 / 0.4), 0 0 24px oklch(74.4% 0.193 165 / 0.18);
+  --shadow-popover: 0 14px 32px oklch(0%,0,0/0.6), 0 6px 12px oklch(0%,0,0/0.45), inset 0 1px 0 oklch(100%,0,0/0.06);
+  --scrim-strong: oklch(0% 0 0 / 0.65);
+  --font-body: "Manrope", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.5, 1.4, 0.6, 1);
+  --ease-exit: cubic-bezier(0.32, 0, 0.67, 0);
+  --motion-fast: 160ms;
+  --motion-base: 220ms;
+  --topbar-height: 60px;
+  --sidebar-width: 320px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-card: 14px;
+  --radius-pill: 9999px;
+  --shadow-sm: 0 2px 6px oklch(0%,0,0/0.45);
+  --shadow-md: 0 6px 16px oklch(0%,0,0/0.5);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-fast: 0ms; --motion-base: 0ms; }
+}
+
+/* ─── RESET ──────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input { font-family: inherit; }
+ul, ol { list-style: none; }
+a { color: inherit; text-decoration: none; }
+
+/* Focus ring — global */
+*:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-xs);
+}
+
+/* ─── TOPBAR ─────────────────────────────────────────────────────────────────── */
+#topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--topbar-height);
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+/* Logo */
+.tb-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.tb-logo-mark {
+  width: 28px; height: 28px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-overlay-mid);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+.tb-logo-text {
+  font-size: 15px; font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: -0.04em;
+}
+
+.tb-spacer { flex: 1; }
+
+/* Finder field */
+.finder-wrap { position: relative; flex-shrink: 0; }
+#finder-input {
+  height: 34px;
+  width: 210px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0 38px 0 14px;
+  font-size: 13px;
+  color: var(--text);
+  transition: border-color var(--motion-fast), width var(--motion-base) var(--ease-standard), box-shadow var(--motion-fast);
+}
+#finder-input::placeholder { color: var(--text-muted); }
+#finder-input:focus {
+  border-color: var(--border-strong);
+  box-shadow: var(--focus-ring);
+  width: 270px;
+  outline: none;
+}
+.finder-kbd {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px; color: var(--text-muted);
+  background: var(--btn-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 1px 5px;
+  pointer-events: none;
+  transition: opacity var(--motion-fast);
+}
+#finder-input:focus + .finder-kbd { opacity: 0; }
+
+/* Finder dropdown */
+#finder-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 340px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  overflow: hidden;
+  z-index: 200;
+  animation: anim-drop-in var(--motion-fast) var(--ease-standard);
+}
+#finder-dropdown.visible { display: block; }
+@keyframes anim-drop-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fd-section-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 10px 14px 4px;
+}
+.fd-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+.fd-item:hover { background: var(--surface-hover); }
+.fd-item-icon { font-size: 14px; flex-shrink: 0; }
+.fd-item-body { flex: 1; min-width: 0; }
+.fd-item-name { font-size: 13px; color: var(--text-bright); }
+.fd-item-name mark {
+  background: var(--accent-overlay-soft);
+  color: var(--accent);
+  border-radius: 2px; padding: 0 1px;
+}
+.fd-item-path {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 1px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fd-divider { height: 1px; background: var(--border-subtle); margin: 4px 0; }
+.fd-empty {
+  padding: 24px 14px;
+  text-align: center;
+}
+.fd-empty-title { font-size: 13px; font-weight: 600; color: var(--text-dim); margin-bottom: 4px; }
+.fd-empty-sub { font-size: 12px; color: var(--text-muted); }
+
+/* New Mockup button */
+.btn-new-mockup {
+  height: 34px; padding: 0 14px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-overlay-mid);
+  border-radius: var(--radius-pill);
+  font-size: 13px; font-weight: 600;
+  color: var(--accent);
+  display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+  transition: background var(--motion-fast), border-color var(--motion-fast);
+}
+.btn-new-mockup:hover { background: var(--accent-overlay-mid); border-color: var(--accent); }
+.btn-new-mockup:active { background: var(--accent); color: var(--bg); }
+
+/* Avatar + ··· */
+.tb-user-wrap { position: relative; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.tb-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  border: 1.5px solid var(--accent-overlay-mid);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--accent);
+  cursor: default;
+}
+#btn-more {
+  width: 30px; height: 30px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  letter-spacing: 0.05em;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+#btn-more:hover { background: var(--surface-hover); color: var(--text); }
+#btn-more.open { background: var(--surface-active); color: var(--text-bright); }
+
+/* Dropdown menu */
+.dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 204px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: 5px;
+  z-index: 300;
+  animation: anim-drop-in var(--motion-fast) var(--ease-standard);
+}
+.dropdown.open { display: block; }
+.dd-user {
+  padding: 8px 10px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 4px;
+}
+.dd-user-name { font-size: 13px; font-weight: 600; color: var(--text-bright); }
+.dd-user-email { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.dd-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; color: var(--text);
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
+  width: 100%; text-align: left;
+}
+.dd-item:hover { background: var(--surface-hover); color: var(--text-bright); }
+.dd-item.danger { color: var(--danger); }
+.dd-item.danger:hover { background: var(--danger-soft); }
+.dd-divider { height: 1px; background: var(--border-subtle); margin: 4px 0; }
+
+/* ─── APP SHELL ──────────────────────────────────────────────────────────────── */
+#app {
+  position: fixed;
+  top: var(--topbar-height);
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── MILLER CONTAINER ───────────────────────────────────────────────────────── */
+#miller-wrap {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+#miller-wrap::-webkit-scrollbar { height: 5px; }
+#miller-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ─── COLUMN BASE ────────────────────────────────────────────────────────────── */
+.mc {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-subtle);
+  overflow: hidden;
+  animation: anim-col-in var(--motion-base) var(--ease-standard);
+}
+@keyframes anim-col-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.mc.col-exit {
+  animation: anim-col-out var(--motion-fast) var(--ease-exit) forwards;
+  pointer-events: none;
+}
+@keyframes anim-col-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* Column widths */
+.mc-0 { width: 240px; }
+.mc-1 { width: 260px; }
+.mc-2 { width: 260px; }
+.mc-preview { flex: 1; min-width: 380px; }
+.mc-welcome { flex: 1; min-width: 320px; }
+
+/* Column header */
+.mc-head {
+  flex-shrink: 0;
+  height: 44px;
+  padding: 0 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 8px;
+}
+.mc-head-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.mc-head-title {
+  font-size: 13px; font-weight: 600;
+  color: var(--text-bright);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex: 1; min-width: 0;
+}
+.mc-head-count {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Column scrollable body */
+.mc-body {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-subtle) transparent;
+}
+.mc-body::-webkit-scrollbar { width: 3px; }
+.mc-body::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 2px; }
+
+/* Section label inside column */
+.mc-section {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 10px 16px 4px;
+}
+.mc-divider { height: 1px; background: var(--border-subtle); margin: 4px 0; }
+
+/* Column list */
+.mc-list { padding: 5px 0; }
+
+/* List item */
+.mc-item {
+  position: relative;
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 14px 7px 16px;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  transition: background 90ms, border-color 90ms;
+}
+.mc-item:hover { background: var(--surface-hover); }
+.mc-item.selected {
+  background: var(--surface-active);
+  border-left-color: var(--accent);
+}
+.mc-item.selected .mc-item-name { color: var(--text-bright); font-weight: 500; }
+.mc-item.selected .mc-chevron { color: var(--accent); }
+.mc-item.archived { opacity: 0.58; }
+.mc-item.dragging { opacity: 0.35; }
+.mc-item-icon { font-size: 14px; flex-shrink: 0; }
+.mc-item-body { flex: 1; min-width: 0; }
+.mc-item-name {
+  font-size: 13.5px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: color 90ms;
+}
+.mc-item-meta {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 1px;
+}
+.mc-chevron { font-size: 10px; color: var(--text-muted); flex-shrink: 0; transition: color 90ms; }
+
+/* Badges */
+.badge {
+  font-size: 10px; font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.badge-warn {
+  background: oklch(80% 0.15 80 / 0.14);
+  color: var(--warning);
+  border: 1px solid oklch(80% 0.15 80 / 0.28);
+}
+.badge-accent {
+  background: var(--accent-overlay-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent-overlay-mid);
+}
+
+/* New project footer row */
+.mc-new-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 14px;
+  font-size: 13px; color: var(--text-muted);
+  cursor: pointer;
+  border-top: 1px solid var(--border-subtle);
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.mc-new-row:hover { background: var(--surface-hover); color: var(--text); }
+.mc-new-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--accent);
+  padding: 1px 0;
+  font-size: 13px; color: var(--text-bright);
+  outline: none;
+}
+
+/* Rename input */
+.rename-input {
+  background: var(--bg-tinted);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-xs);
+  padding: 1px 6px;
+  font-size: 13.5px; color: var(--text-bright);
+  width: 100%; outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Drop indicator */
+.drop-line {
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  margin: 1px 14px;
+  box-shadow: var(--shadow-glow);
+}
+
+/* ─── WELCOME PANEL ──────────────────────────────────────────────────────────── */
+.welcome-body { padding: 28px 28px 28px; overflow-y: auto; height: 100%; }
+.welcome-h1 {
+  font-size: 21px; font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: -0.03em;
+  margin-bottom: 4px;
+}
+.welcome-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+.welcome-sec-title {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.recent-list { display: flex; flex-direction: column; gap: 1px; margin-bottom: 28px; }
+.recent-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+.recent-item:hover { background: var(--surface-hover); }
+.recent-thumb {
+  width: 34px; height: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.recent-info { flex: 1; min-width: 0; }
+.recent-name { font-size: 13px; font-weight: 500; color: var(--text-bright); }
+.recent-path { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.recent-time { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.unsorted-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.unsorted-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px;
+  transition: background var(--motion-fast);
+  cursor: pointer;
+}
+.unsorted-row:hover { background: var(--surface-hover); }
+.unsorted-row + .unsorted-row { border-top: 1px solid var(--border-subtle); }
+.unsorted-icon { font-size: 13px; }
+.unsorted-name { font-size: 13px; color: var(--text); flex: 1; }
+.unsorted-time { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+
+/* ─── PREVIEW PANEL ──────────────────────────────────────────────────────────── */
+.prev-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.prev-breadcrumb {
+  flex-shrink: 0;
+  height: 44px;
+  padding: 0 20px;
+  display: flex; align-items: center;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.bc-list { display: flex; align-items: center; gap: 0; }
+.bc-item {
+  display: flex; align-items: center; gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px; color: var(--text-muted);
+}
+.bc-item a { transition: color var(--motion-fast); }
+.bc-item a:hover { color: var(--text); }
+.bc-item[aria-current="page"] { color: var(--text-dim); }
+.bc-sep { color: var(--border-strong); font-size: 11px; margin: 0 2px; }
+.prev-content { flex: 1; overflow-y: auto; padding: 24px; }
+.prev-title {
+  font-size: 19px; font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: -0.03em;
+  margin-bottom: 5px;
+}
+.prev-meta {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--text-muted);
+  margin-bottom: 18px;
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+.prev-frame {
+  width: 100%; aspect-ratio: 16/10;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; margin-bottom: 16px;
+}
+.prev-placeholder {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  color: var(--text-muted);
+}
+.prev-placeholder-icon { font-size: 38px; opacity: 0.3; }
+.prev-placeholder-text { font-size: 13px; }
+.prev-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+.prev-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--motion-fast), transform var(--motion-fast), box-shadow var(--motion-fast);
+}
+.prev-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+.prev-card-thumb {
+  width: 100%; aspect-ratio: 4/3;
+  background: var(--bg-tinted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.prev-card-info { padding: 9px 11px; }
+.prev-card-name { font-size: 12.5px; font-weight: 500; color: var(--text); }
+.prev-card-meta { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.prev-actions { display: flex; gap: 8px; margin-top: 4px; }
+.prev-action-btn {
+  padding: 7px 14px;
+  background: var(--btn-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 12px; font-weight: 500; color: var(--text);
+  cursor: pointer;
+  transition: background var(--motion-fast), border-color var(--motion-fast);
+}
+.prev-action-btn:hover { background: var(--btn-bg-hover); border-color: var(--border-strong); }
+
+/* ─── EMPTY STATES ───────────────────────────────────────────────────────────── */
+.empty {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 40px 16px; text-align: center; gap: 6px;
+}
+.empty-icon { font-size: 30px; opacity: 0.25; margin-bottom: 4px; }
+.empty-title { font-size: 13px; font-weight: 600; color: var(--text-dim); }
+.empty-sub { font-size: 12px; color: var(--text-muted); }
+.empty-btn {
+  margin-top: 8px;
+  padding: 7px 14px;
+  background: var(--btn-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 12px; font-weight: 500; color: var(--text);
+  cursor: pointer; transition: background var(--motion-fast), border-color var(--motion-fast);
+}
+.empty-btn:hover { background: var(--btn-bg-hover); border-color: var(--border-strong); }
+
+/* ─── SKELETON ───────────────────────────────────────────────────────────────── */
+.skel {
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  position: relative; overflow: hidden;
+}
+.skel::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, oklch(100% 0 0 / 0.035) 50%, transparent 100%);
+  animation: anim-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes anim-shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+.skel-row { display: flex; align-items: center; gap: 10px; padding: 8px 16px; }
+.skel-icon { width: 20px; height: 20px; flex-shrink: 0; border-radius: var(--radius-xs); }
+.skel-lines { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.skel-line { height: 10px; border-radius: 3px; }
+
+/* ─── ERROR ──────────────────────────────────────────────────────────────────── */
+.err-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 32px 16px; text-align: center; gap: 6px;
+}
+.err-icon { font-size: 26px; }
+.err-title { font-size: 13px; font-weight: 600; color: var(--danger); }
+.err-sub { font-size: 12px; color: var(--text-muted); }
+.err-btn {
+  margin-top: 8px;
+  padding: 7px 14px;
+  background: var(--danger-soft); border: 1px solid var(--danger-border);
+  border-radius: var(--radius-pill);
+  font-size: 12px; font-weight: 500; color: var(--danger);
+  cursor: pointer; transition: background var(--motion-fast);
+}
+.err-btn:hover { background: oklch(32% 0.1 25); }
+
+/* ─── ARCHIVE VIEW ───────────────────────────────────────────────────────────── */
+#archive-view {
+  display: none;
+  flex: 1; flex-direction: column; overflow: hidden;
+}
+#archive-view.on { display: flex; }
+.arch-header {
+  padding: 20px 24px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.arch-title {
+  font-size: 17px; font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: -0.03em; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.arch-back {
+  font-size: 13px; color: var(--accent);
+  cursor: pointer; font-weight: 600;
+  background: none; border: none;
+  transition: opacity var(--motion-fast);
+}
+.arch-back:hover { opacity: 0.7; }
+.arch-filters { display: flex; gap: 6px; padding-bottom: 16px; }
+.arch-filter {
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 12px; font-weight: 500;
+  color: var(--text-muted);
+  background: var(--btn-bg); border: 1px solid var(--border);
+  cursor: pointer; transition: all var(--motion-fast);
+}
+.arch-filter:hover, .arch-filter.on {
+  background: var(--accent-soft);
+  border-color: var(--accent-overlay-mid);
+  color: var(--accent);
+}
+.arch-grid {
+  flex: 1; overflow-y: auto;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px; align-content: start;
+}
+.arch-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden; opacity: 0.8;
+  transition: opacity var(--motion-fast), border-color var(--motion-fast);
+}
+.arch-card:hover { opacity: 1; border-color: var(--border-strong); }
+.arch-card-thumb {
+  width: 100%; aspect-ratio: 16/10;
+  background: var(--bg-tinted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.arch-card-body { padding: 12px; }
+.arch-card-name { font-size: 13px; font-weight: 600; color: var(--text-bright); margin-bottom: 4px; }
+.arch-card-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.arch-restore {
+  width: 100%;
+  padding: 6px;
+  background: var(--btn-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 500; color: var(--text-dim);
+  cursor: pointer; transition: all var(--motion-fast);
+}
+.arch-restore:hover { background: var(--btn-bg-hover); color: var(--text); }
+
+/* ─── MODAL ──────────────────────────────────────────────────────────────────── */
+#modal-scrim {
+  display: none;
+  position: fixed; inset: 0;
+  background: var(--scrim-strong);
+  z-index: 400;
+  align-items: center; justify-content: center;
+  animation: anim-fade-in var(--motion-fast) var(--ease-standard);
+}
+#modal-scrim.on { display: flex; }
+@keyframes anim-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: 24px; width: 360px;
+  animation: anim-modal-in var(--motion-base) var(--ease-spring);
+}
+@keyframes anim-modal-in {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-title { font-size: 16px; font-weight: 700; color: var(--text-bright); margin-bottom: 8px; letter-spacing: -0.02em; }
+.modal-body { font-size: 13px; color: var(--text-dim); line-height: 1.65; margin-bottom: 20px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.modal-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all var(--motion-fast);
+}
+.modal-btn-cancel { background: var(--btn-bg); border: 1px solid var(--border); color: var(--text); }
+.modal-btn-cancel:hover { background: var(--btn-bg-hover); }
+.modal-btn-confirm { background: var(--danger-soft); border: 1px solid var(--danger-border); color: var(--danger); }
+.modal-btn-confirm:hover { background: oklch(32% 0.1 25); }
+
+/* ─── TOAST ──────────────────────────────────────────────────────────────────── */
+#toast-dock {
+  position: fixed;
+  bottom: 76px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 7px;
+  z-index: 500; pointer-events: none;
+}
+.toast {
+  display: flex; align-items: center; gap: 11px;
+  padding: 9px 15px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-popover);
+  font-size: 13px; color: var(--text-bright);
+  pointer-events: all; white-space: nowrap;
+  animation: anim-toast-in 150ms var(--ease-spring);
+}
+@keyframes anim-toast-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.toast.leaving {
+  animation: anim-toast-out 250ms var(--ease-exit) forwards;
+}
+@keyframes anim-toast-out {
+  to { opacity: 0; transform: translateY(4px) scale(0.97); }
+}
+.toast-icon { font-size: 14px; }
+.toast-undo {
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  padding: 2px 7px;
+  border-radius: var(--radius-xs);
+  background: var(--accent-overlay-soft);
+  border: 1px solid var(--accent-overlay-mid);
+  cursor: pointer; transition: background var(--motion-fast);
+}
+.toast-undo:hover { background: var(--accent-overlay-mid); }
+
+/* ─── DRAG GHOST ─────────────────────────────────────────────────────────────── */
+#drag-ghost {
+  position: fixed;
+  pointer-events: none; z-index: 600;
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 13px; color: var(--text-bright);
+  box-shadow: var(--shadow-glow);
+  transform: rotate(1.5deg);
+  opacity: 0.95; white-space: nowrap;
+  display: none;
+}
+
+/* ─── STATE NAVIGATOR (floating) ────────────────────────────────────────────── */
+#state-nav {
+  position: fixed;
+  bottom: 18px; right: 18px;
+  z-index: 700;
+}
+.state-toggle {
+  padding: 8px 15px;
+  background: var(--bg-card); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 600; color: var(--text-dim);
+  cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  box-shadow: var(--shadow-md);
+  transition: all var(--motion-fast);
+  font-family: var(--font-mono);
+}
+.state-toggle:hover { background: var(--bg-card-active); color: var(--text-bright); }
+.state-panel {
+  display: none;
+  position: absolute; bottom: calc(100% + 8px); right: 0;
+  width: 290px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  overflow: hidden;
+  animation: anim-drop-in var(--motion-fast) var(--ease-standard);
+}
+.state-panel.open { display: block; }
+.sp-header {
+  padding: 9px 13px;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.sp-item {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 8px 13px;
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.sp-item:hover { background: var(--surface-hover); }
+.sp-item.current { background: var(--accent-overlay-soft); }
+.sp-num {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--text-muted); width: 16px; flex-shrink: 0;
+  padding-top: 1px;
+}
+.sp-item.current .sp-num { color: var(--accent); }
+.sp-text { flex: 1; }
+.sp-label { font-size: 12.5px; font-weight: 500; color: var(--text); }
+.sp-item.current .sp-label { color: var(--accent); }
+.sp-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .mc {
+    position: absolute; inset: 0;
+    width: 100% !important;
+    border-right: none;
+    transform: translateX(0);
+    transition: transform var(--motion-base) var(--ease-standard), opacity var(--motion-base);
+  }
+  .mc.mob-hide { transform: translateX(-100%); opacity: 0; pointer-events: none; }
+  .mc.mob-right { transform: translateX(100%); opacity: 0; pointer-events: none; }
+  #miller-wrap { position: relative; }
+  .mob-back {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 13px; font-weight: 600; color: var(--accent);
+    background: none; border: none;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  .mc-head { padding: 0 10px; }
+}
+@media (min-width: 768px) { .mob-back { display: none; } }
+</style>
+</head>
+<body>
+
+<!-- ─── TOPBAR ──────────────────────────────────────────────────────────────── -->
+<header id="topbar" role="banner">
+  <a href="#" class="tb-logo" aria-label="MARA Home">
+    <div class="tb-logo-mark" aria-hidden="true">M</div>
+    <span class="tb-logo-text">MARA</span>
+  </a>
+
+  <div class="tb-spacer" aria-hidden="true"></div>
+
+  <!-- Finder -->
+  <div class="finder-wrap" role="search">
+    <label for="finder-input" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Buscar mockups, projetos e pastas</label>
+    <input
+      id="finder-input"
+      type="search"
+      role="combobox"
+      aria-expanded="false"
+      aria-autocomplete="list"
+      aria-controls="finder-dropdown"
+      aria-label="Buscar (⌘K)"
+      placeholder="Buscar…"
+      autocomplete="off"
+    >
+    <span class="finder-kbd" aria-hidden="true">⌘K</span>
+    <div id="finder-dropdown" role="listbox" aria-label="Resultados da busca"></div>
+  </div>
+
+  <!-- New Mockup -->
+  <button class="btn-new-mockup" id="btn-new-mockup" aria-label="Criar novo mockup">
+    <span aria-hidden="true">＋</span> Novo Mockup
+  </button>
+
+  <!-- User -->
+  <div class="tb-user-wrap">
+    <div class="tb-avatar" aria-hidden="true" title="A. Camillo">AC</div>
+    <button id="btn-more" aria-label="Menu do usuário" aria-haspopup="true" aria-expanded="false">···</button>
+    <div class="dropdown" id="user-menu" role="menu" aria-label="Opções do usuário">
+      <div class="dd-user">
+        <div class="dd-user-name">A. Camillo</div>
+        <div class="dd-user-email">acamillo.goncalves@gmail.com</div>
+      </div>
+      <button class="dd-item" role="menuitem">
+        <span aria-hidden="true">👤</span> Perfil
+      </button>
+      <button class="dd-item" role="menuitem">
+        <span aria-hidden="true">⚙️</span> Configurações
+      </button>
+      <button class="dd-item" role="menuitem" id="dd-archive">
+        <span aria-hidden="true">📦</span> Ver Arquivados
+      </button>
+      <button class="dd-item" role="menuitem" id="dd-home">
+        <span aria-hidden="true">🏠</span> Ir para Home
+      </button>
+      <div class="dd-divider" role="separator"></div>
+      <button class="dd-item danger" role="menuitem" id="dd-logout">
+        <span aria-hidden="true">→</span> Sair
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ─── APP ─────────────────────────────────────────────────────────────────── -->
+<main id="app" role="main">
+
+  <!-- Miller Columns -->
+  <div id="miller-wrap" aria-label="Navegação em colunas Miller"></div>
+
+  <!-- Archive View -->
+  <div id="archive-view" role="region" aria-label="Arquivo">
+    <div class="arch-header">
+      <div class="arch-title">
+        <button class="arch-back" id="arch-back-btn" aria-label="Voltar para Home">‹ Home</button>
+        Arquivo
+      </div>
+      <div class="arch-filters" role="group" aria-label="Filtrar itens arquivados">
+        <button class="arch-filter on" data-af="all">Todos</button>
+        <button class="arch-filter" data-af="mockup">Mockups</button>
+        <button class="arch-filter" data-af="pasta">Pastas</button>
+      </div>
+    </div>
+    <div class="arch-grid" id="arch-grid" role="list">
+      <article class="arch-card" role="listitem">
+        <div class="arch-card-thumb" aria-hidden="true">🖼️</div>
+        <div class="arch-card-body">
+          <div class="arch-card-name">Hero v1</div>
+          <div class="arch-card-meta">
+            <span>Ana · 3d atrás</span>
+            <span class="badge badge-warn">Arquivado</span>
+          </div>
+          <button class="arch-restore">Restaurar</button>
+        </div>
+      </article>
+      <article class="arch-card" role="listitem">
+        <div class="arch-card-thumb" aria-hidden="true">🔲</div>
+        <div class="arch-card-body">
+          <div class="arch-card-name">btn-draft</div>
+          <div class="arch-card-meta">
+            <span>Bot-UX · 1h atrás</span>
+            <span class="badge badge-warn">Arquivado</span>
+          </div>
+          <button class="arch-restore">Restaurar</button>
+        </div>
+      </article>
+    </div>
+  </div>
+
+</main>
+
+<!-- ─── MODAL ───────────────────────────────────────────────────────────────── -->
+<div id="modal-scrim" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
+  <div class="modal">
+    <h3 class="modal-title" id="modal-title-text">Arquivar mockup?</h3>
+    <p class="modal-body" id="modal-body-text">
+      O mockup será arquivado e removido da navegação principal. Você pode restaurá-lo em <em>Arquivo</em>.
+    </p>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" id="modal-cancel">Cancelar</button>
+      <button class="modal-btn modal-btn-confirm" id="modal-confirm">Arquivar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TOASTS ───────────────────────────────────────────────────────────────── -->
+<div id="toast-dock" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ─── DRAG GHOST ──────────────────────────────────────────────────────────── -->
+<div id="drag-ghost" aria-hidden="true"></div>
+
+<!-- ─── STATE NAVIGATOR ─────────────────────────────────────────────────────── -->
+<nav id="state-nav" aria-label="Navegador de estados do protótipo">
+  <button class="state-toggle" id="state-toggle" aria-haspopup="true" aria-expanded="false">
+    [ Estados ▾ ]
+  </button>
+  <div class="state-panel" id="state-panel" role="menu" aria-label="Selecionar estado">
+    <div class="sp-header">15 Estados do Protótipo</div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SCRIPT — MARA Miller Columns Prototype
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── DATA MODEL ─────────────────────────────────────────────────────────────── */
+const DB = {
+  projects: [
+    {
+      id: 'alpha', name: 'Projeto Alpha', icon: '🎨', count: 8,
+      children: [
+        {
+          id: 'a-landing', name: 'Landing', icon: '📁', type: 'folder',
+          children: [
+            {
+              id: 'a-landing-hero', name: 'Subpasta Hero', icon: '📂', type: 'folder',
+              children: [
+                { id: 'm-mockup1',  name: 'Mockup 1',  icon: '🖼️', type: 'mockup', updatedAt: '2h atrás',  author: 'AC' },
+                { id: 'm-herov3',   name: 'Hero v3',   icon: '🖼️', type: 'mockup', updatedAt: '1h atrás',  author: 'AC' },
+                { id: 'm-herov1',   name: 'Hero v1',   icon: '🖼️', type: 'mockup', updatedAt: '3d atrás',  author: 'Ana', archived: true }
+              ]
+            },
+            { id: 'm-banner', name: 'Banner', icon: '🖼️', type: 'mockup', updatedAt: 'hoje 14:20', author: 'AC' }
+          ]
+        },
+        {
+          id: 'a-pricing', name: 'Pricing', icon: '📁', type: 'folder',
+          children: [
+            { id: 'm-pa', name: 'Pricing A',    icon: '🖼️', type: 'mockup', updatedAt: 'ontem',       author: 'AC' },
+            { id: 'm-pb', name: 'Pricing B',    icon: '🖼️', type: 'mockup', updatedAt: 'ontem',       author: 'AC' },
+            { id: 'm-pc', name: 'Pricing 2025', icon: '🖼️', type: 'mockup', updatedAt: 'hoje 10:30',  author: 'Bot-UX' }
+          ]
+        },
+        { id: 'm-apres', name: 'Apresentação', icon: '📊', type: 'mockup', updatedAt: '2d atrás', author: 'AC' }
+      ]
+    },
+    {
+      id: 'beta', name: 'Projeto Beta', icon: '📐', count: 3,
+      children: [
+        {
+          id: 'b-mobile', name: 'Mobile', icon: '📁', type: 'folder',
+          children: [
+            { id: 'm-dash', name: 'Dashboard v2', icon: '📱', type: 'mockup', updatedAt: 'hoje', author: 'AC' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'unsorted', name: 'Sem Projeto', icon: '📋', count: 1, virtual: true,
+      children: [
+        { id: 'm-rascunho', name: 'Rascunho', icon: '📝', type: 'mockup', updatedAt: 'agora', author: 'AC' }
+      ]
+    }
+  ],
+  recents: [
+    { id: 'm-herov3',  name: 'Hero v3',       icon: '🖼️', path: 'Alpha / Landing / Subpasta Hero', time: '1h atrás' },
+    { id: 'm-pc',      name: 'Pricing 2025',  icon: '🖼️', path: 'Alpha / Pricing',                  time: 'hoje 10:30' }
+  ]
+};
+
+/* ── STATE DEFINITIONS ──────────────────────────────────────────────────────── */
+const STATES = [
+  { n:  1, label: 'Home root',                      desc: 'Col 0 + painel de boas-vindas (Recentes + Sem Projeto)' },
+  { n:  2, label: 'Finder — resultados',             desc: 'Busca "hero" com seções e highlight' },
+  { n:  3, label: 'Finder — sem resultados',         desc: 'Busca "xyzabc", estado vazio' },
+  { n:  4, label: 'Projeto selecionado',             desc: 'Alpha em col 0; col 1 mostra conteúdo' },
+  { n:  5, label: 'Pasta selecionada',               desc: 'Landing em col 1; col 2 mostra Hero + Banner' },
+  { n:  6, label: 'Subpasta selecionada (nível 3)',  desc: 'Col preview com mockups de Hero' },
+  { n:  7, label: 'Drag em andamento',               desc: '"Banner" sendo arrastado, ghost + drop indicator' },
+  { n:  8, label: 'Mockup arquivado',                desc: '"Hero v1" com badge warning e opacity 0.6' },
+  { n:  9, label: 'Empty — sem projetos',            desc: 'Col 0 com estado vazio' },
+  { n: 10, label: 'Empty — projeto vazio',           desc: 'Col 1 "Nenhum mockup ainda"' },
+  { n: 11, label: 'Empty — pasta vazia',             desc: 'Col 2 "Pasta vazia" + CTA' },
+  { n: 12, label: 'Loading',                         desc: 'Skeleton shimmer em todas as colunas' },
+  { n: 13, label: 'Error',                           desc: 'Erro na col 1 com botão retry' },
+  { n: 14, label: '/archive view',                   desc: 'Grid de itens arquivados com filtro' },
+  { n: 15, label: 'Logout dropdown',                 desc: 'Menu ··· aberto (sem modal)' },
+];
+
+/* ── RUNTIME STATE ──────────────────────────────────────────────────────────── */
+let currentState = 1;
+
+/* ── DOM REFS ───────────────────────────────────────────────────────────────── */
+const millerWrap    = document.getElementById('miller-wrap');
+const archiveView   = document.getElementById('archive-view');
+const finderInput   = document.getElementById('finder-input');
+const finderDD      = document.getElementById('finder-dropdown');
+const userMenu      = document.getElementById('user-menu');
+const btnMore       = document.getElementById('btn-more');
+const modalScrim    = document.getElementById('modal-scrim');
+const toastDock     = document.getElementById('toast-dock');
+const dragGhost     = document.getElementById('drag-ghost');
+const stateToggle   = document.getElementById('state-toggle');
+const statePanel    = document.getElementById('state-panel');
+
+/* ── HELPERS ────────────────────────────────────────────────────────────────── */
+function h(tag, attrs = {}, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'cls') el.className = v;
+    else if (k === 'text') el.textContent = v;
+    else if (k === 'html') el.innerHTML = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v);
+  }
+  for (const c of children) {
+    if (typeof c === 'string') el.appendChild(document.createTextNode(c));
+    else if (c) el.appendChild(c);
+  }
+  return el;
+}
+
+function findItem(id) {
+  function search(items) {
+    for (const it of items) {
+      if (it.id === id) return it;
+      if (it.children) { const r = search(it.children); if (r) return r; }
+    }
+    return null;
+  }
+  for (const p of DB.projects) {
+    if (p.id === id) return p;
+    const r = search(p.children || []);
+    if (r) return r;
+  }
+  return null;
+}
+
+function pathTo(id) {
+  function walk(items, trail) {
+    for (const it of items) {
+      const next = [...trail, it.name];
+      if (it.id === id) return next;
+      if (it.children) { const r = walk(it.children, next); if (r) return r; }
+    }
+    return null;
+  }
+  for (const p of DB.projects) {
+    if (p.id === id) return [p.name];
+    const r = walk(p.children || [], [p.name]);
+    if (r) return r;
+  }
+  return [id];
+}
+
+/* ── COLUMN BUILDERS ────────────────────────────────────────────────────────── */
+
+function makeSkeletonRows(n) {
+  return Array.from({ length: n }, (_, i) =>
+    `<div class="skel-row">
+      <div class="skel skel-icon"></div>
+      <div class="skel-lines">
+        <div class="skel skel-line" style="width:${58 + (i % 3) * 12}%"></div>
+        <div class="skel skel-line" style="width:${28 + (i % 2) * 18}%"></div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+/* Column 0: project list */
+function col0({ selectedId = null, empty = false, loading = false } = {}) {
+  const col = document.createElement('div');
+  col.className = 'mc mc-0';
+  col.setAttribute('role', 'navigation');
+  col.setAttribute('aria-label', 'Lista de projetos');
+  col.dataset.mcIndex = '0';
+
+  const projects = DB.projects;
+  const count = empty ? 0 : projects.length;
+
+  col.innerHTML = `
+    <div class="mc-head">
+      <span class="mc-head-label">Projetos</span>
+      <span class="mc-head-count">${count}</span>
+    </div>
+    <div class="mc-body" id="mc0-body"></div>`;
+
+  const body = col.querySelector('#mc0-body');
+
+  if (loading) {
+    body.innerHTML = makeSkeletonRows(5);
+    return col;
+  }
+  if (empty) {
+    body.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">📂</div>
+        <div class="empty-title">Nenhum projeto ainda</div>
+        <div class="empty-sub">Crie seu primeiro projeto para começar</div>
+        <button class="empty-btn" onclick="startNewProject()">＋ Criar Projeto</button>
+      </div>`;
+    return col;
+  }
+
+  const list = document.createElement('div');
+  list.className = 'mc-list';
+  list.setAttribute('role', 'listbox');
+  list.setAttribute('aria-label', 'Projetos');
+
+  projects.forEach(p => {
+    const sel = p.id === selectedId;
+    const row = document.createElement('div');
+    row.className = 'mc-item' + (sel ? ' selected' : '');
+    row.setAttribute('role', 'option');
+    row.setAttribute('aria-selected', sel ? 'true' : 'false');
+    row.setAttribute('tabindex', sel ? '0' : '-1');
+    row.dataset.id = p.id;
+    row.dataset.type = 'project';
+    row.innerHTML = `
+      <span class="mc-item-icon" aria-hidden="true">${p.icon}</span>
+      <div class="mc-item-body">
+        <div class="mc-item-name">${p.name}</div>
+        <div class="mc-item-meta">${p.count} mockup${p.count !== 1 ? 's' : ''}</div>
+      </div>
+      <span class="mc-chevron" aria-hidden="true">›</span>`;
+    row.addEventListener('click', () => uiSelectProject(p.id, row));
+    row.addEventListener('dblclick', () => startRename(row));
+    list.appendChild(row);
+  });
+
+  body.appendChild(list);
+
+  // New project row at bottom
+  const newRow = document.createElement('div');
+  newRow.className = 'mc-new-row';
+  newRow.id = 'new-proj-row';
+  newRow.setAttribute('role', 'button');
+  newRow.setAttribute('aria-label', 'Criar novo projeto');
+  newRow.innerHTML = `<span aria-hidden="true">＋</span><span>Novo Projeto</span>`;
+  newRow.addEventListener('click', startNewProject);
+  body.appendChild(newRow);
+
+  return col;
+}
+
+/* Column 1: project contents */
+function col1(projectId, { selectedFolderId = null, empty = false, loading = false, error = false, showArchived = false } = {}) {
+  const project = DB.projects.find(p => p.id === projectId);
+  const col = document.createElement('div');
+  col.className = 'mc mc-1';
+  col.setAttribute('role', 'navigation');
+  col.setAttribute('aria-label', `Conteúdo de ${project ? project.name : 'projeto'}`);
+  col.dataset.mcIndex = '1';
+
+  const itemCount = project ? (project.children || []).length : 0;
+
+  col.innerHTML = `
+    <div class="mc-head">
+      <button class="mob-back" aria-label="Voltar para projetos" onclick="uiGoBack(1)">‹</button>
+      <span class="mc-head-title">${project ? project.name : '—'}</span>
+      <span class="mc-head-count">${itemCount}</span>
+    </div>
+    <div class="mc-body" id="mc1-body"></div>`;
+
+  const body = col.querySelector('#mc1-body');
+
+  if (loading) { body.innerHTML = makeSkeletonRows(4); return col; }
+  if (error) {
+    body.innerHTML = `
+      <div class="err-state">
+        <div class="err-icon">⚠️</div>
+        <div class="err-title">Falha ao carregar</div>
+        <div class="err-sub">Não foi possível buscar os itens do projeto.</div>
+        <button class="err-btn" onclick="applyState(4)">Tentar novamente</button>
+      </div>`;
+    return col;
+  }
+  if (!project || empty || !project.children.length) {
+    body.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🗂️</div>
+        <div class="empty-title">Nenhum mockup ainda</div>
+        <div class="empty-sub">Adicione mockups ou pastas a este projeto</div>
+        <button class="empty-btn" onclick="toast('✨','Criar mockup — em breve!')">＋ Adicionar</button>
+      </div>`;
+    return col;
+  }
+
+  const folders  = project.children.filter(c => c.type === 'folder');
+  const mockups  = project.children.filter(c => c.type === 'mockup');
+  const list = document.createElement('div');
+  list.className = 'mc-list';
+  list.setAttribute('role', 'listbox');
+
+  if (folders.length) {
+    list.innerHTML += `<div class="mc-section">Pastas</div>`;
+    folders.forEach(f => {
+      const sel = f.id === selectedFolderId;
+      const row = document.createElement('div');
+      row.className = 'mc-item' + (sel ? ' selected' : '');
+      row.setAttribute('role', 'option');
+      row.setAttribute('aria-selected', sel ? 'true' : 'false');
+      row.setAttribute('tabindex', sel ? '0' : '-1');
+      row.dataset.id = f.id;
+      row.dataset.type = 'folder';
+      row.setAttribute('draggable', 'true');
+      row.innerHTML = `
+        <span class="mc-item-icon" aria-hidden="true">${f.icon}</span>
+        <div class="mc-item-body">
+          <div class="mc-item-name">${f.name}</div>
+          <div class="mc-item-meta">${f.children.length} itens</div>
+        </div>
+        <span class="mc-chevron" aria-hidden="true">›</span>`;
+      row.addEventListener('click', () => uiSelectFolder(f.id, row));
+      row.addEventListener('dblclick', () => startRename(row));
+      list.appendChild(row);
+    });
+  }
+
+  if (mockups.length) {
+    if (folders.length) list.innerHTML += `<div class="mc-divider" aria-hidden="true"></div>`;
+    list.innerHTML += `<div class="mc-section">Mockups</div>`;
+    mockups.forEach(m => {
+      const isArch = m.archived && showArchived;
+      const row = document.createElement('div');
+      row.className = 'mc-item' + (isArch ? ' archived' : '');
+      row.setAttribute('role', 'option');
+      row.setAttribute('aria-selected', 'false');
+      row.setAttribute('tabindex', '-1');
+      row.dataset.id = m.id;
+      row.dataset.type = 'mockup';
+      row.setAttribute('draggable', 'true');
+      row.innerHTML = `
+        <span class="mc-item-icon" aria-hidden="true">${m.icon}</span>
+        <div class="mc-item-body">
+          <div class="mc-item-name">${m.name}</div>
+          <div class="mc-item-meta">${m.updatedAt}</div>
+        </div>
+        ${isArch ? `<span class="badge badge-warn">Arquivado</span>` : ''}`;
+      row.addEventListener('click', () => uiOpenMockup(m.id));
+      row.addEventListener('dblclick', () => startRename(row));
+      list.appendChild(row);
+    });
+  }
+
+  body.appendChild(list);
+  return col;
+}
+
+/* Column 2: folder contents */
+function col2(folderId, { selectedSubId = null, empty = false, loading = false, error = false, showDropIndicator = false, draggingId = null, showArchived = false } = {}) {
+  const folder = findItem(folderId);
+  const col = document.createElement('div');
+  col.className = 'mc mc-2';
+  col.setAttribute('role', 'navigation');
+  col.setAttribute('aria-label', `Conteúdo de ${folder ? folder.name : 'pasta'}`);
+  col.dataset.mcIndex = '2';
+
+  const itemCount = folder ? (folder.children || []).length : 0;
+
+  col.innerHTML = `
+    <div class="mc-head">
+      <button class="mob-back" aria-label="Voltar" onclick="uiGoBack(2)">‹</button>
+      <span class="mc-head-title">${folder ? folder.name : '—'}</span>
+      <span class="mc-head-count">${itemCount}</span>
+    </div>
+    <div class="mc-body" id="mc2-body"></div>`;
+
+  const body = col.querySelector('#mc2-body');
+
+  if (loading) { body.innerHTML = makeSkeletonRows(3); return col; }
+  if (error) {
+    body.innerHTML = `
+      <div class="err-state">
+        <div class="err-icon">⚠️</div>
+        <div class="err-title">Erro ao carregar pasta</div>
+        <div class="err-sub">Verifique sua conexão.</div>
+        <button class="err-btn" onclick="applyState(5)">Tentar novamente</button>
+      </div>`;
+    return col;
+  }
+  if (!folder || empty || !folder.children.length) {
+    body.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">📂</div>
+        <div class="empty-title">Pasta vazia</div>
+        <div class="empty-sub">Nenhum item nesta pasta ainda</div>
+        <button class="empty-btn" onclick="toast('✨','Adicionar mockup — em breve!')">＋ Adicionar mockup</button>
+      </div>`;
+    return col;
+  }
+
+  const subfolders = folder.children.filter(c => c.type === 'folder');
+  const mockups    = folder.children.filter(c => c.type === 'mockup');
+  const list = document.createElement('div');
+  list.className = 'mc-list';
+  list.setAttribute('role', 'listbox');
+
+  if (subfolders.length) {
+    list.innerHTML += `<div class="mc-section">Subpastas</div>`;
+    subfolders.forEach(sf => {
+      const sel = sf.id === selectedSubId;
+      const row = document.createElement('div');
+      row.className = 'mc-item' + (sel ? ' selected' : '');
+      row.setAttribute('role', 'option');
+      row.setAttribute('aria-selected', sel ? 'true' : 'false');
+      row.setAttribute('tabindex', sel ? '0' : '-1');
+      row.dataset.id = sf.id;
+      row.dataset.type = 'subfolder';
+      row.innerHTML = `
+        <span class="mc-item-icon" aria-hidden="true">${sf.icon}</span>
+        <div class="mc-item-body">
+          <div class="mc-item-name">${sf.name}</div>
+          <div class="mc-item-meta">${sf.children.length} itens</div>
+        </div>
+        <span class="mc-chevron" aria-hidden="true">›</span>`;
+      row.addEventListener('click', () => uiSelectSubfolder(sf.id, row));
+      list.appendChild(row);
+    });
+  }
+
+  if (mockups.length) {
+    if (subfolders.length) list.innerHTML += `<div class="mc-divider" aria-hidden="true"></div>`;
+    list.innerHTML += `<div class="mc-section">Mockups</div>`;
+
+    if (showDropIndicator) {
+      list.innerHTML += `<div class="drop-line" aria-hidden="true"></div>`;
+    }
+
+    mockups.forEach(m => {
+      const isArch = m.archived && showArchived;
+      const isDrag = m.id === draggingId;
+      const row = document.createElement('div');
+      row.className = 'mc-item' + (isArch ? ' archived' : '') + (isDrag ? ' dragging' : '');
+      row.setAttribute('role', 'option');
+      row.setAttribute('aria-selected', 'false');
+      row.setAttribute('tabindex', '-1');
+      row.dataset.id = m.id;
+      row.dataset.type = 'mockup';
+      row.setAttribute('draggable', 'true');
+      row.innerHTML = `
+        <span class="mc-item-icon" aria-hidden="true">${m.icon}</span>
+        <div class="mc-item-body">
+          <div class="mc-item-name">${m.name}</div>
+          <div class="mc-item-meta">${m.updatedAt}</div>
+        </div>
+        ${isArch ? `<span class="badge badge-warn">Arquivado</span>` : ''}`;
+      row.addEventListener('click', () => uiOpenMockup(m.id));
+      list.appendChild(row);
+    });
+  }
+
+  body.appendChild(list);
+  return col;
+}
+
+/* Column 3: preview / subfolder contents */
+function colPreview(opts = {}) {
+  const { subfolderId = null, mockupId = null, breadcrumb = [], emptyMsg = null } = opts;
+  const col = document.createElement('div');
+  col.className = 'mc mc-preview';
+  col.setAttribute('role', 'region');
+  col.setAttribute('aria-label', 'Painel de preview');
+  col.dataset.mcIndex = 'preview';
+
+  // Breadcrumb HTML
+  const bcHtml = breadcrumb.length
+    ? `<nav class="prev-breadcrumb" aria-label="Localização atual">
+        <ol class="bc-list" role="list">
+          ${breadcrumb.map((seg, i) => {
+            const last = i === breadcrumb.length - 1;
+            return `<li class="bc-item"${last ? ' aria-current="page"' : ''}>
+              ${i > 0 ? `<span class="bc-sep" aria-hidden="true">/</span>` : ''}
+              ${last ? `<span>${seg}</span>` : `<a href="#">${seg}</a>`}
+            </li>`;
+          }).join('')}
+        </ol>
+      </nav>`
+    : `<div class="prev-breadcrumb" aria-hidden="true"></div>`;
+
+  let contentHtml = '';
+
+  if (emptyMsg) {
+    contentHtml = `
+      <div class="empty" style="margin-top:60px">
+        <div class="empty-icon">📂</div>
+        <div class="empty-title">${emptyMsg}</div>
+      </div>`;
+  } else if (mockupId) {
+    const m = findItem(mockupId);
+    if (m) {
+      contentHtml = `
+        <div class="prev-title">${m.name}</div>
+        <div class="prev-meta">
+          <span>${m.updatedAt}</span>
+          <span>por ${m.author}</span>
+        </div>
+        <div class="prev-frame">
+          <div class="prev-placeholder">
+            <div class="prev-placeholder-icon" aria-hidden="true">${m.icon}</div>
+            <div class="prev-placeholder-text">Preview · ${m.name}</div>
+          </div>
+        </div>
+        <div class="prev-actions">
+          <button class="prev-action-btn" onclick="openModal('${m.name}')">📦 Arquivar</button>
+          <button class="prev-action-btn" onclick="toast('✏️','Editar ${m.name} — em breve!')">✏️ Editar</button>
+          <button class="prev-action-btn" onclick="toast('🔗','Link copiado!')">🔗 Copiar link</button>
+        </div>`;
+    }
+  } else if (subfolderId) {
+    const sf = findItem(subfolderId);
+    if (sf) {
+      const mockups = (sf.children || []).filter(c => c.type === 'mockup' || !c.type);
+      if (mockups.length) {
+        contentHtml = `
+          <div class="prev-title">${sf.name}</div>
+          <div class="prev-meta"><span>${mockups.length} mockup${mockups.length > 1 ? 's' : ''}</span></div>
+          <div class="prev-grid">
+            ${mockups.map(m => `
+              <div class="prev-card" role="button" tabindex="0" aria-label="Abrir ${m.name}" onclick="toast('🖼️','Abrindo ${m.name}…')">
+                <div class="prev-card-thumb" aria-hidden="true">${m.icon}</div>
+                <div class="prev-card-info">
+                  <div class="prev-card-name">${m.name}</div>
+                  <div class="prev-card-meta">${m.updatedAt}</div>
+                  ${m.archived ? `<span class="badge badge-warn" style="display:inline-block;margin-top:4px">Arquivado</span>` : ''}
+                </div>
+              </div>`).join('')}
+          </div>`;
+      } else {
+        contentHtml = `
+          <div class="empty" style="margin-top:60px">
+            <div class="empty-icon">📂</div>
+            <div class="empty-title">Subpasta vazia</div>
+          </div>`;
+      }
+    }
+  }
+
+  col.innerHTML = bcHtml + `<div class="prev-content">${contentHtml}</div>`;
+  return col;
+}
+
+/* Welcome panel (home right side) */
+function colWelcome() {
+  const col = document.createElement('div');
+  col.className = 'mc mc-welcome';
+  col.setAttribute('role', 'region');
+  col.setAttribute('aria-label', 'Boas-vindas');
+  col.dataset.mcIndex = 'welcome';
+
+  const recHtml = DB.recents.map(r => `
+    <div class="recent-item" role="button" tabindex="0" aria-label="Abrir ${r.name}" onclick="toast('🖼️','Abrindo ${r.name}…')">
+      <div class="recent-thumb" aria-hidden="true">${r.icon}</div>
+      <div class="recent-info">
+        <div class="recent-name">${r.name}</div>
+        <div class="recent-path">${r.path}</div>
+      </div>
+      <div class="recent-time">${r.time}</div>
+    </div>`).join('');
+
+  const unsorted = DB.projects.find(p => p.virtual);
+  const unsortedHtml = (unsorted ? unsorted.children : []).map(m => `
+    <div class="unsorted-row" role="button" tabindex="0" aria-label="Abrir ${m.name}" onclick="toast('📝','Abrindo ${m.name}…')">
+      <span class="unsorted-icon" aria-hidden="true">${m.icon}</span>
+      <span class="unsorted-name">${m.name}</span>
+      <span class="unsorted-time">${m.updatedAt}</span>
+    </div>`).join('') || `<div style="padding:10px 14px;font-size:12px;color:var(--text-muted)">Nenhum item</div>`;
+
+  col.innerHTML = `
+    <div class="welcome-body">
+      <h1 class="welcome-h1">Bom dia ✦</h1>
+      <p class="welcome-sub">Selecione um projeto para começar.</p>
+      <div class="welcome-sec-title">Atualizados Recentemente</div>
+      <div class="recent-list" role="list">${recHtml}</div>
+      <div class="welcome-sec-title">Sem Projeto</div>
+      <div class="unsorted-box" role="list">${unsortedHtml}</div>
+    </div>`;
+  return col;
+}
+
+/* Placeholder hint column (right of col 1 or col 2 when nothing is selected) */
+function colHint(msg, icon = '←') {
+  const col = document.createElement('div');
+  col.className = 'mc mc-preview';
+  col.dataset.mcIndex = 'hint';
+  col.setAttribute('role', 'region');
+  col.style.display = 'flex';
+  col.style.alignItems = 'center';
+  col.style.justifyContent = 'center';
+  col.innerHTML = `
+    <div style="text-align:center;padding:40px;max-width:260px">
+      <div style="font-size:42px;opacity:0.09;margin-bottom:12px;font-weight:700">${icon}</div>
+      <div style="font-size:13px;color:var(--text-muted)">${msg}</div>
+    </div>`;
+  return col;
+}
+
+/* ── RENDER STATES ──────────────────────────────────────────────────────────── */
+function clearMiller() {
+  millerWrap.innerHTML = '';
+  archiveView.classList.remove('on');
+  millerWrap.style.display = 'flex';
+  dragGhost.style.display = 'none';
+  closeUserMenu();
+  resetFinder();
+}
+
+function render(n) {
+  currentState = n;
+  clearMiller();
+  switch (n) {
+    case  1: renderHome();               break;
+    case  2: renderFinderResults();      break;
+    case  3: renderFinderNoResults();    break;
+    case  4: renderProjectSelected();    break;
+    case  5: renderFolderSelected();     break;
+    case  6: renderSubfolderSelected();  break;
+    case  7: renderDragInProgress();     break;
+    case  8: renderArchivedMockup();     break;
+    case  9: renderNoProjects();         break;
+    case 10: renderEmptyProject();       break;
+    case 11: renderEmptyFolder();        break;
+    case 12: renderLoading();            break;
+    case 13: renderError();              break;
+    case 14: renderArchiveView();        break;
+    case 15: renderLogoutDropdown();     break;
+  }
+  updateStatePanel();
+  // Scroll right after render
+  requestAnimationFrame(() => {
+    millerWrap.scrollTo({ left: millerWrap.scrollWidth, behavior: 'smooth' });
+  });
+}
+
+function renderHome() {
+  millerWrap.appendChild(col0());
+  millerWrap.appendChild(colWelcome());
+}
+
+function renderFinderResults() {
+  renderHome();
+  finderInput.value = 'hero';
+  showFinderDropdown('hero');
+}
+
+function renderFinderNoResults() {
+  renderHome();
+  finderInput.value = 'xyzabc';
+  showFinderDropdown('xyzabc');
+}
+
+function renderProjectSelected() {
+  millerWrap.appendChild(col0({ selectedId: 'alpha' }));
+  millerWrap.appendChild(col1('alpha'));
+  millerWrap.appendChild(colHint('Selecione uma pasta ou mockup', '›'));
+}
+
+function renderFolderSelected() {
+  millerWrap.appendChild(col0({ selectedId: 'alpha' }));
+  millerWrap.appendChild(col1('alpha', { selectedFolderId: 'a-landing' }));
+  millerWrap.appendChild(col2('a-landing'));
+  millerWrap.appendChild(colHint('Selecione um item da pasta Landing', '›'));
+}
+
+function renderSubfolderSelected() {
+  // Max 3 columns: col0 (Projects) + col1 (Folders) + colPreview (Subfolder contents)
+  millerWrap.appendChild(col0({ selectedId: 'alpha' }));
+  millerWrap.appendChild(col1('alpha', { selectedFolderId: 'a-landing' }));
+  millerWrap.appendChild(colPreview({
+    subfolderId: 'a-landing-hero',
+    breadcrumb: ['Alpha', 'Landing', 'Subpasta Hero']
+  }));
+}
+
+function renderDragInProgress() {
+  millerWrap.appendChild(col0({ selectedId: 'alpha' }));
+  millerWrap.appendChild(col1('alpha', { selectedFolderId: 'a-landing' }));
+  millerWrap.appendChild(col2('a-landing', { draggingId: 'm-banner', showDropIndicator: true }));
+
+  // Drop zone hint column
+  const dropZone = document.createElement('div');
+  dropZone.className = 'mc mc-preview';
+  dropZone.setAttribute('role', 'region');
+  dropZone.setAttribute('aria-label', 'Zona de soltar');
+  dropZone.style.display = 'flex';
+  dropZone.style.alignItems = 'center';
+  dropZone.style.justifyContent = 'center';
+  dropZone.innerHTML = `
+    <div style="text-align:center;padding:40px;border:2px dashed var(--accent-overlay-mid);border-radius:var(--radius-md);background:var(--accent-overlay-soft);max-width:280px">
+      <div style="font-size:30px;margin-bottom:8px">📥</div>
+      <div style="font-size:13px;color:var(--accent);font-weight:600">Soltar aqui</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Mover Banner para esta pasta</div>
+    </div>`;
+  millerWrap.appendChild(dropZone);
+
+  // Show ghost
+  dragGhost.textContent = '🖼️  Banner';
+  dragGhost.style.display = 'block';
+  dragGhost.style.left = '55%';
+  dragGhost.style.top = '40%';
+}
+
+function renderArchivedMockup() {
+  // Max 3 columns: col0 (Projects) + col1 (Folders) + colPreview (Subfolder contents)
+  millerWrap.appendChild(col0({ selectedId: 'alpha' }));
+  millerWrap.appendChild(col1('alpha', { selectedFolderId: 'a-landing', showArchived: true }));
+  millerWrap.appendChild(colPreview({
+    subfolderId: 'a-landing-hero',
+    breadcrumb: ['Alpha', 'Landing', 'Subpasta Hero']
+  }));
+}
+
+function renderNoProjects() {
+  millerWrap.appendChild(col0({ empty: true }));
+  const right = document.createElement('div');
+  right.className = 'mc mc-welcome';
+  right.setAttribute('role', 'region');
+  right.style.display = 'flex';
+  right.style.alignItems = 'center';
+  right.style.justifyContent = 'center';
+  right.innerHTML = `
+    <div style="text-align:center;max-width:280px;padding:40px">
+      <div style="font-size:52px;margin-bottom:16px;opacity:0.2">🗂️</div>
+      <div style="font-size:20px;font-weight:700;color:var(--text-bright);letter-spacing:-0.03em;margin-bottom:8px">Comece aqui</div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.65;margin-bottom:20px">Crie seu primeiro projeto para organizar seus mockups e protótipos.</div>
+      <button class="btn-new-mockup" style="margin:0 auto" onclick="startNewProject()">＋ Criar Projeto</button>
+    </div>`;
+  millerWrap.appendChild(right);
+}
+
+function renderEmptyProject() {
+  millerWrap.appendChild(col0({ selectedId: 'beta' }));
+  millerWrap.appendChild(col1('beta', { empty: true }));
+}
+
+function renderEmptyFolder() {
+  millerWrap.appendChild(col0({ selectedId: 'beta' }));
+  millerWrap.appendChild(col1('beta', { selectedFolderId: 'b-mobile' }));
+  millerWrap.appendChild(col2('b-mobile', { empty: true }));
+}
+
+function renderLoading() {
+  // Col 0
+  const c0 = document.createElement('div');
+  c0.className = 'mc mc-0';
+  c0.innerHTML = `<div class="mc-head"><span class="mc-head-label">Projetos</span></div>
+    <div class="mc-body">${makeSkeletonRows(5)}</div>`;
+  millerWrap.appendChild(c0);
+
+  // Col 1
+  const c1 = document.createElement('div');
+  c1.className = 'mc mc-1';
+  c1.innerHTML = `
+    <div class="mc-head">
+      <div class="skel skel-line" style="width:100px;height:12px;background:var(--bg-card)"></div>
+    </div>
+    <div class="mc-body">${makeSkeletonRows(4)}</div>`;
+  millerWrap.appendChild(c1);
+
+  // Col 2
+  const c2 = document.createElement('div');
+  c2.className = 'mc mc-2';
+  c2.innerHTML = `
+    <div class="mc-head">
+      <div class="skel skel-line" style="width:80px;height:12px;background:var(--bg-card)"></div>
+    </div>
+    <div class="mc-body">${makeSkeletonRows(3)}</div>`;
+  millerWrap.appendChild(c2);
+
+  // Preview skel
+  const cp = document.createElement('div');
+  cp.className = 'mc mc-preview';
+  cp.innerHTML = `
+    <div class="prev-breadcrumb">
+      <div class="skel" style="width:180px;height:10px;background:var(--bg-card);border-radius:3px"></div>
+    </div>
+    <div class="prev-content">
+      <div class="skel" style="width:200px;height:18px;background:var(--bg-card);border-radius:4px;margin-bottom:8px"></div>
+      <div class="skel" style="width:130px;height:10px;background:var(--bg-card);border-radius:3px;margin-bottom:24px"></div>
+      <div class="skel" style="width:100%;aspect-ratio:16/10;background:var(--bg-card);border-radius:var(--radius-md)"></div>
+    </div>`;
+  millerWrap.appendChild(cp);
+}
+
+function renderError() {
+  millerWrap.appendChild(col0({ selectedId: 'alpha' }));
+  millerWrap.appendChild(col1('alpha', { error: true }));
+}
+
+function renderArchiveView() {
+  millerWrap.style.display = 'none';
+  archiveView.classList.add('on');
+}
+
+function renderLogoutDropdown() {
+  renderHome();
+  openUserMenu();
+}
+
+/* ── INTERACTIVE ACTIONS ────────────────────────────────────────────────────── */
+
+function uiSelectProject(id, rowEl) {
+  // Deselect all in col0
+  millerWrap.querySelectorAll('.mc-0 .mc-item').forEach(el => {
+    el.classList.remove('selected');
+    el.setAttribute('aria-selected', 'false');
+    el.tabIndex = -1;
+  });
+  rowEl.classList.add('selected');
+  rowEl.setAttribute('aria-selected', 'true');
+  rowEl.tabIndex = 0;
+
+  // Remove columns 1+
+  millerWrap.querySelectorAll('.mc-1, .mc-2, .mc-preview, .mc-welcome, [data-mc-index="hint"]').forEach(el => el.remove());
+
+  millerWrap.appendChild(col1(id));
+  millerWrap.appendChild(colHint('Selecione uma pasta ou mockup'));
+  requestAnimationFrame(() => millerWrap.scrollTo({ left: millerWrap.scrollWidth, behavior: 'smooth' }));
+}
+
+function uiSelectFolder(id, rowEl) {
+  millerWrap.querySelectorAll('.mc-1 .mc-item').forEach(el => {
+    el.classList.remove('selected');
+    el.setAttribute('aria-selected', 'false');
+  });
+  rowEl.classList.add('selected');
+  rowEl.setAttribute('aria-selected', 'true');
+
+  millerWrap.querySelectorAll('.mc-2, .mc-preview, [data-mc-index="hint"]').forEach(el => el.remove());
+
+  // Build breadcrumb from currently selected project
+  const projName = millerWrap.querySelector('.mc-0 .mc-item.selected .mc-item-name')?.textContent || '';
+  const folder = findItem(id);
+
+  millerWrap.appendChild(col2(id));
+  millerWrap.appendChild(colHint(`Selecione um item de ${folder ? folder.name : 'pasta'}`));
+  requestAnimationFrame(() => millerWrap.scrollTo({ left: millerWrap.scrollWidth, behavior: 'smooth' }));
+}
+
+function uiSelectSubfolder(id, rowEl) {
+  // Remove col2 and any existing preview/hint to stay within 3 columns max (spec: no Column 4)
+  millerWrap.querySelectorAll('.mc-2, .mc-preview, [data-mc-index="hint"]').forEach(el => el.remove());
+
+  const parts = pathTo(id);
+  millerWrap.appendChild(colPreview({ subfolderId: id, breadcrumb: parts }));
+  requestAnimationFrame(() => millerWrap.scrollTo({ left: millerWrap.scrollWidth, behavior: 'smooth' }));
+}
+
+function uiOpenMockup(id) {
+  millerWrap.querySelectorAll('.mc-preview, [data-mc-index="hint"]').forEach(el => el.remove());
+  const parts = pathTo(id);
+  millerWrap.appendChild(colPreview({ mockupId: id, breadcrumb: parts }));
+  requestAnimationFrame(() => millerWrap.scrollTo({ left: millerWrap.scrollWidth, behavior: 'smooth' }));
+}
+
+function uiGoBack(fromColIndex) {
+  // Mobile: hide current column, show previous
+  const cols = Array.from(millerWrap.querySelectorAll('.mc'));
+  const target = cols[fromColIndex - 1];
+  if (target) {
+    cols.slice(fromColIndex).forEach(c => c.classList.add('mob-right'));
+    target.classList.remove('mob-hide');
+  }
+}
+
+/* ── RENAME ─────────────────────────────────────────────────────────────────── */
+function startRename(row) {
+  const nameEl = row.querySelector('.mc-item-name');
+  if (!nameEl) return;
+  const orig = nameEl.textContent;
+  const inp = document.createElement('input');
+  inp.className = 'rename-input';
+  inp.value = orig;
+  nameEl.replaceWith(inp);
+  inp.focus(); inp.select();
+
+  function commit() {
+    const newVal = inp.value.trim() || orig;
+    const span = document.createElement('div');
+    span.className = 'mc-item-name';
+    span.textContent = newVal;
+    inp.replaceWith(span);
+    if (newVal !== orig) toast('✏️', `Renomeado para "${newVal}"`);
+  }
+
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') commit();
+    if (e.key === 'Escape') {
+      const span = document.createElement('div');
+      span.className = 'mc-item-name';
+      span.textContent = orig;
+      inp.replaceWith(span);
+    }
+    e.stopPropagation();
+  });
+}
+
+/* ── NEW PROJECT ────────────────────────────────────────────────────────────── */
+function startNewProject() {
+  const row = document.getElementById('new-proj-row');
+  if (!row) return;
+  row.innerHTML = `<span aria-hidden="true">＋</span><input class="mc-new-input" id="np-inp" placeholder="Nome do projeto…" maxlength="60">`;
+  const inp = document.getElementById('np-inp');
+  if (!inp) return;
+  inp.focus();
+
+  function commit() {
+    const val = inp.value.trim();
+    if (val) toast('🎨', `Projeto "${val}" criado!`);
+    row.innerHTML = `<span aria-hidden="true">＋</span><span>Novo Projeto</span>`;
+  }
+
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') inp.blur();
+    if (e.key === 'Escape') {
+      row.innerHTML = `<span aria-hidden="true">＋</span><span>Novo Projeto</span>`;
+    }
+    e.stopPropagation();
+  });
+}
+
+/* ── FINDER ─────────────────────────────────────────────────────────────────── */
+let finderTimer;
+function onFinderInput(e) {
+  const q = e.target.value.trim();
+  clearTimeout(finderTimer);
+  if (q.length < 3) {
+    finderDD.innerHTML = '';
+    finderDD.classList.remove('visible');
+    finderInput.setAttribute('aria-expanded', 'false');
+    return;
+  }
+  finderTimer = setTimeout(() => showFinderDropdown(q), 300);
+}
+
+function fuzzy(str, q) {
+  return str.toLowerCase().includes(q.toLowerCase());
+}
+
+function hl(text, q) {
+  const i = text.toLowerCase().indexOf(q.toLowerCase());
+  if (i < 0) return text;
+  return `${text.slice(0, i)}<mark>${text.slice(i, i + q.length)}</mark>${text.slice(i + q.length)}`;
+}
+
+function showFinderDropdown(q) {
+  const results = { projects: [], folders: [], mockups: [] };
+
+  function crawl(items, trail, pName) {
+    for (const it of items) {
+      if (fuzzy(it.name, q)) {
+        const group = it.type === 'mockup' ? 'mockups'
+          : (it.type === 'folder' || it.type === 'subfolder') ? 'folders'
+          : 'projects';
+        results[group].push({ ...it, pathStr: trail.join(' / '), projectName: pName });
+      }
+      if (it.children) crawl(it.children, [...trail, it.name], pName);
+    }
+  }
+
+  for (const p of DB.projects) {
+    if (fuzzy(p.name, q)) results.projects.push({ ...p, pathStr: '/', projectName: p.name });
+    crawl(p.children || [], [p.name], p.name);
+  }
+
+  const total = results.projects.length + results.folders.length + results.mockups.length;
+
+  if (total === 0) {
+    finderDD.innerHTML = `
+      <div class="fd-empty">
+        <div class="fd-empty-title">Nenhum resultado para "${q}"</div>
+        <div class="fd-empty-sub" style="font-size:12px;color:var(--text-muted);margin-top:3px">Tente termos diferentes</div>
+      </div>`;
+  } else {
+    let html = '';
+    const sections = [
+      { key: 'projects', label: 'Projetos' },
+      { key: 'folders',  label: 'Pastas' },
+      { key: 'mockups',  label: 'Mockups' }
+    ];
+    let first = true;
+    for (const s of sections) {
+      if (!results[s.key].length) continue;
+      if (!first) html += `<div class="fd-divider" aria-hidden="true"></div>`;
+      first = false;
+      html += `<div class="fd-section-label">${s.label}</div>`;
+      for (const it of results[s.key]) {
+        html += `
+          <div class="fd-item" role="option" tabindex="0" onclick="toast('🔍','Abrindo ${it.name}…')">
+            <span class="fd-item-icon" aria-hidden="true">${it.icon}</span>
+            <div class="fd-item-body">
+              <div class="fd-item-name">${hl(it.name, q)}</div>
+              <div class="fd-item-path">${it.pathStr}</div>
+            </div>
+          </div>`;
+      }
+    }
+    finderDD.innerHTML = html;
+  }
+
+  finderDD.classList.add('visible');
+  finderInput.setAttribute('aria-expanded', 'true');
+}
+
+function resetFinder() {
+  finderInput.value = '';
+  finderDD.innerHTML = '';
+  finderDD.classList.remove('visible');
+  finderInput.setAttribute('aria-expanded', 'false');
+}
+
+/* ── USER MENU ──────────────────────────────────────────────────────────────── */
+function openUserMenu()  { userMenu.classList.add('open');    btnMore.classList.add('open');    btnMore.setAttribute('aria-expanded', 'true'); }
+function closeUserMenu() { userMenu.classList.remove('open'); btnMore.classList.remove('open'); btnMore.setAttribute('aria-expanded', 'false'); }
+function toggleUserMenu() { userMenu.classList.contains('open') ? closeUserMenu() : openUserMenu(); }
+
+/* ── MODAL ──────────────────────────────────────────────────────────────────── */
+function openModal(name) {
+  document.getElementById('modal-body-text').innerHTML =
+    `O mockup <strong>"${name}"</strong> será arquivado e removido da navegação principal. Você pode restaurá-lo em <em>Arquivo</em>.`;
+  modalScrim.classList.add('on');
+}
+function closeModal() { modalScrim.classList.remove('on'); }
+
+document.getElementById('modal-cancel').addEventListener('click', closeModal);
+document.getElementById('modal-confirm').addEventListener('click', () => {
+  closeModal();
+  toast('📦', 'Mockup arquivado', true, () => toast('↩️', 'Ação desfeita — mockup restaurado!'));
+});
+modalScrim.addEventListener('click', e => { if (e.target === modalScrim) closeModal(); });
+
+/* ── TOAST ──────────────────────────────────────────────────────────────────── */
+function toast(icon, msg, withUndo = false, undoCb = null) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.setAttribute('role', 'status');
+  el.innerHTML = `
+    <span class="toast-icon" aria-hidden="true">${icon}</span>
+    <span>${msg}</span>
+    ${withUndo ? `<button class="toast-undo">Desfazer</button>` : ''}`;
+
+  if (withUndo && undoCb) {
+    el.querySelector('.toast-undo').addEventListener('click', () => { dismiss(); undoCb(); });
+  }
+
+  toastDock.appendChild(el);
+  const timer = setTimeout(dismiss, 5000);
+
+  function dismiss() {
+    clearTimeout(timer);
+    el.classList.add('leaving');
+    el.addEventListener('animationend', () => el.remove(), { once: true });
+  }
+}
+
+/* ── LOGOUT ─────────────────────────────────────────────────────────────────── */
+document.getElementById('dd-logout').addEventListener('click', async () => {
+  closeUserMenu();
+  toast('→', 'Encerrando sessão…');
+  try { await fetch('/api/auth/logout', { method: 'POST' }); } catch(_) {}
+  setTimeout(() => toast('✓', 'Redirecionando para /login…'), 700);
+});
+
+/* ── ARCHIVE TOGGLE ─────────────────────────────────────────────────────────── */
+document.getElementById('dd-archive').addEventListener('click', () => { closeUserMenu(); applyState(14); });
+document.getElementById('dd-home').addEventListener('click',    () => { closeUserMenu(); applyState(1); });
+document.getElementById('arch-back-btn').addEventListener('click', () => applyState(1));
+
+/* Archive filter */
+document.querySelectorAll('.arch-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.arch-filter').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  });
+});
+
+/* Archive restore */
+document.querySelectorAll('.arch-restore').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const name = btn.closest('.arch-card').querySelector('.arch-card-name').textContent;
+    toast('↩️', `"${name}" restaurado!`);
+    const card = btn.closest('.arch-card');
+    card.style.transition = 'opacity 0.3s';
+    card.style.opacity = '0';
+    setTimeout(() => card.remove(), 300);
+  });
+});
+
+/* ── STATE PANEL ────────────────────────────────────────────────────────────── */
+function updateStatePanel() {
+  const inner = STATES.map(s => `
+    <div class="sp-item${s.n === currentState ? ' current' : ''}"
+         role="menuitem" tabindex="0"
+         onclick="applyState(${s.n})"
+         onkeydown="if(event.key==='Enter'||event.key===' ')applyState(${s.n})">
+      <span class="sp-num">${String(s.n).padStart(2, '0')}</span>
+      <div class="sp-text">
+        <div class="sp-label">${s.label}</div>
+        <div class="sp-desc">${s.desc}</div>
+      </div>
+    </div>`).join('');
+  statePanel.innerHTML = `<div class="sp-header">15 Estados do Protótipo</div>` + inner;
+}
+
+function applyState(n) {
+  statePanel.classList.remove('open');
+  stateToggle.setAttribute('aria-expanded', 'false');
+  render(n);
+}
+
+stateToggle.addEventListener('click', () => {
+  const isOpen = statePanel.classList.toggle('open');
+  stateToggle.setAttribute('aria-expanded', String(isOpen));
+});
+
+/* ── TOPBAR EVENTS ──────────────────────────────────────────────────────────── */
+btnMore.addEventListener('click', e => { e.stopPropagation(); toggleUserMenu(); });
+finderInput.addEventListener('input', onFinderInput);
+finderInput.addEventListener('focus', () => {
+  const q = finderInput.value.trim();
+  if (q.length >= 3) showFinderDropdown(q);
+});
+document.getElementById('btn-new-mockup').addEventListener('click', () => {
+  toast('✨', 'Criando novo mockup…');
+});
+
+/* ── GLOBAL KEYBOARD ────────────────────────────────────────────────────────── */
+document.addEventListener('keydown', e => {
+  // ⌘K / Ctrl+K → finder focus
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    finderInput.focus();
+    finderInput.select();
+    return;
+  }
+
+  // Escape — close overlays in priority order
+  if (e.key === 'Escape') {
+    if (modalScrim.classList.contains('on'))      { closeModal(); return; }
+    if (finderDD.classList.contains('visible'))   { resetFinder(); finderInput.blur(); return; }
+    if (userMenu.classList.contains('open'))      { closeUserMenu(); return; }
+    if (statePanel.classList.contains('open'))    { statePanel.classList.remove('open'); stateToggle.setAttribute('aria-expanded','false'); return; }
+    return;
+  }
+
+  // Arrow navigation within columns
+  const focused = document.activeElement;
+  const mcItem = focused?.closest?.('.mc-item');
+  if (!mcItem) return;
+
+  const colEl  = mcItem.closest('.mc');
+  const items  = Array.from(colEl.querySelectorAll('.mc-item'));
+  const idx    = items.indexOf(mcItem);
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    items[Math.min(idx + 1, items.length - 1)]?.focus();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    items[Math.max(idx - 1, 0)]?.focus();
+  } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
+    if (mcItem.querySelector('.mc-chevron')) {
+      e.preventDefault();
+      mcItem.click();
+      setTimeout(() => {
+        const nextCol = colEl.nextElementSibling;
+        nextCol?.querySelector('.mc-item')?.focus();
+      }, 260);
+    }
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    const prevCol = colEl.previousElementSibling;
+    const target = prevCol?.querySelector('.mc-item.selected') || prevCol?.querySelector('.mc-item');
+    target?.focus();
+  }
+});
+
+/* ── GLOBAL CLICK — close menus ─────────────────────────────────────────────── */
+document.addEventListener('click', e => {
+  if (!e.target.closest('.tb-user-wrap'))  closeUserMenu();
+  if (!e.target.closest('.finder-wrap'))   { finderDD.classList.remove('visible'); finderInput.setAttribute('aria-expanded','false'); }
+  if (!e.target.closest('#state-nav'))     { statePanel.classList.remove('open'); stateToggle.setAttribute('aria-expanded','false'); }
+});
+
+/* ── DRAG AND DROP (native HTML5) ───────────────────────────────────────────── */
+let liveDragItem = null;
+let liveDragName = '';
+
+document.addEventListener('dragstart', e => {
+  const item = e.target.closest('.mc-item[draggable="true"]');
+  if (!item) return;
+  liveDragItem = item;
+  liveDragName = item.querySelector('.mc-item-name')?.textContent || '';
+  dragGhost.textContent = '🖼️  ' + liveDragName;
+  dragGhost.style.display = 'block';
+  dragGhost.style.left = (e.clientX + 18) + 'px';
+  dragGhost.style.top  = (e.clientY - 10) + 'px';
+  item.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setDragImage(new Image(), 0, 0); // Hide default ghost
+}, true);
+
+document.addEventListener('dragover', e => {
+  e.preventDefault();
+  dragGhost.style.left = (e.clientX + 18) + 'px';
+  dragGhost.style.top  = (e.clientY - 10) + 'px';
+  const over = e.target.closest('.mc-item');
+  if (over && over !== liveDragItem) {
+    document.querySelectorAll('.mc-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+    over.classList.add('drag-over');
+  }
+}, true);
+
+document.addEventListener('dragend', () => {
+  if (liveDragItem) liveDragItem.classList.remove('dragging');
+  dragGhost.style.display = 'none';
+  document.querySelectorAll('.mc-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+  if (liveDragName) toast('✅', `"${liveDragName}" movido`, true, () => toast('↩️', `"${liveDragName}" restaurado`));
+  liveDragItem = null; liveDragName = '';
+}, true);
+
+/* ── INIT ───────────────────────────────────────────────────────────────────── */
+render(1);
+</script>
+</body>
+</html>

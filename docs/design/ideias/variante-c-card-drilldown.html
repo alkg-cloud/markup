@@ -1,0 +1,2067 @@
+<!--
+  VARIANTE C — CARD-FIRST DRILLDOWN: SPATIAL GALLERY
+  Markup Protótipos v2 — baseado em UX Spec formal MARA-19
+
+  Direção estética: Cards dominam, drill-down progressivo, sem sidebar fixa
+
+  Tipografia:
+  - Card de projeto: Manrope 800, 20px, nome do projeto como hero
+  - Card de pasta: Manrope 600, 16px
+  - Card de mockup: Manrope 500, 14px
+  - Meta/badges: Manrope 400, 12px, --text-muted
+  - Paths: JetBrains Mono 400, 12px
+
+  Palette:
+  - Cards usam --gradient-card-soft e --gradient-card-strong
+  - Hover: --shadow-lg + border accent
+  - Background: --bg puro — cards se destacam no void
+
+  Motion:
+  - Card hover: 160ms ease-standard (shadow + scale 1.01)
+  - Drill-down: 220ms fade + translateY(8px→0)
+  - Breadcrumb update: 160ms
+  - Toast: 150ms in / 250ms out
+
+  Spec: MARA-19 ux-spec (3 níveis max, home root /, finder ≥3 chars,
+  logout sem modal, toast undo 5s, Unsorted virtual, drag toast undo)
+-->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MARA — Spatial Gallery (Variante C)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────────────────────── */
+:root {
+  --bg: oklch(11% 0.03 165);
+  --bg-elevated: oklch(7% 0.02 165);
+  --bg-card: oklch(12% 0.02 165);
+  --bg-card-active: oklch(15% 0.025 165);
+  --bg-tinted: oklch(9% 0.02 165);
+  --btn-bg: rgb(39, 39, 39);
+  --btn-bg-hover: rgb(48, 48, 48);
+  --btn-bg-active: rgb(56, 56, 56);
+  --surface-hover: rgba(255,255,255,0.04);
+  --surface-active: rgba(255,255,255,0.07);
+  --border-subtle: oklch(17% 0.02 165);
+  --border: oklch(21% 0.025 165);
+  --border-strong: oklch(28% 0.025 165);
+  --text-bright: oklch(97% 0.01 165);
+  --text: oklch(82% 0.04 165);
+  --text-dim: oklch(60% 0.02 165);
+  --text-muted: oklch(47% 0.02 165);
+  --accent: oklch(74.4% 0.193 165);
+  --accent-bright: oklch(82% 0.18 165);
+  --accent-soft: oklch(28% 0.08 165);
+  --accent-overlay-soft: oklch(74.4% 0.193 165 / 0.18);
+  --accent-overlay-mid: oklch(74.4% 0.193 165 / 0.35);
+  --success: oklch(76% 0.16 152);
+  --warning: oklch(80% 0.15 80);
+  --danger: oklch(70% 0.2 25);
+  --danger-soft: oklch(28% 0.09 25);
+  --danger-border: oklch(40% 0.1 25);
+  --gradient-card-soft: linear-gradient(135.92deg, oklch(20% 0.025 322 / 0.85) 7%, oklch(15% 0.02 322 / 0.85) 98%);
+  --gradient-card-strong: linear-gradient(135.92deg, oklch(20% 0.025 322 / 0.95) 7%, oklch(15% 0.02 322 / 0.95) 98%);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+  --shadow-glow: 0 0 0 1px oklch(74.4% 0.193 165 / 0.4), 0 0 24px oklch(74.4% 0.193 165 / 0.18);
+  --shadow-popover: 0 14px 32px oklch(0%,0,0/0.6), 0 6px 12px oklch(0%,0,0/0.45), inset 0 1px 0 oklch(100%,0,0/0.06);
+  --scrim-strong: oklch(0% 0 0 / 0.65);
+  --font-body: "Manrope", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.5, 1.4, 0.6, 1);
+  --ease-exit: cubic-bezier(0.32, 0, 0.67, 0);
+  --motion-fast: 160ms;
+  --motion-base: 220ms;
+  --topbar-height: 60px;
+  --sidebar-width: 320px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-card: 14px;
+  --radius-pill: 9999px;
+  --shadow-sm: 0 2px 6px oklch(0%,0,0/0.45);
+  --shadow-md: 0 6px 16px oklch(0%,0,0/0.5);
+  --shadow-lg: 0 18px 44px oklch(0%,0,0/0.55), 0 8px 16px oklch(0%,0,0/0.4);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-fast: 0ms; --motion-base: 0ms; }
+}
+
+/* ─── RESET ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input { font-family: inherit; }
+ul, ol { list-style: none; }
+a { color: inherit; text-decoration: none; }
+
+/* ─── TOPBAR ──────────────────────────────────────────────────────────────── */
+#topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--topbar-height);
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  z-index: 100;
+  padding: 0 16px;
+  gap: 0;
+}
+
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-right: 16px;
+}
+.topbar-logo-mark {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: var(--bg);
+  letter-spacing: -0.5px;
+}
+.topbar-logo-name {
+  font-size: 15px; font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: -0.3px;
+}
+
+.topbar-sep {
+  width: 1px; height: 20px;
+  background: var(--border);
+  margin: 0 12px;
+  flex-shrink: 0;
+}
+
+/* Breadcrumb */
+#breadcrumb {
+  display: flex; align-items: center;
+  flex: 1; min-width: 0;
+  overflow: hidden;
+}
+#breadcrumb ol {
+  display: flex; align-items: center;
+  list-style: none;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+#breadcrumb li {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+#breadcrumb li + li::before {
+  content: '/';
+  color: var(--text-muted);
+  margin: 0 6px;
+  font-size: 11px;
+}
+.breadcrumb-link {
+  color: var(--text-dim);
+  font-weight: 500;
+  padding: 3px 6px;
+  border-radius: var(--radius-xs);
+  transition: color var(--motion-fast), background var(--motion-fast);
+  cursor: pointer;
+}
+.breadcrumb-link:hover { color: var(--text); background: var(--surface-hover); }
+.breadcrumb-link:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-xs); }
+.breadcrumb-current {
+  color: var(--text-bright);
+  font-weight: 600;
+  padding: 3px 6px;
+}
+
+/* Topbar actions */
+.topbar-actions {
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0; margin-left: auto;
+}
+
+/* Finder toggle button */
+.finder-toggle-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 10px;
+  height: 34px;
+  background: var(--btn-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--motion-fast), border-color var(--motion-fast);
+  min-width: 160px;
+}
+.finder-toggle-btn:hover { background: var(--btn-bg-hover); border-color: var(--border-strong); color: var(--text-dim); }
+.finder-toggle-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.finder-kbd {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+/* New Mockup btn */
+.btn-new {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 12px;
+  height: 34px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--bg);
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  transition: background var(--motion-fast), transform var(--motion-fast) var(--ease-spring), box-shadow var(--motion-fast);
+  white-space: nowrap;
+}
+.btn-new:hover { background: var(--accent-bright); transform: translateY(-1px); box-shadow: var(--shadow-glow); }
+.btn-new:active { transform: translateY(0); }
+.btn-new:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* Avatar + menu */
+.avatar-wrap { position: relative; }
+.avatar-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px 4px 4px;
+  border-radius: var(--radius-pill);
+  background: var(--btn-bg);
+  border: 1px solid var(--border);
+  transition: background var(--motion-fast), border-color var(--motion-fast);
+  cursor: pointer;
+}
+.avatar-btn:hover { background: var(--btn-bg-hover); border-color: var(--border-strong); }
+.avatar-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.avatar-circle {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-overlay-mid);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--accent);
+}
+.avatar-dots {
+  font-size: 14px; color: var(--text-dim);
+  letter-spacing: 1px; line-height: 1;
+}
+
+/* ─── MENU POPOVER ────────────────────────────────────────────────────────── */
+.menu-popover {
+  position: absolute;
+  top: calc(100% + 8px); right: 0;
+  min-width: 200px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: 6px;
+  z-index: 500;
+  display: none;
+}
+.menu-popover.open {
+  display: block;
+  animation: popoverIn var(--motion-fast) var(--ease-spring) forwards;
+}
+@keyframes popoverIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.menu-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; color: var(--text);
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
+  width: 100%; text-align: left;
+}
+.menu-item:hover { background: var(--surface-hover); color: var(--text-bright); }
+.menu-item:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+.menu-item.danger { color: var(--danger); }
+.menu-item.danger:hover { background: var(--danger-soft); }
+.menu-sep { height: 1px; background: var(--border-subtle); margin: 4px 0; }
+
+/* ─── MAIN LAYOUT ─────────────────────────────────────────────────────────── */
+#app {
+  padding-top: var(--topbar-height);
+  height: 100vh;
+  display: flex; flex-direction: column;
+}
+#main-scroll {
+  flex: 1;
+  overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+#main-scroll::-webkit-scrollbar { width: 6px; }
+#main-scroll::-webkit-scrollbar-track { background: transparent; }
+#main-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+#main-content {
+  padding: 32px 32px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ─── SECTION HEADERS ─────────────────────────────────────────────────────── */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.section-count {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--text-muted);
+}
+
+/* ─── CARD GRID ───────────────────────────────────────────────────────────── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 40px;
+}
+@media (max-width: 768px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  #main-content { padding: 20px 16px 80px; }
+  .finder-toggle-btn { min-width: 40px; }
+  .finder-toggle-btn span:not(.finder-kbd) { display: none; }
+  .topbar-logo-name { display: none; }
+}
+
+/* ─── BASE CARD SHARED ────────────────────────────────────────────────────── */
+.card-base {
+  background: var(--gradient-card-soft);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  outline: none;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+.card-base:hover {
+  background: var(--gradient-card-strong);
+  border-color: var(--accent-overlay-mid);
+  box-shadow: var(--shadow-lg);
+  transform: scale(1.01) translateY(-2px);
+}
+.card-base:focus-visible {
+  box-shadow: var(--focus-ring), var(--shadow-lg);
+  border-color: var(--accent-overlay-mid);
+}
+.card-base:active { transform: scale(1.005); }
+
+/* ─── PROJECT CARD ────────────────────────────────────────────────────────── */
+.card-project {
+  height: 200px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px;
+}
+.card-project::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 120px 80px at 50% 40%, oklch(74.4% 0.193 165 / 0.06), transparent);
+  opacity: 0;
+  transition: opacity var(--motion-fast);
+  pointer-events: none;
+}
+.card-project:hover::before { opacity: 1; }
+
+.card-project-icon {
+  width: 48px; height: 48px;
+  font-size: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  position: relative; z-index: 1;
+}
+.card-project-name {
+  font-size: 16px; font-weight: 800;
+  color: var(--text-bright);
+  letter-spacing: -0.3px;
+  position: relative; z-index: 1;
+  text-align: center; padding: 0 12px;
+}
+.card-project-badge {
+  font-size: 11px; font-weight: 500;
+  color: var(--text-muted);
+  position: relative; z-index: 1;
+  font-family: var(--font-mono);
+}
+
+/* ─── FOLDER CARD ─────────────────────────────────────────────────────────── */
+.card-folder {
+  height: 140px;
+  display: flex; flex-direction: column;
+  align-items: flex-start; justify-content: flex-end;
+  padding: 14px;
+}
+.card-folder-icon {
+  position: absolute; top: 14px; left: 14px;
+  font-size: 20px;
+  color: var(--text-dim);
+  opacity: 0.8;
+  transition: color var(--motion-fast), opacity var(--motion-fast);
+}
+.card-folder:hover .card-folder-icon { color: var(--accent); opacity: 1; }
+.card-folder-name {
+  font-size: 14px; font-weight: 600;
+  color: var(--text-bright); letter-spacing: -0.2px;
+}
+.card-folder-meta {
+  font-size: 11px; font-weight: 400;
+  color: var(--text-muted);
+  margin-top: 3px; font-family: var(--font-mono);
+}
+
+/* ─── MOCKUP CARD ─────────────────────────────────────────────────────────── */
+.card-mockup {
+  height: 160px;
+  display: flex; flex-direction: column;
+  align-items: flex-start; justify-content: flex-end;
+  padding: 14px;
+}
+.card-mockup-monogram {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 100px;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.monogram-inner {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  color: var(--text-dim); letter-spacing: -0.5px;
+  transition: border-color var(--motion-fast), color var(--motion-fast);
+}
+.card-mockup:hover .monogram-inner { border-color: var(--accent-overlay-mid); color: var(--accent); }
+.card-mockup-name {
+  font-size: 13px; font-weight: 500;
+  color: var(--text-bright); letter-spacing: -0.1px;
+  position: relative; z-index: 1;
+}
+.card-mockup-meta {
+  font-size: 11px; font-weight: 400;
+  color: var(--text-muted); margin-top: 3px;
+  font-family: var(--font-mono);
+  position: relative; z-index: 1;
+}
+
+/* ─── ARCHIVED CARD ───────────────────────────────────────────────────────── */
+.card-archived { opacity: 0.6; }
+.badge-archived {
+  position: absolute; top: 10px; right: 10px;
+  font-size: 10px; font-weight: 600;
+  color: var(--warning);
+  background: oklch(80% 0.15 80 / 0.12);
+  border: 1px solid oklch(80% 0.15 80 / 0.3);
+  border-radius: var(--radius-pill);
+  padding: 2px 7px; letter-spacing: 0.04em;
+  z-index: 5;
+}
+
+/* ─── DRAG STATE ──────────────────────────────────────────────────────────── */
+.card-dragging {
+  opacity: 0.35 !important;
+  border-style: dashed !important;
+  border-color: var(--border-strong) !important;
+  transform: none !important;
+  pointer-events: none;
+}
+.card-ghost {
+  position: fixed !important;
+  pointer-events: none;
+  z-index: 1000;
+  transform: rotate(2.5deg) scale(1.04) !important;
+  box-shadow: var(--shadow-lg) !important;
+  opacity: 0.9;
+  border-color: var(--accent-overlay-mid) !important;
+}
+.drop-indicator {
+  height: 140px;
+  border: 2px dashed var(--accent-overlay-mid);
+  border-radius: var(--radius-card);
+  background: var(--accent-overlay-soft);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent);
+  font-size: 12px; font-family: var(--font-mono);
+  animation: dropPulse 1.4s ease-in-out infinite;
+}
+@keyframes dropPulse {
+  0%, 100% { border-color: var(--accent-overlay-mid); background: var(--accent-overlay-soft); }
+  50% { border-color: var(--accent); background: oklch(74.4% 0.193 165 / 0.12); }
+}
+
+/* ─── EMPTY STATES ────────────────────────────────────────────────────────── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 360px; text-align: center; gap: 12px;
+}
+.empty-icon {
+  width: 72px; height: 72px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin-bottom: 8px;
+}
+.empty-title {
+  font-size: 18px; font-weight: 700;
+  color: var(--text-bright); letter-spacing: -0.3px;
+}
+.empty-sub {
+  font-size: 13px; color: var(--text-muted);
+  max-width: 280px; line-height: 1.65;
+}
+.empty-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+
+.btn-primary {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 16px; height: 36px;
+  background: var(--accent); border-radius: var(--radius-sm);
+  color: var(--bg); font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  transition: background var(--motion-fast), transform var(--motion-fast) var(--ease-spring);
+}
+.btn-primary:hover { background: var(--accent-bright); transform: translateY(-1px); }
+.btn-primary:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+.btn-secondary {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 16px; height: 36px;
+  background: var(--btn-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text); font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: background var(--motion-fast), border-color var(--motion-fast);
+}
+.btn-secondary:hover { background: var(--btn-bg-hover); border-color: var(--border-strong); }
+.btn-secondary:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ─── SKELETON / LOADING ──────────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--bg-card) 0%,
+    var(--bg-card) 30%,
+    var(--bg-card-active) 50%,
+    var(--bg-card) 70%,
+    var(--bg-card) 100%);
+  background-size: 300% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton-project { height: 200px; }
+.skeleton-folder  { height: 140px; }
+.skeleton-mockup  { height: 160px; }
+
+/* ─── ERROR STATE ─────────────────────────────────────────────────────────── */
+.error-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 360px; text-align: center; gap: 14px;
+}
+.error-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--danger-soft); border: 1px solid var(--danger-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; color: var(--danger);
+}
+.error-title { font-size: 16px; font-weight: 700; color: var(--danger); }
+.error-sub { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+.btn-retry {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 16px; height: 36px;
+  background: var(--danger-soft); border: 1px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  color: var(--danger); font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+.btn-retry:hover { background: oklch(32% 0.09 25 / 0.8); }
+
+/* ─── FINDER OVERLAY + PANEL ──────────────────────────────────────────────── */
+#finder-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: var(--scrim-strong);
+  z-index: 200;
+  backdrop-filter: blur(4px);
+}
+#finder-overlay.open { display: block; }
+
+#finder-panel {
+  display: none;
+  position: fixed;
+  top: calc(var(--topbar-height) + 10px);
+  left: 50%; transform: translateX(-50%);
+  width: min(600px, calc(100vw - 32px));
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  z-index: 201;
+  overflow: hidden;
+}
+#finder-panel.open {
+  display: block;
+  animation: finderIn var(--motion-base) var(--ease-standard) forwards;
+}
+@keyframes finderIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.finder-input-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.finder-input-row svg { color: var(--accent); flex-shrink: 0; }
+#finder-panel-input {
+  flex: 1; background: none; border: none; outline: none;
+  font-size: 15px; font-weight: 500;
+  color: var(--text-bright); caret-color: var(--accent);
+}
+#finder-panel-input::placeholder { color: var(--text-muted); font-weight: 400; }
+.finder-hint {
+  font-size: 11px; color: var(--text-muted);
+  font-family: var(--font-mono); white-space: nowrap;
+}
+
+#finder-results {
+  max-height: 380px; overflow-y: auto;
+  padding: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+#finder-results::-webkit-scrollbar { width: 4px; }
+#finder-results::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.finder-result-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+.finder-result-item:hover, .finder-result-item:focus-visible {
+  background: var(--surface-hover);
+  outline: none;
+}
+.finder-result-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-card); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.finder-result-icon-mono {
+  font-size: 11px; font-weight: 700;
+  color: var(--text-dim); font-family: var(--font-mono);
+}
+.finder-result-info { flex: 1; min-width: 0; }
+.finder-result-name {
+  font-size: 13px; font-weight: 600; color: var(--text-bright);
+}
+.finder-result-name mark {
+  background: var(--accent-overlay-soft);
+  color: var(--accent); border-radius: 2px; padding: 0 1px;
+}
+.finder-result-path {
+  font-size: 11px; color: var(--text-muted);
+  font-family: var(--font-mono); margin-top: 2px;
+}
+.finder-result-type {
+  font-size: 10px; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.06em; flex-shrink: 0;
+}
+.finder-empty-msg {
+  padding: 40px 20px; text-align: center;
+}
+.finder-empty-title {
+  font-size: 15px; font-weight: 700; color: var(--text-bright); margin-bottom: 6px;
+}
+.finder-empty-sub { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+
+/* ─── MODAL ───────────────────────────────────────────────────────────────── */
+#modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: var(--scrim-strong); z-index: 300;
+  backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+#modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 24px;
+  max-width: 400px; width: calc(100vw - 32px);
+  box-shadow: var(--shadow-popover);
+  animation: popoverIn var(--motion-base) var(--ease-standard) forwards;
+}
+.modal-title { font-size: 16px; font-weight: 700; color: var(--text-bright); margin-bottom: 8px; }
+.modal-body { font-size: 13px; color: var(--text-dim); line-height: 1.65; margin-bottom: 20px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-cancel {
+  padding: 0 14px; height: 34px;
+  background: var(--btn-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background var(--motion-fast);
+}
+.btn-cancel:hover { background: var(--btn-bg-hover); }
+.btn-danger {
+  padding: 0 14px; height: 34px;
+  background: var(--danger-soft); border: 1px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  color: var(--danger); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: background var(--motion-fast);
+}
+.btn-danger:hover { background: oklch(32% 0.09 25 / 0.8); }
+
+/* ─── TOAST ───────────────────────────────────────────────────────────────── */
+#toast-container {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 1000;
+  display: flex; flex-direction: column; gap: 8px; align-items: center;
+  pointer-events: none;
+}
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-popover);
+  font-size: 13px; font-weight: 500; color: var(--text);
+  pointer-events: all; white-space: nowrap;
+  animation: toastIn 150ms var(--ease-spring) forwards;
+}
+.toast.hiding { animation: toastOut 250ms var(--ease-exit) forwards; }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes toastOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(8px) scale(0.96); }
+}
+.toast-undo {
+  font-size: 12px; font-weight: 700; color: var(--accent);
+  cursor: pointer; padding: 2px 6px; border-radius: var(--radius-xs);
+  transition: background var(--motion-fast);
+  pointer-events: all;
+}
+.toast-undo:hover { background: var(--accent-overlay-soft); }
+
+/* ─── ARCHIVE VIEW SPECIFIC ───────────────────────────────────────────────── */
+.archive-card-actions {
+  position: absolute; top: 8px; right: 8px;
+  display: flex; gap: 5px; z-index: 10;
+  opacity: 0; transition: opacity var(--motion-fast);
+}
+.card-mockup:hover .archive-card-actions { opacity: 1; }
+.arch-btn {
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  font-size: 11px; font-weight: 600;
+  cursor: pointer;
+  transition: background var(--motion-fast);
+  font-family: var(--font-body);
+}
+.arch-restore {
+  background: var(--accent-soft); color: var(--accent);
+  border: 1px solid var(--accent-overlay-mid);
+}
+.arch-restore:hover { background: var(--accent-overlay-mid); }
+.arch-delete {
+  background: var(--danger-soft); color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+.arch-delete:hover { background: oklch(32% 0.09 25 / 0.8); }
+
+.archive-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 24px; padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.archive-header-title {
+  font-size: 20px; font-weight: 800;
+  color: var(--text-bright); letter-spacing: -0.4px;
+}
+.archive-header-count {
+  font-size: 12px; color: var(--text-muted);
+  font-family: var(--font-mono); margin-left: auto;
+}
+
+/* ─── RECENTS STRIP ───────────────────────────────────────────────────────── */
+.recents-strip {
+  display: flex; gap: 10px;
+  overflow-x: auto; padding-bottom: 4px;
+  scrollbar-width: none; margin-bottom: 40px;
+}
+.recents-strip::-webkit-scrollbar { display: none; }
+.recent-chip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px 8px 10px;
+  background: var(--bg-card); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer; flex-shrink: 0;
+  transition: background var(--motion-fast), border-color var(--motion-fast);
+}
+.recent-chip:hover { background: var(--bg-card-active); border-color: var(--border); }
+.recent-chip:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+.recent-chip-icon {
+  width: 30px; height: 30px; border-radius: var(--radius-xs);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--text-dim);
+  font-family: var(--font-mono); flex-shrink: 0;
+}
+.recent-chip-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.recent-chip-meta { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); white-space: nowrap; margin-top: 1px; }
+
+/* ─── HOME TITLE ──────────────────────────────────────────────────────────── */
+.home-title {
+  font-size: 24px; font-weight: 800;
+  color: var(--text-bright); letter-spacing: -0.5px;
+  margin-bottom: 28px;
+}
+
+/* ─── CARD CONTEXT MENU ───────────────────────────────────────────────────── */
+.card-ctx-menu {
+  position: absolute; top: 10px; right: 10px;
+  opacity: 0; transition: opacity var(--motion-fast); z-index: 10;
+}
+.card-base:hover .card-ctx-menu { opacity: 1; }
+.card-ctx-btn {
+  width: 24px; height: 24px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-card); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-dim); font-size: 13px; line-height: 1;
+  transition: background var(--motion-fast), color var(--motion-fast);
+  letter-spacing: 0.5px;
+}
+.card-ctx-btn:hover { background: var(--btn-bg); color: var(--text-bright); }
+
+/* ─── DRAG HANDLE ─────────────────────────────────────────────────────────── */
+.drag-handle {
+  position: absolute; top: 10px; left: 10px;
+  width: 20px; height: 20px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-card); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: grab; opacity: 0; transition: opacity var(--motion-fast);
+  color: var(--text-muted); z-index: 10;
+}
+.drag-handle:active { cursor: grabbing; }
+.card-base:hover .drag-handle { opacity: 1; }
+
+/* ─── CONTENT ENTER ANIMATION ────────────────────────────────────────────── */
+.content-enter {
+  animation: contentEnter var(--motion-base) var(--ease-standard) both;
+}
+@keyframes contentEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── BREADCRUMB ENTER ────────────────────────────────────────────────────── */
+@keyframes breadcrumbEnter {
+  from { opacity: 0; transform: translateX(-5px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── FLOATING STATE SWITCHER ─────────────────────────────────────────────── */
+#state-switcher {
+  position: fixed; bottom: 24px; right: 24px;
+  z-index: 800;
+}
+.state-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 14px; height: 36px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--text-dim);
+  font-size: 11px; font-weight: 600;
+  cursor: pointer; box-shadow: var(--shadow-md);
+  transition: background var(--motion-fast), color var(--motion-fast), border-color var(--motion-fast);
+  font-family: var(--font-mono);
+}
+.state-btn:hover { background: var(--btn-bg); color: var(--text-bright); border-color: var(--accent-overlay-mid); }
+
+.state-menu {
+  position: absolute; bottom: calc(100% + 8px); right: 0;
+  width: 290px;
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-popover);
+  padding: 6px; display: none;
+  max-height: 460px; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.state-menu.open {
+  display: block;
+  animation: popoverIn var(--motion-fast) var(--ease-spring) forwards;
+}
+.state-menu-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px; color: var(--text-dim);
+  cursor: pointer; width: 100%; text-align: left;
+  font-family: var(--font-mono);
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.state-menu-item:hover { background: var(--surface-hover); color: var(--text-bright); }
+.state-menu-item.active { color: var(--accent); background: var(--accent-overlay-soft); }
+.state-num { font-size: 10px; color: var(--text-muted); min-width: 20px; text-align: right; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- ─── TOPBAR ─────────────────────────────────────────────────────────────── -->
+<header id="topbar" role="banner">
+  <div class="topbar-logo" role="img" aria-label="MARA logo">
+    <div class="topbar-logo-mark" aria-hidden="true">M</div>
+    <span class="topbar-logo-name">MARA</span>
+  </div>
+
+  <div class="topbar-sep" aria-hidden="true"></div>
+
+  <nav id="breadcrumb" aria-label="Localização atual">
+    <ol id="breadcrumb-list">
+      <!-- JS rendered -->
+    </ol>
+  </nav>
+
+  <div class="topbar-actions">
+    <button class="finder-toggle-btn" id="finder-toggle-btn"
+            aria-label="Buscar (⌘K)"
+            aria-expanded="false"
+            aria-haspopup="dialog">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="7" r="5"/><line x1="12" y1="12" x2="15" y2="15"/></svg>
+      <span>Buscar...</span>
+      <span class="finder-kbd">⌘K</span>
+    </button>
+
+    <button class="btn-new" id="btn-new-mockup" aria-label="Criar novo mockup"
+            onclick="MARA.showToastMsg('Novo mockup (simulado)')">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+      Novo Mockup
+    </button>
+
+    <div class="avatar-wrap" id="avatar-wrap">
+      <button class="avatar-btn" id="avatar-btn"
+              aria-label="Menu do usuário"
+              aria-expanded="false"
+              aria-haspopup="menu">
+        <div class="avatar-circle" aria-hidden="true">AC</div>
+        <span class="avatar-dots" aria-hidden="true">···</span>
+      </button>
+      <div class="menu-popover" id="avatar-menu" role="menu" aria-label="Opções do usuário">
+        <button class="menu-item" role="menuitem"
+                onclick="MARA.showToastMsg('Perfil (simulado)')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+          Perfil
+        </button>
+        <button class="menu-item" role="menuitem"
+                onclick="MARA.showToastMsg('Configurações (simulado)')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M11.4 3.2l-1.4 1.4M4.6 11.4L3.2 12.8"/></svg>
+          Configurações
+        </button>
+        <button class="menu-item" role="menuitem"
+                onclick="closeAvatarMenu(); MARA.setState(14)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="2" y="5" width="12" height="9" rx="1"/><path d="M6 9h4"/><path d="M5 2h6l1 3H4z"/></svg>
+          Ver Arquivo
+        </button>
+        <div class="menu-sep" aria-hidden="true"></div>
+        <button class="menu-item danger" role="menuitem" id="btn-logout">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M10 8H2M6 5l-3 3 3 3"/><path d="M8 3h4a1 1 0 011 1v8a1 1 0 01-1 1H8"/></svg>
+          Sair da conta
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ─── APP WRAPPER ────────────────────────────────────────────────────────── -->
+<div id="app">
+  <div id="main-scroll">
+    <main id="main-content" role="main">
+      <!-- JS rendered -->
+    </main>
+  </div>
+</div>
+
+<!-- ─── FINDER OVERLAY ────────────────────────────────────────────────────── -->
+<div id="finder-overlay" aria-hidden="true"></div>
+<div id="finder-panel" role="dialog" aria-modal="true" aria-label="Buscar">
+  <div class="finder-input-row">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="7" r="5"/><line x1="12" y1="12" x2="15" y2="15"/></svg>
+    <input
+      type="text"
+      id="finder-panel-input"
+      class=""
+      placeholder="Buscar projetos, pastas, mockups..."
+      autocomplete="off"
+      spellcheck="false"
+      role="combobox"
+      aria-autocomplete="list"
+      aria-expanded="false"
+      aria-controls="finder-results"
+    >
+    <span class="finder-hint">esc para fechar</span>
+  </div>
+  <div id="finder-results" role="listbox" aria-label="Resultados">
+    <!-- JS rendered -->
+  </div>
+</div>
+
+<!-- ─── MODAL ─────────────────────────────────────────────────────────────── -->
+<div id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <h2 class="modal-title" id="modal-title"></h2>
+    <p class="modal-body" id="modal-body"></p>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modal-cancel">Cancelar</button>
+      <button class="btn-danger" id="modal-confirm">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TOASTS ─────────────────────────────────────────────────────────────── -->
+<div id="toast-container" aria-live="polite" aria-atomic="false" role="status"></div>
+
+<!-- ─── STATE SWITCHER ────────────────────────────────────────────────────── -->
+<div id="state-switcher">
+  <div class="state-menu" id="state-menu" role="menu"></div>
+  <button class="state-btn" id="state-btn"
+          aria-haspopup="menu" aria-expanded="false"
+          aria-label="Selecionar estado do protótipo">
+    [ Estados ▾ ]
+  </button>
+</div>
+
+<!-- ─── JAVASCRIPT ────────────────────────────────────────────────────────── -->
+<script>
+(function () {
+'use strict';
+
+/* ═══════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════ */
+const DATA = {
+  projects: [
+    {
+      id: 'alpha', name: 'Alpha', icon: '🎨', totalMockups: 8,
+      children: [
+        {
+          id: 'alpha-landing', type: 'folder', name: 'Landing', items: 4,
+          children: [
+            {
+              id: 'alpha-landing-hero', type: 'folder', name: 'Hero', items: 2,
+              children: [
+                { id: 'mockup-1',  type: 'mockup', name: 'Mockup 1', date: 'há 1h',        initials: 'M1' },
+                { id: 'hero-v3',   type: 'mockup', name: 'Hero v3',  date: 'hoje 09:15',   initials: 'HV' }
+              ]
+            },
+            { id: 'banner', type: 'mockup', name: 'Banner', date: 'ontem 14:30', initials: 'BA' }
+          ]
+        },
+        {
+          id: 'alpha-pricing', type: 'folder', name: 'Pricing', items: 3,
+          children: [
+            { id: 'pricing-a', type: 'mockup', name: 'Pricing A', date: 'há 2d', initials: 'PA' },
+            { id: 'pricing-b', type: 'mockup', name: 'Pricing B', date: 'há 2d', initials: 'PB' },
+            { id: 'pricing-c', type: 'mockup', name: 'Pricing C', date: 'há 3d', initials: 'PC' }
+          ]
+        },
+        { id: 'apresentacao', type: 'mockup', name: 'Apresentação', date: 'há 5d', initials: 'AP' }
+      ]
+    },
+    {
+      id: 'beta', name: 'Beta', icon: '📐', totalMockups: 3,
+      children: [
+        {
+          id: 'beta-mobile', type: 'folder', name: 'Mobile', items: 1,
+          children: [
+            { id: 'dashboard-v2', type: 'mockup', name: 'Dashboard v2', date: 'há 1d', initials: 'DV' }
+          ]
+        }
+      ]
+    }
+  ],
+  unsorted: [
+    { id: 'rascunho', type: 'mockup', name: 'Rascunho', date: 'há 3d', initials: 'RA' }
+  ],
+  recents: [
+    { id: 'hero-v3',      name: 'Hero v3',      date: 'há 1h',       initials: 'HV', path: 'Alpha / Landing / Hero' },
+    { id: 'pricing-2025', name: 'Pricing 2025', date: 'hoje 10:30',  initials: 'P2', path: 'Alpha / Pricing' }
+  ],
+  archived: [
+    { id: 'hero-v1',   type: 'mockup', name: 'Hero v1',   date: 'há 3d', initials: 'HV', author: 'Ana' },
+    { id: 'btn-draft', type: 'mockup', name: 'btn-draft', date: 'há 1h', initials: 'BD', author: 'Bot-UX' }
+  ]
+};
+
+const SEARCH_INDEX = [
+  { id: 'alpha',              type: 'project', name: 'Alpha',        icon: '🎨', path: '/' },
+  { id: 'beta',               type: 'project', name: 'Beta',         icon: '📐', path: '/' },
+  { id: 'alpha-landing',      type: 'folder',  name: 'Landing',      icon: '📁', path: 'Alpha' },
+  { id: 'alpha-pricing',      type: 'folder',  name: 'Pricing',      icon: '📁', path: 'Alpha' },
+  { id: 'alpha-landing-hero', type: 'folder',  name: 'Hero',         icon: '📁', path: 'Alpha / Landing' },
+  { id: 'beta-mobile',        type: 'folder',  name: 'Mobile',       icon: '📁', path: 'Beta' },
+  { id: 'hero-v3',            type: 'mockup',  name: 'Hero v3',      icon: 'HV', path: 'Alpha / Landing / Hero' },
+  { id: 'mockup-1',           type: 'mockup',  name: 'Mockup 1',     icon: 'M1', path: 'Alpha / Landing / Hero' },
+  { id: 'banner',             type: 'mockup',  name: 'Banner',       icon: 'BA', path: 'Alpha / Landing' },
+  { id: 'pricing-a',          type: 'mockup',  name: 'Pricing A',    icon: 'PA', path: 'Alpha / Pricing' },
+  { id: 'pricing-b',          type: 'mockup',  name: 'Pricing B',    icon: 'PB', path: 'Alpha / Pricing' },
+  { id: 'pricing-c',          type: 'mockup',  name: 'Pricing C',    icon: 'PC', path: 'Alpha / Pricing' },
+  { id: 'apresentacao',       type: 'mockup',  name: 'Apresentação', icon: 'AP', path: 'Alpha' },
+  { id: 'dashboard-v2',       type: 'mockup',  name: 'Dashboard v2', icon: 'DV', path: 'Beta / Mobile' },
+  { id: 'rascunho',           type: 'mockup',  name: 'Rascunho',     icon: 'RA', path: 'Unsorted' },
+  { id: 'hero-v1',            type: 'mockup',  name: 'Hero v1',      icon: 'HV', path: '(Arquivo)' }
+];
+
+const STATES = [
+  { id: 1,  label: 'Home root — projetos + Recentes + Unsorted' },
+  { id: 2,  label: 'Finder ativo — resultados: "hero"' },
+  { id: 3,  label: 'Finder sem resultados: "xyzabc"' },
+  { id: 4,  label: 'Projeto aberto: Alpha' },
+  { id: 5,  label: 'Pasta aberta: Landing' },
+  { id: 6,  label: 'Subpasta aberta: Hero' },
+  { id: 7,  label: 'Drag em andamento: Banner' },
+  { id: 8,  label: 'Mockup arquivado: Hero v1 (badge)' },
+  { id: 9,  label: 'Empty — home sem projetos' },
+  { id: 10, label: 'Empty — projeto Alpha vazio' },
+  { id: 11, label: 'Empty — pasta Pricing vazia' },
+  { id: 12, label: 'Loading — skeleton cards' },
+  { id: 13, label: 'Error — falha de rede' },
+  { id: 14, label: '/archive — cards arquivados' },
+  { id: 15, label: 'Logout dropdown aberto' }
+];
+
+/* ═══════════════════════════════════════════════════
+   ELEMENT REFS
+═══════════════════════════════════════════════════ */
+const mainContent      = document.getElementById('main-content');
+const breadcrumbList   = document.getElementById('breadcrumb-list');
+const avatarBtn        = document.getElementById('avatar-btn');
+const avatarMenu       = document.getElementById('avatar-menu');
+const finderOverlay    = document.getElementById('finder-overlay');
+const finderPanel      = document.getElementById('finder-panel');
+const finderInput      = document.getElementById('finder-panel-input');
+const finderResults    = document.getElementById('finder-results');
+const modalOverlay     = document.getElementById('modal-overlay');
+const modalTitle       = document.getElementById('modal-title');
+const modalBody        = document.getElementById('modal-body');
+const modalConfirm     = document.getElementById('modal-confirm');
+const toastContainer   = document.getElementById('toast-container');
+const stateSwitcher    = document.getElementById('state-switcher');
+const stateBtn         = document.getElementById('state-btn');
+const stateMenu        = document.getElementById('state-menu');
+const finderToggleBtn  = document.getElementById('finder-toggle-btn');
+const btnLogout        = document.getElementById('btn-logout');
+const modalCancel      = document.getElementById('modal-cancel');
+
+let currentState = 1;
+let finderOpen   = false;
+let finderTimer  = null;
+
+/* ═══════════════════════════════════════════════════
+   SVG ICONS
+═══════════════════════════════════════════════════ */
+const ICON_FOLDER = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 012-2h4.17a2 2 0 011.42.59L12 7h7a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>`;
+
+const ICON_FOLDER_SM = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 012-2h4.17a2 2 0 011.42.59L12 7h7a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>`;
+
+/* ═══════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════ */
+function highlight(text, query) {
+  if (!query) return text;
+  const i = text.toLowerCase().indexOf(query.toLowerCase());
+  if (i < 0) return text;
+  return text.slice(0, i)
+    + '<mark>' + text.slice(i, i + query.length) + '</mark>'
+    + text.slice(i + query.length);
+}
+
+function triggerEnter() {
+  mainContent.classList.remove('content-enter');
+  void mainContent.offsetWidth;
+  mainContent.classList.add('content-enter');
+}
+
+/* ═══════════════════════════════════════════════════
+   BREADCRUMB
+═══════════════════════════════════════════════════ */
+function renderBreadcrumb(crumbs) {
+  // crumbs: [{label, onClick?}] — last entry is current page
+  breadcrumbList.innerHTML = crumbs.map((c, i) => {
+    const isLast = i === crumbs.length - 1;
+    if (isLast) {
+      return `<li><span class="breadcrumb-current" aria-current="page">${c.label}</span></li>`;
+    }
+    return `<li><button class="breadcrumb-link" onclick="${c.onClick}">${c.label}</button></li>`;
+  }).join('');
+  // Animate
+  breadcrumbList.style.animation = 'none';
+  void breadcrumbList.offsetWidth;
+  breadcrumbList.style.animation = 'breadcrumbEnter 160ms var(--ease-standard) forwards';
+}
+
+/* ═══════════════════════════════════════════════════
+   CARD RENDERS
+═══════════════════════════════════════════════════ */
+function dragHandle() {
+  return `<div class="drag-handle" role="button" aria-label="Arrastar card" aria-grabbed="false" tabindex="0">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true">
+      <circle cx="3" cy="2.5" r="1.1"/><circle cx="7" cy="2.5" r="1.1"/>
+      <circle cx="3" cy="7.5" r="1.1"/><circle cx="7" cy="7.5" r="1.1"/>
+    </svg>
+  </div>`;
+}
+
+function ctxMenu(id, type) {
+  return `<div class="card-ctx-menu">
+    <button class="card-ctx-btn" aria-label="Opções de ${type}" onclick="event.stopPropagation(); MARA.showCtx('${id}','${type}')">···</button>
+  </div>`;
+}
+
+function projectCard(p) {
+  return `
+<div class="card-base card-project" role="button" tabindex="0"
+     aria-label="Projeto ${p.name}, ${p.totalMockups} mockups"
+     onclick="MARA.drillProject('${p.id}')"
+     onkeydown="if(event.key==='Enter'||event.key===' '){MARA.drillProject('${p.id}');event.preventDefault();}">
+  ${dragHandle()}
+  ${ctxMenu(p.id, 'project')}
+  <div class="card-project-icon" aria-hidden="true">${p.icon}</div>
+  <span class="card-project-name">${p.name}</span>
+  <span class="card-project-badge">${p.totalMockups} mockups</span>
+</div>`;
+}
+
+function folderCard(f, drillFn) {
+  return `
+<div class="card-base card-folder" role="button" tabindex="0"
+     aria-label="Pasta ${f.name}, ${f.items} itens"
+     onclick="${drillFn}"
+     onkeydown="if(event.key==='Enter'||event.key===' '){${drillFn};event.preventDefault();}">
+  ${dragHandle()}
+  ${ctxMenu(f.id, 'folder')}
+  <div class="card-folder-icon" aria-hidden="true">${ICON_FOLDER}</div>
+  <span class="card-folder-name">${f.name}</span>
+  <span class="card-folder-meta">${f.items} itens</span>
+</div>`;
+}
+
+function mockupCard(m, opts) {
+  opts = opts || {};
+  const archivedClass  = opts.archived  ? ' card-archived'  : '';
+  const draggingClass  = opts.dragging  ? ' card-dragging'  : '';
+  const ghostClass     = opts.ghost     ? ' card-ghost'     : '';
+  const archivedBadge  = opts.archived  ? `<span class="badge-archived" role="img" aria-label="Arquivado">Arquivado</span>` : '';
+  const actionsBtns    = opts.archiveActions
+    ? `<div class="archive-card-actions">
+        <button class="arch-btn arch-restore" onclick="event.stopPropagation();MARA.restoreItem('${m.id}','${m.name}')" aria-label="Restaurar ${m.name}">Restaurar</button>
+        <button class="arch-btn arch-delete"  onclick="event.stopPropagation();MARA.confirmDelete('${m.id}','${m.name}')" aria-label="Deletar ${m.name}">Deletar</button>
+      </div>` : (opts.archived ? '' : ctxMenu(m.id, 'mockup'));
+  const ghostStyle     = opts.ghost ? `style="width:200px;top:230px;left:calc(50% - 100px);"` : '';
+  const clickHandler   = (!opts.archived && !opts.dragging)
+    ? `onclick="MARA.openMockup('${m.id}','${m.name}')"
+       onkeydown="if(event.key==='Enter'||event.key===' '){MARA.openMockup('${m.id}','${m.name}');event.preventDefault();}"` : '';
+  const mono = opts.ghost
+    ? `style="border-color:var(--accent-overlay-mid);color:var(--accent)"` : '';
+  return `
+<div class="card-base card-mockup${archivedClass}${draggingClass}${ghostClass}"
+     role="${opts.archived ? 'img' : 'button'}"
+     tabindex="${opts.archived ? -1 : 0}"
+     ${ghostStyle}
+     aria-label="${opts.archived ? '[Arquivado] ' : ''}Mockup ${m.name}${m.date ? ', ' + m.date : ''}"
+     ${clickHandler}>
+  ${(!opts.archived && !opts.dragging && !opts.ghost) ? dragHandle() : ''}
+  ${archivedBadge}
+  ${actionsBtns}
+  <div class="card-mockup-monogram" aria-hidden="true">
+    <div class="monogram-inner" ${mono}>${m.initials}</div>
+  </div>
+  <span class="card-mockup-name">${m.name}</span>
+  <span class="card-mockup-meta">${m.date || ''}</span>
+</div>`;
+}
+
+function grid(inner) {
+  return `<div class="card-grid" role="grid">${inner}</div>`;
+}
+
+function skeleton(type, n) {
+  const cls = { project: 'skeleton-project', folder: 'skeleton-folder', mockup: 'skeleton-mockup' }[type];
+  return Array.from({ length: n }, () => `<div class="skeleton ${cls}" aria-hidden="true"></div>`).join('');
+}
+
+function dropIndicator() {
+  return `<div class="drop-indicator" role="presentation" aria-hidden="true">solte aqui</div>`;
+}
+
+function sectionHeader(title, right) {
+  return `<div class="section-header">
+    <span class="section-title">${title}</span>
+    ${right ? `<span class="section-count">${right}</span>` : ''}
+  </div>`;
+}
+
+function contentSection(inner) {
+  return `<div class="content-section" style="margin-bottom:36px">${inner}</div>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   STATE RENDERERS
+═══════════════════════════════════════════════════ */
+
+// State 1 — Home
+function s1() {
+  renderBreadcrumb([{ label: 'Início' }]);
+  mainContent.innerHTML = `
+<h1 class="home-title">Bom dia, <span style="color:var(--accent)">AC</span> 👋</h1>
+
+${contentSection(`
+  ${sectionHeader('Atualizados Recentemente')}
+  <div class="recents-strip" role="list" aria-label="Mockups recentes">
+    ${DATA.recents.map(r => `
+    <div class="recent-chip" role="listitem" tabindex="0"
+         aria-label="${r.name}, ${r.path}, ${r.date}"
+         onclick="MARA.openMockup('${r.id}','${r.name}')"
+         onkeydown="if(event.key==='Enter'){MARA.openMockup('${r.id}','${r.name}');}">
+      <div class="recent-chip-icon" aria-hidden="true">${r.initials}</div>
+      <div>
+        <div class="recent-chip-name">${r.name}</div>
+        <div class="recent-chip-meta">${r.path} · ${r.date}</div>
+      </div>
+    </div>`).join('')}
+  </div>
+`)}
+
+${contentSection(`
+  ${sectionHeader('Projetos', DATA.projects.length + ' projetos')}
+  ${grid(DATA.projects.map(projectCard).join(''))}
+`)}
+
+${contentSection(`
+  ${sectionHeader('Unsorted', '<span style="color:var(--text-muted);font-family:var(--font-mono);font-size:10px;letter-spacing:0.05em">virtual</span>')}
+  ${grid(DATA.unsorted.map(m => mockupCard(m)).join(''))}
+`)}`;
+  triggerEnter();
+}
+
+// State 2 — Finder with results
+function s2() {
+  renderBreadcrumb([{ label: 'Início', onClick: "MARA.goHome()" }]);
+  s1(); // render home behind
+  setTimeout(() => openFinder('hero'), 60);
+}
+
+// State 3 — Finder no results
+function s3() {
+  renderBreadcrumb([{ label: 'Início', onClick: "MARA.goHome()" }]);
+  s1();
+  setTimeout(() => openFinder('xyzabc'), 60);
+}
+
+// State 4 — Alpha project
+function s4() {
+  const alpha = DATA.projects.find(p => p.id === 'alpha');
+  renderBreadcrumb([
+    { label: 'Início', onClick: 'MARA.goHome()' },
+    { label: 'Alpha' }
+  ]);
+  const folders  = alpha.children.filter(c => c.type === 'folder');
+  const mockups  = alpha.children.filter(c => c.type === 'mockup');
+  mainContent.innerHTML = `
+${contentSection(`
+  <div class="section-header">
+    <span style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:24px" aria-hidden="true">${alpha.icon}</span>
+      <span style="font-size:20px;font-weight:800;color:var(--text-bright);letter-spacing:-0.4px">Alpha</span>
+    </span>
+    <span class="section-count">${alpha.totalMockups} mockups</span>
+  </div>
+`)}
+${contentSection(`
+  ${sectionHeader('Pastas')}
+  ${grid(folders.map(f => folderCard(f, `MARA.drillFolder('alpha','${f.id}')`)).join(''))}
+`)}
+${contentSection(`
+  ${sectionHeader('Mockups')}
+  ${grid(mockups.map(m => mockupCard(m)).join(''))}
+`)}`;
+  triggerEnter();
+}
+
+// State 5 — Landing folder
+function s5() {
+  const landing = DATA.projects[0].children.find(c => c.id === 'alpha-landing');
+  renderBreadcrumb([
+    { label: 'Início', onClick: 'MARA.goHome()' },
+    { label: 'Alpha', onClick: 'MARA.setState(4)' },
+    { label: 'Landing' }
+  ]);
+  const subs    = landing.children.filter(c => c.type === 'folder');
+  const mockups = landing.children.filter(c => c.type === 'mockup');
+  mainContent.innerHTML = `
+${contentSection(`
+  <div class="section-header">
+    <span style="display:flex;align-items:center;gap:8px">
+      <span style="color:var(--text-dim)">${ICON_FOLDER_SM}</span>
+      <span style="font-size:20px;font-weight:700;color:var(--text-bright);letter-spacing:-0.3px">Landing</span>
+    </span>
+    <span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">Alpha / Landing</span>
+  </div>
+`)}
+${contentSection(`
+  ${sectionHeader('Subpastas')}
+  ${grid(subs.map(f => folderCard(f, `MARA.drillSubFolder('${f.id}')`)).join(''))}
+`)}
+${contentSection(`
+  ${sectionHeader('Mockups')}
+  ${grid(mockups.map(m => mockupCard(m)).join(''))}
+`)}`;
+  triggerEnter();
+}
+
+// State 6 — Hero subfolder
+function s6() {
+  const hero = DATA.projects[0].children[0].children.find(c => c.id === 'alpha-landing-hero');
+  renderBreadcrumb([
+    { label: 'Início',  onClick: 'MARA.goHome()' },
+    { label: 'Alpha',   onClick: 'MARA.setState(4)' },
+    { label: 'Landing', onClick: 'MARA.setState(5)' },
+    { label: 'Hero' }
+  ]);
+  mainContent.innerHTML = `
+${contentSection(`
+  <div class="section-header">
+    <span style="display:flex;align-items:center;gap:8px">
+      <span style="color:var(--text-dim)">${ICON_FOLDER_SM}</span>
+      <span style="font-size:20px;font-weight:700;color:var(--text-bright);letter-spacing:-0.3px">Hero</span>
+    </span>
+    <span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">Alpha / Landing / Hero</span>
+  </div>
+`)}
+${contentSection(`
+  ${sectionHeader('Mockups', hero.children.length + ' itens')}
+  ${grid(hero.children.map(m => mockupCard(m)).join(''))}
+`)}`;
+  triggerEnter();
+}
+
+// State 7 — Drag in progress
+function s7() {
+  const landing = DATA.projects[0].children.find(c => c.id === 'alpha-landing');
+  const subs    = landing.children.filter(c => c.type === 'folder');
+  const banner  = landing.children.find(c => c.id === 'banner');
+  renderBreadcrumb([
+    { label: 'Início', onClick: 'MARA.goHome()' },
+    { label: 'Alpha',  onClick: 'MARA.setState(4)' },
+    { label: 'Landing' }
+  ]);
+  mainContent.innerHTML = `
+${contentSection(`
+  <div class="section-header">
+    <span style="font-size:20px;font-weight:700;color:var(--text-bright)">Landing</span>
+    <span style="font-size:11px;color:var(--accent);font-family:var(--font-mono)">drag em andamento…</span>
+  </div>
+`)}
+${contentSection(`
+  ${sectionHeader('Subpastas')}
+  ${grid(subs.map(f => folderCard(f, 'void 0')).join('') + dropIndicator())}
+`)}
+${contentSection(`
+  ${sectionHeader('Mockups')}
+  ${grid(mockupCard(banner, { dragging: true }))}
+`)}
+${mockupCard(banner, { ghost: true })}
+<p style="text-align:center;margin-top:24px;font-size:12px;color:var(--text-muted);font-family:var(--font-mono)">
+  Solte sobre uma pasta para mover &nbsp;·&nbsp; Pressione Esc para cancelar
+</p>`;
+  triggerEnter();
+  showToast('Arrastando "Banner"…', null, 3500);
+}
+
+// State 8 — Archived mockup visible
+function s8() {
+  const hero = DATA.projects[0].children[0].children.find(c => c.id === 'alpha-landing-hero');
+  renderBreadcrumb([
+    { label: 'Início',  onClick: 'MARA.goHome()' },
+    { label: 'Alpha',   onClick: 'MARA.setState(4)' },
+    { label: 'Landing', onClick: 'MARA.setState(5)' },
+    { label: 'Hero' }
+  ]);
+  const heroV1 = { id: 'hero-v1', type: 'mockup', name: 'Hero v1', date: 'há 3d', initials: 'HV' };
+  const all = [...hero.children, heroV1];
+  mainContent.innerHTML = `
+${contentSection(`
+  <div class="section-header">
+    <span style="font-size:20px;font-weight:700;color:var(--text-bright)">Hero</span>
+    <span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">Alpha / Landing / Hero</span>
+  </div>
+`)}
+${contentSection(`
+  ${sectionHeader('Mockups', all.length + ' itens (1 arquivado)')}
+  ${grid(all.map((m, i) => mockupCard(m, { archived: i === all.length - 1 })).join(''))}
+`)}
+<p style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);margin-top:-24px">
+  "Hero v1" foi arquivado
+</p>`;
+  triggerEnter();
+  showToast('"Hero v1" arquivado', () => showToast('Arquivamento desfeito!', null, 2000));
+}
+
+// State 9 — Empty home
+function s9() {
+  renderBreadcrumb([{ label: 'Início' }]);
+  mainContent.innerHTML = `
+<div class="empty-state">
+  <div class="empty-icon" aria-hidden="true">📭</div>
+  <h2 class="empty-title">Nenhum projeto ainda</h2>
+  <p class="empty-sub">Crie seu primeiro projeto para organizar mockups e entregar com clareza.</p>
+  <div class="empty-actions">
+    <button class="btn-primary" onclick="MARA.showToastMsg('Criar projeto (simulado)')">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+      Criar Primeiro Projeto
+    </button>
+    <button class="btn-secondary" onclick="MARA.showToastMsg('Importar (simulado)')">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 2v10M4 8l4 4 4-4"/><path d="M2 14h12"/></svg>
+      Importar
+    </button>
+  </div>
+</div>`;
+  triggerEnter();
+}
+
+// State 10 — Alpha empty
+function s10() {
+  renderBreadcrumb([
+    { label: 'Início', onClick: 'MARA.goHome()' },
+    { label: 'Alpha' }
+  ]);
+  mainContent.innerHTML = `
+${contentSection(`
+  <div class="section-header">
+    <span style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:24px" aria-hidden="true">🎨</span>
+      <span style="font-size:20px;font-weight:800;color:var(--text-bright);letter-spacing:-0.4px">Alpha</span>
+    </span>
+  </div>
+`)}
+<div class="empty-state">
+  <div class="empty-icon" aria-hidden="true">🗂️</div>
+  <h2 class="empty-title">Projeto vazio</h2>
+  <p class="empty-sub">Alpha não tem conteúdo. Adicione mockups ou crie pastas para organizar o trabalho.</p>
+  <div class="empty-actions">
+    <button class="btn-primary" onclick="MARA.showToastMsg('Novo mockup em Alpha')">+ Novo Mockup</button>
+    <button class="btn-secondary" onclick="MARA.showToastMsg('Nova pasta em Alpha')">+ Nova Pasta</button>
+  </div>
+</div>`;
+  triggerEnter();
+}
+
+// State 11 — Pricing empty
+function s11() {
+  renderBreadcrumb([
+    { label: 'Início', onClick: 'MARA.goHome()' },
+    { label: 'Alpha',  onClick: 'MARA.setState(4)' },
+    { label: 'Pricing' }
+  ]);
+  mainContent.innerHTML = `
+${contentSection(`
+  <div class="section-header">
+    <span style="display:flex;align-items:center;gap:8px">
+      <span style="color:var(--text-dim)">${ICON_FOLDER_SM}</span>
+      <span style="font-size:20px;font-weight:700;color:var(--text-bright);letter-spacing:-0.3px">Pricing</span>
+    </span>
+  </div>
+`)}
+<div class="empty-state">
+  <div class="empty-icon" aria-hidden="true">📂</div>
+  <h2 class="empty-title">Pasta vazia</h2>
+  <p class="empty-sub">Pricing não tem mockups ainda. Arraste um mockup aqui ou crie um novo.</p>
+  <div class="empty-actions">
+    <button class="btn-primary" onclick="MARA.showToastMsg('Novo mockup em Pricing')">+ Novo Mockup</button>
+  </div>
+</div>`;
+  triggerEnter();
+}
+
+// State 12 — Loading
+function s12() {
+  renderBreadcrumb([{ label: 'Início' }]);
+  mainContent.innerHTML = `
+${contentSection(`
+  ${sectionHeader('Projetos')}
+  ${grid(skeleton('project', 4))}
+`)}
+${contentSection(`
+  ${sectionHeader('Recentes')}
+  ${grid(skeleton('mockup', 3))}
+`)}
+${contentSection(`
+  ${sectionHeader('Unsorted')}
+  ${grid(skeleton('mockup', 2))}
+`)}`;
+}
+
+// State 13 — Error
+function s13() {
+  renderBreadcrumb([{ label: 'Início' }]);
+  mainContent.innerHTML = `
+<div class="error-state" role="alert">
+  <div class="error-icon" aria-hidden="true">⚠</div>
+  <h2 class="error-title">Falha ao carregar</h2>
+  <p class="error-sub">network: ECONNREFUSED 127.0.0.1:3000</p>
+  <button class="btn-retry" onclick="MARA.retryLoad()" aria-label="Tentar novamente">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1.5 8A6.5 6.5 0 1 0 8 1.5"/><polyline points="1.5,1.5 1.5,8 8,8" fill="none" stroke-width="2"/></svg>
+    Tentar novamente
+  </button>
+</div>`;
+  triggerEnter();
+}
+
+// State 14 — Archive view
+function s14() {
+  renderBreadcrumb([
+    { label: 'Início', onClick: 'MARA.goHome()' },
+    { label: 'Arquivo' }
+  ]);
+  mainContent.innerHTML = `
+<div class="archive-header">
+  <span aria-hidden="true" style="font-size:22px">🗃️</span>
+  <h1 class="archive-header-title">Arquivo</h1>
+  <span class="archive-header-count">${DATA.archived.length} itens</span>
+</div>
+${contentSection(`
+  ${sectionHeader('Mockups arquivados')}
+  ${grid(DATA.archived.map(m => mockupCard(m, { archived: true, archiveActions: true })).join(''))}
+`)}
+<p style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono)">
+  Passe o mouse sobre um card para restaurar ou deletar permanentemente.
+</p>`;
+  triggerEnter();
+}
+
+// State 15 — Logout dropdown open
+function s15() {
+  s1(); // render home in background
+  setTimeout(() => {
+    document.getElementById('main-scroll').scrollTo(0, 0);
+    avatarMenu.classList.add('open');
+    avatarBtn.setAttribute('aria-expanded', 'true');
+  }, 80);
+}
+
+/* ═══════════════════════════════════════════════════
+   DRILL-DOWN — direct navigation
+═══════════════════════════════════════════════════ */
+function drillAlternateProject(id) {
+  const proj = DATA.projects.find(p => p.id === id);
+  if (!proj) return;
+  renderBreadcrumb([
+    { label: 'Início', onClick: 'MARA.goHome()' },
+    { label: proj.name }
+  ]);
+  const folders  = proj.children.filter(c => c.type === 'folder');
+  const mockups  = proj.children.filter(c => c.type === 'mockup');
+  mainContent.innerHTML = `
+${contentSection(`
+  <div class="section-header">
+    <span style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:24px" aria-hidden="true">${proj.icon}</span>
+      <span style="font-size:20px;font-weight:800;color:var(--text-bright);letter-spacing:-0.4px">${proj.name}</span>
+    </span>
+    <span class="section-count">${proj.totalMockups} mockups</span>
+  </div>
+`)}
+${folders.length ? contentSection(`
+  ${sectionHeader('Pastas')}
+  ${grid(folders.map(f => folderCard(f, `MARA.drillFolder('${id}','${f.id}')`)).join(''))}
+`) : ''}
+${mockups.length ? contentSection(`
+  ${sectionHeader('Mockups')}
+  ${grid(mockups.map(m => mockupCard(m)).join(''))}
+`) : ''}
+${!folders.length && !mockups.length ? `<div class="empty-state"><div class="empty-icon" aria-hidden="true">🗂️</div><h2 class="empty-title">Projeto vazio</h2><p class="empty-sub">Nenhum conteúdo ainda.</p><div class="empty-actions"><button class="btn-primary" onclick="MARA.showToastMsg('Novo mockup em ${proj.name}')">+ Novo Mockup</button></div></div>` : ''}`;
+  triggerEnter();
+}
+
+function drillFolderGeneric(projId, folderId) {
+  const proj    = DATA.projects.find(p => p.id === projId);
+  if (!proj) return;
+  const folder  = proj.children.find(c => c.id === folderId);
+  if (!folder) return;
+  renderBreadcrumb([
+    { label: 'Início', onClick: 'MARA.goHome()' },
+    { label: proj.name, onClick: `MARA.drillProject('${projId}')` },
+    { label: folder.name }
+  ]);
+  const subs    = folder.children.filter(c => c.type === 'folder');
+  const mockups = folder.children.filter(c => c.type === 'mockup');
+  mainContent.innerHTML = `
+${contentSection(`
+  <div class="section-header">
+    <span style="display:flex;align-items:center;gap:8px">
+      <span style="color:var(--text-dim)">${ICON_FOLDER_SM}</span>
+      <span style="font-size:20px;font-weight:700;color:var(--text-bright);letter-spacing:-0.3px">${folder.name}</span>
+    </span>
+    <span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">${proj.name} / ${folder.name}</span>
+  </div>
+`)}
+${subs.length ? contentSection(`
+  ${sectionHeader('Subpastas')}
+  ${grid(subs.map(f => folderCard(f, `MARA.drillSubFolder('${f.id}')`)).join(''))}
+`) : ''}
+${mockups.length ? contentSection(`
+  ${sectionHeader('Mockups')}
+  ${grid(mockups.map(m => mockupCard(m)).join(''))}
+`) : ''}
+${!subs.length && !mockups.length ? `<div class="empty-state"><div class="empty-icon" aria-hidden="true">📂</div><h2 class="empty-title">Pasta vazia</h2><p class="empty-sub">Nenhum conteúdo ainda.</p><div class="empty-actions"><button class="btn-primary" onclick="MARA.showToastMsg('Novo mockup')">+ Novo Mockup</button></div></div>` : ''}`;
+  triggerEnter();
+}
+
+function drillSubFolderGeneric(subfolderId) {
+  // Find subfolder anywhere in data
+  for (const proj of DATA.projects) {
+    for (const child of proj.children) {
+      if (child.type === 'folder' && child.children) {
+        const sub = child.children.find(c => c.id === subfolderId && c.type === 'folder');
+        if (sub) {
+          renderBreadcrumb([
+            { label: 'Início',  onClick: 'MARA.goHome()' },
+            { label: proj.name, onClick: `MARA.drillProject('${proj.id}')` },
+            { label: child.name, onClick: `MARA.drillFolder('${proj.id}','${child.id}')` },
+            { label: sub.name }
+          ]);
+          mainContent.innerHTML = `
+${contentSection(`
+  <div class="section-header">
+    <span style="display:flex;align-items:center;gap:8px">
+      <span style="color:var(--text-dim)">${ICON_FOLDER_SM}</span>
+      <span style="font-size:20px;font-weight:700;color:var(--text-bright);letter-spacing:-0.3px">${sub.name}</span>
+    </span>
+    <span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">${proj.name} / ${child.name} / ${sub.name}</span>
+  </div>
+`)}
+${sub.children && sub.children.length ? contentSection(`
+  ${sectionHeader('Mockups', sub.children.length + ' itens')}
+  ${grid(sub.children.filter(m => m.type === 'mockup').map(m => mockupCard(m)).join(''))}
+`) : `<div class="empty-state"><div class="empty-icon" aria-hidden="true">📂</div><h2 class="empty-title">Subpasta vazia</h2><p class="empty-sub">Nenhum mockup ainda.</p></div>`}`;
+          triggerEnter();
+          return;
+        }
+      }
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   FINDER
+═══════════════════════════════════════════════════ */
+function openFinder(prefill) {
+  finderOverlay.classList.add('open');
+  finderPanel.classList.add('open');
+  finderOverlay.setAttribute('aria-hidden', 'false');
+  finderInput.setAttribute('aria-expanded', 'true');
+  finderOpen = true;
+  if (prefill !== undefined) finderInput.value = prefill;
+  setTimeout(() => { finderInput.focus(); finderInput.select(); }, 60);
+  doSearch(finderInput.value.trim());
+}
+
+function closeFinder() {
+  finderOverlay.classList.remove('open');
+  finderPanel.classList.remove('open');
+  finderOverlay.setAttribute('aria-hidden', 'true');
+  finderInput.setAttribute('aria-expanded', 'false');
+  finderOpen = false;
+}
+
+function doSearch(q) {
+  if (q.length < 3) {
+    finderResults.innerHTML = `
+<div class="finder-empty-msg">
+  <div class="finder-empty-title" style="color:var(--text-dim)">
+    ${q.length === 0 ? 'Digite algo para buscar' : 'Mínimo 3 caracteres'}
+  </div>
+  <div class="finder-empty-sub">⌘K para fechar</div>
+</div>`;
+    return;
+  }
+  const hits = SEARCH_INDEX.filter(item =>
+    item.name.toLowerCase().includes(q.toLowerCase())
+  );
+  if (!hits.length) {
+    finderResults.innerHTML = `
+<div class="finder-empty-msg">
+  <div class="finder-empty-title">Sem resultados para "${q}"</div>
+  <div class="finder-empty-sub">Tente outra busca · fuzzy off · ${q.length} chars</div>
+</div>`;
+    return;
+  }
+  const typeLabel = { project: 'Projeto', folder: 'Pasta', mockup: 'Mockup' };
+  finderResults.innerHTML = hits.map(r => {
+    const iconHtml = r.type === 'mockup'
+      ? `<span class="finder-result-icon-mono">${r.icon}</span>`
+      : r.icon;
+    return `
+<div class="finder-result-item" role="option" tabindex="0"
+     onclick="closeFinder(); MARA.showToastMsg('Abrir: ${r.name}')"
+     onkeydown="if(event.key==='Enter'){closeFinder(); MARA.showToastMsg('Abrir: ${r.name}');}">
+  <div class="finder-result-icon" aria-hidden="true">${iconHtml}</div>
+  <div class="finder-result-info">
+    <div class="finder-result-name">${highlight(r.name, q)}</div>
+    <div class="finder-result-path">${r.path}</div>
+  </div>
+  <span class="finder-result-type">${typeLabel[r.type] || r.type}</span>
+</div>`;
+  }).join('');
+}
+
+finderInput.addEventListener('input', () => {
+  clearTimeout(finderTimer);
+  finderTimer = setTimeout(() => doSearch(finderInput.value.trim()), 300);
+});
+
+finderToggleBtn.addEventListener('click', () => openFinder(undefined));
+finderOverlay.addEventListener('click', closeFinder);
+
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    finderOpen ? closeFinder() : openFinder(undefined);
+    return;
+  }
+  if (e.key === 'Escape') {
+    if (finderOpen) { closeFinder(); return; }
+    if (avatarMenu.classList.contains('open')) { closeAvatarMenu(); return; }
+    if (stateMenu.classList.contains('open')) { closeStateMenu(); return; }
+    if (modalOverlay.classList.contains('open')) { closeModal(); return; }
+  }
+});
+
+/* ═══════════════════════════════════════════════════
+   AVATAR MENU
+═══════════════════════════════════════════════════ */
+function closeAvatarMenu() {
+  avatarMenu.classList.remove('open');
+  avatarBtn.setAttribute('aria-expanded', 'false');
+}
+
+avatarBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const isOpen = avatarMenu.classList.contains('open');
+  closeAvatarMenu();
+  if (!isOpen) {
+    avatarMenu.classList.add('open');
+    avatarBtn.setAttribute('aria-expanded', 'true');
+  }
+});
+
+btnLogout.addEventListener('click', () => {
+  closeAvatarMenu();
+  showToast('Saindo da conta…', null, 1400);
+  setTimeout(() => { window.location.href = '/login'; }, 1600);
+});
+
+document.addEventListener('click', e => {
+  if (!document.getElementById('avatar-wrap').contains(e.target)) closeAvatarMenu();
+  if (!stateSwitcher.contains(e.target)) closeStateMenu();
+});
+
+/* ═══════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════ */
+function openModal(title, body, onConfirm, confirmLabel) {
+  modalTitle.textContent = title;
+  modalBody.innerHTML = body;
+  modalConfirm.textContent = confirmLabel || 'Confirmar';
+  modalOverlay.classList.add('open');
+  modalConfirm.onclick = () => { closeModal(); if (onConfirm) onConfirm(); };
+}
+function closeModal() { modalOverlay.classList.remove('open'); }
+modalCancel.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+
+/* ═══════════════════════════════════════════════════
+   TOASTS
+═══════════════════════════════════════════════════ */
+function showToast(message, onUndo, duration) {
+  duration = duration === undefined ? 5000 : duration;
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.setAttribute('role', 'status');
+  el.innerHTML = message;
+  if (onUndo) {
+    const undoEl = document.createElement('span');
+    undoEl.className = 'toast-undo';
+    undoEl.textContent = 'Desfazer';
+    undoEl.setAttribute('tabindex', '0');
+    undoEl.setAttribute('role', 'button');
+    undoEl.setAttribute('aria-label', 'Desfazer ação');
+    undoEl.addEventListener('click', () => { hide(); onUndo(); });
+    undoEl.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { hide(); onUndo(); } });
+    el.appendChild(undoEl);
+  }
+  toastContainer.appendChild(el);
+  function hide() {
+    el.classList.add('hiding');
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 260);
+  }
+  const t = setTimeout(hide, duration);
+  el.addEventListener('click', e => {
+    if (!e.target.classList.contains('toast-undo')) { clearTimeout(t); hide(); }
+  });
+  return hide;
+}
+
+/* ═══════════════════════════════════════════════════
+   STATE SWITCHER
+═══════════════════════════════════════════════════ */
+function closeStateMenu() {
+  stateMenu.classList.remove('open');
+  stateBtn.setAttribute('aria-expanded', 'false');
+}
+
+function renderStateMenu() {
+  stateMenu.innerHTML = STATES.map(s => `
+<button class="state-menu-item${s.id === currentState ? ' active' : ''}"
+        role="menuitem"
+        onclick="MARA.setState(${s.id})"
+        aria-current="${s.id === currentState}">
+  <span class="state-num">${String(s.id).padStart(2, '0')}</span>
+  ${s.label}
+</button>`).join('');
+}
+
+stateBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const isOpen = stateMenu.classList.contains('open');
+  closeStateMenu();
+  if (!isOpen) {
+    renderStateMenu();
+    stateMenu.classList.add('open');
+    stateBtn.setAttribute('aria-expanded', 'true');
+  }
+});
+
+/* ═══════════════════════════════════════════════════
+   PUBLIC API
+═══════════════════════════════════════════════════ */
+window.MARA = {
+  setState(n) {
+    if (finderOpen) closeFinder();
+    closeAvatarMenu();
+    closeStateMenu();
+    currentState = n;
+    stateBtn.textContent = `[ Estado ${n} ▾ ]`;
+    const map = { 1:s1,2:s2,3:s3,4:s4,5:s5,6:s6,7:s7,8:s8,9:s9,10:s10,11:s11,12:s12,13:s13,14:s14,15:s15 };
+    if (map[n]) map[n]();
+  },
+  goHome()      { this.setState(1); },
+  drillProject(id) {
+    closeStateMenu();
+    if (id === 'alpha') this.setState(4);
+    else if (id === 'beta') drillAlternateProject(id);
+    else drillAlternateProject(id);
+  },
+  drillFolder(projId, folderId) {
+    closeStateMenu();
+    if (projId === 'alpha' && folderId === 'alpha-landing')  { this.setState(5); return; }
+    drillFolderGeneric(projId, folderId);
+  },
+  drillSubFolder(subfolderId) {
+    closeStateMenu();
+    if (subfolderId === 'alpha-landing-hero') { this.setState(6); return; }
+    drillSubFolderGeneric(subfolderId);
+  },
+  openMockup(id, name) {
+    showToast(`Abrindo "${name || id}" no viewer…`, null, 2000);
+  },
+  restoreItem(id, name) {
+    showToast(`"${name}" restaurado com sucesso`, null, 3000);
+  },
+  confirmDelete(id, name) {
+    openModal(
+      'Deletar permanentemente?',
+      `O mockup <strong>"${name}"</strong> será excluído e não poderá ser recuperado.`,
+      () => showToast(`"${name}" deletado permanentemente`, null, 3000),
+      'Deletar'
+    );
+  },
+  showCtx(id, type) {
+    showToast(`Opções: ${type} "${id}" (menu contextual simulado)`, null, 2000);
+  },
+  showToastMsg(msg) { showToast(msg, null, 2500); },
+  retryLoad() {
+    s12();
+    showToast('Reconectando…', null, 1500);
+    setTimeout(() => { this.setState(1); showToast('Dados carregados!', null, 2000); }, 2000);
+  }
+};
+
+// Expose helpers for inline HTML
+window.closeAvatarMenu = closeAvatarMenu;
+window.closeFinder = closeFinder;
+window.showToast = showToast;
+
+/* ═══════════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════════ */
+MARA.setState(1);
+
+})();
+</script>
+</body>
+</html>
