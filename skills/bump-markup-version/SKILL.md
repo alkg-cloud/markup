@@ -10,13 +10,20 @@ Deploy the latest `ghcr.io/alexandrecamillo/markup` Docker image to the VPS.
 
 ## Required Environment Variables
 
-These must be set in the agent's environment. If any are missing, abort and tell the user which are needed.
+Load the repository `.env` before running the deployment commands. These variables must be present after loading `.env`; if any are missing, abort and tell the user which are needed.
+
+```bash
+set -a
+. ./.env
+set +a
+```
 
 | Variable | Description |
 |---|---|
 | `VPS_IP` | VPS IP address |
 | `VPS_USER` | SSH username |
 | `VPS_PASSWORD` | SSH password |
+| `MARKUP_URL` | Public Markup URL |
 
 ## Pre-flight
 
@@ -94,8 +101,9 @@ If timeout, report logs and do NOT proceed.
 ### 6. Verify Traefik routing
 
 ```bash
+MARKUP_HOST="$(node -e "console.log(new URL(process.env.MARKUP_URL).host)")"
 sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no "$VPS_USER@$VPS_IP" '
-  curl -sS -o /dev/null -w "%{http_code}" -H "Host: markup.alego.cloud" https://127.0.0.1:443/ -k
+  curl -sS -o /dev/null -w "%{http_code}" -H "Host: '"$MARKUP_HOST"'" https://127.0.0.1:443/ -k
 '
 ```
 
@@ -120,4 +128,4 @@ ghcr.io/alexandrecamillo/markup@sha256:<previous-digest>
 
 ## Report
 
-After deployment, report: image digest, migrations run, health status, Traefik status, and URL (https://markup.alego.cloud).
+After deployment, report: image digest, migrations run, health status, Traefik status, and URL (`$MARKUP_URL`).
