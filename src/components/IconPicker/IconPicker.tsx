@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import styles from './IconPicker.module.css';
-import { filterIcons, type IconEntry, PICKER_ICONS } from './icons';
+import { filterIcons, type IconEntry } from './icons';
 
 const TABS = ['code', 'brands', 'ui', 'emoji'] as const;
 type Tab = (typeof TABS)[number];
@@ -106,7 +106,6 @@ function IconCell({
       {icon.label ? (
         <span className={styles.emoji}>{icon.label}</span>
       ) : (
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: hardcoded SVG data from PICKER_ICONS
         <span dangerouslySetInnerHTML={{ __html: icon.svg ?? '' }} />
       )}
     </button>

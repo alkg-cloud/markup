@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { projectHref } from '@/lib/project/routes';
 import styles from './FolderCard.module.css';
 
 interface FolderCardProps {
@@ -12,7 +13,7 @@ interface FolderCardProps {
 
 export function FolderCard({ folder, projectSlug }: FolderCardProps) {
   return (
-    <Link href={`/projects/${projectSlug}/${folder.id}`} className={styles.card}>
+    <Link href={projectHref(projectSlug, folder.id)} className={styles.card}>
       <svg
         width="20"
         height="20"

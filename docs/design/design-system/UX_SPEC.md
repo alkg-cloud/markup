@@ -9,7 +9,7 @@ Fase: G0 — fluxos e critérios de aceite. Estética a cargo do UI Designer.
 ## Arquitetura de Informação
 
 ```
-Raiz da aplicação (/mockups)
+Raiz da aplicação (/)
 └── Projeto Alpha                        ← container de nível 1
     ├── [Recentes]                        ← seção virtual, só na raiz do projeto
     │   ├── Mockup X (link)
@@ -239,9 +239,9 @@ Projeto Alpha / Pasta Landing / Subpasta Hero / Mockup 1
 - Na raiz do projeto (sem pasta selecionada): breadcrumb exibe apenas `Projeto Alpha`.
 
 ### Navegação via Breadcrumb
-- Click em `Projeto Alpha` → vai para `/mockups` com o projeto expandido na sidebar.
+- Click em `Projeto Alpha` → vai para `/?project=project-alpha` com o projeto expandido na sidebar.
 - Click em `Pasta Landing` → vai para a view daquela pasta.
-- Não há breadcrumb na página `/mockups` (raiz da app) — só em contextos dentro de um projeto.
+- A raiz `/` mostra o contexto de projeto selecionado com breadcrumb.
 
 ### Keyboard
 - Tab alcança o breadcrumb como um todo.

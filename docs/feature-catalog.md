@@ -37,14 +37,14 @@ Global 52 px top bar (`Topbar.tsx`). Present on all authenticated pages. Margin-
 | ID | Surface / Interaction | States |
 |---|---|---|
 | `topbar-bar` | Fixed top bar with search pill (centered), breadcrumbs (left), avatar (right) | visible on all auth pages; margin-left: 80 px when sidebar collapsed, smooth transition via `--morph-dur` |
-| `topbar-search-pill` | Search trigger pill centered in topbar (min 240 px, max 340 px) with VscSearch icon + "Search..." text + `Ctrl+K` / `Cmd+K` kbd hint | default, hover (border brightens to `--border-strong`, bg to `--surface-hover`), focus-visible, active; opens `command-palette` |
+| `topbar-search-pill` | Search trigger pill centered in topbar (min 240 px, max 340 px) with VscSearch icon + "Search..." text + platform shortcut hint (`Ctrl+K` on Windows/Linux, `⌘K` on Apple platforms) | default, hover (border brightens to `--border-strong`, bg to `--surface-hover`), focus-visible, active; opens `command-palette` and closes avatar dropdown |
 | `topbar-avatar-btn` | User avatar button (top-right), 32 px circle with initials | default, hover (border-color accent), focus-visible, active; opens avatar dropdown |
 | `topbar-avatar-menu` | Dropdown from avatar button; items: **Agent tokens**, **Sign out** (danger variant). No "Settings" or "Home" links | closed, open; spring animation |
 | `topbar-breadcrumbs` | Breadcrumb strip — starts at project name (no "Markup" / "Home" prefix). Logo serves as root navigation | see `breadcrumbs-*` entries |
 
 ## sidebar
 
-Collapsible sidebar shell (`Sidebar.tsx`). Present on `/projects/**` routes. The sidebar morphs into a floating pill when collapsed.
+Collapsible sidebar shell (`Sidebar.tsx`). Present on authenticated workspace routes (`/`, `/settings/agents`, mockup viewer, annotation detail). The sidebar morphs into a floating pill when collapsed.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
@@ -72,7 +72,7 @@ ARIA tree widget for project/folder navigation (`ProjectTree.tsx`).
 | `sidebar-tree-expand` | Chevron (12 px) on folder/project. Smooth rotation animation — not abrupt | collapsed (0 deg), expanded (90 deg, color: `--accent`); animates via `--motion-fast` / `--ease-standard` |
 | `sidebar-tree-keyboard-nav` | Full keyboard navigation per WAI-ARIA treeview | ArrowUp/Down (move focus), ArrowRight (expand or move to first child), ArrowLeft (collapse or move to parent), Enter/Space (activate), Home/End, Escape, Tab |
 | `sidebar-tree-kebab` | Three-dot kebab icon. Replaces count badge on hover with animated swap (count scales to 0.8 and fades out, kebab fades in simultaneously) | hidden (default), visible (hover/focus); opens dropdown |
-| `sidebar-tree-kebab-menu` | Dropdown from project kebab: **Change icon** (opens icon-picker), **Change name** (inline rename), **Archived mockups**. Folder/mockup kebab: **Rename**, **Move to**, **Delete** (danger) | open, closed; spring animation on open and close |
+| `sidebar-tree-kebab-menu` | Dropdown from project kebab: **Open**, **Edit** (opens project update dialog with current values), **Delete project**. Folder/mockup kebab: **Open**, **Rename** (inline input in the row), **Delete** (danger); folders also show **New subfolder** | open, closed; spring animation on open and close |
 | `sidebar-tree-count-badge` | Child-count badge on folders/projects. Swaps out for kebab on hover | visible (no hover), hidden (hover — replaced by kebab) |
 | `sidebar-tree-indent` | Visual indentation per nesting level (tree-indent-1 through tree-indent-4) | up to 5 nesting levels |
 | `sidebar-tree-accent-bar` | 3 px left accent bar on selected item | visible when item is the current route |
@@ -132,11 +132,11 @@ Structural breadcrumb navigation (`Breadcrumbs.tsx`). No "Markup" or "Home" pref
 
 ## command-palette
 
-Global command palette (`CommandPalette.tsx`). Opens via `Cmd+K` / `Ctrl+K` or topbar search pill. Glassmorphism style matching Variante E "palette-container".
+Global command palette (`CommandPalette.tsx`). Opens via `Ctrl+K` / `⌘K` or topbar search pill. Glassmorphism style matching Variante E "palette-container".
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `command-palette-trigger` | `Cmd+K` / `Ctrl+K` keyboard shortcut or search pill click | opens overlay |
+| `command-palette-trigger` | `Ctrl+K` on Windows/Linux, `⌘K` on Apple platforms, or search pill click | opens overlay |
 | `command-palette-scrim` | Backdrop scrim with `backdrop-filter: blur(8px)`, `--scrim-strong` | visible when open; click dismisses |
 | `command-palette-panel` | Glassmorphism dark panel with `--shadow-glow` signature, `--bg-elevated` bg, `--border` border | scale-in animation on open, positioned top-center |
 | `command-palette-input` | Search text input with VscSearch icon, auto-focus. Matching text highlighted with `<mark>` (accent-overlay-mid bg, accent-bright text) | idle, typing (filters results live, staggered 20 ms entry animation per result) |
@@ -159,13 +159,24 @@ New Project creation dialog (`NewProjectDialog.tsx`).
 | `new-project-dialog-cancel` | Cancel button (`btn-secondary`) | default, hover, focus-visible |
 | `new-project-dialog-create` | "Create" accent button (`btn-accent`) | default, hover (`--accent-bright`), focus-visible, active, disabled (submitting) |
 
+## edit-project-dialog
+
+Project update dialog (`NewProjectDialog.tsx` in edit mode).
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `edit-project-dialog-card` | Dialog card matching New Project, prefilled with current project name and icon | open, closed |
+| `edit-project-dialog-name-input` | Project name text field | idle, focused, error (empty on submit) |
+| `edit-project-dialog-icon-picker` | Embedded icon picker | shows `icon-picker` inline in dialog |
+| `edit-project-dialog-update` | "Update project" accent button (`btn-accent`) | default, hover, focus-visible, active, disabled (submitting) |
+
 ## icon-picker
 
 Tabbed icon picker popover (`IconPicker.tsx`). Reusable in "New Project" dialog and "Change icon" from project kebab menu. Uses react-icons (VS Code icons from `react-icons/vsc`).
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `icon-picker-popover` | Positioned popover container | open, closed |
+| `icon-picker-popover` | Positioned popover/container that fills available inline width | open, closed |
 | `icon-picker-tabs` | 4 category tabs: **Code** (VscCode icons), **Brands** (VscGithub, etc.), **UI** (VscLayout, etc.), **Emoji** (emoji grid) | default tab, active tab (accent underline) |
 | `icon-picker-search` | Search input with VscSearch icon within picker. Filters icons live | idle, typing |
 | `icon-picker-grid` | 8-column SVG icon grid | populated, empty (no matches for search) |
@@ -179,7 +190,7 @@ Main content area for project and folder views (`ProjectContent.tsx`). Folder ca
 | ID | Surface / Interaction | States |
 |---|---|---|
 | `project-content-toolbar` | Toolbar area above card grid | visible at top of content area |
-| `project-content-grid` | Card grid: folder cards first row, then mockup cards. Responsive grid with gap | populated, empty (shows empty state) |
+| `project-content-grid` | Unified card grid: folder cards first, then mockup cards, with no separate section headings and no status bar | populated, empty (shows empty state) |
 | `project-content-responsive` | Responsive layout | sidebar + main on desktop (>= 768 px), single column on mobile |
 
 ## folder-card
@@ -218,7 +229,7 @@ Empty state component for projects and folders (`EmptyState.tsx`).
 
 ## mockup-viewer
 
-Mockup viewer page at `/mockups/[id]` (`MockupViewer.tsx`).
+Mockup viewer page at `/mockups/[id]` (`MockupViewer.tsx`) inside the standard sidebar + topbar shell.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
@@ -348,21 +359,12 @@ Toast notification system (`Toast.tsx`, `useToast.ts`).
 
 ## app-nav
 
-Top navigation pills (`AppNav.tsx`). "Mockups | Agents" pill group with active state via `usePathname()`.
+Top navigation pills (`AppNav.tsx`). "Projetos | Agents" pill group with active state via `usePathname()`.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `app-nav-pills` | Pill navigation group | visible on authenticated pages |
+| `app-nav-pills` | Pill navigation group with **Projetos** and **Agents** | visible on authenticated pages |
 | `app-nav-pill` | Individual nav pill link | default, hover, focus-visible, active (current route — accent treatment) |
-
-## statusbar
-
-Bottom status bar (`Statusbar.tsx`). 24 px bar with project stats.
-
-| ID | Surface / Interaction | States |
-|---|---|---|
-| `statusbar-bar` | Fixed bottom bar | visible on project pages |
-| `statusbar-segment` | Stat segment (mockup count, annotation count, etc.) | static text |
 
 ---
 

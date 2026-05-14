@@ -11,13 +11,12 @@ interface NavItem {
 }
 
 const ITEMS: NavItem[] = [
-  { href: '/projects', label: 'Projetos', matchPrefix: '/projects' },
-  { href: '/mockups', label: 'Mockups', matchPrefix: '/mockups' },
+  { href: '/', label: 'Projetos' },
   { href: '/settings/agents', label: 'Agents', matchPrefix: '/settings/agents' },
 ];
 
 /**
- * AppNav — a small navlink strip rendered above /mockups and /settings/agents.
+ * AppNav — a small navlink strip for authenticated top-level routes.
  * Lets the user move between top-level views without relying on the back-link.
  *
  * Each link is a client navlink because :hover state on inline-styled Links

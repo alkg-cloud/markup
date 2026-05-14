@@ -25,13 +25,18 @@ export function Topbar({ breadcrumbs, userName, userEmail, onSearchClick }: Topb
 
   useEffect(() => {
     if (!menuOpen) return;
+    const closeForPalette = () => setMenuOpen(false);
     const handle = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handle);
-    return () => document.removeEventListener('mousedown', handle);
+    document.addEventListener('open-command-palette', closeForPalette);
+    return () => {
+      document.removeEventListener('mousedown', handle);
+      document.removeEventListener('open-command-palette', closeForPalette);
+    };
   }, [menuOpen]);
 
   const handleSearchClick = useCallback(() => {

@@ -1,12 +1,14 @@
 import fs from 'node:fs';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { Topbar } from '@/components/Topbar/Topbar';
 import { identify } from '@/lib/auth/identify';
 import { resolveDisplayNames } from '@/lib/auth/resolve-display-name';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { env } from '@/lib/env';
 import { thumbnailPath } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
+import { AppShell } from '../../AppShell';
 import { MockupViewer } from './MockupViewer';
 
 export default async function MockupViewerPage({ params }: { params: Promise<{ id: string }> }) {
@@ -40,7 +42,11 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
     },
   });
   if (!mockup?.currentVersionId) {
-    return <main style={{ padding: 24 }}>Mockup not found.</main>;
+    return (
+      <AppShell>
+        <main style={{ padding: 24 }}>Mockup not found.</main>
+      </AppShell>
+    );
   }
   const hasThumbnail = fs.existsSync(thumbnailPath(env().DATA_DIR, mockup.id));
   const nameMap = await resolveDisplayNames([
@@ -48,29 +54,32 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
   ]);
 
   return (
-    <MockupViewer
-      mockupId={mockup.id}
-      mockupName={mockup.name}
-      currentVersionId={mockup.currentVersionId}
-      hasThumbnail={hasThumbnail}
-      versions={mockup.versions.map((v) => {
-        const resolved = nameMap.get(v.createdBy);
-        return {
-          id: v.id,
-          createdAt: v.createdAt.toISOString(),
-          authorName: resolved?.name ?? `${v.createdByType} ${v.createdBy.slice(-6)}`,
-          authorKind: (resolved?.kind ?? v.createdByType) as 'user' | 'agent',
-        };
-      })}
-      annotations={mockup.annotations.map((a) => ({
-        id: a.id,
-        createdAt: a.createdAt.toISOString(),
-        screenshotPath: a.screenshotPath,
-        threadStatus: a.thread?.status ?? 'open',
-        messageCount: a.thread?._count.messages ?? 0,
-        pinCoords: a.pinCoords, // raw JSON string; parsed in client
-      }))}
-    />
+    <AppShell>
+      <Topbar breadcrumbs={[{ label: mockup.name, href: `/mockups/${mockup.id}` }]} />
+      <MockupViewer
+        mockupId={mockup.id}
+        mockupName={mockup.name}
+        currentVersionId={mockup.currentVersionId}
+        hasThumbnail={hasThumbnail}
+        versions={mockup.versions.map((v) => {
+          const resolved = nameMap.get(v.createdBy);
+          return {
+            id: v.id,
+            createdAt: v.createdAt.toISOString(),
+            authorName: resolved?.name ?? `${v.createdByType} ${v.createdBy.slice(-6)}`,
+            authorKind: (resolved?.kind ?? v.createdByType) as 'user' | 'agent',
+          };
+        })}
+        annotations={mockup.annotations.map((a) => ({
+          id: a.id,
+          createdAt: a.createdAt.toISOString(),
+          screenshotPath: a.screenshotPath,
+          threadStatus: a.thread?.status ?? 'open',
+          messageCount: a.thread?._count.messages ?? 0,
+          pinCoords: a.pinCoords, // raw JSON string; parsed in client
+        }))}
+      />
+    </AppShell>
   );
 }
 

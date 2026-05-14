@@ -12,14 +12,13 @@ The UI is a Next.js App Router app rendered as a mix of server components (defau
 
 | Path | Server / Client | Purpose |
 |---|---|---|
-| `/` | server | Redirect to `/mockups` if logged in, else `/login` |
+| `/` | server | Authenticated project/folder workspace with sidebar + topbar |
 | `/setup` | server + `Form.tsx` client | First-run admin creation |
 | `/login` | server + `Form.tsx` client | Email + password auth |
-| `/mockups` | server | List grid with `MockupCard` (server-rendered with image fallback) |
 | `/mockups/[id]` | server + `MockupViewer.tsx` client | Iframe + annotation pin overlay + sidebar |
 | `/mockups/[id]/diff` | server + `DiffViewer.tsx` client | Side-by-side / overlay version compare |
 | `/annotations/[id]` | server + `ReadOnlyAnnotation.tsx` client | Drawing canvas + thread |
-| `/settings/agents` | server + `AgentsClient.tsx` client | List + create + revoke agent tokens |
+| `/settings/agents` | server + `AgentsClient.tsx` client | List + create + revoke agent tokens inside the standard sidebar + topbar shell |
 
 The naming convention is **`page.tsx` is a server component**, **`*Client.tsx` or `<Surface>Form.tsx` is the client island**. The server component fetches data and renders the static skeleton; the client component handles state and DOM interaction.
 

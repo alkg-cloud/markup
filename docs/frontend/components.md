@@ -59,9 +59,6 @@ src/components/
   EmptyState/
     EmptyState.tsx          # 'use client' — project/folder empty states
     EmptyState.module.css   # container, icon, title, desc, actions, btn-accent, btn-secondary styles
-  Statusbar/
-    Statusbar.tsx           # 'use client' — 24px bar with project stats
-    Statusbar.module.css    # bar + segment styles
   Sidebar/
     Sidebar.tsx              # 'use client' — pill-morph sidebar shell with collapse toggle
     Sidebar.module.css       # phased morph transitions
@@ -98,17 +95,20 @@ src/app/mockups/
     diff/
       page.tsx               # server
       DiffViewer.tsx         # 'use client' — side-by-side iframes
+src/app/
+  AppShell.tsx               # server — auth + Prisma tree fetch → standard sidebar/topbar shell
+  page.tsx                   # server — selected project/folder workspace at /
 src/app/projects/
-  layout.tsx                 # server — auth + Prisma tree fetch → grid shell (CSS module for responsive grid)
+  layout.tsx                 # server — legacy redirect shell for old /projects URLs
   layout.module.css          # responsive grid: sidebar + main on desktop, single column on mobile <768px
-  page.tsx                   # server — redirect to first project
+  page.tsx                   # server — redirects old /projects to /
   ProjectSidebar.tsx         # 'use client' — sidebar wrapper using Sidebar shell, folder create, move, mobile drawer, footer with New Project button
   ProjectSidebar.module.css  # footer + btn-new-project styles
   [slug]/
-    page.tsx                 # server — project root content
-    ProjectContent.tsx       # 'use client' — toolbar, folder/mockup card grid, statusbar
+    page.tsx                 # server — redirects old /projects/[slug] to /?project=slug
+    ProjectContent.tsx       # 'use client' — unified folder/mockup card grid
     [folderId]/
-      page.tsx               # server — folder content with ancestor breadcrumbs
+      page.tsx               # server — redirects old folder URL to /?project=slug&folder=id
 ```
 
 The page-scoped pattern means `MockupCard.tsx` is co-located with `page.tsx` in `src/app/mockups/`. This keeps the import surface obvious and prevents `src/components/` from accumulating one-off pieces.
