@@ -16,7 +16,7 @@ Fix divergences and bugs identified by the visual-qa skill, then deploy and veri
 
 ### 1. Invoke frontend-design
 
-Use [/frontend-design](skill://c150f394-1353-4ba9-bf7f-85f3b36ff431?s=frontend-design) to load the design quality reference before making any code changes.
+Use /frontend-design to load the design quality reference before making any code changes.
 
 ### 2. Triage findings
 
@@ -55,7 +55,7 @@ Reference the catalog's `[fc:<id>]` convention when naming findings.
 
 After all fixes are committed:
 
-Use [/requesting-code-review](skill://233c1325-61f0-4d42-92eb-18f57d3816e3?s=requesting-code-review) to submit the changes for review.
+Use /requesting-code-review to submit the changes for review.
 
 Address any review feedback and re-commit as needed.
 
@@ -63,13 +63,13 @@ Address any review feedback and re-commit as needed.
 
 After code review is approved:
 
-Use [/bump-markup-version](skill://d9978923-185e-444f-b41c-433e271c0a76?s=bump-markup-version) with the project environment variables from the [Markup project configuration](https://paperclip-r7fv.srv1650819.hstgr.cloud/MARA/projects/markup/configuration) to deploy the updated version.
+Use /bump-markup-version with the project environment variables loaded from the repository `.env` to deploy the updated version. The `.env` must include `MARKUP_URL`.
 
-### 7. Re-run visual-qa
+### 7. Re-run markup-qa
 
 After deployment is confirmed healthy:
 
-Use [/visual-qa](skill://visual-qa?s=visual-qa) to perform a fresh round of visual QA against the newly deployed version.
+Use /markup-qa to perform a fresh round of visual QA against the newly deployed version.
 
 Post the final verification report on the issue.
 
@@ -80,11 +80,11 @@ The final issue comment should include:
 1. **Fixes applied** — list of what was changed, grouped by component/area.
 2. **Code review result** — approved / changes requested.
 3. **Deployment status** — healthy / failed.
-4. **Final visual-qa report** — the re-run results showing resolved vs remaining issues.
+4. **Final markup-qa report** — the re-run results showing resolved vs remaining issues.
 
 ## Rules
 
 - **Do not skip code review.** Every fix must go through `/requesting-code-review`.
-- **Do not skip deployment verification.** Always re-run visual-qa after deploy.
+- **Do not skip deployment verification.** Always re-run `/markup-qa` after deploy.
 - **Do not improvise design.** If the DS is ambiguous, escalate rather than guess.
 - **Do not delegate.** Perform all fixes directly.

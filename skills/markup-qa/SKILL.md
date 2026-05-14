@@ -1,5 +1,5 @@
 ---
-name: visual-qa
+name: markup-qa
 description: Use when performing visual QA of the Markup application against the Design System and full-prototype mockups hosted in the "Markup Dev" project on Markup online. Compares live app vs DS components and prototype, generates a divergence and bug report.
 ---
 
@@ -9,15 +9,16 @@ Perform a systematic visual and functional audit of the live Markup application 
 
 ## Prerequisites
 
-- Chrome browser tools (`mcp__claude-in-chrome__*`) must be available.
-- Access to Markup online at `https://markup.alego.cloud`.
+- Chrome browser tools must be available.
+- Load the repository `.env` before starting and require `MARKUP_URL` to be set.
+- Access to Markup online at `$MARKUP_URL`.
 - The "Markup Dev" project on Markup online contains the authoritative DS components and the full-prototype mockup. **Do NOT modify anything in the "Markup Dev" project.**
 
 ## Procedure
 
 ### 1. Invoke frontend-design
 
-Use [/frontend-design](skill://c150f394-1353-4ba9-bf7f-85f3b36ff431?s=frontend-design) to load the design quality reference before evaluating.
+Use /frontend-design to load the design quality reference before evaluating.
 
 ### 2. Read the feature-catalog
 
@@ -31,7 +32,7 @@ Read [`docs/feature-catalog.md`](docs/feature-catalog.md) end to end. This is th
 
 ### 3. Open Markup online and catalog the DS
 
-1. Navigate to `https://markup.alego.cloud` in Chrome.
+1. Navigate to `$MARKUP_URL` in Chrome.
 2. Open the "Markup Dev" project.
 3. Identify every DS component mockup (buttons, inputs, dropdowns, modals, toasts, topbar, sidebar, tree, cards, etc.).
 4. For each component, note: visual style, spacing, typography, colors, border-radius, shadows, hover/focus/active states, responsive behavior.
@@ -73,7 +74,15 @@ While navigating the live app, also test:
 
 ### 7. Generate report
 
-Produce a structured markdown report:
+Create `docs/qa/` if it does not exist. Save the report as a markdown file under `docs/qa/` using this naming pattern:
+
+```text
+docs/qa/YYYY-MM-DD-markup-qa-report.md
+```
+
+Use the current date for `YYYY-MM-DD`. If a report for the same date already exists, append a short suffix such as `-2` or `-sidebar-pass` instead of overwriting it.
+
+The report must use this structure:
 
 ```markdown
 # Visual QA Report
@@ -112,7 +121,7 @@ Produce a structured markdown report:
 - **Severity:** critical/major/minor
 ```
 
-Post the report as a comment on the current issue.
+After saving the report, reply with the report path and a concise summary of the critical and major findings.
 
 ## Rules
 
@@ -120,4 +129,5 @@ Post the report as a comment on the current issue.
 - **Be exhaustive.** Check every component, every screen, every interaction.
 - **Do not delegate.** Perform all checks directly using Chrome browser tools.
 - **Do not create sub-issues.** The report is the deliverable.
+- **Store QA reports locally.** Reports live in `docs/qa/`; do not post the full report as an issue comment unless the user explicitly asks.
 - You may create test projects, test data, or navigate freely in the live app — just don't touch "Markup Dev".
