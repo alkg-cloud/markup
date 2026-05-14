@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useCallback, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import styles from './Sidebar.module.css';
 
 interface SidebarProps {
@@ -12,6 +12,15 @@ export function Sidebar({ children, footer }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   const toggle = useCallback(() => setCollapsed((c) => !c), []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (collapsed) {
+      root.style.setProperty('--sidebar-inset', 'calc(var(--pill-width) + var(--pill-left) + 8px)');
+    } else {
+      root.style.removeProperty('--sidebar-inset');
+    }
+  }, [collapsed]);
 
   return (
     <>
