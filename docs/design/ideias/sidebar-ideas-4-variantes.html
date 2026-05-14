@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sidebar — 4 Variants</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0%,0,0/0.45);--shadow-md:0 6px 16px oklch(0%,0,0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0%,0,0/0.6),0 6px 12px oklch(0%,0,0/0.45),inset 0 1px 0 oklch(100%,0,0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
+
+/* ─── VARIANT TABS ─── */
+.variant-tabs{
+  position:fixed;top:0;left:0;right:0;z-index:9999;
+  display:flex;align-items:center;gap:2px;
+  background:oklch(6% 0.02 165);border-bottom:1px solid var(--border);
+  padding:0 16px;height:44px;
+}
+.variant-tabs .tab-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-right:12px;white-space:nowrap}
+.vtab{
+  height:32px;padding:0 14px;border-radius:var(--radius-sm);
+  font-size:12px;font-weight:600;color:var(--text-dim);
+  display:flex;align-items:center;gap:6px;
+  transition:background var(--motion-fast),color var(--motion-fast);
+}
+.vtab:hover{background:var(--surface-hover);color:var(--text)}
+.vtab.active{background:var(--accent-overlay-soft);color:var(--accent-bright)}
+.vtab .vtab-num{font-family:var(--font-mono);font-size:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;padding:1px 5px;margin-right:2px}
+.vtab.active .vtab-num{background:var(--accent-soft);border-color:var(--accent-overlay-mid);color:var(--accent)}
+.variant-desc{
+  margin-left:auto;font-size:11px;color:var(--text-muted);font-family:var(--font-mono);white-space:nowrap;
+}
+
+/* ─── DEMO FRAME ─── */
+.demo-frame{position:fixed;top:44px;left:0;right:0;bottom:0}
+.variant-panel{display:none;height:100%;position:relative}
+.variant-panel.active{display:block}
+
+/* ─── SHARED SIDEBAR STYLES ─── */
+.sidebar{
+  height:100%;background:rgba(14,12,16,0.8);backdrop-filter:blur(12px);
+  border-right:1px solid var(--border-subtle);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;
+  transition:width var(--motion-base) var(--ease-standard),min-width var(--motion-base) var(--ease-standard),transform var(--motion-base) var(--ease-standard);
+}
+.s-header{
+  height:var(--topbar-height);min-height:var(--topbar-height);
+  display:flex;align-items:center;padding:0 12px;gap:4px;flex-shrink:0;
+}
+.s-logo{
+  font-weight:700;font-size:16px;color:var(--text-bright);letter-spacing:-0.02em;
+  cursor:pointer;white-space:nowrap;overflow:hidden;display:flex;align-items:baseline;
+}
+.s-logo-full{
+  display:inline-block;max-width:100px;overflow:hidden;
+  transition:max-width var(--motion-base) var(--ease-standard),opacity var(--motion-base) var(--ease-standard);
+}
+.s-logo-dot{color:var(--accent);font-size:1.5em;line-height:0}
+.s-collapse{
+  width:28px;height:28px;border-radius:var(--radius-xs);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast);
+  flex-shrink:0;margin-left:auto;
+}
+.s-collapse:hover{background:var(--surface-hover);color:var(--text)}
+.s-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0}
+.s-footer{padding:12px;border-top:1px solid var(--border-subtle);flex-shrink:0}
+.s-section{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);padding:12px 16px 4px;white-space:nowrap}
+.s-item{display:flex;align-items:center;gap:6px;padding:4px 10px;height:32px;font-size:13px;color:var(--text-dim);cursor:pointer;transition:background var(--motion-fast);white-space:nowrap;position:relative;margin:0 4px;border-radius:var(--radius-sm)}
+.s-item:hover{background:var(--surface-hover);color:var(--text)}
+.s-item.active{background:var(--accent-overlay-soft);color:var(--accent-bright)}
+.s-item.active::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:2px;background:var(--accent);border-radius:0 2px 2px 0}
+.s-indent-1{padding-left:12px}.s-indent-2{padding-left:28px}.s-indent-3{padding-left:44px}
+.s-chevron{width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-muted);transition:transform var(--motion-fast) var(--ease-standard)}
+.s-chevron.open{transform:rotate(90deg);color:var(--accent)}
+.s-icon{flex-shrink:0;font-size:14px;display:flex;align-items:center;color:var(--text-muted)}
+.s-label{flex:1;overflow:hidden;text-overflow:ellipsis}
+.s-count{font-size:10px;font-family:var(--font-mono);color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-pill);padding:1px 6px;flex-shrink:0}
+.btn-new{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;font-size:13px;font-weight:600;background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);color:var(--accent);border-radius:var(--radius-sm);transition:background var(--motion-fast)}
+.btn-new:hover{background:var(--accent-overlay-mid);color:var(--accent-bright)}
+
+.main-area{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px;position:relative}
+
+/* SVG icons */
+.ico-panel-left{display:block}.ico-panel-right{display:none}
+.ico-chevron{display:block}
+.ico-menu{display:block}
+.ico-plus{display:block}
+.ico-folder-open{display:block}
+.ico-folder{display:block}
+.ico-file{display:block}
+
+/* ═══════════════════════════════════════
+   VARIANT A — Full hide + floating pill
+   ═══════════════════════════════════════ */
+#va .layout{display:flex;height:100%}
+#va .sidebar{width:var(--sidebar-width);min-width:var(--sidebar-width)}
+#va .sidebar.collapsed{width:0;min-width:0;border-right-color:transparent}
+#va .sidebar.collapsed .s-header,
+#va .sidebar.collapsed .s-scroll,
+#va .sidebar.collapsed .s-footer{opacity:0;pointer-events:none}
+#va .float-pill{
+  position:absolute;top:10px;left:12px;z-index:10;
+  display:flex;align-items:center;gap:6px;
+  height:36px;padding:0 10px 0 12px;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-sm);
+  opacity:0;transform:translateX(-8px);pointer-events:none;
+  transition:opacity var(--motion-base) var(--ease-standard),transform var(--motion-base) var(--ease-standard);
+}
+#va .sidebar.collapsed ~ .main-area .float-pill{opacity:1;transform:translateX(0);pointer-events:auto}
+#va .fp-logo{font-weight:700;font-size:15px;color:var(--text-bright);letter-spacing:-0.02em;display:flex;align-items:baseline}
+#va .fp-logo .s-logo-dot{font-size:1.4em}
+#va .fp-expand{width:24px;height:24px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast)}
+#va .fp-expand:hover{background:var(--surface-hover);color:var(--text)}
+
+/* ═══════════════════════════════════════
+   VARIANT B — Full hide + edge reveal strip
+   ═══════════════════════════════════════ */
+#vb .layout{display:flex;height:100%}
+#vb .sidebar{width:var(--sidebar-width);min-width:var(--sidebar-width)}
+#vb .sidebar.collapsed{width:0;min-width:0;border-right-color:transparent}
+#vb .sidebar.collapsed .s-header,
+#vb .sidebar.collapsed .s-scroll,
+#vb .sidebar.collapsed .s-footer{opacity:0;pointer-events:none}
+#vb .edge-strip{
+  position:absolute;top:0;left:0;bottom:0;width:6px;z-index:10;
+  cursor:pointer;
+  transition:width var(--motion-fast) var(--ease-standard),background var(--motion-fast);
+  display:none;
+}
+#vb .sidebar.collapsed ~ .main-area .edge-strip{display:block}
+#vb .edge-strip::before{
+  content:'';position:absolute;top:0;left:0;bottom:0;width:2px;
+  background:var(--accent);opacity:0.4;
+  transition:opacity var(--motion-fast),width var(--motion-fast);
+}
+#vb .edge-strip:hover{width:40px;background:var(--bg-elevated)}
+#vb .edge-strip:hover::before{width:3px;opacity:1}
+#vb .edge-label{
+  position:absolute;top:50%;left:10px;
+  transform:translateY(-50%);
+  font-weight:700;font-size:13px;color:var(--text-bright);letter-spacing:-0.02em;
+  opacity:0;transition:opacity var(--motion-fast);
+  white-space:nowrap;pointer-events:none;
+  writing-mode:vertical-rl;text-orientation:mixed;
+}
+#vb .edge-strip:hover .edge-label{opacity:1}
+
+/* ═══════════════════════════════════════
+   VARIANT C — Narrow icon rail (VS Code / Figma)
+   ═══════════════════════════════════════ */
+#vc .layout{display:flex;height:100%}
+#vc .sidebar{width:var(--sidebar-width);min-width:var(--sidebar-width)}
+#vc .sidebar.collapsed{width:48px;min-width:48px}
+#vc .sidebar.collapsed .s-header{padding:0;justify-content:center}
+#vc .sidebar.collapsed .s-logo{display:none}
+#vc .sidebar.collapsed .s-collapse{margin-left:0;width:48px;height:48px;border-radius:0}
+#vc .sidebar.collapsed .s-scroll{padding:4px 0}
+#vc .sidebar.collapsed .s-footer{display:none}
+#vc .sidebar.collapsed .s-section{display:none}
+#vc .sidebar.collapsed .s-item{padding:0;margin:2px 6px;height:36px;width:36px;justify-content:center;border-radius:var(--radius-sm)}
+#vc .sidebar.collapsed .s-item .s-chevron,
+#vc .sidebar.collapsed .s-item .s-label,
+#vc .sidebar.collapsed .s-item .s-count{display:none}
+#vc .sidebar.collapsed .s-item .s-icon{margin:0;color:var(--text-dim)}
+#vc .sidebar.collapsed .s-item.active .s-icon{color:var(--accent)}
+#vc .sidebar.collapsed .s-indent-1,
+#vc .sidebar.collapsed .s-indent-2,
+#vc .sidebar.collapsed .s-indent-3{padding-left:0}
+#vc .sidebar.collapsed .s-item.sub-item{display:none}
+
+/* ═══════════════════════════════════════
+   VARIANT D — Full hide + topbar hamburger
+   ═══════════════════════════════════════ */
+#vd .layout{display:flex;height:100%;position:relative}
+#vd .sidebar{width:var(--sidebar-width);min-width:var(--sidebar-width);position:absolute;top:0;left:0;bottom:0;z-index:20;transform:translateX(0)}
+#vd .sidebar.collapsed{transform:translateX(-100%)}
+#vd .sidebar.collapsed ~ .main-area{margin-left:0}
+#vd .main-area{margin-left:var(--sidebar-width);flex:1;transition:margin-left var(--motion-base) var(--ease-standard)}
+#vd .sidebar.collapsed ~ .main-area{margin-left:0}
+#vd .topbar{
+  position:absolute;top:0;left:0;right:0;height:var(--topbar-height);
+  display:flex;align-items:center;padding:0 16px;gap:12px;
+  border-bottom:1px solid var(--border-subtle);background:var(--bg);z-index:5;
+  opacity:0;pointer-events:none;transition:opacity var(--motion-base) var(--ease-standard);
+}
+#vd .sidebar.collapsed ~ .main-area .topbar{opacity:1;pointer-events:auto}
+#vd .topbar-logo{font-weight:700;font-size:16px;color:var(--text-bright);letter-spacing:-0.02em;display:flex;align-items:baseline}
+#vd .topbar-logo .s-logo-dot{font-size:1.4em}
+#vd .hamburger{
+  width:32px;height:32px;border-radius:var(--radius-sm);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-dim);transition:background var(--motion-fast),color var(--motion-fast);
+}
+#vd .hamburger:hover{background:var(--surface-hover);color:var(--text)}
+#vd .scrim{
+  position:absolute;inset:0;background:var(--scrim-strong);z-index:15;
+  opacity:0;pointer-events:none;transition:opacity var(--motion-fast);
+}
+#vd .sidebar:not(.collapsed) ~ .scrim{opacity:1;pointer-events:auto}
+</style>
+</head>
+<body>
+
+<!-- ─── VARIANT TABS ─── -->
+<div class="variant-tabs">
+  <span class="tab-title">Sidebar Ideas</span>
+  <button class="vtab active" onclick="showVariant('va',this)"><span class="vtab-num">A</span> Float Pill</button>
+  <button class="vtab" onclick="showVariant('vb',this)"><span class="vtab-num">B</span> Edge Reveal</button>
+  <button class="vtab" onclick="showVariant('vc',this)"><span class="vtab-num">C</span> Icon Rail</button>
+  <button class="vtab" onclick="showVariant('vd',this)"><span class="vtab-num">D</span> Overlay Drawer</button>
+  <span class="variant-desc" id="varDesc">collapsed → 0px, floating "M." pill appears</span>
+</div>
+
+<!-- ═══ VARIANT A — Full hide + floating pill ═══ -->
+<div class="demo-frame">
+<div id="va" class="variant-panel active">
+  <div class="layout">
+    <aside class="sidebar" id="sa">
+      <div class="s-header">
+        <span class="s-logo">M<span class="s-logo-full">arkup</span><span class="s-logo-dot">.</span></span>
+        <button class="s-collapse" onclick="toggleA()"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M2 1L1 2V14L2 15H14L15 14V2L14 1H2ZM14 14H7V2H14V14Z"/></svg></button>
+      </div>
+      <div class="s-scroll" id="sa-scroll"></div>
+      <div class="s-footer"><button class="btn-new"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New Project</button></div>
+    </aside>
+    <div class="main-area">
+      <div class="float-pill">
+        <span class="fp-logo">M<span class="s-logo-dot">.</span></span>
+        <button class="fp-expand" onclick="toggleA()"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.00073L1 2.00073V14.0007L2 15.0007H14L15 14.0007V2.00073L14 1.00073H2ZM2 14.0007V2.00073H6V14.0007H2ZM7 14.0007V2.00073H14V14.0007H7Z"/></svg></button>
+      </div>
+      <span>Main content area</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VARIANT B — Full hide + edge reveal strip ═══ -->
+<div id="vb" class="variant-panel">
+  <div class="layout">
+    <aside class="sidebar" id="sb">
+      <div class="s-header">
+        <span class="s-logo">M<span class="s-logo-full">arkup</span><span class="s-logo-dot">.</span></span>
+        <button class="s-collapse" onclick="toggleB()"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M2 1L1 2V14L2 15H14L15 14V2L14 1H2ZM14 14H7V2H14V14Z"/></svg></button>
+      </div>
+      <div class="s-scroll" id="sb-scroll"></div>
+      <div class="s-footer"><button class="btn-new"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New Project</button></div>
+    </aside>
+    <div class="main-area">
+      <div class="edge-strip" onclick="toggleB()">
+        <span class="edge-label">M<span class="s-logo-dot" style="font-size:1.3em">.</span></span>
+      </div>
+      <span>Main content area</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VARIANT C — Icon rail ═══ -->
+<div id="vc" class="variant-panel">
+  <div class="layout">
+    <aside class="sidebar" id="sc">
+      <div class="s-header">
+        <span class="s-logo">M<span class="s-logo-full">arkup</span><span class="s-logo-dot">.</span></span>
+        <button class="s-collapse" onclick="toggleC()"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M2 1L1 2V14L2 15H14L15 14V2L14 1H2ZM14 14H7V2H14V14Z"/></svg></button>
+      </div>
+      <div class="s-scroll" id="sc-scroll"></div>
+      <div class="s-footer"><button class="btn-new"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New Project</button></div>
+    </aside>
+    <div class="main-area"><span>Main content area</span></div>
+  </div>
+</div>
+
+<!-- ═══ VARIANT D — Overlay drawer + topbar ═══ -->
+<div id="vd" class="variant-panel">
+  <div class="layout">
+    <aside class="sidebar collapsed" id="sd">
+      <div class="s-header">
+        <span class="s-logo">M<span class="s-logo-full">arkup</span><span class="s-logo-dot">.</span></span>
+        <button class="s-collapse" onclick="toggleD()"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M2 1L1 2V14L2 15H14L15 14V2L14 1H2ZM14 14H7V2H14V14Z"/></svg></button>
+      </div>
+      <div class="s-scroll" id="sd-scroll"></div>
+      <div class="s-footer"><button class="btn-new"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New Project</button></div>
+    </aside>
+    <div class="scrim" onclick="toggleD()"></div>
+    <div class="main-area">
+      <div class="topbar">
+        <button class="hamburger" onclick="toggleD()"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M15 4H1V3h14v1zm0 4H1V7h14v1zm0 4H1v-1h14v1z"/></svg></button>
+        <span class="topbar-logo">M<span class="s-logo-full">arkup</span><span class="s-logo-dot">.</span></span>
+      </div>
+      <span>Main content area</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+var treeHTML = '<div class="s-section">Projects</div>'
++ '<div class="s-item s-indent-1"><span class="s-chevron open"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span><span class="s-icon" style="font-size:14px">🎨</span><span class="s-label">Project Alpha</span><span class="s-count">8</span></div>'
++ '<div class="s-item s-indent-2 sub-item"><span class="s-chevron open"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span><span class="s-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 14h11l.48-.37 2.63-7-.48-.63H14V3.5l-.5-.5H7.71l-.86-.85L6.5 2h-5l-.5.5v11l.5.5zM2 3h4.29l.86.85.35.15H13v2H8.5l-.35.15-.86.85H3.5l-.47.34-1 3.08L2 3zm10.13 10H2.19l1.67-5H7.5l.35-.15.86-.85h5.79l-2.37 6z"/></svg></span><span class="s-label">Landing</span></div>'
++ '<div class="s-item s-indent-3 active sub-item"><span style="width:16px;flex-shrink:0"></span><span class="s-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.85 4.44L10.57 1.14L10.22 1H2.5L2 1.5V14.5L2.5 15H13.5L14 14.5V4.8L13.85 4.44ZM13 5H10V2L13 5ZM3 14V2H9V5.5L9.5 6H13V14H3Z"/></svg></span><span class="s-label">Hero Banner</span></div>'
++ '<div class="s-item s-indent-2 sub-item"><span class="s-chevron"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span><span class="s-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 3H7.71l-.85-.85L6.51 2h-5l-.5.5v11l.5.5h13l.5-.5v-10L14.5 3zm-.51 8.49V13h-12V7h4.49l.35-.15.86-.86H14v1.5l-.01 4zm0-6.49h-6.5l-.35.15-.86.86H2v-3h4.29l.85.85.36.15H14l-.01.99z"/></svg></span><span class="s-label">Pricing</span></div>'
++ '<div class="s-item s-indent-2 sub-item"><span style="width:16px;flex-shrink:0"></span><span class="s-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.85 4.44L10.57 1.14L10.22 1H2.5L2 1.5V14.5L2.5 15H13.5L14 14.5V4.8L13.85 4.44ZM13 5H10V2L13 5ZM3 14V2H9V5.5L9.5 6H13V14H3Z"/></svg></span><span class="s-label">Presentation</span></div>'
++ '<div class="s-item s-indent-1"><span class="s-chevron"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span><span class="s-icon" style="font-size:14px">📐</span><span class="s-label">Project Beta</span><span class="s-count">1</span></div>'
++ '<div class="s-section" style="margin-top:4px">No Project</div>'
++ '<div class="s-item s-indent-1"><span style="width:16px;flex-shrink:0"></span><span class="s-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.85 4.44L10.57 1.14L10.22 1H2.5L2 1.5V14.5L2.5 15H13.5L14 14.5V4.8L13.85 4.44ZM13 5H10V2L13 5ZM3 14V2H9V5.5L9.5 6H13V14H3Z"/></svg></span><span class="s-label">Draft sketch</span></div>';
+
+['sa-scroll','sb-scroll','sc-scroll','sd-scroll'].forEach(function(id){
+  var el = document.getElementById(id);
+  if(el) el.innerHTML = treeHTML;
+});
+
+var descs = {
+  va: 'collapsed → 0px, floating "M." pill appears top-left',
+  vb: 'collapsed → 0px, accent edge strip reveals on hover',
+  vc: 'collapsed → 48px icon rail, project icons only',
+  vd: 'collapsed → off-screen, hamburger in topbar + overlay'
+};
+
+function showVariant(id, btn) {
+  document.querySelectorAll('.variant-panel').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.vtab').forEach(function(t){t.classList.remove('active')});
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('varDesc').textContent = descs[id] || '';
+}
+
+function toggleA(){document.getElementById('sa').classList.toggle('collapsed')}
+function toggleB(){document.getElementById('sb').classList.toggle('collapsed')}
+function toggleC(){document.getElementById('sc').classList.toggle('collapsed')}
+function toggleD(){document.getElementById('sd').classList.toggle('collapsed')}
+</script>
+</body>
+</html>

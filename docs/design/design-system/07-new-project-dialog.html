@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>07 — New Project Dialog</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--sidebar-collapsed-width:52px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0%,0,0/0.45);--shadow-md:0 6px 16px oklch(0%,0,0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0%,0,0/0.6),0 6px 12px oklch(0%,0,0/0.45),inset 0 1px 0 oklch(100%,0,0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
+.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
+.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px}
+
+.dialog-scrim{position:fixed;inset:0;background:var(--scrim-strong);display:flex;align-items:center;justify-content:center}
+.dialog{width:420px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-popover);overflow:hidden}
+.dialog-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid var(--border-subtle)}
+.dialog-title{font-size:15px;font-weight:700;color:var(--text-bright)}
+.dialog-close{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-xs);color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast)}
+.dialog-close:hover{background:var(--surface-hover);color:var(--text)}
+.dialog-body{padding:16px 20px}
+.dialog-label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:6px;margin-top:16px}
+.dialog-label:first-child{margin-top:0}
+.dialog-input{width:100%;padding:8px 12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:var(--text-bright);outline:none;transition:border-color var(--motion-fast)}
+.dialog-input:focus{border-color:var(--accent)}
+.dialog-input::placeholder{color:var(--text-muted)}
+.mini-icon-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-top:8px}
+.mini-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:18px;border-radius:var(--radius-xs);border:1.5px solid transparent;cursor:pointer;transition:background var(--motion-fast),border-color var(--motion-fast)}
+.mini-cell:hover{background:var(--surface-hover)}
+.mini-cell.selected{border-color:var(--accent);background:var(--accent-overlay-soft)}
+.mini-browse-btn{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--text-muted);cursor:pointer}
+.mini-browse-btn:hover{color:var(--accent)}
+.dialog-footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--border-subtle)}
+.dialog-btn-cancel{padding:6px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;color:var(--text-dim);background:var(--btn-bg);transition:background var(--motion-fast),color var(--motion-fast)}
+.dialog-btn-cancel:hover{background:var(--btn-bg-hover);color:var(--text)}
+.dialog-btn-create{padding:6px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);transition:background var(--motion-fast),color var(--motion-fast),border-color var(--motion-fast)}
+.dialog-btn-create:hover{background:var(--accent-overlay-mid);border-color:var(--accent);color:var(--accent-bright)}
+</style>
+</head>
+<body>
+<div class="demo" style="display:flex;align-items:center;justify-content:center;height:100vh">
+  <div class="dialog-scrim">
+    <div class="dialog">
+      <div class="dialog-header">
+        <span class="dialog-title">New Project</span>
+        <button class="dialog-close"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.646 3.646.707.708L8 8.707z"/></svg></button>
+      </div>
+      <div class="dialog-body">
+        <label class="dialog-label">Project Name</label>
+        <input class="dialog-input" type="text" placeholder="My Project" />
+        <label class="dialog-label">Icon</label>
+        <div class="mini-icon-grid">
+          <div class="mini-cell selected">🎨</div>
+          <div class="mini-cell">📐</div>
+          <div class="mini-cell">📱</div>
+          <div class="mini-cell">🖼</div>
+          <div class="mini-cell">🎯</div>
+          <div class="mini-cell">🔥</div>
+          <div class="mini-cell">⚡</div>
+          <div class="mini-cell">🚀</div>
+          <div class="mini-cell">✨</div>
+          <div class="mini-cell">🔮</div>
+          <div class="mini-cell">🎭</div>
+          <div class="mini-cell">💡</div>
+          <div class="mini-cell">🌟</div>
+          <div class="mini-cell">🎉</div>
+          <div class="mini-cell">🎸</div>
+          <div class="mini-cell">🎹</div>
+        </div>
+        <button class="mini-browse-btn"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg> Browse all icons</button>
+      </div>
+      <div class="dialog-footer">
+        <button class="dialog-btn-cancel">Cancel</button>
+        <button class="dialog-btn-create">Create Project</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="demo-label">07 — New Project Dialog</div>
+<script>
+(function(){
+  const cells = document.querySelectorAll('.mini-cell');
+  cells.forEach(c => c.addEventListener('click', () => {
+    cells.forEach(x => x.classList.remove('selected'));
+    c.classList.add('selected');
+  }));
+})();
+</script>
+</body>
+</html>
