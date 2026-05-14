@@ -73,6 +73,38 @@ The catalog uses stable IDs (e.g. `sidebar-tree-expand`, `annotation-modal-chip`
 
 Reference the catalog in issue titles and descriptions using the `[fc:<id>]` convention (e.g. `[fc:sidebar-tree-dnd-keyboard]`).
 
+## Mockup-sync rule (STRICT — non-negotiable)
+
+The project **"Markup dev"** on `markup.alego.cloud` is the living visual mirror of the current design state. Structure: folder **"Design System"** (individual component mockups), folder **"Ideias"** (exploratory mockups), and **"full-prototype"** at the project root.
+
+**Upload:** every mockup the agent generates (DS component, prototype, exploratory) MUST be uploaded to `markup.alego.cloud` in the correct project and folder via `POST /api/mockups` (with `projectId` + `folderId`).
+
+**Versioning:** when the agent modifies an existing mockup, it MUST upload a **new version** (`POST /api/mockups/[id]/version`), never create a new mockup. The version history on markup.alego.cloud is the audit trail.
+
+**DS cascade:** when a Design System component mockup is changed, the agent MUST:
+
+1. Identify which other DS mockups depend on the changed component (e.g. chevron change → 01-Sidebar → full-prototype).
+2. Update each dependent DS mockup as a new version.
+3. Update the full-prototype as a new version.
+
+**Folder governance:** the agent does NOT create new folders or projects on markup.alego.cloud without explicit user approval. If the agent judges a new folder is needed, it MUST ask the user first.
+
+**Invariant:** at any point in time, markup.alego.cloud reflects the current design state of the project. Stale mockups are a bug.
+
+## Design pipeline rule (STRICT — non-negotiable)
+
+Mockups on "Markup dev" are the **source of truth for design**. The flow is **unidirectional: mockup → code**. The agent never modifies mockups on its own initiative — only when explicitly asked by the user.
+
+Pipeline for a new feature or visual adjustment:
+
+1. **Ideias** — agent or user creates an exploratory mockup in the "Ideias" folder of "Markup dev" on markup.alego.cloud.
+2. **Iteration** — user reviews and requests adjustments; each adjustment is uploaded as a new version of the same mockup.
+3. **Approval** — user explicitly approves the mockup.
+4. **Promotion** — approved mockup is promoted: the component goes to "Design System" (new version of existing DS mockup, or new DS mockup if it's a new component), full-prototype is updated, and `docs/feature-catalog.md` is updated with the new surfaces/behaviors.
+5. **Implementation** — code is written to faithfully replicate the approved DS.
+
+The code MUST follow **faithfully** what is defined in the Design System. The full-prototype reflects what is implemented in code. If there is divergence between code and DS, **the DS wins** — the code must be adjusted to match.
+
 ## Mockup-replication rule (when the user points at a fixture)
 
 When the user points at a fixture under `tests/fixtures/mockups/<name>.zip` (e.g. `lumen-coffee.zip`, `helio-pricing.zip`, `drone-console.zip`) and asks the agent to replicate it, modify it, or use it as a visual reference for a feature, the agent MUST:
