@@ -1,0 +1,116 @@
+name: deploy
+# Fires after every successful `image` workflow run on main. The image workflow
+# already runs on every push to main, so this effectively deploys every main
+# push that produces a green image. Manual runs are available via the Actions
+# tab for re-deploys or rollbacks.
+on:
+  workflow_run:
+    workflows: [image]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy (e.g. abc1234 or latest). Defaults to the short SHA of main.'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-markup
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # On workflow_run, only deploy if the upstream image build succeeded.
+    # On manual dispatch, always proceed.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    env:
+      VPS_IP: ${{ secrets.VPS_IP }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+      MARKUP_URL: ${{ secrets.MARKUP_URL }}
+    steps:
+      - name: Check secrets
+        run: |
+          missing=()
+          for v in VPS_IP VPS_USER VPS_PASSWORD MARKUP_URL; do
+            if [ -z "${!v:-}" ]; then missing+=("$v"); fi
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::missing repository secrets: ${missing[*]}"
+            exit 1
+          fi
+
+      - name: Resolve target SHA
+        id: sha
+        run: |
+          if [ "${{ github.event_name }}" = workflow_run ]; then
+            echo "value=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.sha.outputs.value }}
+
+      - name: Resolve target image
+        id: image
+        env:
+          MANUAL_TAG: ${{ inputs.image_tag }}
+          SHA: ${{ steps.sha.outputs.value }}
+        run: |
+          if [ -n "$MANUAL_TAG" ]; then
+            tag="$MANUAL_TAG"
+          else
+            tag="${SHA:0:7}"
+          fi
+          echo "ref=ghcr.io/alexandrecamillo/markup:$tag" >> "$GITHUB_OUTPUT"
+          echo "Deploying image tag: $tag"
+
+      - name: Install sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y -qq sshpass
+
+      - name: Copy redeploy script to VPS
+        run: |
+          sshpass -p "$VPS_PASSWORD" scp \
+            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
+            docker/redeploy.sh "$VPS_USER@$VPS_IP:/tmp/markup-redeploy.sh"
+
+      - name: Recreate container with new image
+        env:
+          IMAGE: ${{ steps.image.outputs.ref }}
+        run: |
+          sshpass -p "$VPS_PASSWORD" ssh \
+            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
+            "$VPS_USER@$VPS_IP" \
+            "bash /tmp/markup-redeploy.sh '$IMAGE'"
+
+      - name: Verify Traefik routing
+        run: |
+          host=$(node -e "console.log(new URL(process.env.MARKUP_URL).host)")
+          code=$(sshpass -p "$VPS_PASSWORD" ssh \
+            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
+            "$VPS_USER@$VPS_IP" \
+            "curl -sS -o /dev/null -w '%{http_code}' -H 'Host: $host' https://127.0.0.1:443/ -k")
+          echo "Traefik response code: $code"
+          case "$code" in
+            200|301|302|307|308) ;;
+            *) echo "::error::unexpected Traefik response code $code"; exit 1 ;;
+          esac
+
+      - name: Container log tail
+        if: always()
+        run: |
+          sshpass -p "$VPS_PASSWORD" ssh \
+            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
+            "$VPS_USER@$VPS_IP" \
+            "docker logs markup --tail 30 2>&1 || true"
