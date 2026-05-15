@@ -22,6 +22,8 @@ The UI is a Next.js App Router app rendered as a mix of server components (defau
 
 The naming convention is **`page.tsx` is a server component**, **`*Client.tsx` or `<Surface>Form.tsx` is the client island**. The server component fetches data and renders the static skeleton; the client component handles state and DOM interaction.
 
+Authenticated, in-shell pages (`/`, `/mockups/[id]`, `/annotations/[id]`, `/settings/agents`) live under the `src/app/(app)/` route group and inherit `AppShell` from `src/app/(app)/layout.tsx` — the shell is mounted once, so the sidebar tree and other client state inside it persist across in-shell navigations. Full-page surfaces (`/login`, `/setup`, `/mockups/[id]/diff`) live outside `(app)` and render bare.
+
 ## Shared components
 
 | Component | File | Purpose |

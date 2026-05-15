@@ -4,7 +4,6 @@ import { Topbar } from '@/components/Topbar/Topbar';
 import { identify } from '@/lib/auth/identify';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { prisma } from '@/lib/prisma';
-import { AppShell } from '../../AppShell';
 import { AgentsClient } from './AgentsClient';
 
 export default async function AgentsPage() {
@@ -38,14 +37,14 @@ export default async function AgentsPage() {
   });
 
   return (
-    <AppShell>
+    <>
       <Topbar
         breadcrumbs={[{ label: 'Agent tokens', href: '/settings/agents' }]}
         userName={user?.name ?? undefined}
         userEmail={user?.email ?? undefined}
       />
       <AgentsClient initial={initial} />
-    </AppShell>
+    </>
   );
 }
 

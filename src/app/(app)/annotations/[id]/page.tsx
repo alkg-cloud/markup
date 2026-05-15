@@ -14,7 +14,6 @@ import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
 import { rehydrateScreenshotBase64 } from '@/lib/tldraw/snapshot-screenshot';
-import { AppShell } from '../../AppShell';
 import { ReadOnlyAnnotation } from './ReadOnlyAnnotation';
 
 export default async function AnnotationDetailPage({
@@ -40,11 +39,7 @@ export default async function AnnotationDetailPage({
   const { id: annotationId } = await params;
   const annotation = await getAnnotation(annotationId);
   if (!annotation) {
-    return (
-      <AppShell>
-        <main style={{ padding: 24 }}>Annotation not found.</main>
-      </AppShell>
-    );
+    return <main style={{ padding: 24 }}>Annotation not found.</main>;
   }
 
   const messages = annotation.thread?.messages ?? [];
@@ -64,7 +59,7 @@ export default async function AnnotationDetailPage({
   const mockupName = mockup?.name ?? annotation.mockupId;
 
   return (
-    <AppShell>
+    <>
       <Topbar
         breadcrumbs={[
           { label: mockupName, href: `/mockups/${annotation.mockupId}` },
@@ -276,7 +271,7 @@ export default async function AnnotationDetailPage({
         }
       `}</style>
       </main>
-    </AppShell>
+    </>
   );
 }
 
