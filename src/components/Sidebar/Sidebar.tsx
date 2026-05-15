@@ -3,15 +3,50 @@
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import styles from './Sidebar.module.css';
 
+const SIDEBAR_COLLAPSED_STORAGE_KEY = 'markup.sidebar.collapsed';
+
+let cachedCollapsedState: boolean | null = null;
+
+function readStoredCollapsedState() {
+  try {
+    return window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function getInitialCollapsedState() {
+  return cachedCollapsedState ?? false;
+}
+
 interface SidebarProps {
   children: ReactNode;
   footer?: ReactNode;
 }
 
 export function Sidebar({ children, footer }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(getInitialCollapsedState);
 
-  const toggle = useCallback(() => setCollapsed((c) => !c), []);
+  const toggle = useCallback(
+    () =>
+      setCollapsed((current) => {
+        const next = !current;
+        cachedCollapsedState = next;
+        try {
+          window.localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(next));
+        } catch {
+          // Storage can be unavailable in private modes; in-memory state still works.
+        }
+        return next;
+      }),
+    [],
+  );
+
+  useEffect(() => {
+    const stored = readStoredCollapsedState();
+    cachedCollapsedState = stored;
+    setCollapsed(stored);
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
