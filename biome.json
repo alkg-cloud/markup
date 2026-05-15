@@ -10,6 +10,7 @@
       "!!**/playwright-report",
       "!!next-env.d.ts",
       "!!**/docs/design",
+      "!!**/design",
       "!!**/.worktrees",
       "!!**/.claude/worktrees"
     ]
