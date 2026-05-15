@@ -81,37 +81,54 @@ src/components/
     NewProjectDialog.module.css  # btn-secondary, btn-accent styles
 ```
 
+All authenticated, in-shell pages live under the `(app)` route group. The group's `layout.tsx` renders `AppShell` once for every child route, so the sidebar tree and any other client state inside the shell survive navigation between in-shell pages without remount. Full-page surfaces (`/login`, `/setup`, the side-by-side diff view) live outside the group and render without a shell.
+
 Page-scoped components (used only by one page) live next to the page file:
 
 ```
-src/app/mockups/
-  page.tsx                   # server — list grid
-  MockupCard.tsx             # 'use client' — card with badge, monogram fallback
-  MockupCard.module.css      # card + thumb + badge styles
-  [id]/
-    page.tsx                 # server — fetches the mockup + annotations
-    MockupViewer.tsx         # 'use client' — iframe + pin overlay
-    Versions.tsx             # 'use client' — sidebar version list
-    diff/
-      page.tsx               # server
-      DiffViewer.tsx         # 'use client' — side-by-side iframes
 src/app/
+  layout.tsx                 # server — root layout: fonts, global ToastProvider
   AppShell.tsx               # server — auth + Prisma tree fetch → standard sidebar/topbar shell
-  page.tsx                   # server — selected project/folder workspace at /
-src/app/projects/
-  layout.tsx                 # server — legacy redirect shell for old /projects URLs
-  layout.module.css          # responsive grid: sidebar + main on desktop, single column on mobile <768px
-  page.tsx                   # server — redirects old /projects to /
-  ProjectSidebar.tsx         # 'use client' — sidebar wrapper using Sidebar shell, folder create, move, mobile drawer, footer with New Project button
-  ProjectSidebar.module.css  # footer + btn-new-project styles
-  [slug]/
-    page.tsx                 # server — redirects old /projects/[slug] to /?project=slug
-    ProjectContent.tsx       # 'use client' — unified folder/mockup card grid
-    [folderId]/
-      page.tsx               # server — redirects old folder URL to /?project=slug&folder=id
+  (app)/
+    layout.tsx               # server — wraps every in-shell child in <AppShell>
+    page.tsx                 # server — selected project/folder workspace at /
+    mockups/
+      [id]/
+        page.tsx             # server — fetches the mockup + annotations
+        MockupViewer.tsx     # 'use client' — iframe + pin overlay
+        Versions.tsx         # 'use client' — sidebar version list
+    annotations/
+      [id]/
+        page.tsx             # server — annotation detail
+        ReadOnlyAnnotation.tsx  # 'use client' — read-only canvas
+    settings/
+      agents/
+        page.tsx             # server — agent token admin
+        AgentsClient.tsx     # 'use client' — list + create + revoke UI
+  mockups/
+    page.tsx                 # server — redirects /mockups to /
+    [id]/
+      diff/
+        page.tsx             # server — full-page diff (no shell)
+        DiffViewer.tsx       # 'use client' — side-by-side iframes
+        resolve.ts           # server — version-pair resolution
+  projects/
+    page.tsx                 # server — redirects /projects to /
+    ProjectSidebar.tsx       # 'use client' — sidebar wrapper used by AppShell
+    ProjectSidebar.module.css
+    layout.module.css        # responsive grid: sidebar + main on desktop, single column on mobile <768px
+    [slug]/
+      page.tsx               # server — redirects /projects/[slug] to /?project=slug
+      ProjectContent.tsx     # 'use client' — unified folder/mockup card grid
+      [folderId]/
+        page.tsx             # server — redirects to /?project=slug&folder=id
+  login/                     # full-page, no shell
+  setup/                     # full-page, no shell
 ```
 
-The page-scoped pattern means `MockupCard.tsx` is co-located with `page.tsx` in `src/app/mockups/`. This keeps the import surface obvious and prevents `src/components/` from accumulating one-off pieces.
+The page-scoped pattern means `MockupViewer.tsx` is co-located with its `page.tsx` under `(app)/mockups/[id]/`. This keeps the import surface obvious and prevents `src/components/` from accumulating one-off pieces.
+
+`AppShell.tsx` lives directly under `src/app/` (not inside `(app)/`) because the route-group layout imports it via a relative path, and other pages still import `getAuthenticatedIdentity` from the same module.
 
 ## Composition rules
 

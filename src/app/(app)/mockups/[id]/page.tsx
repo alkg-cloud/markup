@@ -8,7 +8,6 @@ import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { env } from '@/lib/env';
 import { thumbnailPath } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
-import { AppShell } from '../../AppShell';
 import { MockupViewer } from './MockupViewer';
 
 export default async function MockupViewerPage({ params }: { params: Promise<{ id: string }> }) {
@@ -42,11 +41,7 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
     },
   });
   if (!mockup?.currentVersionId) {
-    return (
-      <AppShell>
-        <main style={{ padding: 24 }}>Mockup not found.</main>
-      </AppShell>
-    );
+    return <main style={{ padding: 24 }}>Mockup not found.</main>;
   }
   const hasThumbnail = fs.existsSync(thumbnailPath(env().DATA_DIR, mockup.id));
   const nameMap = await resolveDisplayNames([
@@ -54,7 +49,7 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
   ]);
 
   return (
-    <AppShell>
+    <>
       <Topbar breadcrumbs={[{ label: mockup.name, href: `/mockups/${mockup.id}` }]} />
       <MockupViewer
         mockupId={mockup.id}
@@ -79,7 +74,7 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
           pinCoords: a.pinCoords, // raw JSON string; parsed in client
         }))}
       />
-    </AppShell>
+    </>
   );
 }
 

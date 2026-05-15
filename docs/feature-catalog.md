@@ -78,6 +78,8 @@ ARIA tree widget for project/folder navigation (`ProjectTree.tsx`).
 | `sidebar-tree-accent-bar` | 3 px left accent bar on selected item | visible when item is the current route |
 | `sidebar-tree-truncation` | Long names truncated with `text-overflow: ellipsis` | full name in `title` tooltip |
 | `sidebar-tree-ungrouped` | Mockups without a project listed under collapsible "Ungrouped" group in sidebar (no "Unsorted" project). Prevents sidebar from getting long with many orphan mockups | expanded, collapsed |
+| `sidebar-tree-persist-on-nav` | Expand/collapse state of every project and folder node survives navigation between in-shell pages (`/`, `/mockups/[id]`, `/annotations/[id]`, `/settings/agents`) because the shell mounts once in the `(app)` route-group layout. State is in-memory only and resets on hard reload | preserved on client-side navigation; reset on full reload |
+| `sidebar-tree-active-path` | On mount and on every navigation, the chain of ancestors leading to the currently visible surface is auto-expanded so the active node is in view: the project + every parent folder for `/mockups/[id]` and `/annotations/[id]`, the project + the parent folder for `/?project=slug&folder=id`, the project for `/?project=slug`. Already-expanded nodes are never collapsed by this behaviour | active mockup, active folder, active project |
 
 ## sidebar-tree-dnd
 

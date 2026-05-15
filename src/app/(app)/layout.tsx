@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { AppShell } from '../AppShell';
 
-export default async function ProjectsLayout({ children }: { children: ReactNode }) {
+export default async function InShellLayout({ children }: { children: ReactNode }) {
   return <AppShell>{children}</AppShell>;
 }
 
