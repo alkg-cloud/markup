@@ -2,8 +2,8 @@ import { notFound } from 'next/navigation';
 import { Topbar } from '@/components/Topbar/Topbar';
 import { prisma } from '@/lib/prisma';
 import { projectDisplayName, projectHref } from '@/lib/project/routes';
-import { AppShell, getAuthenticatedIdentity } from './AppShell';
-import { ProjectContent } from './projects/[slug]/ProjectContent';
+import { getAuthenticatedIdentity } from '../AppShell';
+import { ProjectContent } from '../projects/[slug]/ProjectContent';
 
 interface Props {
   searchParams: Promise<{ project?: string; folder?: string }>;
@@ -33,7 +33,7 @@ export default async function Root({ searchParams }: Props) {
 
   if (!selectedProject) {
     return (
-      <AppShell>
+      <>
         <Topbar breadcrumbs={[]} userName={userName} userEmail={userEmail} />
         <div
           style={{
@@ -47,7 +47,7 @@ export default async function Root({ searchParams }: Props) {
         >
           Nenhum projeto encontrado.
         </div>
-      </AppShell>
+      </>
     );
   }
 
@@ -70,35 +70,33 @@ export default async function Root({ searchParams }: Props) {
 
     const ancestors = await buildAncestors(folder.parentId);
     return (
-      <AppShell>
-        <ProjectContent
-          projectName={projectDisplayName(selectedProject)}
-          projectSlug={selectedProject.slug}
-          folders={folder.children.map((f) => ({
-            id: f.id,
-            name: f.name,
-            childCount: f._count.children + f._count.mockups,
-          }))}
-          mockups={folder.mockups.map((m) => ({
-            id: m.id,
-            name: m.name,
-            slug: m.slug,
-            status: m.status,
-            updatedAt: m.updatedAt.toISOString(),
-            annotationCount: m._count.annotations,
-          }))}
-          breadcrumbs={[
-            { label: projectDisplayName(selectedProject), href: projectHref(selectedProject.slug) },
-            ...ancestors.map((a) => ({
-              label: a.name,
-              href: projectHref(selectedProject.slug, a.id),
-            })),
-            { label: folder.name, href: projectHref(selectedProject.slug, folder.id) },
-          ]}
-          userName={userName}
-          userEmail={userEmail}
-        />
-      </AppShell>
+      <ProjectContent
+        projectName={projectDisplayName(selectedProject)}
+        projectSlug={selectedProject.slug}
+        folders={folder.children.map((f) => ({
+          id: f.id,
+          name: f.name,
+          childCount: f._count.children + f._count.mockups,
+        }))}
+        mockups={folder.mockups.map((m) => ({
+          id: m.id,
+          name: m.name,
+          slug: m.slug,
+          status: m.status,
+          updatedAt: m.updatedAt.toISOString(),
+          annotationCount: m._count.annotations,
+        }))}
+        breadcrumbs={[
+          { label: projectDisplayName(selectedProject), href: projectHref(selectedProject.slug) },
+          ...ancestors.map((a) => ({
+            label: a.name,
+            href: projectHref(selectedProject.slug, a.id),
+          })),
+          { label: folder.name, href: projectHref(selectedProject.slug, folder.id) },
+        ]}
+        userName={userName}
+        userEmail={userEmail}
+      />
     );
   }
 
@@ -120,28 +118,26 @@ export default async function Root({ searchParams }: Props) {
   if (!project) notFound();
 
   return (
-    <AppShell>
-      <ProjectContent
-        projectName={projectDisplayName(project)}
-        projectSlug={project.slug}
-        folders={project.folders.map((f) => ({
-          id: f.id,
-          name: f.name,
-          childCount: f._count.children + f._count.mockups,
-        }))}
-        mockups={project.mockups.map((m) => ({
-          id: m.id,
-          name: m.name,
-          slug: m.slug,
-          status: m.status,
-          updatedAt: m.updatedAt.toISOString(),
-          annotationCount: m._count.annotations,
-        }))}
-        breadcrumbs={[{ label: projectDisplayName(project), href: projectHref(project.slug) }]}
-        userName={userName}
-        userEmail={userEmail}
-      />
-    </AppShell>
+    <ProjectContent
+      projectName={projectDisplayName(project)}
+      projectSlug={project.slug}
+      folders={project.folders.map((f) => ({
+        id: f.id,
+        name: f.name,
+        childCount: f._count.children + f._count.mockups,
+      }))}
+      mockups={project.mockups.map((m) => ({
+        id: m.id,
+        name: m.name,
+        slug: m.slug,
+        status: m.status,
+        updatedAt: m.updatedAt.toISOString(),
+        annotationCount: m._count.annotations,
+      }))}
+      breadcrumbs={[{ label: projectDisplayName(project), href: projectHref(project.slug) }]}
+      userName={userName}
+      userEmail={userEmail}
+    />
   );
 }
 

@@ -162,6 +162,76 @@ function ProjectIconResolved({ token }: { token: string }) {
   return <span aria-hidden="true" dangerouslySetInnerHTML={{ __html: resolved.content }} />;
 }
 
+/* ── Active-path resolution ───────────────────────────────────────────────── */
+
+function findMockupChain(projects: TreeProject[], mockupIdOrSlug: string): string[] {
+  function walkFolders(folders: TreeFolder[]): string[] | null {
+    for (const f of folders) {
+      for (const m of f.mockups) {
+        if (m.id === mockupIdOrSlug || m.slug === mockupIdOrSlug) return [f.id];
+      }
+      const sub = walkFolders(f.children);
+      if (sub) return [f.id, ...sub];
+    }
+    return null;
+  }
+  for (const p of projects) {
+    for (const m of p.mockups) {
+      if (m.id === mockupIdOrSlug || m.slug === mockupIdOrSlug) return [p.id];
+    }
+    const sub = walkFolders(p.folders);
+    if (sub) return [p.id, ...sub];
+  }
+  return [];
+}
+
+function findFolderAncestorIds(project: TreeProject, folderId: string): string[] {
+  function walk(folders: TreeFolder[], acc: string[]): string[] | null {
+    for (const f of folders) {
+      if (f.id === folderId) return acc;
+      const sub = walk(f.children, [...acc, f.id]);
+      if (sub) return sub;
+    }
+    return null;
+  }
+  return walk(project.folders, []) ?? [];
+}
+
+function computeActivePathExpanded(
+  projects: TreeProject[],
+  pathname: string,
+  searchParams: URLSearchParams | ReadonlyURLSearchParamsLike | null,
+): Set<string> {
+  const ids = new Set<string>();
+
+  const mockupMatch = pathname.match(/^\/mockups\/([^/]+)$/);
+  if (mockupMatch) {
+    for (const id of findMockupChain(projects, mockupMatch[1])) ids.add(id);
+  }
+
+  const projectSlug = searchParams?.get('project') ?? null;
+  const folderId = searchParams?.get('folder') ?? null;
+  if (projectSlug) {
+    const project = projects.find((p) => p.slug === projectSlug);
+    if (project) {
+      ids.add(project.id);
+      if (folderId) {
+        for (const id of findFolderAncestorIds(project, folderId)) ids.add(id);
+      }
+    }
+  }
+
+  for (const p of projects) {
+    if (pathname.startsWith(`/projects/${p.slug}`)) ids.add(p.id);
+  }
+
+  return ids;
+}
+
+interface ReadonlyURLSearchParamsLike {
+  get(name: string): string | null;
+}
+
 /* ── Flatten tree into navigable list ─────────────────────────────────────── */
 
 function flattenProjects(
@@ -336,10 +406,14 @@ export function ProjectTree({
   onEditProject,
   onDelete,
 }: ProjectTreeProps) {
+  const pathname = usePathname() ?? '';
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [expanded, setExpanded] = useState<Set<string>>(() => {
-    const s = new Set<string>();
-    if (projects.length > 0) s.add(projects[0].id);
-    return s;
+    const initial = computeActivePathExpanded(projects, pathname, searchParams);
+    if (initial.size === 0 && projects.length > 0) initial.add(projects[0].id);
+    return initial;
   });
   const [focusIndex, setFocusIndex] = useState(0);
   const [creatingIn, setCreatingIn] = useState<{
@@ -352,9 +426,6 @@ export function ProjectTree({
   const menuRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<HTMLDivElement>(null);
   const announceRef = useRef<HTMLDivElement>(null);
-  const pathname = usePathname() ?? '';
-  const searchParams = useSearchParams();
-  const router = useRouter();
 
   useEffect(() => {
     if (!menuOpenId) return;
@@ -578,16 +649,19 @@ export function ProjectTree({
   );
 
   useEffect(() => {
-    for (const p of projects) {
-      if (searchParams.get('project') === p.slug || pathname.startsWith(`/projects/${p.slug}`)) {
-        setExpanded((prev) => {
-          if (prev.has(p.id)) return prev;
-          const next = new Set(prev);
-          next.add(p.id);
-          return next;
-        });
+    const activePath = computeActivePathExpanded(projects, pathname, searchParams);
+    if (activePath.size === 0) return;
+    setExpanded((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const id of activePath) {
+        if (!next.has(id)) {
+          next.add(id);
+          changed = true;
+        }
       }
-    }
+      return changed ? next : prev;
+    });
   }, [pathname, projects, searchParams]);
 
   const isActive = (href: string) => {
