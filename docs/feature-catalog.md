@@ -48,7 +48,7 @@ Collapsible sidebar shell (`Sidebar.tsx`). Present on authenticated workspace ro
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `sidebar-shell` | Fixed sidebar container that morphs between expanded (280 px full-height) and collapsed (84 x 40 px floating pill at top-left). Transitions: width, height, top, left, border-radius, border-color, box-shadow — all via `--morph-dur` (360 ms) / `--morph-ease` | expanded, collapsed (pill) |
+| `sidebar-shell` | Fixed sidebar container that morphs between expanded (280 px full-height) and collapsed (84 x 40 px floating pill at top-left). Collapse state persists across project, folder, mockup, settings, and annotation navigations in the same browser. Transitions: width, height, top, left, border-radius, border-color, box-shadow — all via `--morph-dur` (360 ms) / `--morph-ease` | expanded, collapsed (pill) |
 | `sidebar-header` | Header with logo + collapse button. Shrinks to pill size when collapsed (height matches `--pill-height`). Logo and toggle always visible in both states | expanded (full width), collapsed (pill-sized) |
 | `sidebar-logo` | "Markup." text with capital M, accent-green dot. Animates to "M." on collapse via `max-width` + opacity transition. Full text fades out at 50% of morph-dur (ease-exit), fades in with 40% delay on expand (ease-standard) | expanded ("Markup."), collapsed ("M.") |
 | `sidebar-collapse-toggle` | Toggle button to expand/collapse. Icon changes: VscLayoutSidebarLeftOff (expanded) → VscLayoutSidebarLeft (collapsed). Height: 14 px. Remains visible as floating button next to logo in collapsed state | default, hover (`--surface-hover` bg), focus-visible, active |
