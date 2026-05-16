@@ -10,19 +10,23 @@ Deploy the latest `ghcr.io/alexandrecamillo/markup` Docker image to the VPS.
 
 ## Required Environment Variables
 
-Load the repository `.env` before running the deployment commands. These variables must be present after loading `.env`; if any are missing, abort and tell the user which are needed.
+Load the repository `.env` before running the deployment commands. **Do not source `.env` as shell** (`set -a; . ./.env; set +a`) — `VPS_PASSWORD` contains characters that shell parsing mutates (e.g. backslash-escapes, `$`, `\``, unbalanced quotes), silently shortening the value and causing SSH auth to fail. Read each value raw with `awk`:
 
 ```bash
-set -a
-. ./.env
-set +a
+read_env() { awk -F'=' -v k="$1" '$1==k{sub("^"k"=",""); print; exit}' ./.env | tr -d '\r'; }
+VPS_IP=$(read_env VPS_IP)
+VPS_USER=$(read_env VPS_USER)
+VPS_PASSWORD=$(read_env VPS_PASSWORD)
+MARKUP_URL=$(read_env MARKUP_URL)
 ```
+
+If any variable comes back empty, abort and tell the user which are missing.
 
 | Variable | Description |
 |---|---|
 | `VPS_IP` | VPS IP address |
 | `VPS_USER` | SSH username |
-| `VPS_PASSWORD` | SSH password |
+| `VPS_PASSWORD` | SSH password (may contain shell-special characters — read raw, never source) |
 | `MARKUP_URL` | Public Markup URL |
 
 ## Pre-flight
