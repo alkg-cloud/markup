@@ -36,7 +36,7 @@ describe('NewProjectDialog SSR', () => {
         onSaved: vi.fn(),
       }),
     );
-    expect(html).toContain('Project name');
+    expect(html).toContain('PROJECT NAME');
     expect(html).toContain('input');
   });
 
@@ -50,7 +50,7 @@ describe('NewProjectDialog SSR', () => {
       }),
     );
     expect(html).toContain('Cancel');
-    expect(html).toContain('Create project');
+    expect(html).toContain('Create Project');
   });
 
   it('renders IconPicker inside dialog', async () => {
