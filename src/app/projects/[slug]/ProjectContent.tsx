@@ -1,12 +1,10 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import MockupCard from '@/app/mockups/MockupCard';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { FolderCard } from '@/components/FolderCard/FolderCard';
 import { FolderHeader } from '@/components/FolderHeader/FolderHeader';
-import { FolderToolbar } from '@/components/FolderToolbar/FolderToolbar';
 import { Topbar } from '@/components/Topbar/Topbar';
 
 interface FolderSummary {
@@ -45,15 +43,12 @@ export function ProjectContent({
   projectIcon,
   folderName,
   projectSlug,
-  projectId,
-  currentFolderId,
   folders,
   mockups,
   breadcrumbs,
   userName,
   userEmail,
 }: ProjectContentProps) {
-  const router = useRouter();
   const isEmpty = folders.length === 0 && mockups.length === 0;
 
   return (
@@ -73,20 +68,6 @@ export function ProjectContent({
           icon={projectIcon ?? null}
           name={folderName ?? projectName}
           count={folders.length + mockups.length}
-        />
-        <FolderToolbar
-          onNewMockup={() => {
-            console.warn('TODO: integrate with mockup upload dialog (future-features #3)');
-          }}
-          onNewFolder={() => {
-            const name = window.prompt('New folder name');
-            if (!name) return;
-            fetch(`/api/projects/${projectId}/folders`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, parentId: currentFolderId ?? null }),
-            }).then(() => router.refresh());
-          }}
         />
         {isEmpty ? (
           <EmptyState variant="project" />

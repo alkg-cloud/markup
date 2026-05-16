@@ -32,6 +32,8 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
       ? { id: mockupIdOrSlug }
       : { slug: mockupIdOrSlug },
     include: {
+      project: { select: { id: true, name: true, slug: true } },
+      folder: { select: { id: true, name: true, parentId: true } },
       versions: { orderBy: { createdAt: 'desc' } },
       annotations: {
         orderBy: { createdAt: 'desc' },
@@ -48,9 +50,41 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
     ...mockup.versions.map((v) => ({ createdBy: v.createdBy, createdByType: v.createdByType })),
   ]);
 
+  // Build the topbar breadcrumb: project › ...folder path › mockup
+  const breadcrumbs: { label: string; href?: string }[] = [];
+  if (mockup.project) {
+    breadcrumbs.push({
+      label: mockup.project.name,
+      href: `/?project=${mockup.project.slug}`,
+    });
+  }
+  if (mockup.folder && mockup.project) {
+    // Walk up the folder chain so the breadcrumb shows the full path.
+    const chain: { id: string; name: string }[] = [];
+    let cursor: { id: string; name: string; parentId: string | null } | null = mockup.folder;
+    const guard = new Set<string>();
+    while (cursor && !guard.has(cursor.id)) {
+      guard.add(cursor.id);
+      chain.unshift({ id: cursor.id, name: cursor.name });
+      cursor = cursor.parentId
+        ? await prisma.folder.findUnique({
+            where: { id: cursor.parentId },
+            select: { id: true, name: true, parentId: true },
+          })
+        : null;
+    }
+    for (const f of chain) {
+      breadcrumbs.push({
+        label: f.name,
+        href: `/?project=${mockup.project.slug}&folder=${f.id}`,
+      });
+    }
+  }
+  breadcrumbs.push({ label: mockup.name });
+
   return (
     <>
-      <Topbar breadcrumbs={[{ label: mockup.name, href: `/mockups/${mockup.id}` }]} />
+      <Topbar breadcrumbs={breadcrumbs} />
       <MockupViewer
         mockupId={mockup.id}
         mockupName={mockup.name}

@@ -1,5 +1,26 @@
 # Styling
 
+## Icon system
+
+Icons in UI components come from `react-icons/vsc` (the VSCode codicon set). One icon set keeps the visual language consistent across the chrome.
+
+```tsx
+import { VscEdit, VscComment, VscAdd, VscRemove } from 'react-icons/vsc';
+
+<button aria-label="Edit">
+  <VscEdit aria-hidden="true" />
+</button>
+```
+
+Rules:
+
+- **Use `react-icons/vsc`** for any icon shipped in a component. Pick the closest VSCode codicon by name (`Vsc<Name>`).
+- **Inline SVG paths** copied from a DS mockup are also allowed (e.g. when the DS provides a custom glyph the codicon set doesn't cover — key icon, dropdown chevron, custom mascots). Inline SVGs should be local to the component and `aria-hidden="true"`.
+- **Emojis are forbidden** in UI components — not in toolbar buttons, not in cards, not in menu items. Two narrow exceptions: (a) user-supplied content, where an emoji is part of a user's project name / icon picker selection; (b) `docs/feature-catalog.md` shorthand for surface descriptions, where `🔑` is a label not a rendered glyph.
+- **Other icon libraries** (`lucide-react`, `heroicons`, `@radix-ui/react-icons`, etc.) are not allowed without an explicit ADR. The mixing of multiple icon sets is a smell — one stroke weight, one corner radius philosophy, one optical alignment.
+
+`react-icons` v5 is installed as a regular dependency; bundle impact is per-icon (only what you import).
+
 ## Token system
 
 Every visual constant is a CSS custom property defined in `src/styles/tokens.css`. Components reference tokens via `var(--…)`; literals are forbidden in production code.
