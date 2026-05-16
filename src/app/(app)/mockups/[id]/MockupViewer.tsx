@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { AnnotationModal } from '@/components/AnnotationModal/AnnotationModal';
 import { AnnotationPin } from '@/components/AnnotationPin/AnnotationPin';
+import { MockupToolbar } from '@/components/MockupToolbar/MockupToolbar';
 import { computePinScreenPosition, parsePinCoords } from '@/lib/annotation/pin-coords';
 import { sanitizeOklchInDocument } from '@/lib/oklch-sanitize';
 import { type VersionRow, Versions } from './Versions';
@@ -45,6 +46,8 @@ export function MockupViewer({
   } | null>(null);
   const [busy, setBusy] = useState(false);
   const [iframeScroll, setIframeScroll] = useState({ scrollX: 0, scrollY: 0 });
+  const [toolbarMode, setToolbarMode] = useState<'edit' | 'comment'>('edit');
+  const [toolbarZoom, setToolbarZoom] = useState(100);
 
   // current version index for the topbar pill label
   const currentVersionIndex = versions.findIndex((v) => v.id === currentVersionId);
@@ -238,7 +241,7 @@ export function MockupViewer({
         }
       `}</style>
 
-      <div style={{ display: 'grid', gridTemplateRows: 'auto 1fr', minHeight: 0, height: '100%' }}>
+      <div style={{ display: 'grid', gridTemplateRows: 'auto auto 1fr', minHeight: 0, height: '100%' }}>
         {/* ── Topbar ── */}
         <header
           style={{
@@ -314,6 +317,21 @@ export function MockupViewer({
             </button>
           </div>
         </header>
+
+        {/* ── Toolbar ── */}
+        <MockupToolbar
+          zoom={toolbarZoom}
+          versionLabel={versionLabel}
+          mode={toolbarMode}
+          onModeChange={setToolbarMode}
+          onZoomChange={(d) => {
+            // T19 will implement actual zoom; for now just log
+            console.log('zoom', d);
+          }}
+          onFullscreen={() => console.log('fullscreen (T20)')}
+          onHistory={() => console.log('history (T20)')}
+          onDiff={() => console.log('diff (T20)')}
+        />
 
         {/* ── Body: sidebar + main ── */}
         <div
