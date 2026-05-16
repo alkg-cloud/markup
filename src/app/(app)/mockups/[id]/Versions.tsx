@@ -20,7 +20,13 @@ interface Props {
   onOpenChange?: (next: boolean) => void;
 }
 
-export function Versions({ mockupId, currentVersionId, versions, open: openProp, onOpenChange }: Props) {
+export function Versions({
+  mockupId,
+  currentVersionId,
+  versions,
+  open: openProp,
+  onOpenChange,
+}: Props) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [openInternal, setOpenInternal] = useState(false);

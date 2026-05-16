@@ -25,7 +25,12 @@ function DiffModal({ diffText, onClose }: { diffText: string | null; onClose: ()
         justifyContent: 'center',
         background: 'rgba(0,0,0,0.55)',
       }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose();
+      }}
     >
       <div
         style={{
@@ -49,7 +54,14 @@ function DiffModal({ diffText, onClose }: { diffText: string | null; onClose: ()
             flexShrink: 0,
           }}
         >
-          <h2 style={{ margin: 0, fontSize: 'var(--type-sm)', fontWeight: 700, color: 'var(--text-bright)' }}>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 'var(--type-sm)',
+              fontWeight: 700,
+              color: 'var(--text-bright)',
+            }}
+          >
             Diff — previous vs current
           </h2>
           <button
@@ -369,7 +381,9 @@ export function MockupViewer({
         }
       `}</style>
 
-      <div style={{ display: 'grid', gridTemplateRows: 'auto auto 1fr', minHeight: 0, height: '100%' }}>
+      <div
+        style={{ display: 'grid', gridTemplateRows: 'auto auto 1fr', minHeight: 0, height: '100%' }}
+      >
         {/* ── Topbar ── */}
         <header
           style={{

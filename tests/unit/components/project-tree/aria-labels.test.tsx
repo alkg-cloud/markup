@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, vi } from 'vitest';
-import { createElement } from 'react';
+
+import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
-import { act } from 'react';
+import { describe, expect, it, vi } from 'vitest';
 import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
 
 vi.mock('next/navigation', () => ({
@@ -16,6 +16,7 @@ const project = {
   name: 'Alpha',
   slug: 'alpha',
   icon: 'emoji:🎨',
+  position: 0,
   folders: [],
   mockups: [],
 };

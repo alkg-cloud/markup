@@ -29,14 +29,14 @@ describe('CommandPalette Ctrl+K dispatches open event', () => {
 
   beforeEach(() => {
     listener = vi.fn();
-    document.addEventListener('open-command-palette', listener);
+    document.addEventListener('open-command-palette', listener as EventListener);
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
   });
 
   afterEach(() => {
-    document.removeEventListener('open-command-palette', listener);
+    document.removeEventListener('open-command-palette', listener as EventListener);
     act(() => {
       root.unmount();
     });

@@ -16,7 +16,8 @@
   line-height: 1;
   color: var(--text-primary);
 }
-.iconBtn:hover, .iconBtn[aria-pressed="true"] {
+.iconBtn:hover,
+.iconBtn[aria-pressed="true"] {
   background: var(--bg-hover, var(--bg-card-active));
 }
 .divider {

@@ -1,4 +1,4 @@
-import styles from "./FolderToolbar.module.css";
+import styles from './FolderToolbar.module.css';
 
 interface Props {
   onNewMockup: () => void;

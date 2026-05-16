@@ -24,9 +24,7 @@ function IconDisplay({ token }: { token: string }) {
   const resolved = resolveIconToken(token);
   if (!resolved) return <span aria-hidden="true">{token}</span>;
   if (resolved.type === 'emoji') return <span aria-hidden="true">{resolved.content}</span>;
-  return (
-    <span aria-hidden="true" dangerouslySetInnerHTML={{ __html: resolved.content }} />
-  );
+  return <span aria-hidden="true" dangerouslySetInnerHTML={{ __html: resolved.content }} />;
 }
 
 export function FolderHeader({ icon, name, count }: Props) {

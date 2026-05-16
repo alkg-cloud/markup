@@ -22,7 +22,9 @@ const fixtureProjects = [
   },
 ];
 
-const fixtureOrphans = [{ id: 'm1', name: 'Draft sketch', slug: 'draft-sketch', status: 'active', position: 1 }];
+const fixtureOrphans = [
+  { id: 'm1', name: 'Draft sketch', slug: 'draft-sketch', status: 'active', position: 1 },
+];
 
 describe('ProjectTree section headers', () => {
   let container: HTMLDivElement;

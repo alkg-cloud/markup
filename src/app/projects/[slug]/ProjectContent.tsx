@@ -76,10 +76,10 @@ export function ProjectContent({
         />
         <FolderToolbar
           onNewMockup={() => {
-            console.warn("TODO: integrate with mockup upload dialog (future-features #3)");
+            console.warn('TODO: integrate with mockup upload dialog (future-features #3)');
           }}
           onNewFolder={() => {
-            const name = window.prompt("New folder name");
+            const name = window.prompt('New folder name');
             if (!name) return;
             fetch(`/api/projects/${projectId}/folders`, {
               method: 'POST',

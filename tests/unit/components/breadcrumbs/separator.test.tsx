@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
 
-import { act, createElement } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, afterEach } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 describe('Breadcrumbs separator', () => {
   afterEach(() => {

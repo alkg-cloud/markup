@@ -1,41 +1,39 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createElement } from "react";
-import { createRoot } from "react-dom/client";
-import { act } from "react";
-import { AgentsClient } from "@/app/(app)/settings/agents/AgentsClient";
+
+import { act, createElement } from 'react';
+import { createRoot } from 'react-dom/client';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AgentsClient } from '@/app/(app)/settings/agents/AgentsClient';
 
 const tokens = [
   {
-    id: "t1",
-    name: "Prod",
-    createdAt: "2026-05-13T00:00:00Z",
-    lastUsedAt: "2026-05-16T08:00:00Z",
-    prefix: "mk_live_",
-    lastFour: "a3f7",
+    id: 't1',
+    name: 'Prod',
+    createdAt: '2026-05-13T00:00:00Z',
+    lastUsedAt: '2026-05-16T08:00:00Z',
+    prefix: 'mk_live_',
+    lastFour: 'a3f7',
   },
 ];
 
-describe("AgentsClient copy action", () => {
+describe('AgentsClient copy action', () => {
   let writeText: ReturnType<typeof vi.fn>;
   beforeEach(() => {
     writeText = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, "clipboard", {
+    Object.defineProperty(navigator, 'clipboard', {
       value: { writeText },
       configurable: true,
     });
   });
 
-  it("calls navigator.clipboard.writeText with the masked token on copy click", async () => {
-    const container = document.createElement("div");
+  it('calls navigator.clipboard.writeText with the masked token on copy click', async () => {
+    const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
     act(() => {
       root.render(createElement(AgentsClient, { initialTokens: tokens }));
     });
-    const copyBtn = container.querySelector(
-      'button[aria-label*="Copy" i]'
-    ) as HTMLButtonElement;
+    const copyBtn = container.querySelector('button[aria-label*="Copy" i]') as HTMLButtonElement;
     act(() => {
       copyBtn.click();
     });

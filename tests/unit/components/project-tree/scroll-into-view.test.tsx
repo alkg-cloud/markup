@@ -31,7 +31,7 @@ describe('active node scrollIntoView', () => {
 
   beforeEach(() => {
     spy = vi.fn();
-    Element.prototype.scrollIntoView = spy;
+    Element.prototype.scrollIntoView = spy as unknown as Element['scrollIntoView'];
     localStorage.clear();
     // Pre-expand the project so the mockup treeitem is visible.
     localStorage.setItem('markup.sidebar.expanded', JSON.stringify(['p1']));

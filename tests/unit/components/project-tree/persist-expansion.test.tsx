@@ -44,9 +44,7 @@ describe('tree expansion persistence', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(['p1']));
     const { ProjectTree } = await import('@/components/ProjectTree/ProjectTree');
     await act(async () => {
-      root.render(
-        createElement(ProjectTree, { projects: [project], orphanMockups: [] }),
-      );
+      root.render(createElement(ProjectTree, { projects: [project], orphanMockups: [] }));
     });
     const node = container.querySelector('[title="Project Alpha"]');
     expect(node?.getAttribute('aria-expanded')).toBe('true');
@@ -57,9 +55,7 @@ describe('tree expansion persistence', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(['p1']));
     const { ProjectTree } = await import('@/components/ProjectTree/ProjectTree');
     await act(async () => {
-      root.render(
-        createElement(ProjectTree, { projects: [project], orphanMockups: [] }),
-      );
+      root.render(createElement(ProjectTree, { projects: [project], orphanMockups: [] }));
     });
 
     // Project should be expanded due to persisted state

@@ -421,9 +421,7 @@ export function ProjectTree({
       return fromUrl;
     }
     try {
-      const stored: string[] = JSON.parse(
-        localStorage.getItem(EXPANDED_STORAGE_KEY) ?? '[]',
-      );
+      const stored: string[] = JSON.parse(localStorage.getItem(EXPANDED_STORAGE_KEY) ?? '[]');
       const merged = new Set([...stored, ...fromUrl]);
       if (merged.size === 0 && projects.length > 0) merged.add(projects[0].id);
       return merged;
@@ -723,7 +721,9 @@ export function ProjectTree({
         onKeyDown={handleKeyDown}
         className={styles.tree}
       >
-        <div className={styles.sectionHeader} aria-hidden="true">PROJECTS</div>
+        <div className={styles.sectionHeader} aria-hidden="true">
+          PROJECTS
+        </div>
         {nodes.map((node, index) => {
           if (node.type === 'recents-header') {
             return (
@@ -1039,7 +1039,9 @@ export function ProjectTree({
         })}
         {orphanMockups.length > 0 && (
           <>
-            <div className={styles.sectionHeader} aria-hidden="true">NO PROJECT</div>
+            <div className={styles.sectionHeader} aria-hidden="true">
+              NO PROJECT
+            </div>
             {orphanMockups.map((m) => (
               <li key={m.id} role="none" className={styles.item}>
                 <div
@@ -1049,6 +1051,7 @@ export function ProjectTree({
                   className={cx(styles.treeItem, styles.indent1)}
                   tabIndex={-1}
                   onClick={() => {}}
+                  onKeyDown={() => {}}
                 >
                   <span className={styles.iconMockup}>
                     <MockupIcon />

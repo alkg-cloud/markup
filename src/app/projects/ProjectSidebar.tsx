@@ -19,7 +19,12 @@ interface ProjectSidebarProps {
   recentMockups: Record<string, RecentMockup>;
 }
 
-export function ProjectSidebar({ projects, orphanMockups = [], mockupNames, recentMockups }: ProjectSidebarProps) {
+export function ProjectSidebar({
+  projects,
+  orphanMockups = [],
+  mockupNames,
+  recentMockups,
+}: ProjectSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
