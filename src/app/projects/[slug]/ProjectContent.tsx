@@ -1,6 +1,7 @@
 'use client';
 
 import MockupCard from '@/app/mockups/MockupCard';
+import { AppMain } from '@/components/AppMain/AppMain';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { FolderCard } from '@/components/FolderCard/FolderCard';
@@ -55,15 +56,7 @@ export function ProjectContent({
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
       <Topbar breadcrumbs={breadcrumbs} userName={userName} userEmail={userEmail} />
 
-      <div
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: 'var(--space-xl)',
-          scrollbarWidth: 'thin',
-          scrollbarColor: 'var(--border) transparent',
-        }}
-      >
+      <AppMain variant="scroll" ariaLabel="Project workspace">
         <FolderHeader
           icon={projectIcon ?? null}
           name={folderName ?? projectName}
@@ -94,7 +87,7 @@ export function ProjectContent({
             ))}
           </div>
         )}
-      </div>
+      </AppMain>
     </div>
   );
 }

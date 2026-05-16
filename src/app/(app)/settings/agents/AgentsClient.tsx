@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { AppMain } from '@/components/AppMain/AppMain';
 import styles from './AgentsClient.module.css';
 
 interface AgentToken {
@@ -154,7 +155,7 @@ export function AgentsClient({
   }
 
   return (
-    <main className={styles.page}>
+    <AppMain variant="centered" className={styles.page} ariaLabel="Agent tokens settings">
       <h1 className={styles.title}>Agent Tokens</h1>
       <p className={styles.subtitle}>
         API tokens for agent integrations. Create, copy and revoke tokens.
@@ -270,6 +271,6 @@ export function AgentsClient({
           })}
         </div>
       )}
-    </main>
+    </AppMain>
   );
 }
