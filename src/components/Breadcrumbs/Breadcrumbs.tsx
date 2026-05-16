@@ -6,7 +6,9 @@ import styles from './Breadcrumbs.module.css';
 
 export interface BreadcrumbSegment {
   label: string;
-  href: string;
+  /** Optional. When omitted (e.g. on the current page) the segment renders
+   *  as plain text with aria-current="page" instead of a link. */
+  href?: string;
 }
 
 interface BreadcrumbsProps {
@@ -20,7 +22,7 @@ export function Breadcrumbs({ segments }: BreadcrumbsProps) {
 
   const needsTruncation = segments.length > 3 && !showAll;
   const visible = needsTruncation
-    ? [segments[0], { label: '…', href: '' }, segments[segments.length - 1]]
+    ? [segments[0], { label: '…' }, segments[segments.length - 1]]
     : segments;
 
   return (
@@ -31,7 +33,7 @@ export function Breadcrumbs({ segments }: BreadcrumbsProps) {
           const isEllipsis = seg.label === '…';
 
           return (
-            <li key={`${seg.href}-${i}`} className={styles.item}>
+            <li key={`${seg.href ?? seg.label}-${i}`} className={styles.item}>
               {i > 0 && (
                 <span aria-hidden="true" className={styles.separator}>
                   ›
@@ -46,8 +48,8 @@ export function Breadcrumbs({ segments }: BreadcrumbsProps) {
                 >
                   …
                 </button>
-              ) : isLast ? (
-                <span aria-current="page" className={styles.current}>
+              ) : isLast || !seg.href ? (
+                <span aria-current={isLast ? 'page' : undefined} className={styles.current}>
                   {seg.label}
                 </span>
               ) : (
