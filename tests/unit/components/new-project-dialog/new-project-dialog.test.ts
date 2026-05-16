@@ -66,4 +66,28 @@ describe('NewProjectDialog SSR', () => {
     expect(html).toContain('Code');
     expect(html).toContain('Brands');
   });
+
+  it('renders icon search input inside the dialog', async () => {
+    const { NewProjectDialog } = await import('@/components/NewProjectDialog/NewProjectDialog');
+    const html = renderToStaticMarkup(
+      createElement(NewProjectDialog, {
+        open: true,
+        onClose: vi.fn(),
+        onSaved: vi.fn(),
+      }),
+    );
+    expect(html).toContain('Search icons');
+  });
+
+  it('does not render "Browse all icons" link', async () => {
+    const { NewProjectDialog } = await import('@/components/NewProjectDialog/NewProjectDialog');
+    const html = renderToStaticMarkup(
+      createElement(NewProjectDialog, {
+        open: true,
+        onClose: vi.fn(),
+        onSaved: vi.fn(),
+      }),
+    );
+    expect(html).not.toContain('Browse all icons');
+  });
 });
