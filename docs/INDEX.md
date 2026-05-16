@@ -54,7 +54,7 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 
 - [Full prototype](design/full-prototype.html) — the authoritative full-fidelity prototype (synced from Markup online)
 - [Design system spec](design/design-system/UX_SPEC.md) — UX spec with design tokens, patterns, and component inventory
-- `design/design-system/*.html` — 13 DS component mockups synced from "Markup Dev" project (sidebar, breadcrumb, finder-pill, finder-overlay, project-card, icon-picker, new-project-dialog, dropdown-chevron, avatar-menu, agent-tokens, mockup-view, project-folder-view, buttons)
+- `design/design-system/*.html` — 13 DS component mockups synced from "Markup dev" project (sidebar, breadcrumb, finder-pill, finder-overlay, project-card, icon-picker, new-project-dialog, dropdown-chevron, avatar-menu, agent-tokens, mockup-view, project-folder-view, buttons)
 - `design/ideias/` — navigation variant explorations and sidebar ideas (synced from Markup online + local variants)
 
 ## Process artefacts (point-in-time, local-only)
