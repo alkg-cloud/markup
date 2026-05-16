@@ -36,8 +36,51 @@ function maskedPreview(prefix: string | null, lastFour: string | null): string {
   if (!prefix) {
     return 'mk_•••••••••••••';
   }
-  const dots = '•'.repeat(7);
+  const dots = '•'.repeat(12);
   return lastFour ? `${prefix}${dots}${lastFour}` : `${prefix}${dots}`;
+}
+
+function PlusIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
+    </svg>
+  );
+}
+
+function KeyIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M11.351 1.091a4.528 4.528 0 0 1 3.44 3.16c.215.724.247 1.49.093 2.23a4.583 4.583 0 0 1-4.437 3.6c-.438 0-.874-.063-1.293-.19l-.8.938-.379.175H7v1.5l-.5.5H5v1.5l-.5.5h-3l-.5-.5v-2.307l.146-.353L6.12 6.87a4.464 4.464 0 0 1-.2-1.405 4.528 4.528 0 0 1 5.431-4.375zm1.318 7.2a3.568 3.568 0 0 0 1.239-2.005l.004.005A3.543 3.543 0 0 0 9.72 2.08a3.576 3.576 0 0 0-2.8 3.4c-.01.456.07.908.239 1.33l-.11.543L2 12.404v1.6h2v-1.5l.5-.5H6v-1.5l.5-.5h1.245l.876-1.016.561-.14a3.47 3.47 0 0 0 1.269.238 3.568 3.568 0 0 0 2.218-.795zm-.838-2.732a1 1 0 1 0-1.662-1.11 1 1 0 0 0 1.662 1.11z"
+      />
+    </svg>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"
+      />
+      <path fillRule="evenodd" clipRule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M10 6H9V12H10V6Z" />
+      <path d="M7 6H6V12H7V6Z" />
+      <path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z" />
+    </svg>
+  );
 }
 
 export function AgentsClient({
@@ -106,126 +149,28 @@ export function AgentsClient({
     try {
       await navigator.clipboard.writeText(masked);
     } catch {
-      // clipboard unavailable / denied — silently no-op for now.
+      /* clipboard unavailable / denied — silently no-op for now. */
     }
   }
 
   return (
-    <main
-      style={{
-        maxWidth: 800,
-        margin: '0 auto',
-        padding: 'var(--space-3xl) var(--space-xl)',
-        display: 'grid',
-        gap: 'var(--space-2xl)',
-      }}
-    >
-      <style>{`
-        @keyframes ac-copy-pulse {
-          0%   { transform: scale(1); }
-          40%  { transform: scale(1.05); }
-          100% { transform: scale(1); }
-        }
-        .ac-btn-copy {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 9px 16px;
-          background: var(--btn-bg);
-          color: var(--accent);
-          border: 0;
-          border-radius: var(--radius-pill);
-          cursor: pointer;
-          font-size: var(--type-xs);
-          font-weight: 700;
-          font-family: inherit;
-          flex-shrink: 0;
-          transition:
-            background var(--motion-fast) var(--ease-standard),
-            color var(--motion-fast) var(--ease-standard),
-            transform var(--motion-instant) var(--ease-standard);
-        }
-        .ac-btn-copy:hover { background: var(--btn-bg-hover); }
-        .ac-btn-copy:active { background: var(--btn-bg-active); transform: translateY(1px); }
-        .ac-btn-copy.copied {
-          animation: ac-copy-pulse 200ms var(--ease-emphasized) forwards;
-        }
-      `}</style>
+    <main className={styles.page}>
+      <h1 className={styles.title}>Agent Tokens</h1>
+      <p className={styles.subtitle}>
+        API tokens for agent integrations. Create, copy and revoke tokens.
+      </p>
 
-      {/* Page header */}
-      <div>
-        <h1
-          style={{
-            margin: 0,
-            fontFamily: 'var(--font-display)',
-            fontSize: 'var(--type-3xl)',
-            fontWeight: 700,
-            color: 'var(--text-bright)',
-            letterSpacing: 'var(--tracking-tighter)',
-            lineHeight: 1.05,
-          }}
-        >
-          Agent Tokens
-        </h1>
-        <p
-          style={{
-            margin: 'var(--space-xs) 0 0',
-            fontSize: 'var(--type-md)',
-            color: 'var(--text-dim)',
-            lineHeight: 'var(--leading-normal)',
-          }}
-        >
-          API tokens for agent integrations. Create, copy and revoke tokens.
-        </p>
-      </div>
-
-      {/* Plaintext token reveal (shown after creation) */}
       {revealed && (
-        <div
-          role="alert"
-          style={{
-            background: 'var(--warning-soft)',
-            borderLeft: '4px solid var(--warning)',
-            padding: 'var(--space-md)',
-            borderRadius: 'var(--radius-sm)',
-            display: 'grid',
-            gap: 'var(--space-xs)',
-          }}
-        >
-          <span
-            style={{
-              fontSize: 'var(--type-xs)',
-              fontWeight: 700,
-              letterSpacing: 'var(--tracking-wide)',
-              textTransform: 'uppercase',
-              color: 'var(--warning)',
-            }}
-          >
-            ⚡ Token created — copy now, it won&apos;t be shown again
+        <div role="alert" className={styles.reveal}>
+          <span className={styles.revealLabel}>
+            Token created — copy now, it won&apos;t be shown again
           </span>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-sm)',
-            }}
-          >
-            <code
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 'var(--type-sm)',
-                color: 'var(--text-bright)',
-                flex: 1,
-                wordBreak: 'break-all',
-              }}
-            >
-              {revealed.plaintext}
-            </code>
+          <div className={styles.revealRow}>
+            <code className={styles.revealCode}>{revealed.plaintext}</code>
             <button
               type="button"
               onClick={handleCopyRevealed}
-              className={`ac-btn-copy${copied ? ' copied' : ''}`}
-              style={{ color: copied ? 'var(--success)' : 'var(--accent)' }}
+              className={`${styles.revealCopyBtn}${copied ? ` ${styles.copied}` : ''}`}
               aria-label={`Copy token ${revealed.name}`}
             >
               {copied ? 'Copied!' : 'Copy'}
@@ -234,90 +179,23 @@ export function AgentsClient({
         </div>
       )}
 
-      {/* Inline new-token form */}
       {showForm && (
-        <section
-          style={{
-            background: 'var(--bg-elevated-soft)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-md)',
-            padding: 'var(--space-xl)',
-            display: 'grid',
-            gap: 'var(--space-md)',
-          }}
-        >
-          <div
-            style={{
-              fontSize: 'var(--type-2xs)',
-              fontWeight: 700,
-              letterSpacing: 'var(--tracking-wider)',
-              textTransform: 'uppercase',
-              color: 'var(--text-dim)',
-            }}
-          >
-            New token
-          </div>
-          <form
-            onSubmit={onCreate}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr auto auto',
-              gap: 'var(--space-sm)',
-              alignItems: 'end',
-            }}
-          >
-            <div style={{ display: 'grid', gap: 6 }}>
-              <label
-                htmlFor="token-name"
-                style={{
-                  fontSize: 'var(--type-2xs)',
-                  fontWeight: 700,
-                  letterSpacing: 'var(--tracking-wide)',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-dim)',
-                }}
-              >
-                Name
-              </label>
-              <input
-                id="token-name"
-                required
-                pattern="[A-Za-z0-9_-]+"
-                minLength={1}
-                maxLength={64}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. claude-code-prod, ci-builder, designer-bot"
-                style={{
-                  padding: '12px 16px',
-                  background: 'var(--surface-input)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--text-bright)',
-                  font: 'inherit',
-                  fontSize: 'var(--type-base)',
-                }}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={busy}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '14px 24px',
-                background: 'var(--accent)',
-                color: 'var(--accent-foreground, white)',
-                border: 0,
-                borderRadius: 'var(--radius-pill)',
-                fontSize: 'var(--type-sm)',
-                fontWeight: 700,
-                fontFamily: 'inherit',
-                cursor: busy ? 'not-allowed' : 'pointer',
-                opacity: busy ? 0.5 : 1,
-              }}
-            >
+        <section className={styles.form}>
+          <div className={styles.formLabel}>New token</div>
+          <form onSubmit={onCreate} className={styles.formRow}>
+            <input
+              id="token-name"
+              required
+              pattern="[A-Za-z0-9_-]+"
+              minLength={1}
+              maxLength={64}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. claude-code-prod, ci-builder, designer-bot"
+              className={styles.formInput}
+              aria-label="Token name"
+            />
+            <button type="submit" disabled={busy} className={styles.btnAction}>
               {busy ? 'Creating…' : 'Create'}
             </button>
             <button
@@ -327,95 +205,71 @@ export function AgentsClient({
                 setError(null);
                 setName('');
               }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '14px 16px',
-                background: 'transparent',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-pill)',
-                fontSize: 'var(--type-sm)',
-                fontWeight: 500,
-                fontFamily: 'inherit',
-                cursor: 'pointer',
-                color: 'var(--text-dim)',
-              }}
+              className={styles.btnCancel}
             >
               Cancel
             </button>
           </form>
-          {error && (
-            <p
-              role="alert"
-              style={{ margin: 0, color: 'var(--danger)', fontSize: 'var(--type-sm)' }}
-            >
-              {error}
-            </p>
-          )}
+          {error && <p className={styles.formError}>{error}</p>}
         </section>
       )}
 
-      {/* Token list */}
-      <section>
-        {/* Toolbar */}
-        <div className={styles.toolbar}>
-          <span
-            style={{
-              fontSize: 'var(--type-sm)',
-              fontWeight: 600,
-              color: 'var(--text-dim)',
-            }}
-          >
-            {tokens.length} {tokens.length === 1 ? 'token' : 'tokens'}
-          </span>
-          {!showForm && (
-            <button type="button" className={styles.newBtn} onClick={() => setShowForm(true)}>
-              + New Token
-            </button>
-          )}
-        </div>
+      <div className={styles.tokensHeader}>
+        <span className={styles.tokensCount}>
+          {tokens.length} {tokens.length === 1 ? 'token' : 'tokens'}
+        </span>
+        {!showForm && (
+          <button type="button" className={styles.btnAction} onClick={() => setShowForm(true)}>
+            <PlusIcon /> New Token
+          </button>
+        )}
+      </div>
 
-        {tokens.length === 0 ? (
-          <div className={styles.empty}>
-            No tokens yet — create one to authorize a non-browser agent against the API.
-          </div>
-        ) : (
-          <div className={styles.list}>
-            {tokens.map((t) => (
+      {tokens.length === 0 ? (
+        <div className={styles.empty}>
+          No tokens yet — create one to authorize a non-browser agent against the API.
+        </div>
+      ) : (
+        <div className={styles.list}>
+          {tokens.map((t) => {
+            const masked = maskedPreview(t.prefix, t.lastFour);
+            return (
               <div key={t.id} className={styles.card}>
-                <div className={styles.keyIcon}>🔑</div>
+                <div className={styles.keyIcon} aria-hidden="true">
+                  <KeyIcon />
+                </div>
                 <div className={styles.body}>
                   <h3 className={styles.name}>{t.name}</h3>
                   <p className={styles.meta}>
                     Created {relTime(t.createdAt)} · Last used{' '}
                     {t.lastUsedAt ? relTime(t.lastUsedAt) : 'never'}
                   </p>
-                  <div className={styles.masked}>{maskedPreview(t.prefix, t.lastFour)}</div>
+                  <div className={styles.masked}>{masked}</div>
                 </div>
                 <div className={styles.actions}>
                   <button
                     type="button"
                     aria-label={`Copy token ${t.name}`}
                     title="Copy"
-                    onClick={() => copyToken(maskedPreview(t.prefix, t.lastFour))}
+                    onClick={() => copyToken(masked)}
                   >
-                    📋
+                    <CopyIcon />
                   </button>
                   <button
                     type="button"
                     aria-label={`Revoke token ${t.name}`}
                     title="Revoke"
                     onClick={() => onRevoke(t.id, t.name)}
+                    className={styles.danger}
                   >
-                    🗑
+                    <TrashIcon />
                   </button>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </section>
+            );
+          })}
+        </div>
+      )}
     </main>
   );
 }

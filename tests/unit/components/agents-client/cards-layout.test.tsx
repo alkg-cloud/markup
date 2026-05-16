@@ -43,7 +43,7 @@ describe('AgentsClient cards layout', () => {
     container.remove();
   });
 
-  it("renders '+ New Token' instead of 'Create →'", () => {
+  it("renders a 'New Token' action button (with plus icon) instead of 'Create →'", () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
@@ -51,7 +51,12 @@ describe('AgentsClient cards layout', () => {
       root.render(createElement(AgentsClient, { initialTokens: tokens }));
     });
     const buttons = Array.from(container.querySelectorAll('button'));
-    expect(buttons.some((b) => b.textContent?.includes('+ New Token'))).toBe(true);
+    // The DS uses an SVG plus icon followed by literal text "New Token".
+    const newTokenBtn = buttons.find((b) =>
+      b.textContent?.trim().toLowerCase().includes('new token'),
+    );
+    expect(newTokenBtn).toBeTruthy();
+    expect(newTokenBtn?.querySelector('svg')).toBeTruthy();
     expect(buttons.some((b) => b.textContent?.includes('Create →'))).toBe(false);
     act(() => root.unmount());
     container.remove();
