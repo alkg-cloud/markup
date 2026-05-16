@@ -19,7 +19,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: err.message }, { status: err.status ?? 500 });
   }
   const tokens = await prisma.agentToken.findMany({
-    select: { id: true, name: true, createdAt: true, lastUsedAt: true },
+    select: {
+      id: true,
+      name: true,
+      prefix: true,
+      lastFour: true,
+      createdAt: true,
+      lastUsedAt: true,
+    },
     orderBy: { createdAt: 'desc' },
   });
   return NextResponse.json({ tokens });

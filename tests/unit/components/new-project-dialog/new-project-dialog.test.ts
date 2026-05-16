@@ -36,7 +36,7 @@ describe('NewProjectDialog SSR', () => {
         onSaved: vi.fn(),
       }),
     );
-    expect(html).toContain('Project name');
+    expect(html).toContain('PROJECT NAME');
     expect(html).toContain('input');
   });
 
@@ -50,7 +50,7 @@ describe('NewProjectDialog SSR', () => {
       }),
     );
     expect(html).toContain('Cancel');
-    expect(html).toContain('Create project');
+    expect(html).toContain('Create Project');
   });
 
   it('renders IconPicker inside dialog', async () => {
@@ -65,5 +65,29 @@ describe('NewProjectDialog SSR', () => {
     // IconPicker renders tabs: Code, Brands, UI, Emoji
     expect(html).toContain('Code');
     expect(html).toContain('Brands');
+  });
+
+  it('renders icon search input inside the dialog', async () => {
+    const { NewProjectDialog } = await import('@/components/NewProjectDialog/NewProjectDialog');
+    const html = renderToStaticMarkup(
+      createElement(NewProjectDialog, {
+        open: true,
+        onClose: vi.fn(),
+        onSaved: vi.fn(),
+      }),
+    );
+    expect(html).toContain('Search icons');
+  });
+
+  it('does not render "Browse all icons" link', async () => {
+    const { NewProjectDialog } = await import('@/components/NewProjectDialog/NewProjectDialog');
+    const html = renderToStaticMarkup(
+      createElement(NewProjectDialog, {
+        open: true,
+        onClose: vi.fn(),
+        onSaved: vi.fn(),
+      }),
+    );
+    expect(html).not.toContain('Browse all icons');
   });
 });
