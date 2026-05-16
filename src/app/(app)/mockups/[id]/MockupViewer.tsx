@@ -9,6 +9,87 @@ import { computePinScreenPosition, parsePinCoords } from '@/lib/annotation/pin-c
 import { sanitizeOklchInDocument } from '@/lib/oklch-sanitize';
 import { type VersionRow, Versions } from './Versions';
 
+/* ── Diff modal ── */
+function DiffModal({ diffText, onClose }: { diffText: string | null; onClose: () => void }) {
+  return (
+    <div
+      role="dialog"
+      aria-label="Version diff"
+      aria-modal="true"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,0.55)',
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        style={{
+          background: 'var(--bg-elevated-mid)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-md)',
+          width: 'min(720px, 92vw)',
+          maxHeight: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        <header
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 16px',
+            borderBottom: '1px solid var(--border)',
+            flexShrink: 0,
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: 'var(--type-sm)', fontWeight: 700, color: 'var(--text-bright)' }}>
+            Diff — previous vs current
+          </h2>
+          <button
+            type="button"
+            aria-label="Close diff"
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 0,
+              cursor: 'pointer',
+              color: 'var(--text-dim)',
+              fontSize: 16,
+              lineHeight: 1,
+              padding: '4px 8px',
+              borderRadius: 'var(--radius-xs)',
+            }}
+          >
+            ✕
+          </button>
+        </header>
+        <pre
+          style={{
+            margin: 0,
+            padding: '16px',
+            overflowY: 'auto',
+            fontSize: 'var(--type-xs)',
+            fontFamily: 'var(--font-mono, monospace)',
+            color: 'var(--text)',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-all',
+            lineHeight: 1.6,
+          }}
+        >
+          {diffText ?? 'Loading diff…'}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
 interface AnnotationSummary {
   id: string;
   createdAt: string;
@@ -37,6 +118,7 @@ export function MockupViewer({
 }: Props) {
   const router = useRouter();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const iframeWrapRef = useRef<HTMLDivElement>(null);
   const [snapshot, setSnapshot] = useState<HTMLCanvasElement | null>(null);
   const [captureCtx, setCaptureCtx] = useState<{
     scrollX: number;
@@ -48,6 +130,13 @@ export function MockupViewer({
   const [iframeScroll, setIframeScroll] = useState({ scrollX: 0, scrollY: 0 });
   const [toolbarMode, setToolbarMode] = useState<'edit' | 'comment'>('edit');
   const [toolbarZoom, setToolbarZoom] = useState(100);
+
+  // History panel (Versions) visibility — controlled from toolbar
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  // Diff modal state
+  const [diffOpen, setDiffOpen] = useState(false);
+  const [diffText, setDiffText] = useState<string | null>(null);
 
   // current version index for the topbar pill label
   const currentVersionIndex = versions.findIndex((v) => v.id === currentVersionId);
@@ -104,6 +193,45 @@ export function MockupViewer({
     iframe.addEventListener('load', onLoad);
     return () => iframe.removeEventListener('load', onLoad);
   }, [mockupId, hasThumbnail]);
+
+  // ── Toolbar handlers ──
+
+  function onFullscreen() {
+    if (iframeWrapRef.current?.requestFullscreen) {
+      iframeWrapRef.current.requestFullscreen().catch(() => {
+        // User denied or browser unsupported — ignore silently
+      });
+    }
+  }
+
+  function onHistory() {
+    setHistoryOpen((o) => !o);
+  }
+
+  async function onDiff() {
+    setDiffOpen(true);
+    setDiffText(null);
+    if (versions.length < 2) {
+      setDiffText('Nothing to compare yet.');
+      return;
+    }
+    // versions[0] is newest (current), versions[1] is the previous
+    const current = versions[currentVersionIndex];
+    const previous = versions[currentVersionIndex + 1];
+    if (!current || !previous) {
+      setDiffText('Nothing to compare yet.');
+      return;
+    }
+    try {
+      const res = await fetch(
+        `/api/mockups/${mockupId}/diff?from=${previous.id}&to=${current.id}&format=unified`,
+      );
+      const text = await res.text();
+      setDiffText(text);
+    } catch {
+      setDiffText('Failed to load diff.');
+    }
+  }
 
   async function captureScreenshot() {
     setBusy(true);
@@ -330,9 +458,9 @@ export function MockupViewer({
               return Math.min(400, Math.max(25, z + delta));
             });
           }}
-          onFullscreen={() => console.log('fullscreen (T20)')}
-          onHistory={() => console.log('history (T20)')}
-          onDiff={() => console.log('diff (T20)')}
+          onFullscreen={onFullscreen}
+          onHistory={onHistory}
+          onDiff={onDiff}
         />
 
         {/* ── Body: sidebar + main ── */}
@@ -436,8 +564,15 @@ export function MockupViewer({
               </ul>
             )}
 
-            {/* Versions section */}
-            <Versions mockupId={mockupId} currentVersionId={currentVersionId} versions={versions} />
+            {/* Versions section — open state is lifted to MockupViewer so the
+                toolbar History button can toggle it */}
+            <Versions
+              mockupId={mockupId}
+              currentVersionId={currentVersionId}
+              versions={versions}
+              open={historyOpen}
+              onOpenChange={setHistoryOpen}
+            />
           </aside>
 
           {/* ── Main: iframe + pin overlay ── */}
@@ -449,8 +584,10 @@ export function MockupViewer({
             }}
           >
             {/* Scaling wrapper — transform: scale() is applied here so pointer events
-                remain correct inside the iframe (scaling the iframe itself breaks them) */}
+                remain correct inside the iframe (scaling the iframe itself breaks them).
+                iframeWrapRef is used for the fullscreen handler. */}
             <div
+              ref={iframeWrapRef}
               style={{
                 transform: `scale(${toolbarZoom / 100})`,
                 transformOrigin: 'top left',
@@ -512,6 +649,17 @@ export function MockupViewer({
           />
         )}
       </div>
+
+      {/* ── Diff modal ── */}
+      {diffOpen && (
+        <DiffModal
+          diffText={diffText}
+          onClose={() => {
+            setDiffOpen(false);
+            setDiffText(null);
+          }}
+        />
+      )}
     </>
   );
 }
