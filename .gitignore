@@ -5,6 +5,7 @@ next-env.d.ts
 *.log
 .env
 .env.local
+.env.runner
 /data
 prisma/dev.db*
 prisma/test.db*
