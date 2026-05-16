@@ -896,7 +896,7 @@ export function ProjectTree({
                       type="button"
                       tabIndex={-1}
                       className={styles.kebab}
-                      aria-label={`Menu de ${displayLabel}`}
+                      aria-label={`Menu for ${displayLabel}`}
                       aria-haspopup="true"
                       aria-expanded={menuOpenId === node.id}
                       onClick={(e) => {
