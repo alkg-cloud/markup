@@ -72,12 +72,12 @@ ARIA tree widget for project/folder navigation (`ProjectTree.tsx`).
 | `sidebar-tree-expand` | Chevron (12 px) on folder/project. Smooth rotation animation — not abrupt | collapsed (0 deg), expanded (90 deg, color: `--accent`); animates via `--motion-fast` / `--ease-standard` |
 | `sidebar-tree-keyboard-nav` | Full keyboard navigation per WAI-ARIA treeview | ArrowUp/Down (move focus), ArrowRight (expand or move to first child), ArrowLeft (collapse or move to parent), Enter/Space (activate), Home/End, Escape, Tab |
 | `sidebar-tree-kebab` | Three-dot kebab icon. Replaces count badge on hover with animated swap (count scales to 0.8 and fades out, kebab fades in simultaneously) | hidden (default), visible (hover/focus); opens dropdown |
-| `sidebar-tree-kebab-menu` | Dropdown from project kebab: **Open**, **Edit** (opens project update dialog with current values), **Delete project**. Folder/mockup kebab: **Open**, **Rename** (inline input in the row), **Delete** (danger); folders also show **New subfolder** | open, closed; spring animation on open and close |
+| `sidebar-tree-kebab-menu` | Dropdown from project kebab: **Open**, **Edit** (opens project update dialog with current values), **New folder** (top-level folder under the project via `POST /api/projects/[id]/folders` with `parentId: null`), **Delete project**. Folder kebab: **Open**, **Rename** (inline input in the row), **New subfolder**, **Delete folder**. Mockup kebab: **Open**, **Rename**, **Delete mockup**. | open, closed; spring animation on open and close |
 | `sidebar-tree-count-badge` | Child-count badge on folders/projects. Swaps out for kebab on hover | visible (no hover), hidden (hover — replaced by kebab) |
 | `sidebar-tree-indent` | Visual indentation per nesting level (tree-indent-1 through tree-indent-4) | up to 5 nesting levels |
 | `sidebar-tree-accent-bar` | 3 px left accent bar on selected item | visible when item is the current route |
 | `sidebar-tree-truncation` | Long names truncated with `text-overflow: ellipsis` | full name in `title` tooltip |
-| `sidebar-tree-no-project-section` | Section header `NO PROJECT` groups mockups without a project; rendered only when at least one orphan mockup exists. Replaces the prior synthetic `Ungrouped` pseudo-project node. | expanded, collapsed |
+| `sidebar-tree-no-project-section` | Section header `NO PROJECT` groups mockups without a project; rendered only when at least one orphan mockup exists. Replaces the prior synthetic `Ungrouped` pseudo-project node. Orphan mockup rows are full treeitems — clickable (navigates to `/mockups/{id}`), Enter/Space activate, and they get `aria-selected` + the active style when the URL matches. | expanded, collapsed; active when URL matches one of its leaves |
 | `sidebar-section-headers` | Section headers `PROJECTS` and `NO PROJECT` divide the sidebar tree. Sticky to the top of the scroll container. | visible, hidden (NO PROJECT hidden when no orphan mockups) |
 | `sidebar-tree-persist-on-nav` | Expand/collapse state of every project and folder node survives navigation between in-shell pages (`/`, `/mockups/[id]`, `/annotations/[id]`, `/settings/agents`) because the shell mounts once in the `(app)` route-group layout | preserved on client-side navigation |
 | `sidebar-tree-persist-expansion` | Tree expansion (which projects/folders are open) is persisted in `localStorage.markup.sidebar.expanded` (JSON array of node IDs). Survives reload and tab close. Auto-expand of the active node's path on mount remains additive. | persisted across reloads |
@@ -124,13 +124,13 @@ Inline folder creation input in the sidebar (`InlineFolderCreate.tsx`).
 
 ## breadcrumbs
 
-Structural breadcrumb navigation (`Breadcrumbs.tsx`). No "Markup" or "Home" prefix — the clickable logo handles root navigation. Breadcrumb starts with the project name: `{project} / {folder} / {mockup}`.
+Structural breadcrumb navigation (`Breadcrumbs.tsx`). No "Markup" or "Home" prefix — the clickable logo handles root navigation. Breadcrumb starts with the project name: `{project} › {folder} › {mockup}`. The mockup viewer renders the full ancestor chain (`/mockups/[id]/page.tsx` walks the `Folder.parentId` ancestry server-side). The settings page (`/settings/agents`) intentionally renders an empty breadcrumb — the page's own h1 carries the label and would be redundant.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `breadcrumbs-nav` | `<nav aria-label="Navegação estrutural">` with `<ol>` breadcrumb trail. Visible inside projects; hidden at app root | visible, hidden |
-| `breadcrumbs-segment` | Clickable ancestor segment (text-dim, hover → text) | default, hover, focus-visible; navigates to that level |
-| `breadcrumbs-current` | Final segment (non-clickable) | `aria-current="page"`, `--text-bright`, `--weight-semibold` |
+| `breadcrumbs-nav` | `<nav aria-label="Navegação estrutural">` with `<ol>` breadcrumb trail. Visible inside projects and on the mockup viewer; hidden at app root and on `/settings/*` | visible, hidden |
+| `breadcrumbs-segment` | Clickable ancestor segment (text-dim, hover → text). `BreadcrumbSegment.href` is optional — segments without `href` render as plain text (same treatment as `breadcrumbs-current`) | default, hover, focus-visible; navigates to that level |
+| `breadcrumbs-current` | Final segment (non-clickable). Also rendered as plain text whenever a segment has no `href` | `aria-current="page"` on the last; plain `<span>` for href-less mid-list segments; `--text-bright`, `--weight-semibold` |
 | `breadcrumbs-separator` | `›` chevron separator between segments | `--text-muted`, 11 px, flex-shrink 0, aria-hidden on separator span |
 | `breadcrumbs-ellipsis` | Truncation `...` for long paths. First segment (project) and last (current) never truncated. Minimum: `Project / ... / Current` | clickable: expands full breadcrumb inline |
 | `breadcrumbs-keyboard` | Tab into nav, ArrowLeft/Right between segments | Enter navigates |
@@ -200,7 +200,6 @@ Main content area for project and folder views (`ProjectContent.tsx`). Folder ca
 | `project-content-grid` | Unified card grid: folder cards first, then mockup cards, with no separate section headings and no status bar | populated, empty (shows empty state) |
 | `project-content-responsive` | Responsive layout | sidebar + main on desktop (>= 768 px), single column on mobile |
 | `project-folder-header` | Header above the workspace grid showing the project's icon (resolved from `Project.icon`), the project or folder name as `<h1>`, and an item count (`{N} items` / `1 item`). | always visible when a project or folder is open |
-| `project-folder-toolbar` | Toolbar above the workspace grid with two buttons: `+ New Mockup` (accent, currently stubbed pending upload UI) and `New Folder` (secondary, calls `POST /api/projects/[id]/folders`). | always visible when a project or folder is open |
 
 ## folder-card
 
@@ -248,7 +247,7 @@ Mockup viewer page at `/mockups/[id]` (`MockupViewer.tsx`) inside the standard s
 | `mockup-viewer-pin-number` | Sequential number inside teardrop badge | sequential numbering |
 | `mockup-viewer-sidebar` | Annotation list sidebar panel | populated (annotation list), empty |
 | `mockup-viewer-versions` | Version list in sidebar (`Versions.tsx`) with promote action and timestamps | shows version history, promote button per version |
-| `mockup-viewer-toolbar` | Toolbar below the mockup-viewer title with nine controls: edit-mode toggle, comment-mode toggle, zoom out, zoom % label, zoom in, fullscreen, history toggle, version pill (`v{N}`), view-diff button. Zoom clamps to 25–400% and applies `transform: scale()` to the iframe wrapper. Fullscreen calls `requestFullscreen()` on the wrapper. History toggles the side Versions panel. Diff opens a modal with the unified diff between previous and current version (`Nothing to compare yet.` if only one version exists). | edit mode, comment mode; zoom 25–400% |
+| `mockup-viewer-toolbar` | Toolbar below the mockup-viewer title with nine controls: edit-mode toggle (`VscEdit`), comment-mode toggle (`VscComment`), zoom out (`VscRemove`), zoom % label, zoom in (`VscAdd`), fullscreen (`VscScreenFull`), history toggle (`VscHistory`), version pill (`v{N}` + `VscChevronDown`), view-diff button (`VscDiff`). All icons are VSCode codicons via `react-icons/vsc` per the icon-system rule in `docs/frontend/styling.md`. Zoom clamps to 25–400% and applies `transform: scale()` to the iframe wrapper. Fullscreen calls `requestFullscreen()` on the wrapper. History toggles the side Versions panel. Diff opens a modal with the unified diff between previous and current version (`Nothing to compare yet.` if only one version exists). | edit mode, comment mode; zoom 25–400% |
 | `mockup-viewer-add-comment` | "+ Comment" button | default, hover, focus-visible, active; captures iframe screenshot + opens `annotation-modal` |
 
 ## annotation-modal
@@ -328,7 +327,7 @@ Agent token management page at `/settings/agents` (`AgentsClient.tsx`). Accessib
 | ID | Surface / Interaction | States |
 |---|---|---|
 | `settings-agents-list` | List of existing agent token cards. Above the list: `{N} tokens` count label and an accent `+ New Token` button. | populated, empty ("No tokens yet…" message) |
-| `agent-tokens` | Each agent token renders as a card with a 🔑 icon, name, meta line `Created X · Last used Y` (or `never`), masked token preview `mk_live_•••••••<lastFour>` (or `mk_test_…` in test env), and two icon buttons: copy (writes the masked preview to clipboard) and revoke. | default; copy hover: `--btn-bg-hover` bg; revoke hover: `--danger-soft` bg + `--danger` color |
+| `agent-tokens` | Each agent token renders as a card pixel-aligned with DS 10-agent-tokens V3: 600 px max-width page container, 36×36 key-icon box (inline SVG, accent-soft bg + `--accent` tinted), name (14 px / 600), meta line `Created X · Last used Y` (or `never`) in `--text-muted`, masked token preview `mk_{live|test}_••••••••••••<lastFour>` in `--font-mono` inside an `--bg-elevated` chip with `--border-subtle` and `--radius-xs`, and two icon buttons (copy + revoke, each 28×28 with `--radius-xs`). Topbar of the page renders an empty breadcrumb — the page h1 already carries the label. | default; copy hover: `--surface-hover` bg + `--text`; revoke hover: `--danger-soft` bg + `--danger` color |
 | `settings-agents-create-btn` | `+ New Token` accent button above the token list | default, hover, focus-visible, active |
 | `settings-agents-create-form` | Token creation form (name input) | idle, submitting |
 | `settings-agents-plaintext` | One-time plaintext token display with copy button shown immediately after creation | shown once after creation; copy shows toast "Copied to clipboard" |
