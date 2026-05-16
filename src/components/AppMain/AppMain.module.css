@@ -1,0 +1,30 @@
+.appMain {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Mockup viewer: full-bleed, internal scroll handled by sub-components */
+.viewer {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Folder/project workspace: scrollable column */
+.scroll {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: var(--space-xl);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* Settings: narrow centered column */
+.centered {
+  display: block;
+  max-width: 600px;
+  margin: 0;
+  padding: 32px;
+}
