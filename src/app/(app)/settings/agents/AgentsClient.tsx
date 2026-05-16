@@ -165,7 +165,7 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
             lineHeight: 1.05,
           }}
         >
-          Agent tokens
+          Agent Tokens
         </h1>
         <p
           style={{
@@ -175,8 +175,7 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
             lineHeight: 'var(--leading-normal)',
           }}
         >
-          Tokens authenticate non-browser clients — AI dev assistants, agent frameworks, CI
-          integrations — against the API.
+          API tokens for agent integrations. Create, copy and revoke tokens.
         </p>
       </div>
 

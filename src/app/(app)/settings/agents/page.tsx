@@ -39,7 +39,7 @@ export default async function AgentsPage() {
   return (
     <>
       <Topbar
-        breadcrumbs={[{ label: 'Agent tokens', href: '/settings/agents' }]}
+        breadcrumbs={[{ label: 'Agent Tokens', href: '/settings/agents' }]}
         userName={user?.name ?? undefined}
         userEmail={user?.email ?? undefined}
       />
