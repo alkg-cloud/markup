@@ -1,8 +1,13 @@
 import crypto from 'node:crypto';
 import { prisma } from '@/lib/prisma';
 
-const PREFIX = 'mk_';
-const TOKEN_RE = /^mk_[0-9a-f]{64}$/;
+const PREFIX_LIVE = 'mk_live_';
+const PREFIX_TEST = 'mk_test_';
+const TOKEN_RE = /^mk_(?:live_|test_)?[0-9a-f]{64}$/;
+
+function getPrefix(): string {
+  return process.env.NODE_ENV === 'production' ? PREFIX_LIVE : PREFIX_TEST;
+}
 
 export function hashAgentSecret(secret: string): string {
   return crypto.createHash('sha256').update(secret).digest('hex');
@@ -10,16 +15,20 @@ export function hashAgentSecret(secret: string): string {
 
 export async function generateAgentToken(name: string) {
   const secret = crypto.randomBytes(32).toString('hex');
-  const plaintext = `${PREFIX}${secret}`;
+  const prefix = getPrefix();
+  const plaintext = `${prefix}${secret}`;
+  const lastFour = secret.slice(-4);
   const tokenHash = hashAgentSecret(plaintext);
-  const row = await prisma.agentToken.create({ data: { name, tokenHash } });
-  return { plaintext, id: row.id, name: row.name };
+  const row = await prisma.agentToken.create({ data: { name, tokenHash, prefix, lastFour } });
+  return { plaintext, prefix, lastFour, id: row.id, name: row.name };
 }
 
 export async function importAgentToken(name: string, plaintextSecret: string) {
-  const plaintext = `${PREFIX}${plaintextSecret}`;
+  const prefix = getPrefix();
+  const plaintext = `${prefix}${plaintextSecret}`;
+  const lastFour = plaintextSecret.slice(-4);
   const tokenHash = hashAgentSecret(plaintext);
-  return prisma.agentToken.create({ data: { name, tokenHash } });
+  return prisma.agentToken.create({ data: { name, tokenHash, prefix, lastFour } });
 }
 
 export async function verifyAgentToken(presented: string) {

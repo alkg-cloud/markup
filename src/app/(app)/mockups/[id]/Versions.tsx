@@ -14,12 +14,32 @@ interface Props {
   mockupId: string;
   currentVersionId: string;
   versions: VersionRow[];
+  /** External open state — when provided, the panel is controlled by the parent */
+  open?: boolean;
+  /** Called when the toggle header is clicked in controlled mode */
+  onOpenChange?: (next: boolean) => void;
 }
 
-export function Versions({ mockupId, currentVersionId, versions }: Props) {
+export function Versions({
+  mockupId,
+  currentVersionId,
+  versions,
+  open: openProp,
+  onOpenChange,
+}: Props) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
+  const [openInternal, setOpenInternal] = useState(false);
+
+  const open = openProp !== undefined ? openProp : openInternal;
+  const setOpen = (next: boolean | ((prev: boolean) => boolean)) => {
+    const resolved = typeof next === 'function' ? next(open) : next;
+    if (onOpenChange) {
+      onOpenChange(resolved);
+    } else {
+      setOpenInternal(resolved);
+    }
+  };
 
   async function promote(vid: string) {
     if (busyId) return;

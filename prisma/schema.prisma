@@ -29,6 +29,8 @@ model AgentToken {
   id          String    @id @default(cuid())
   name        String    @unique
   tokenHash   String    @unique
+  prefix      String?
+  lastFour    String?
   createdAt   DateTime  @default(now())
   lastUsedAt  DateTime?
 }

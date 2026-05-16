@@ -2,10 +2,10 @@ import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
+import type { TreeMockup } from '@/components/ProjectTree/ProjectTree';
 import { identify } from '@/lib/auth/identify';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { prisma } from '@/lib/prisma';
-import { projectDisplayName } from '@/lib/project/routes';
 import { getProjectTree, listProjects } from '@/lib/project/service';
 import styles from './projects/layout.module.css';
 import { ProjectSidebar } from './projects/ProjectSidebar';
@@ -32,9 +32,15 @@ export async function AppShell({ children }: { children: ReactNode }) {
   await getAuthenticatedIdentity();
 
   const projectList = await listProjects();
-  const treeProjects = (await Promise.all(projectList.map((p) => getProjectTree(p.id))))
-    .filter((t) => t !== null)
-    .map((project) => ({ ...project, name: projectDisplayName(project) }));
+  const allTrees = (await Promise.all(projectList.map((p) => getProjectTree(p.id)))).filter(
+    (t) => t !== null,
+  );
+
+  // Separate the synthetic "unsorted" pseudo-project from real projects.
+  // Its mockups become orphanMockups (rendered under "NO PROJECT").
+  const unsortedTree = allTrees.find((t) => t.slug === 'unsorted') ?? null;
+  const orphanMockups: TreeMockup[] = unsortedTree ? unsortedTree.mockups : [];
+  const treeProjects = allTrees.filter((t) => t.slug !== 'unsorted');
 
   const allMockups = await prisma.mockup.findMany({
     where: { status: { not: 'archived' } },
@@ -59,6 +65,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
     <div className={styles.shell}>
       <ProjectSidebar
         projects={treeProjects}
+        orphanMockups={orphanMockups}
         mockupNames={mockupNames}
         recentMockups={recentMockups}
       />

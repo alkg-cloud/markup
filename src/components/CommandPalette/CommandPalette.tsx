@@ -102,7 +102,7 @@ export function CommandPalette({ projects }: CommandPaletteProps) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         if (open) closePalette();
-        else openPalette();
+        else document.dispatchEvent(new CustomEvent('open-command-palette'));
       }
     }
     const handleCustomOpen = () => {

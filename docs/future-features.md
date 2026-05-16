@@ -127,6 +127,15 @@ Smaller bugs get fixed inline; this doc is for work that needs its own spec / pl
 
 **Size:** ~1 day. Mostly schema + UI.
 
+### 23. Project-card grid on the root workspace
+**Where:** new `ProjectCard.tsx` + change to `src/app/(app)/page.tsx` rendering when listing the root workspace.
+
+**Today:** `MockupCard.tsx` is the only card component shipped. The root `/` workspace renders the orphan mockup set (`NO PROJECT` section after qa-findings) as a flat grid. Projects themselves never render as cards — they only appear as nodes in the sidebar tree. DS 05-project-card V3 prescribes a `Project Alpha` / `Project Beta` / `Project Gamma` card row but the live app has no surface that uses it.
+
+**Fix:** introduce a `ProjectCard.tsx` matching DS 05-project-card (icon thumbnail + name + inline meta `{mockupCount} mockups · Updated {relTime}` + kebab). The root workspace renders a row of project cards above the orphan mockup grid; entering a project (via `/?project=...`) similarly renders sub-folder cards above the mockup grid (matching DS 12-project-folder-view). Thumbnail fallback: reuse the most-recently-updated mockup's thumbnail, or the project icon on a tinted background derived from the project's hue.
+
+**Size:** ~1 day. New component + module CSS + tests + integration in the root + project routes + thumbnail-fallback helper.
+
 ---
 
 ## P3 — infrastructure / external concerns

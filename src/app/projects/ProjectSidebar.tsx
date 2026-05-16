@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NewProjectDialog } from '@/components/NewProjectDialog/NewProjectDialog';
-import type { TreeProject } from '@/components/ProjectTree/ProjectTree';
+import type { TreeMockup, TreeProject } from '@/components/ProjectTree/ProjectTree';
 import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
 import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
 import { RecentsSection } from '@/components/ProjectTree/RecentsSection';
@@ -14,11 +14,17 @@ import sidebarStyles from './ProjectSidebar.module.css';
 
 interface ProjectSidebarProps {
   projects: TreeProject[];
+  orphanMockups?: TreeMockup[];
   mockupNames: Record<string, string>;
   recentMockups: Record<string, RecentMockup>;
 }
 
-export function ProjectSidebar({ projects, mockupNames, recentMockups }: ProjectSidebarProps) {
+export function ProjectSidebar({
+  projects,
+  orphanMockups = [],
+  mockupNames,
+  recentMockups,
+}: ProjectSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
@@ -120,6 +126,7 @@ export function ProjectSidebar({ projects, mockupNames, recentMockups }: Project
     <>
       <ProjectTree
         projects={projects}
+        orphanMockups={orphanMockups}
         mockupNames={mockupNames}
         onCreateFolder={handleCreateFolder}
         onMove={handleMove}

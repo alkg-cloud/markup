@@ -1,9 +1,12 @@
 'use client';
 import { useState } from 'react';
+import styles from './AgentsClient.module.css';
 
 interface AgentToken {
   id: string;
   name: string;
+  prefix: string | null;
+  lastFour: string | null;
   createdAt: string;
   lastUsedAt: string | null;
 }
@@ -14,8 +17,40 @@ interface CreatedToken {
   plaintext: string;
 }
 
-export function AgentsClient({ initial }: { initial: AgentToken[] }) {
-  const [tokens, setTokens] = useState<AgentToken[]>(initial);
+function relTime(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 60) return 'just now';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDays = Math.floor(diffHr / 24);
+  if (diffDays < 30) return `${diffDays}d ago`;
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) return `${diffMonths}mo ago`;
+  return `${Math.floor(diffMonths / 12)}y ago`;
+}
+
+function maskedPreview(prefix: string | null, lastFour: string | null): string {
+  if (!prefix) {
+    return 'mk_•••••••••••••';
+  }
+  const dots = '•'.repeat(7);
+  return lastFour ? `${prefix}${dots}${lastFour}` : `${prefix}${dots}`;
+}
+
+export function AgentsClient({
+  initialTokens,
+  initial,
+}: {
+  initialTokens?: AgentToken[];
+  /** @deprecated use initialTokens */
+  initial?: AgentToken[];
+}) {
+  const startTokens = initialTokens ?? initial ?? [];
+  const [tokens, setTokens] = useState<AgentToken[]>(startTokens);
+  const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,21 +83,31 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
     setRevealed(created);
     setCopied(false);
     setName('');
+    setShowForm(false);
     await refresh();
   }
 
-  async function onRevoke(id: string) {
+  async function onRevoke(id: string, _tokenName: string) {
     if (!confirm('Revoke this agent token? Any client using it will lose access immediately.'))
       return;
     await fetch(`/api/agent-tokens/${id}`, { method: 'DELETE' });
+    if (revealed?.id === id) setRevealed(null);
     await refresh();
   }
 
-  function handleCopy() {
+  function handleCopyRevealed() {
     if (!revealed) return;
     void navigator.clipboard.writeText(revealed.plaintext);
     setCopied(true);
     setTimeout(() => setCopied(false), 1200);
+  }
+
+  async function copyToken(masked: string) {
+    try {
+      await navigator.clipboard.writeText(masked);
+    } catch {
+      // clipboard unavailable / denied — silently no-op for now.
+    }
   }
 
   return (
@@ -76,28 +121,6 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
       }}
     >
       <style>{`
-        .ac-btn-primary {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 14px 24px;
-          background: var(--btn-bg);
-          color: var(--accent);
-          border: 0;
-          border-radius: var(--radius-pill);
-          font-size: var(--type-sm);
-          font-weight: 700;
-          font-family: inherit;
-          white-space: nowrap;
-          transition:
-            background var(--motion-fast) var(--ease-standard),
-            transform var(--motion-instant) var(--ease-standard),
-            opacity var(--motion-fast) var(--ease-standard);
-        }
-        .ac-btn-primary:hover:not(:disabled) { background: var(--btn-bg-hover); }
-        .ac-btn-primary:active:not(:disabled) { background: var(--btn-bg-active); transform: translateY(1px); }
-        .ac-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
         @keyframes ac-copy-pulse {
           0%   { transform: scale(1); }
           40%  { transform: scale(1.05); }
@@ -127,31 +150,8 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
         .ac-btn-copy.copied {
           animation: ac-copy-pulse 200ms var(--ease-emphasized) forwards;
         }
-
-        .ac-btn-revoke {
-          padding: 5px 10px;
-          font-size: var(--type-2xs);
-          border-radius: var(--radius-pill);
-          background: transparent;
-          border: 1px solid var(--danger-border);
-          color: var(--danger);
-          font-weight: 600;
-          cursor: pointer;
-          font-family: inherit;
-          transition:
-            background var(--motion-fast) var(--ease-standard),
-            transform var(--motion-instant) var(--ease-standard);
-        }
-        .ac-btn-revoke:hover { background: var(--danger-soft); }
-        .ac-btn-revoke:active { background: var(--danger-press); transform: scale(0.97); }
-
-        .ac-token-input:focus-visible {
-          outline: none;
-          box-shadow: var(--focus-ring);
-          border-color: var(--accent);
-          border-radius: var(--radius-sm);
-        }
       `}</style>
+
       {/* Page header */}
       <div>
         <h1
@@ -165,7 +165,7 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
             lineHeight: 1.05,
           }}
         >
-          Agent tokens
+          Agent Tokens
         </h1>
         <p
           style={{
@@ -175,245 +175,245 @@ export function AgentsClient({ initial }: { initial: AgentToken[] }) {
             lineHeight: 'var(--leading-normal)',
           }}
         >
-          Tokens authenticate non-browser clients — AI dev assistants, agent frameworks, CI
-          integrations — against the API.
+          API tokens for agent integrations. Create, copy and revoke tokens.
         </p>
       </div>
 
-      {/* Create form card */}
-      <section
-        style={{
-          background: 'var(--bg-elevated-soft)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-md)',
-          padding: 'var(--space-xl)',
-          display: 'grid',
-          gap: 'var(--space-md)',
-        }}
-      >
-        {/* Eyebrow */}
+      {/* Plaintext token reveal (shown after creation) */}
+      {revealed && (
         <div
+          role="alert"
           style={{
-            fontSize: 'var(--type-2xs)',
-            fontWeight: 700,
-            letterSpacing: 'var(--tracking-wider)',
-            textTransform: 'uppercase',
-            color: 'var(--text-dim)',
-          }}
-        >
-          Create new token
-        </div>
-
-        {/* Field row: input + button */}
-        <form
-          onSubmit={onCreate}
-          style={{
+            background: 'var(--warning-soft)',
+            borderLeft: '4px solid var(--warning)',
+            padding: 'var(--space-md)',
+            borderRadius: 'var(--radius-sm)',
             display: 'grid',
-            gridTemplateColumns: '1fr auto',
-            gap: 'var(--space-sm)',
-            alignItems: 'end',
+            gap: 'var(--space-xs)',
           }}
         >
-          <div style={{ display: 'grid', gap: 6 }}>
-            <label
-              htmlFor="token-name"
+          <span
+            style={{
+              fontSize: 'var(--type-xs)',
+              fontWeight: 700,
+              letterSpacing: 'var(--tracking-wide)',
+              textTransform: 'uppercase',
+              color: 'var(--warning)',
+            }}
+          >
+            ⚡ Token created — copy now, it won&apos;t be shown again
+          </span>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-sm)',
+            }}
+          >
+            <code
               style={{
-                fontSize: 'var(--type-2xs)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 'var(--type-sm)',
+                color: 'var(--text-bright)',
+                flex: 1,
+                wordBreak: 'break-all',
+              }}
+            >
+              {revealed.plaintext}
+            </code>
+            <button
+              type="button"
+              onClick={handleCopyRevealed}
+              className={`ac-btn-copy${copied ? ' copied' : ''}`}
+              style={{ color: copied ? 'var(--success)' : 'var(--accent)' }}
+              aria-label={`Copy token ${revealed.name}`}
+            >
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Inline new-token form */}
+      {showForm && (
+        <section
+          style={{
+            background: 'var(--bg-elevated-soft)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--space-xl)',
+            display: 'grid',
+            gap: 'var(--space-md)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 'var(--type-2xs)',
+              fontWeight: 700,
+              letterSpacing: 'var(--tracking-wider)',
+              textTransform: 'uppercase',
+              color: 'var(--text-dim)',
+            }}
+          >
+            New token
+          </div>
+          <form
+            onSubmit={onCreate}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr auto auto',
+              gap: 'var(--space-sm)',
+              alignItems: 'end',
+            }}
+          >
+            <div style={{ display: 'grid', gap: 6 }}>
+              <label
+                htmlFor="token-name"
+                style={{
+                  fontSize: 'var(--type-2xs)',
+                  fontWeight: 700,
+                  letterSpacing: 'var(--tracking-wide)',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-dim)',
+                }}
+              >
+                Name
+              </label>
+              <input
+                id="token-name"
+                required
+                pattern="[A-Za-z0-9_-]+"
+                minLength={1}
+                maxLength={64}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. claude-code-prod, ci-builder, designer-bot"
+                style={{
+                  padding: '12px 16px',
+                  background: 'var(--surface-input)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--text-bright)',
+                  font: 'inherit',
+                  fontSize: 'var(--type-base)',
+                }}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={busy}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '14px 24px',
+                background: 'var(--accent)',
+                color: 'var(--accent-foreground, white)',
+                border: 0,
+                borderRadius: 'var(--radius-pill)',
+                fontSize: 'var(--type-sm)',
                 fontWeight: 700,
-                letterSpacing: 'var(--tracking-wide)',
-                textTransform: 'uppercase',
+                fontFamily: 'inherit',
+                cursor: busy ? 'not-allowed' : 'pointer',
+                opacity: busy ? 0.5 : 1,
+              }}
+            >
+              {busy ? 'Creating…' : 'Create'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowForm(false);
+                setError(null);
+                setName('');
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '14px 16px',
+                background: 'transparent',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-pill)',
+                fontSize: 'var(--type-sm)',
+                fontWeight: 500,
+                fontFamily: 'inherit',
+                cursor: 'pointer',
                 color: 'var(--text-dim)',
               }}
             >
-              Name
-            </label>
-            <input
-              id="token-name"
-              required
-              pattern="[A-Za-z0-9_-]+"
-              minLength={1}
-              maxLength={64}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. claude-code-prod, ci-builder, designer-bot"
-              style={{
-                padding: '12px 16px',
-                background: 'var(--surface-input)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--text-bright)',
-                font: 'inherit',
-                fontSize: 'var(--type-base)',
-              }}
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={busy}
-            className="ac-btn-primary"
-            style={{ cursor: busy ? 'not-allowed' : 'pointer' }}
-          >
-            {busy ? 'Creating…' : 'Create →'}
-          </button>
-        </form>
-
-        {error && (
-          <p role="alert" style={{ margin: 0, color: 'var(--danger)', fontSize: 'var(--type-sm)' }}>
-            {error}
-          </p>
-        )}
-
-        {/* Plaintext token reveal */}
-        {revealed && (
-          <div
-            role="alert"
-            style={{
-              background: 'var(--warning-soft)',
-              borderLeft: '4px solid var(--warning)',
-              padding: 'var(--space-md)',
-              borderRadius: 'var(--radius-sm)',
-              display: 'grid',
-              gap: 'var(--space-xs)',
-            }}
-          >
-            <span
-              style={{
-                fontSize: 'var(--type-xs)',
-                fontWeight: 700,
-                letterSpacing: 'var(--tracking-wide)',
-                textTransform: 'uppercase',
-                color: 'var(--warning)',
-              }}
+              Cancel
+            </button>
+          </form>
+          {error && (
+            <p
+              role="alert"
+              style={{ margin: 0, color: 'var(--danger)', fontSize: 'var(--type-sm)' }}
             >
-              ⚡ Token created — copy now, it won&apos;t be shown again
-            </span>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-sm)',
-              }}
-            >
-              <code
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 'var(--type-sm)',
-                  color: 'var(--text-bright)',
-                  flex: 1,
-                  wordBreak: 'break-all',
-                }}
-              >
-                {revealed.plaintext}
-              </code>
-              <button
-                type="button"
-                onClick={handleCopy}
-                className={`ac-btn-copy${copied ? ' copied' : ''}`}
-                style={{ color: copied ? 'var(--success)' : 'var(--accent)' }}
-              >
-                {copied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-          </div>
-        )}
-      </section>
+              {error}
+            </p>
+          )}
+        </section>
+      )}
 
-      {/* Existing tokens table */}
-      <section
-        style={{
-          background: 'var(--bg-elevated-soft)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-md)',
-          overflow: 'hidden',
-        }}
-      >
-        {tokens.length === 0 ? (
-          <p
+      {/* Token list */}
+      <section>
+        {/* Toolbar */}
+        <div className={styles.toolbar}>
+          <span
             style={{
-              margin: 0,
-              padding: 'var(--space-2xl)',
-              textAlign: 'center',
-              color: 'var(--text-dim)',
               fontSize: 'var(--type-sm)',
+              fontWeight: 600,
+              color: 'var(--text-dim)',
             }}
           >
-            No tokens yet — create one above to authorize a non-browser agent against the API.
-          </p>
+            {tokens.length} {tokens.length === 1 ? 'token' : 'tokens'}
+          </span>
+          {!showForm && (
+            <button type="button" className={styles.newBtn} onClick={() => setShowForm(true)}>
+              + New Token
+            </button>
+          )}
+        </div>
+
+        {tokens.length === 0 ? (
+          <div className={styles.empty}>
+            No tokens yet — create one to authorize a non-browser agent against the API.
+          </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                {(['Name', 'Created', 'Last used', ''] as const).map((col) => (
-                  <th
-                    key={col}
-                    style={{
-                      textAlign: 'left',
-                      fontSize: 'var(--type-2xs)',
-                      fontWeight: 700,
-                      letterSpacing: 'var(--tracking-wider)',
-                      textTransform: 'uppercase',
-                      color: 'var(--text-dim)',
-                      borderBottom: '1px solid var(--border-subtle)',
-                      background: 'var(--surface-soft)',
-                      padding: 'var(--space-sm) var(--space-lg)',
-                    }}
+          <div className={styles.list}>
+            {tokens.map((t) => (
+              <div key={t.id} className={styles.card}>
+                <div className={styles.keyIcon}>🔑</div>
+                <div className={styles.body}>
+                  <h3 className={styles.name}>{t.name}</h3>
+                  <p className={styles.meta}>
+                    Created {relTime(t.createdAt)} · Last used{' '}
+                    {t.lastUsedAt ? relTime(t.lastUsedAt) : 'never'}
+                  </p>
+                  <div className={styles.masked}>{maskedPreview(t.prefix, t.lastFour)}</div>
+                </div>
+                <div className={styles.actions}>
+                  <button
+                    type="button"
+                    aria-label={`Copy token ${t.name}`}
+                    title="Copy"
+                    onClick={() => copyToken(maskedPreview(t.prefix, t.lastFour))}
                   >
-                    {col}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {tokens.map((t) => (
-                <tr key={t.id}>
-                  <td
-                    style={{
-                      padding: 'var(--space-sm) var(--space-lg)',
-                      borderBottom: '1px solid var(--border-subtle)',
-                      fontSize: 'var(--type-sm)',
-                      color: 'var(--text-bright)',
-                      fontWeight: 600,
-                    }}
+                    📋
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Revoke token ${t.name}`}
+                    title="Revoke"
+                    onClick={() => onRevoke(t.id, t.name)}
                   >
-                    {t.name}
-                  </td>
-                  <td
-                    className="tnum"
-                    style={{
-                      padding: 'var(--space-sm) var(--space-lg)',
-                      borderBottom: '1px solid var(--border-subtle)',
-                      fontSize: 'var(--type-sm)',
-                      color: 'var(--text-dim)',
-                    }}
-                  >
-                    {new Date(t.createdAt).toLocaleString()}
-                  </td>
-                  <td
-                    className="tnum"
-                    style={{
-                      padding: 'var(--space-sm) var(--space-lg)',
-                      borderBottom: '1px solid var(--border-subtle)',
-                      fontSize: 'var(--type-sm)',
-                      color: 'var(--text-dim)',
-                    }}
-                  >
-                    {t.lastUsedAt ? new Date(t.lastUsedAt).toLocaleString() : 'never'}
-                  </td>
-                  <td
-                    style={{
-                      padding: 'var(--space-sm) var(--space-lg)',
-                      borderBottom: '1px solid var(--border-subtle)',
-                      textAlign: 'right',
-                    }}
-                  >
-                    <button type="button" onClick={() => onRevoke(t.id)} className="ac-btn-revoke">
-                      Revoke
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    🗑
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </section>
     </main>
