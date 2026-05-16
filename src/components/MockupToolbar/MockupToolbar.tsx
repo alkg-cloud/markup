@@ -1,3 +1,13 @@
+import {
+  VscAdd,
+  VscChevronDown,
+  VscComment,
+  VscDiff,
+  VscEdit,
+  VscHistory,
+  VscRemove,
+  VscScreenFull,
+} from 'react-icons/vsc';
 import styles from './MockupToolbar.module.css';
 
 export interface MockupToolbarProps {
@@ -30,7 +40,7 @@ export function MockupToolbar({
         onClick={() => onModeChange('edit')}
         className={styles.iconBtn}
       >
-        ✏️
+        <VscEdit aria-hidden="true" />
       </button>
       <button
         type="button"
@@ -39,7 +49,7 @@ export function MockupToolbar({
         onClick={() => onModeChange('comment')}
         className={styles.iconBtn}
       >
-        💬
+        <VscComment aria-hidden="true" />
       </button>
       <span className={styles.divider} aria-hidden="true" />
       <button
@@ -48,7 +58,7 @@ export function MockupToolbar({
         onClick={() => onZoomChange(-10)}
         className={styles.iconBtn}
       >
-        −
+        <VscRemove aria-hidden="true" />
       </button>
       <span className={styles.zoomLabel}>{zoom}%</span>
       <button
@@ -57,7 +67,7 @@ export function MockupToolbar({
         onClick={() => onZoomChange(10)}
         className={styles.iconBtn}
       >
-        +
+        <VscAdd aria-hidden="true" />
       </button>
       <button
         type="button"
@@ -65,15 +75,17 @@ export function MockupToolbar({
         onClick={onFullscreen}
         className={styles.iconBtn}
       >
-        ⛶
+        <VscScreenFull aria-hidden="true" />
       </button>
       <span className={styles.divider} aria-hidden="true" />
       <button type="button" aria-label="History" onClick={onHistory} className={styles.iconBtn}>
-        🔄
+        <VscHistory aria-hidden="true" />
       </button>
-      <span className={styles.versionPill}>{versionLabel}</span>
+      <span className={styles.versionPill}>
+        {versionLabel} <VscChevronDown aria-hidden="true" />
+      </span>
       <button type="button" aria-label="View diff" onClick={onDiff} className={styles.iconBtn}>
-        📑
+        <VscDiff aria-hidden="true" />
       </button>
     </div>
   );

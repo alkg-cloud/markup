@@ -970,6 +970,21 @@ export function ProjectTree({
                             New subfolder
                           </button>
                         )}
+                        {node.type === 'project' && onCreateFolder && (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            className={styles.kebabMenuItem}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuOpenId(null);
+                              if (!expanded.has(node.id)) toggleExpand(node.id);
+                              setCreatingIn({ projectId: node.projectSlug, parentId: null });
+                            }}
+                          >
+                            New folder
+                          </button>
+                        )}
                         <div className={styles.kebabMenuDivider} />
                         <button
                           type="button"
@@ -1034,6 +1049,23 @@ export function ProjectTree({
                     onCancel={() => setCreatingIn(null)}
                   />
                 )}
+              {creatingIn &&
+                node.type === 'project' &&
+                creatingIn.projectId === node.projectSlug &&
+                creatingIn.parentId === null &&
+                node.expanded && (
+                  <InlineFolderCreate
+                    indent={indentPx + 12}
+                    onConfirm={async (name) => {
+                      if (onCreateFolder) {
+                        await onCreateFolder(node.projectId, null, name);
+                      }
+                      setCreatingIn(null);
+                      router.refresh();
+                    }}
+                    onCancel={() => setCreatingIn(null)}
+                  />
+                )}
             </li>
           );
         })}
@@ -1042,24 +1074,34 @@ export function ProjectTree({
             <div className={styles.sectionHeader} aria-hidden="true">
               NO PROJECT
             </div>
-            {orphanMockups.map((m) => (
-              <li key={m.id} role="none" className={styles.item}>
-                <div
-                  role="treeitem"
-                  aria-level={1}
-                  aria-selected={false}
-                  className={cx(styles.treeItem, styles.indent1)}
-                  tabIndex={-1}
-                  onClick={() => {}}
-                  onKeyDown={() => {}}
-                >
-                  <span className={styles.iconMockup}>
-                    <MockupIcon />
-                  </span>
-                  <span className={styles.label}>{m.name}</span>
-                </div>
-              </li>
-            ))}
+            {orphanMockups.map((m) => {
+              const href = `/mockups/${m.id}`;
+              const active = pathname === href;
+              return (
+                <li key={m.id} role="none" className={styles.item}>
+                  <div
+                    role="treeitem"
+                    aria-level={1}
+                    aria-selected={active}
+                    className={cx(styles.treeItem, styles.indent1, active && styles.active)}
+                    tabIndex={-1}
+                    title={m.name}
+                    onClick={() => router.push(href)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        router.push(href);
+                      }
+                    }}
+                  >
+                    <span className={styles.iconMockup}>
+                      <MockupIcon />
+                    </span>
+                    <span className={styles.label}>{m.name}</span>
+                  </div>
+                </li>
+              );
+            })}
           </>
         )}
       </div>
