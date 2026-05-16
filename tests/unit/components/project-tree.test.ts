@@ -77,6 +77,7 @@ describe('ProjectTree active-path auto-expand', () => {
   beforeEach(() => {
     mockPathname = '/';
     mockSearchParams = new URLSearchParams();
+    localStorage.clear();
   });
 
   afterEach(() => {

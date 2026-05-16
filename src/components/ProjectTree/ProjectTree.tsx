@@ -14,6 +14,8 @@ const cx = (...classes: (string | false | undefined | null)[]) => classes.filter
 
 const INDENT_PX = [0, 12, 28, 44, 60];
 
+const EXPANDED_STORAGE_KEY = 'markup.sidebar.expanded';
+
 /* ── Types ────────────────────────────────────────────────────────────────── */
 
 export interface TreeMockup {
@@ -381,6 +383,7 @@ function flattenChildren(
 
 interface ProjectTreeProps {
   projects: TreeProject[];
+  orphanMockups?: TreeMockup[];
   recents?: Record<string, string[]>;
   mockupNames?: Record<string, string>;
   onCreateFolder?: (projectId: string, parentId: string | null, name: string) => Promise<void>;
@@ -398,6 +401,7 @@ interface ProjectTreeProps {
 
 export function ProjectTree({
   projects,
+  orphanMockups = [],
   recents = {},
   mockupNames = {},
   onCreateFolder,
@@ -411,9 +415,20 @@ export function ProjectTree({
   const router = useRouter();
 
   const [expanded, setExpanded] = useState<Set<string>>(() => {
-    const initial = computeActivePathExpanded(projects, pathname, searchParams);
-    if (initial.size === 0 && projects.length > 0) initial.add(projects[0].id);
-    return initial;
+    const fromUrl = computeActivePathExpanded(projects, pathname, searchParams);
+    if (typeof window === 'undefined') {
+      if (fromUrl.size === 0 && projects.length > 0) fromUrl.add(projects[0].id);
+      return fromUrl;
+    }
+    try {
+      const stored: string[] = JSON.parse(localStorage.getItem(EXPANDED_STORAGE_KEY) ?? '[]');
+      const merged = new Set([...stored, ...fromUrl]);
+      if (merged.size === 0 && projects.length > 0) merged.add(projects[0].id);
+      return merged;
+    } catch {
+      if (fromUrl.size === 0 && projects.length > 0) fromUrl.add(projects[0].id);
+      return fromUrl;
+    }
   });
   const [focusIndex, setFocusIndex] = useState(0);
   const [creatingIn, setCreatingIn] = useState<{
@@ -426,6 +441,7 @@ export function ProjectTree({
   const menuRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<HTMLDivElement>(null);
   const announceRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!menuOpenId) return;
@@ -437,6 +453,15 @@ export function ProjectTree({
     document.addEventListener('mousedown', handle);
     return () => document.removeEventListener('mousedown', handle);
   }, [menuOpenId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(EXPANDED_STORAGE_KEY, JSON.stringify([...expanded]));
+    } catch {
+      // Storage full or disabled — silently no-op; in-memory state still works.
+    }
+  }, [expanded]);
 
   const nodes = flattenProjects(projects, expanded, recents);
 
@@ -664,6 +689,13 @@ export function ProjectTree({
     });
   }, [pathname, projects, searchParams]);
 
+  useEffect(() => {
+    const el = activeRef.current;
+    if (el && typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [pathname, searchParams]);
+
   const isActive = (href: string) => {
     if (href.startsWith('/?')) {
       const params = new URLSearchParams(href.slice(2));
@@ -689,6 +721,9 @@ export function ProjectTree({
         onKeyDown={handleKeyDown}
         className={styles.tree}
       >
+        <div className={styles.sectionHeader} aria-hidden="true">
+          PROJECTS
+        </div>
         {nodes.map((node, index) => {
           if (node.type === 'recents-header') {
             return (
@@ -753,6 +788,7 @@ export function ProjectTree({
               )}
               {/* biome-ignore lint/a11y/useKeyWithClickEvents: keyboard handled by parent tree onKeyDown */}
               <div
+                ref={active ? activeRef : undefined}
                 role="treeitem"
                 tabIndex={index === focusIndex ? 0 : -1}
                 data-tree-index={index}
@@ -860,7 +896,7 @@ export function ProjectTree({
                       type="button"
                       tabIndex={-1}
                       className={styles.kebab}
-                      aria-label={`Menu de ${displayLabel}`}
+                      aria-label={`Menu for ${displayLabel}`}
                       aria-haspopup="true"
                       aria-expanded={menuOpenId === node.id}
                       onClick={(e) => {
@@ -1001,6 +1037,31 @@ export function ProjectTree({
             </li>
           );
         })}
+        {orphanMockups.length > 0 && (
+          <>
+            <div className={styles.sectionHeader} aria-hidden="true">
+              NO PROJECT
+            </div>
+            {orphanMockups.map((m) => (
+              <li key={m.id} role="none" className={styles.item}>
+                <div
+                  role="treeitem"
+                  aria-level={1}
+                  aria-selected={false}
+                  className={cx(styles.treeItem, styles.indent1)}
+                  tabIndex={-1}
+                  onClick={() => {}}
+                  onKeyDown={() => {}}
+                >
+                  <span className={styles.iconMockup}>
+                    <MockupIcon />
+                  </span>
+                  <span className={styles.label}>{m.name}</span>
+                </div>
+              </li>
+            ))}
+          </>
+        )}
       </div>
     </>
   );

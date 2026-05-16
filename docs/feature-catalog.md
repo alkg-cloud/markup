@@ -39,7 +39,7 @@ Global 52 px top bar (`Topbar.tsx`). Present on all authenticated pages. Margin-
 | `topbar-bar` | Fixed top bar with search pill (centered), breadcrumbs (left), avatar (right) | visible on all auth pages; margin-left: 80 px when sidebar collapsed, smooth transition via `--morph-dur` |
 | `topbar-search-pill` | Search trigger pill centered in topbar (min 240 px, max 340 px) with VscSearch icon + "Search..." text + platform shortcut hint (`Ctrl+K` on Windows/Linux, `⌘K` on Apple platforms) | default, hover (border brightens to `--border-strong`, bg to `--surface-hover`), focus-visible, active; opens `command-palette` and closes avatar dropdown |
 | `topbar-avatar-btn` | User avatar button (top-right), 32 px circle with initials | default, hover (border-color accent), focus-visible, active; opens avatar dropdown |
-| `topbar-avatar-menu` | Dropdown from avatar button; items: **Agent tokens**, **Sign out** (danger variant). No "Settings" or "Home" links | closed, open; spring animation |
+| `topbar-avatar-menu` | Dropdown from avatar button; two items only: **Agent Tokens** (navigates to `/settings/agents`) and **Sign Out** (danger variant). Settings and Notifications are not shipped. | closed, open; spring animation |
 | `topbar-breadcrumbs` | Breadcrumb strip — starts at project name (no "Markup" / "Home" prefix). Logo serves as root navigation | see `breadcrumbs-*` entries |
 
 ## sidebar
@@ -77,8 +77,12 @@ ARIA tree widget for project/folder navigation (`ProjectTree.tsx`).
 | `sidebar-tree-indent` | Visual indentation per nesting level (tree-indent-1 through tree-indent-4) | up to 5 nesting levels |
 | `sidebar-tree-accent-bar` | 3 px left accent bar on selected item | visible when item is the current route |
 | `sidebar-tree-truncation` | Long names truncated with `text-overflow: ellipsis` | full name in `title` tooltip |
-| `sidebar-tree-ungrouped` | Mockups without a project listed under collapsible "Ungrouped" group in sidebar (no "Unsorted" project). Prevents sidebar from getting long with many orphan mockups | expanded, collapsed |
-| `sidebar-tree-persist-on-nav` | Expand/collapse state of every project and folder node survives navigation between in-shell pages (`/`, `/mockups/[id]`, `/annotations/[id]`, `/settings/agents`) because the shell mounts once in the `(app)` route-group layout. State is in-memory only and resets on hard reload | preserved on client-side navigation; reset on full reload |
+| `sidebar-tree-no-project-section` | Section header `NO PROJECT` groups mockups without a project; rendered only when at least one orphan mockup exists. Replaces the prior synthetic `Ungrouped` pseudo-project node. | expanded, collapsed |
+| `sidebar-section-headers` | Section headers `PROJECTS` and `NO PROJECT` divide the sidebar tree. Sticky to the top of the scroll container. | visible, hidden (NO PROJECT hidden when no orphan mockups) |
+| `sidebar-tree-persist-on-nav` | Expand/collapse state of every project and folder node survives navigation between in-shell pages (`/`, `/mockups/[id]`, `/annotations/[id]`, `/settings/agents`) because the shell mounts once in the `(app)` route-group layout | preserved on client-side navigation |
+| `sidebar-tree-persist-expansion` | Tree expansion (which projects/folders are open) is persisted in `localStorage.markup.sidebar.expanded` (JSON array of node IDs). Survives reload and tab close. Auto-expand of the active node's path on mount remains additive. | persisted across reloads |
+| `sidebar-tree-active-scroll` | When the URL changes (soft-nav), the active tree node is scrolled into view via `scrollIntoView({block:'nearest', behavior:'smooth'})`. | triggered on every soft-navigation |
+| `sidebar-tree-cursor-grab` | Draggable mockup leaves show `cursor: grab` on hover and `cursor: grabbing` on mousedown. | hover, mousedown |
 | `sidebar-tree-active-path` | On mount and on every navigation, the chain of ancestors leading to the currently visible surface is auto-expanded so the active node is in view: the project + every parent folder for `/mockups/[id]` and `/annotations/[id]`, the project + the parent folder for `/?project=slug&folder=id`, the project for `/?project=slug`. Already-expanded nodes are never collapsed by this behaviour | active mockup, active folder, active project |
 
 ## sidebar-tree-dnd
@@ -127,7 +131,7 @@ Structural breadcrumb navigation (`Breadcrumbs.tsx`). No "Markup" or "Home" pref
 | `breadcrumbs-nav` | `<nav aria-label="Navegação estrutural">` with `<ol>` breadcrumb trail. Visible inside projects; hidden at app root | visible, hidden |
 | `breadcrumbs-segment` | Clickable ancestor segment (text-dim, hover → text) | default, hover, focus-visible; navigates to that level |
 | `breadcrumbs-current` | Final segment (non-clickable) | `aria-current="page"`, `--text-bright`, `--weight-semibold` |
-| `breadcrumbs-separator` | `/` separator between segments | `--text-muted`, 11 px, flex-shrink 0 |
+| `breadcrumbs-separator` | `›` chevron separator between segments | `--text-muted`, 11 px, flex-shrink 0, aria-hidden on separator span |
 | `breadcrumbs-ellipsis` | Truncation `...` for long paths. First segment (project) and last (current) never truncated. Minimum: `Project / ... / Current` | clickable: expands full breadcrumb inline |
 | `breadcrumbs-keyboard` | Tab into nav, ArrowLeft/Right between segments | Enter navigates |
 | `breadcrumbs-mobile` | Aggressive truncation on < 768 px | shows current + `...` link to parent; tap expands as dropdown |
@@ -138,7 +142,7 @@ Global command palette (`CommandPalette.tsx`). Opens via `Ctrl+K` / `⌘K` or to
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `command-palette-trigger` | `Ctrl+K` on Windows/Linux, `⌘K` on Apple platforms, or search pill click | opens overlay |
+| `command-palette-trigger` | `Ctrl+K` on Windows/Linux, `⌘K` on Apple platforms, or search pill click. The shortcut and search pill dispatch an `open-command-palette` custom event on `document`; `CommandPalette` listens for this event to open. Other overlays (e.g. the Topbar avatar dropdown) also listen and close themselves so no two overlays coexist. | opens overlay |
 | `command-palette-scrim` | Backdrop scrim with `backdrop-filter: blur(8px)`, `--scrim-strong` | visible when open; click dismisses |
 | `command-palette-panel` | Glassmorphism dark panel with `--shadow-glow` signature, `--bg-elevated` bg, `--border` border | scale-in animation on open, positioned top-center |
 | `command-palette-input` | Search text input with VscSearch icon, auto-focus. Matching text highlighted with `<mark>` (accent-overlay-mid bg, accent-bright text) | idle, typing (filters results live, staggered 20 ms entry animation per result) |
@@ -158,8 +162,9 @@ New Project creation dialog (`NewProjectDialog.tsx`).
 | `new-project-dialog-card` | Dialog card with scale-in animation | open, closed |
 | `new-project-dialog-name-input` | Project name text field | idle, focused, error (empty on submit) |
 | `new-project-dialog-icon-picker` | Embedded icon picker (same component as project kebab "Change icon") | shows `icon-picker` inline in dialog |
+| `new-project-dialog-labels` | Field labels render in ALL-CAPS (`PROJECT NAME`, `ICON`). Primary action button is `Create Project` in create mode and `Update Project` in edit mode. Name input placeholder is `My Project`. | create mode, edit mode |
 | `new-project-dialog-cancel` | Cancel button (`btn-secondary`) | default, hover, focus-visible |
-| `new-project-dialog-create` | "Create" accent button (`btn-accent`) | default, hover (`--accent-bright`), focus-visible, active, disabled (submitting) |
+| `new-project-dialog-create` | `Create Project` accent button in create mode, `Update Project` in edit mode | default, hover (`--accent-bright`), focus-visible, active, disabled (submitting) |
 
 ## edit-project-dialog
 
@@ -194,6 +199,8 @@ Main content area for project and folder views (`ProjectContent.tsx`). Folder ca
 | `project-content-toolbar` | Toolbar area above card grid | visible at top of content area |
 | `project-content-grid` | Unified card grid: folder cards first, then mockup cards, with no separate section headings and no status bar | populated, empty (shows empty state) |
 | `project-content-responsive` | Responsive layout | sidebar + main on desktop (>= 768 px), single column on mobile |
+| `project-folder-header` | Header above the workspace grid showing the project's icon (resolved from `Project.icon`), the project or folder name as `<h1>`, and an item count (`{N} items` / `1 item`). | always visible when a project or folder is open |
+| `project-folder-toolbar` | Toolbar above the workspace grid with two buttons: `+ New Mockup` (accent, currently stubbed pending upload UI) and `New Folder` (secondary, calls `POST /api/projects/[id]/folders`). | always visible when a project or folder is open |
 
 ## folder-card
 
@@ -241,6 +248,7 @@ Mockup viewer page at `/mockups/[id]` (`MockupViewer.tsx`) inside the standard s
 | `mockup-viewer-pin-number` | Sequential number inside teardrop badge | sequential numbering |
 | `mockup-viewer-sidebar` | Annotation list sidebar panel | populated (annotation list), empty |
 | `mockup-viewer-versions` | Version list in sidebar (`Versions.tsx`) with promote action and timestamps | shows version history, promote button per version |
+| `mockup-viewer-toolbar` | Toolbar below the mockup-viewer title with nine controls: edit-mode toggle, comment-mode toggle, zoom out, zoom % label, zoom in, fullscreen, history toggle, version pill (`v{N}`), view-diff button. Zoom clamps to 25–400% and applies `transform: scale()` to the iframe wrapper. Fullscreen calls `requestFullscreen()` on the wrapper. History toggles the side Versions panel. Diff opens a modal with the unified diff between previous and current version (`Nothing to compare yet.` if only one version exists). | edit mode, comment mode; zoom 25–400% |
 | `mockup-viewer-add-comment` | "+ Comment" button | default, hover, focus-visible, active; captures iframe screenshot + opens `annotation-modal` |
 
 ## annotation-modal
@@ -315,16 +323,16 @@ Side-by-side version diff page at `/mockups/[id]/diff` (`DiffViewer.tsx`).
 
 ## settings-agents
 
-Agent token management page at `/settings/agents` (`AgentsClient.tsx`). Accessible via avatar menu → "Agent tokens".
+Agent token management page at `/settings/agents` (`AgentsClient.tsx`). Accessible via avatar menu → "Agent Tokens".
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `settings-agents-list` | Table/list of existing agent tokens | populated, empty |
-| `settings-agents-token-row` | Individual token row: name, created date, last used. Action buttons: copy (VscCopy) + revoke (VscTrash) | default; copy hover: `--surface-hover` bg; revoke hover: `--danger-soft` bg + `--danger` color |
-| `settings-agents-create-btn` | "Create token" button | default, hover, focus-visible, active |
+| `settings-agents-list` | List of existing agent token cards. Above the list: `{N} tokens` count label and an accent `+ New Token` button. | populated, empty ("No tokens yet…" message) |
+| `agent-tokens` | Each agent token renders as a card with a 🔑 icon, name, meta line `Created X · Last used Y` (or `never`), masked token preview `mk_live_•••••••<lastFour>` (or `mk_test_…` in test env), and two icon buttons: copy (writes the masked preview to clipboard) and revoke. | default; copy hover: `--btn-bg-hover` bg; revoke hover: `--danger-soft` bg + `--danger` color |
+| `settings-agents-create-btn` | `+ New Token` accent button above the token list | default, hover, focus-visible, active |
 | `settings-agents-create-form` | Token creation form (name input) | idle, submitting |
-| `settings-agents-plaintext` | One-time plaintext token display with copy button | shown once after creation; copy shows toast "Copied to clipboard" |
-| `settings-agents-revoke-btn` | Revoke/delete button per token | default, hover (`--danger-soft` bg), focus-visible; danger variant. Shows toast "Token revoked" |
+| `settings-agents-plaintext` | One-time plaintext token display with copy button shown immediately after creation | shown once after creation; copy shows toast "Copied to clipboard" |
+| `settings-agents-revoke-btn` | Revoke icon button per token card | default, hover (`--danger-soft` bg + `--danger` color), focus-visible; shows confirmation dialog before deletion |
 
 ## dialog
 
@@ -413,6 +421,8 @@ All motion tokens and keyframe animations.
 | `anim-active-press` | Interactive element translateY(1px) on mousedown | `--motion-fast` | `--ease-standard` | zeroed |
 | `anim-palette-stagger` | Command palette results staggered entry | 20 ms delay per item | `--ease-standard` | zeroed |
 | `anim-topbar-margin` | Topbar margin-left transition when sidebar collapses | `--morph-dur` | `--morph-ease` | zeroed |
+| `mockup-viewer-zoom` | `transform: scale` on the iframe wrapper when zoom changes | instantaneous (no transition) | N/A | N/A |
+| `sidebar-tree-active-scroll` | Smooth `scrollIntoView` on the active tree node when the URL changes | browser default smooth scroll | smooth | zeroed |
 
 ---
 

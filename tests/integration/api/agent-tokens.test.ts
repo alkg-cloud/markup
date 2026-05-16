@@ -33,7 +33,7 @@ describe('agent tokens API', () => {
     );
     expect(created.status).toBe(201);
     const cb = await created.json();
-    expect(cb.plaintext).toMatch(/^mk_[0-9a-f]{64}$/);
+    expect(cb.plaintext).toMatch(/^mk_(?:live_|test_)[0-9a-f]{64}$/);
 
     const listed = await listTokens(new Request('http://l', { headers }));
     const tokens = (await listed.json()).tokens;

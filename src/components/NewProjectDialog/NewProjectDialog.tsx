@@ -70,15 +70,15 @@ export function NewProjectDialog({ open, onClose, onSaved, project }: NewProject
             disabled={!name.trim() || loading}
             onClick={handleSubmit}
           >
-            {isEdit ? 'Update project' : 'Create project'}
+            {isEdit ? 'Update Project' : 'Create Project'}
           </button>
         </>
       }
     >
-      <DialogField label="Project name">
+      <DialogField label="PROJECT NAME">
         <DialogInput
           autoFocus
-          placeholder="My project"
+          placeholder="My Project"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => {
@@ -86,7 +86,7 @@ export function NewProjectDialog({ open, onClose, onSaved, project }: NewProject
           }}
         />
       </DialogField>
-      <DialogField label="Icon">
+      <DialogField label="ICON">
         <IconPicker value={icon} onSelect={setIcon} />
       </DialogField>
     </Dialog>

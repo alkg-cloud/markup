@@ -34,7 +34,7 @@ export function Breadcrumbs({ segments }: BreadcrumbsProps) {
             <li key={`${seg.href}-${i}`} className={styles.item}>
               {i > 0 && (
                 <span aria-hidden="true" className={styles.separator}>
-                  /
+                  ›
                 </span>
               )}
               {isEllipsis ? (

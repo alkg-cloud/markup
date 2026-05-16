@@ -1,0 +1,80 @@
+.list {
+  display: grid;
+  gap: 0.75rem;
+}
+.card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+.keyIcon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.body {
+  min-width: 0;
+}
+.name {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+.meta {
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  margin: 0.125rem 0 0.5rem;
+}
+.masked {
+  font-family: var(--font-mono, ui-monospace);
+  color: var(--text-secondary);
+  background: var(--bg-card-active);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  width: fit-content;
+}
+.actions {
+  display: flex;
+  gap: 0.25rem;
+  align-self: start;
+}
+.actions button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 999px;
+  font-size: 1rem;
+}
+.actions button:hover {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.06));
+}
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.newBtn {
+  background: var(--accent);
+  color: var(--accent-foreground, white);
+  border-radius: var(--radius-pill);
+  padding: 0.5rem 1rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+.newBtn:hover {
+  filter: brightness(1.05);
+}
+.empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
