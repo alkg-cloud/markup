@@ -3,6 +3,11 @@ name: deploy
 # already runs on every push to main, so this effectively deploys every main
 # push that produces a green image. Manual runs are available via the Actions
 # tab for re-deploys or rollbacks.
+#
+# Runs on a self-hosted runner that lives on the VPS as a Docker container.
+# Because the runner is already inside the VPS network and has docker-socket
+# access, the deploy job calls `docker/redeploy.sh` directly — no SSH/SCP hop,
+# no inbound firewall holes, no sshpass.
 on:
   workflow_run:
     workflows: [image]
@@ -24,26 +29,17 @@ concurrency:
 
 jobs:
   deploy:
-    # On workflow_run, only deploy if the upstream image build succeeded.
-    # On manual dispatch, always proceed.
     if: >-
       github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, markup-vps]
     env:
-      VPS_IP: ${{ secrets.VPS_IP }}
-      VPS_USER: ${{ secrets.VPS_USER }}
-      VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
       MARKUP_URL: ${{ secrets.MARKUP_URL }}
     steps:
       - name: Check secrets
         run: |
-          missing=()
-          for v in VPS_IP VPS_USER VPS_PASSWORD MARKUP_URL; do
-            if [ -z "${!v:-}" ]; then missing+=("$v"); fi
-          done
-          if [ ${#missing[@]} -gt 0 ]; then
-            echo "::error::missing repository secrets: ${missing[*]}"
+          if [ -z "${MARKUP_URL:-}" ]; then
+            echo "::error::missing repository secret MARKUP_URL"
             exit 1
           fi
 
@@ -66,51 +62,15 @@ jobs:
           MANUAL_TAG: ${{ inputs.image_tag }}
           SHA: ${{ steps.sha.outputs.value }}
         run: |
-          if [ -n "$MANUAL_TAG" ]; then
-            tag="$MANUAL_TAG"
-          else
-            tag="${SHA:0:7}"
-          fi
+          tag="${MANUAL_TAG:-${SHA:0:7}}"
           echo "ref=ghcr.io/alexandrecamillo/markup:$tag" >> "$GITHUB_OUTPUT"
           echo "Deploying image tag: $tag"
 
-      - name: Install sshpass
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y -qq sshpass
-
-      - name: Copy redeploy script to VPS
-        run: |
-          sshpass -p "$VPS_PASSWORD" scp \
-            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
-            docker/redeploy.sh "$VPS_USER@$VPS_IP:/tmp/markup-redeploy.sh"
-
-      - name: Recreate container with new image
+      - name: Redeploy
         env:
           IMAGE: ${{ steps.image.outputs.ref }}
-        run: |
-          sshpass -p "$VPS_PASSWORD" ssh \
-            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
-            "$VPS_USER@$VPS_IP" \
-            "bash /tmp/markup-redeploy.sh '$IMAGE'"
-
-      - name: Verify Traefik routing
-        run: |
-          host=$(node -e "console.log(new URL(process.env.MARKUP_URL).host)")
-          code=$(sshpass -p "$VPS_PASSWORD" ssh \
-            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
-            "$VPS_USER@$VPS_IP" \
-            "curl -sS -o /dev/null -w '%{http_code}' -H 'Host: $host' https://127.0.0.1:443/ -k")
-          echo "Traefik response code: $code"
-          case "$code" in
-            200|301|302|307|308) ;;
-            *) echo "::error::unexpected Traefik response code $code"; exit 1 ;;
-          esac
+        run: bash docker/redeploy.sh "$IMAGE"
 
       - name: Container log tail
         if: always()
-        run: |
-          sshpass -p "$VPS_PASSWORD" ssh \
-            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
-            "$VPS_USER@$VPS_IP" \
-            "docker logs markup --tail 30 2>&1 || true"
+        run: docker logs markup --tail 30 2>&1 || true

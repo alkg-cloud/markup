@@ -1,0 +1,21 @@
+services:
+  gh-runner:
+    # myoung34/github-runner:ubuntu-noble pinned by digest (2026-05-16).
+    # To bump: docker pull myoung34/github-runner:ubuntu-noble && docker image
+    # inspect myoung34/github-runner:ubuntu-noble --format '{{index .RepoDigests 0}}'
+    image: myoung34/github-runner@sha256:71a35d890d9f5869baea9f14d2237012aabecfdda1e8d119c47a958623de08e6
+    container_name: gh-runner
+    restart: unless-stopped
+    environment:
+      ACCESS_TOKEN: ${ACCESS_TOKEN:?ACCESS_TOKEN required in .env.runner}
+      REPO_URL: ${REPO_URL:?REPO_URL required in .env.runner}
+      RUNNER_NAME: ${RUNNER_NAME:-markup-vps-1}
+      RUNNER_LABELS: ${RUNNER_LABELS:-self-hosted,Linux,X64,markup-vps}
+      EPHEMERAL: ${EPHEMERAL:-true}
+      DISABLE_AUTO_UPDATE: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - gh-runner-work:/tmp/runner
+
+volumes:
+  gh-runner-work:
