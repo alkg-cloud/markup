@@ -1,0 +1,76 @@
+name: deploy
+# Fires after every successful `image` workflow run on main. The image workflow
+# already runs on every push to main, so this effectively deploys every main
+# push that produces a green image. Manual runs are available via the Actions
+# tab for re-deploys or rollbacks.
+#
+# Runs on a self-hosted runner that lives on the VPS as a Docker container.
+# Because the runner is already inside the VPS network and has docker-socket
+# access, the deploy job calls `docker/redeploy.sh` directly — no SSH/SCP hop,
+# no inbound firewall holes, no sshpass.
+on:
+  workflow_run:
+    workflows: [image]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy (e.g. abc1234 or latest). Defaults to the short SHA of main.'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-markup
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: [self-hosted, markup-vps]
+    env:
+      MARKUP_URL: ${{ secrets.MARKUP_URL }}
+    steps:
+      - name: Check secrets
+        run: |
+          if [ -z "${MARKUP_URL:-}" ]; then
+            echo "::error::missing repository secret MARKUP_URL"
+            exit 1
+          fi
+
+      - name: Resolve target SHA
+        id: sha
+        run: |
+          if [ "${{ github.event_name }}" = workflow_run ]; then
+            echo "value=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.sha.outputs.value }}
+
+      - name: Resolve target image
+        id: image
+        env:
+          MANUAL_TAG: ${{ inputs.image_tag }}
+          SHA: ${{ steps.sha.outputs.value }}
+        run: |
+          tag="${MANUAL_TAG:-${SHA:0:7}}"
+          echo "ref=ghcr.io/alexandrecamillo/markup:$tag" >> "$GITHUB_OUTPUT"
+          echo "Deploying image tag: $tag"
+
+      - name: Redeploy
+        env:
+          IMAGE: ${{ steps.image.outputs.ref }}
+        run: bash docker/redeploy.sh "$IMAGE"
+
+      - name: Container log tail
+        if: always()
+        run: docker logs markup --tail 30 2>&1 || true
