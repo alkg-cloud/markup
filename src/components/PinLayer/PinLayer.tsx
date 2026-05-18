@@ -1,5 +1,5 @@
 'use client';
-import { type RefObject, useCallback, useMemo, useRef } from 'react';
+import { type RefObject, useCallback, useLayoutEffect, useRef } from 'react';
 import { Pin } from '@/components/Pin/Pin';
 import { type Anchor, useAnchoredPins } from '@/lib/anchoring';
 import styles from './PinLayer.module.css';
@@ -61,11 +61,17 @@ export function PinLayer({ canvasRootRef, pins, onPinClick, repositionKey }: Pin
     getPins,
   });
 
-  // Re-position synchronously whenever the pin list changes (new pin
-  // added, pin removed, anchor edited) OR when the parent bumps
-  // `repositionKey` to signal a layout change (zoom, fullscreen, iframe
-  // load) that the hook's ResizeObserver / scroll listeners don't catch.
-  useMemo(() => {
+  // Re-position whenever the pin list changes (new pin added, removed,
+  // anchor edited) OR when the parent bumps `repositionKey` to signal a
+  // layout change (zoom, fullscreen, iframe load) that the hook's
+  // ResizeObserver / scroll listeners don't catch.
+  //
+  // Use `useLayoutEffect` so the recompute runs AFTER React commits the
+  // new props/state (e.g. the iframe's `transform: scale(zoom)` is
+  // already applied to the DOM) but BEFORE paint. A `useMemo` on the
+  // same deps would fire during render — when the DOM still reflects
+  // the previous zoom — and read stale layout.
+  useLayoutEffect(() => {
     repositionAll();
   }, [pins, repositionAll, repositionKey]);
 
