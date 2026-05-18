@@ -21,9 +21,11 @@
   z-index: 100;
   width: var(--sidebar-width);
   height: 100vh;
-  background: rgba(14, 12, 16, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  /* AppMain redesign: adopt the shared glass surface tokens so every
+     overlay layer (sidebar, rail, toolbar, popovers) is visually consistent. */
+  background: var(--surface-glass-bg);
+  backdrop-filter: var(--surface-glass-blur);
+  -webkit-backdrop-filter: var(--surface-glass-blur);
   border-right: 1px solid var(--border-subtle);
   border-radius: 0;
   box-shadow: none;
