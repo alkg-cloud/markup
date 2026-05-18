@@ -1,13 +1,71 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { type IntentType, isIntentType } from '@/lib/annotation/intent';
 import { parsePinCoords } from '@/lib/annotation/pin-coords';
-import { createAnnotation, listAnnotations } from '@/lib/annotation/service';
+import {
+  type AnchorRecord,
+  createAnnotation,
+  createCommentAnnotation,
+  listAnnotations,
+} from '@/lib/annotation/service';
 import { identify } from '@/lib/auth/identify';
+
+// AppMain redesign: comment-only annotation payload. Detected by JSON
+// content-type — the legacy drawing-based formData path remains below.
+const TextAnchorSchema = z.object({
+  path: z.string(),
+  textOffset: z.number().int().nonnegative(),
+  subX: z.number().optional(),
+  subY: z.number().optional(),
+});
+const ElementAnchorSchema = z.object({
+  path: z.string(),
+  offsetX: z.number(),
+  offsetY: z.number(),
+});
+const AnchorSchema = z.union([TextAnchorSchema, ElementAnchorSchema]);
+const CommentPayloadSchema = z.object({
+  body: z.string().min(1).max(10_000),
+  anchors: z.array(AnchorSchema).max(20),
+  colorIndex: z.number().int().min(0).max(15),
+  status: z.enum(['open', 'needs review', 'resolved']).optional(),
+});
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const id = await identify(req);
   if (!id) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id: mockupId } = await ctx.params;
+
+  // Branch on content-type. JSON → comment annotation (no screenshot,
+  // no tldraw). Multipart → legacy drawing-based annotation.
+  const contentType = req.headers.get('content-type') ?? '';
+  if (contentType.includes('application/json')) {
+    const body = await req.json().catch(() => null);
+    const parsed = CommentPayloadSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+    }
+    const result = await createCommentAnnotation({
+      mockupId,
+      body: parsed.data.body,
+      anchors: parsed.data.anchors as AnchorRecord[],
+      colorIndex: parsed.data.colorIndex,
+      status: parsed.data.status,
+      authorId: id.kind === 'user' ? id.userId : id.tokenId,
+      authorType: id.kind,
+    });
+    return NextResponse.json(
+      {
+        id: result.annotation.id,
+        threadId: result.thread.id,
+        colorIndex: result.annotation.colorIndex,
+        status: result.annotation.status,
+        anchors: parsed.data.anchors,
+      },
+      { status: 201 },
+    );
+  }
+
   const fd = await req.formData();
   const screenshot = fd.get('screenshot');
   const tldrawRaw = fd.get('tldraw');
