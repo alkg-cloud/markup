@@ -1,9 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest';
-import {
-  findCharPositionInElement,
-  getCharOffsetInElement,
-} from '@/lib/anchoring/text';
+import { findCharPositionInElement, getCharOffsetInElement } from '@/lib/anchoring/text';
 
 describe('text offset helpers', () => {
   let h1: HTMLElement;

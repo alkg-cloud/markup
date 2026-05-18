@@ -73,7 +73,9 @@ export function AnnotationComposer({
 
   const pinCount = pendingPins.length;
   const pinCountLabel =
-    pinCount === 0 ? 'No pin attached' : `Pinned to ${pinCount} location${pinCount === 1 ? '' : 's'}`;
+    pinCount === 0
+      ? 'No pin attached'
+      : `Pinned to ${pinCount} location${pinCount === 1 ? '' : 's'}`;
   const morphLabel = pinCount === 0 ? 'Add pin' : pinCount === 1 ? 'Edit pin' : 'Edit pins';
   const morphTooltip =
     pinCount === 0
@@ -91,6 +93,10 @@ export function AnnotationComposer({
       aria-modal="true"
       aria-label="Create annotation"
     >
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: scrim is decorative;
+            keyboard close lands on Esc (wired below) — the click is a
+            mouse-only convenience. */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: see Esc handler. */}
       <div
         className={styles.scrim}
         onClick={() => {
@@ -142,10 +148,20 @@ export function AnnotationComposer({
               data-tooltip={morphTooltip}
               aria-label={morphLabel}
             >
-              <svg className={styles.addIcon} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <svg
+                className={styles.addIcon}
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                aria-hidden="true"
+              >
                 <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
               </svg>
-              <svg className={styles.editIcon} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <svg
+                className={styles.editIcon}
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                aria-hidden="true"
+              >
                 <path d="M13.23 1h-1.46L3.52 9.25l-.16.22L1 13.59 2.41 15l4.12-2.36.22-.16L15 4.23V2.77L13.23 1zM13 4l-7 7L5 10l7-7 1 1z" />
               </svg>
               <span>{morphLabel}</span>
@@ -154,11 +170,7 @@ export function AnnotationComposer({
         </div>
 
         <footer className={styles.foot}>
-          <button
-            type="button"
-            className={[styles.btn, styles.ghost].join(' ')}
-            onClick={onCancel}
-          >
+          <button type="button" className={[styles.btn, styles.ghost].join(' ')} onClick={onCancel}>
             Cancel
           </button>
           <button

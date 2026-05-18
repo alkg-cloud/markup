@@ -18,11 +18,7 @@
  */
 
 import { type RefObject, useCallback, useEffect } from 'react';
-import {
-  type Anchor,
-  applyPinPosition,
-  computePinTarget,
-} from './reposition';
+import { type Anchor, applyPinPosition, computePinTarget } from './reposition';
 
 export interface UseAnchoredPinsOptions {
   /** Canvas root — the element queries resolve against. */

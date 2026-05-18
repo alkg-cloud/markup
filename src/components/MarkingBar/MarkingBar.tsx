@@ -23,7 +23,12 @@ export function MarkingBar({ open, pinCount, onDone }: MarkingBarProps) {
         Click on the canvas to drop a pin · Esc to finish
       </span>
       <span className={styles.count}>{pinLabel}</span>
-      <button type="button" className={styles.done} onClick={onDone} aria-label="Finish placing pins">
+      <button
+        type="button"
+        className={styles.done}
+        onClick={onDone}
+        aria-label="Finish placing pins"
+      >
         Done
       </button>
     </div>

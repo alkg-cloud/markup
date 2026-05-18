@@ -47,7 +47,7 @@
 
 /* Outer glow ring — visible only when active. */
 .pin::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: -2px;
   border-radius: 50% 50% 50% 0;
@@ -55,7 +55,9 @@
     0 0 0 4px oklch(74% var(--pin-c) var(--pin-h) / 0.28),
     0 0 16px oklch(74% var(--pin-c) var(--pin-h) / 0.4);
   opacity: 0;
-  transition: opacity var(--motion-fast), box-shadow var(--motion-fast);
+  transition:
+    opacity var(--motion-fast),
+    box-shadow var(--motion-fast);
   pointer-events: none;
 }
 
@@ -117,19 +119,67 @@
 /* 16-color rotating palette. Each annotation picks an index 0..15.
    `data-color` propagates from the annotation to every pin / badge /
    avatar so they share visual identity. */
-.pin[data-color='0']  { --pin-h: 165; --pin-c: 0.18; }
-.pin[data-color='1']  { --pin-h: 195; --pin-c: 0.15; }
-.pin[data-color='2']  { --pin-h: 220; --pin-c: 0.14; }
-.pin[data-color='3']  { --pin-h: 245; --pin-c: 0.13; }
-.pin[data-color='4']  { --pin-h: 265; --pin-c: 0.13; }
-.pin[data-color='5']  { --pin-h: 285; --pin-c: 0.13; }
-.pin[data-color='6']  { --pin-h: 305; --pin-c: 0.12; }
-.pin[data-color='7']  { --pin-h: 325; --pin-c: 0.12; }
-.pin[data-color='8']  { --pin-h: 25;  --pin-c: 0.13; }
-.pin[data-color='9']  { --pin-h: 50;  --pin-c: 0.14; }
-.pin[data-color='10'] { --pin-h: 75;  --pin-c: 0.14; }
-.pin[data-color='11'] { --pin-h: 95;  --pin-c: 0.15; }
-.pin[data-color='12'] { --pin-h: 120; --pin-c: 0.15; }
-.pin[data-color='13'] { --pin-h: 140; --pin-c: 0.16; }
-.pin[data-color='14'] { --pin-h: 200; --pin-c: 0.16; }
-.pin[data-color='15'] { --pin-h: 150; --pin-c: 0.17; }
+.pin[data-color="0"] {
+  --pin-h: 165;
+  --pin-c: 0.18;
+}
+.pin[data-color="1"] {
+  --pin-h: 195;
+  --pin-c: 0.15;
+}
+.pin[data-color="2"] {
+  --pin-h: 220;
+  --pin-c: 0.14;
+}
+.pin[data-color="3"] {
+  --pin-h: 245;
+  --pin-c: 0.13;
+}
+.pin[data-color="4"] {
+  --pin-h: 265;
+  --pin-c: 0.13;
+}
+.pin[data-color="5"] {
+  --pin-h: 285;
+  --pin-c: 0.13;
+}
+.pin[data-color="6"] {
+  --pin-h: 305;
+  --pin-c: 0.12;
+}
+.pin[data-color="7"] {
+  --pin-h: 325;
+  --pin-c: 0.12;
+}
+.pin[data-color="8"] {
+  --pin-h: 25;
+  --pin-c: 0.13;
+}
+.pin[data-color="9"] {
+  --pin-h: 50;
+  --pin-c: 0.14;
+}
+.pin[data-color="10"] {
+  --pin-h: 75;
+  --pin-c: 0.14;
+}
+.pin[data-color="11"] {
+  --pin-h: 95;
+  --pin-c: 0.15;
+}
+.pin[data-color="12"] {
+  --pin-h: 120;
+  --pin-c: 0.15;
+}
+.pin[data-color="13"] {
+  --pin-h: 140;
+  --pin-c: 0.16;
+}
+.pin[data-color="14"] {
+  --pin-h: 200;
+  --pin-c: 0.16;
+}
+.pin[data-color="15"] {
+  --pin-h: 150;
+  --pin-c: 0.17;
+}

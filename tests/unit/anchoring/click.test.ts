@@ -78,9 +78,7 @@ describe('buildAnchorFromClick', () => {
     fakeRange.setEnd(textNode, 0);
     setCaretRangeStub(() => fakeRange);
     stubRangeBCR(new DOMRect(50, 100, 10, 16));
-    vi.spyOn(para, 'getBoundingClientRect').mockReturnValue(
-      new DOMRect(40, 90, 200, 40),
-    );
+    vi.spyOn(para, 'getBoundingClientRect').mockReturnValue(new DOMRect(40, 90, 200, 40));
 
     const a = buildAnchorFromClick({
       canvasRoot: root,
@@ -99,9 +97,7 @@ describe('buildAnchorFromClick', () => {
 
   it('falls back to element-anchor when caretRangeFromPoint returns null', () => {
     setCaretRangeStub(() => null);
-    vi.spyOn(para, 'getBoundingClientRect').mockReturnValue(
-      new DOMRect(0, 0, 100, 50),
-    );
+    vi.spyOn(para, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 100, 50));
     const a = buildAnchorFromClick({
       canvasRoot: root,
       target: para,

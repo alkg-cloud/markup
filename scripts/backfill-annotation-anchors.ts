@@ -65,9 +65,7 @@ async function main(): Promise<void> {
     // The anchor element is the canvas root (empty path resolves to
     // mockup-doc); offsetX/Y are 0..1 inside that root's bbox.
     const offsetX = clamp01((coords.bboxX + coords.bboxW / 2) / coords.viewportWidth);
-    const offsetY = clamp01(
-      (coords.bboxY + coords.bboxH / 2) / coords.viewportHeight,
-    );
+    const offsetY = clamp01((coords.bboxY + coords.bboxH / 2) / coords.viewportHeight);
 
     const anchor: ElementAnchorRecord = {
       path: '',

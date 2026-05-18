@@ -3,9 +3,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { CanvasToolbar } from '@/components/CanvasToolbar/CanvasToolbar';
 import {
+  nextZoomIndex,
   ZOOM_DEFAULT_INDEX,
   ZOOM_STEPS,
-  nextZoomIndex,
   zoomLabel,
 } from '@/components/CanvasToolbar/zoom';
 import { VersionChip } from '@/components/VersionChip/VersionChip';

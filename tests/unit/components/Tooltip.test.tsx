@@ -42,9 +42,7 @@ describe('Tooltip', () => {
   });
 
   it('wraps non-element children in a span', () => {
-    const html = renderToStaticMarkup(
-      <Tooltip label="text-only">text-only label</Tooltip>,
-    );
+    const html = renderToStaticMarkup(<Tooltip label="text-only">text-only label</Tooltip>);
     expect(html).toContain('<span data-tooltip="text-only"');
   });
 });

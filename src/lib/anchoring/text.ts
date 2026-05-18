@@ -28,8 +28,7 @@ export function getCharOffsetInElement(
 ): number {
   let count = 0;
   const walker = (root.ownerDocument ?? document).createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  let n: Node | null;
-  while ((n = walker.nextNode())) {
+  for (let n = walker.nextNode(); n !== null; n = walker.nextNode()) {
     if (n === textNode) return count + offsetInNode;
     count += (n.nodeValue ?? '').length;
   }
@@ -43,15 +42,11 @@ export function getCharOffsetInElement(
  * Out-of-bounds offsets clamp to the last text node's end. Returns null
  * only when `root` has no text node descendants at all.
  */
-export function findCharPositionInElement(
-  root: Element,
-  charOffset: number,
-): CharPosition | null {
+export function findCharPositionInElement(root: Element, charOffset: number): CharPosition | null {
   let count = 0;
   const walker = (root.ownerDocument ?? document).createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  let n: Node | null;
   let last: Text | null = null;
-  while ((n = walker.nextNode())) {
+  for (let n = walker.nextNode(); n !== null; n = walker.nextNode()) {
     last = n as Text;
     const len = (n.nodeValue ?? '').length;
     if (count + len >= charOffset) {

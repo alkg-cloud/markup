@@ -1,12 +1,8 @@
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { POST as createMockupRoute } from '@/app/api/mockups/route';
-import { POST as createReaction } from '@/app/api/messages/[id]/reactions/route';
-import {
-  GET as listAnnotations,
-  POST as createAnnotation,
-} from '@/app/api/mockups/[id]/annotations/route';
 import { POST as setup } from '@/app/api/auth/setup/route';
+import { POST as createReaction } from '@/app/api/messages/[id]/reactions/route';
+import { POST as createAnnotation } from '@/app/api/mockups/[id]/annotations/route';
 import { createMockupFromZip } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
 
@@ -39,7 +35,7 @@ async function adminCookie() {
 async function createMockup(_cookie: string) {
   const r = await createMockupFromZip({
     name: 'Test',
-    slug: 'test-' + Date.now(),
+    slug: `test-${Date.now()}`,
     zipPath: fixture('lumen-coffee.zip'),
     createdBy: 'u1',
     createdByType: 'user',
@@ -129,12 +125,10 @@ describe('POST /api/mockups/[id]/annotations — JSON (comment flow)', () => {
 describe('POST /api/messages/[id]/reactions', () => {
   let cookie: string;
   let messageId: string;
-  let mockupId: string;
 
   beforeEach(async () => {
     cookie = await adminCookie();
     const m = await createMockup(cookie);
-    mockupId = m.id;
     const create = await createAnnotation(
       new Request(`http://l/api/mockups/${m.id}/annotations`, {
         method: 'POST',

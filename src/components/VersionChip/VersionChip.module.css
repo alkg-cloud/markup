@@ -166,7 +166,10 @@
   color: var(--text-muted);
   border-radius: var(--radius-xs);
   opacity: 0;
-  transition: opacity var(--motion-fast), background var(--motion-fast), color var(--motion-fast);
+  transition:
+    opacity var(--motion-fast),
+    background var(--motion-fast),
+    color var(--motion-fast);
 }
 .item:hover .kebab,
 .kebab.menuOpen {
@@ -211,7 +214,9 @@
   color: var(--text);
   border-radius: var(--radius-xs);
   text-align: left;
-  transition: background var(--motion-fast), color var(--motion-fast);
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast);
 }
 .action:hover {
   background: var(--surface-hover);

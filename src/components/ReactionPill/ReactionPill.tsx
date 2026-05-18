@@ -18,12 +18,7 @@ export interface ReactionPillProps {
  *
  * See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §10.
  */
-export function ReactionPill({
-  emoji,
-  reactedBy,
-  isCurrentUser,
-  onClick,
-}: ReactionPillProps) {
+export function ReactionPill({ emoji, reactedBy, isCurrentUser, onClick }: ReactionPillProps) {
   const count = reactedBy.length;
   const tooltip = formatReactorList(reactedBy, emoji);
   return (

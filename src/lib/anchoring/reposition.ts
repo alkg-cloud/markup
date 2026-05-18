@@ -124,10 +124,7 @@ export function computePinTarget(
  * pin's TIP lands on (tx, ty). Pin is centered horizontally, offset
  * upward so its rotated-corner tip points at the target.
  */
-export function applyPinPosition(
-  pin: HTMLElement,
-  target: { tx: number; ty: number },
-): void {
+export function applyPinPosition(pin: HTMLElement, target: { tx: number; ty: number }): void {
   pin.style.left = `${target.tx - PIN_HALF}px`;
   pin.style.top = `${target.ty - PIN_HALF - PIN_TIP_OFFSET_Y}px`;
 }

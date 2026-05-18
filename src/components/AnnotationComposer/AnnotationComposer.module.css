@@ -73,7 +73,9 @@
   border-radius: var(--radius-xs);
   color: var(--text-muted);
   cursor: pointer;
-  transition: background var(--motion-fast), color var(--motion-fast);
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast);
 }
 .close:hover {
   background: var(--surface-hover);
@@ -157,10 +159,18 @@
   width: 11px;
   height: 11px;
 }
-.addIcon { display: inline-flex; }
-.editIcon { display: none; }
-.markingToggle.hasPins .addIcon { display: none; }
-.markingToggle.hasPins .editIcon { display: inline-flex; }
+.addIcon {
+  display: inline-flex;
+}
+.editIcon {
+  display: none;
+}
+.markingToggle.hasPins .addIcon {
+  display: none;
+}
+.markingToggle.hasPins .editIcon {
+  display: inline-flex;
+}
 
 .foot {
   display: flex;

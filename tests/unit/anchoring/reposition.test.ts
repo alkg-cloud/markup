@@ -2,11 +2,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   type Anchor,
-  PIN_HALF,
-  PIN_TIP_OFFSET_Y,
   applyPinPosition,
   computePinTarget,
   isTextAnchor,
+  PIN_HALF,
+  PIN_TIP_OFFSET_Y,
 } from '@/lib/anchoring/reposition';
 
 describe('reposition', () => {
@@ -31,39 +31,35 @@ describe('reposition', () => {
 
   describe('computePinTarget — element anchor', () => {
     it('returns null when the anchor element does not resolve', () => {
-      const result = computePinTarget(
-        root,
-        layerRect,
-        { path: ':scope>nope>nope', offsetX: 0.5, offsetY: 0.5 },
-      );
+      const result = computePinTarget(root, layerRect, {
+        path: ':scope>nope>nope',
+        offsetX: 0.5,
+        offsetY: 0.5,
+      });
       expect(result).toBeNull();
     });
 
     it('computes (left + offsetX*width, top + offsetY*height) for element anchor', () => {
       const hero = root.querySelector('.hero')!;
-      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(
-        new DOMRect(100, 50, 400, 200),
-      );
-      const result = computePinTarget(
-        root,
-        layerRect,
-        { path: ':scope>div', offsetX: 0.25, offsetY: 0.5 },
-      );
+      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(new DOMRect(100, 50, 400, 200));
+      const result = computePinTarget(root, layerRect, {
+        path: ':scope>div',
+        offsetX: 0.25,
+        offsetY: 0.5,
+      });
       // tx = 100 - 0 + 0.25*400 = 200; ty = 50 - 0 + 0.5*200 = 150
       expect(result).toEqual({ tx: 200, ty: 150 });
     });
 
     it('subtracts layerRect offsets so pin is positioned relative to its layer', () => {
       const hero = root.querySelector('.hero')!;
-      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(
-        new DOMRect(100, 50, 400, 200),
-      );
+      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(new DOMRect(100, 50, 400, 200));
       const layerWithOffset = new DOMRect(20, 10, 1000, 800);
-      const result = computePinTarget(
-        root,
-        layerWithOffset,
-        { path: ':scope>div', offsetX: 0, offsetY: 0 },
-      );
+      const result = computePinTarget(root, layerWithOffset, {
+        path: ':scope>div',
+        offsetX: 0,
+        offsetY: 0,
+      });
       expect(result).toEqual({ tx: 80, ty: 40 });
     });
   });
@@ -72,11 +68,10 @@ describe('reposition', () => {
     it('returns null when textOffset cannot be resolved (no text)', () => {
       const empty = document.createElement('div');
       root.appendChild(empty);
-      const result = computePinTarget(
-        root,
-        layerRect,
-        { path: ':scope>div:nth-of-type(2)', textOffset: 0 },
-      );
+      const result = computePinTarget(root, layerRect, {
+        path: ':scope>div:nth-of-type(2)',
+        textOffset: 0,
+      });
       expect(result).toBeNull();
     });
   });
@@ -85,9 +80,7 @@ describe('reposition', () => {
     it('adds frameOrigin offsets to element-anchor rects', () => {
       const hero = root.querySelector('.hero')!;
       // Inner BCR — iframe-viewport relative (e.g. element at top of iframe)
-      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(
-        new DOMRect(10, 20, 400, 200),
-      );
+      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(new DOMRect(10, 20, 400, 200));
       const frameOrigin = { left: 100, top: 50 };
       const result = computePinTarget(
         root,
@@ -103,9 +96,7 @@ describe('reposition', () => {
 
     it('combines frameOrigin and layerRect offsets correctly', () => {
       const hero = root.querySelector('.hero')!;
-      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(
-        new DOMRect(10, 20, 400, 200),
-      );
+      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(new DOMRect(10, 20, 400, 200));
       const result = computePinTarget(
         root,
         new DOMRect(40, 30, 1000, 800),
@@ -119,14 +110,12 @@ describe('reposition', () => {
 
     it('omitted frameOrigin behaves like no offset (same-document)', () => {
       const hero = root.querySelector('.hero')!;
-      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(
-        new DOMRect(100, 50, 400, 200),
-      );
-      const withoutOrigin = computePinTarget(
-        root,
-        layerRect,
-        { path: ':scope>div', offsetX: 0.25, offsetY: 0.5 },
-      );
+      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(new DOMRect(100, 50, 400, 200));
+      const withoutOrigin = computePinTarget(root, layerRect, {
+        path: ':scope>div',
+        offsetX: 0.25,
+        offsetY: 0.5,
+      });
       const withZeroOrigin = computePinTarget(
         root,
         layerRect,
