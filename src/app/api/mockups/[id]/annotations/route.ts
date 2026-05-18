@@ -9,6 +9,7 @@ import {
   listAnnotations,
 } from '@/lib/annotation/service';
 import { identify } from '@/lib/auth/identify';
+import { prisma } from '@/lib/prisma';
 
 // AppMain redesign: comment-only annotation payload. Detected by JSON
 // content-type — the legacy drawing-based formData path remains below.
@@ -44,6 +45,15 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     const parsed = CommentPayloadSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+    }
+    // Verify mockup exists before writing so the caller gets a clean 404
+    // instead of a Prisma FK constraint 500 (which leaks ORM details).
+    const exists = await prisma.mockup.findUnique({
+      where: { id: mockupId },
+      select: { id: true },
+    });
+    if (!exists) {
+      return NextResponse.json({ error: 'mockup_not_found' }, { status: 404 });
     }
     const result = await createCommentAnnotation({
       mockupId,
