@@ -27,13 +27,16 @@ function asStatus(s: string): AppMainAnnotation['status'] {
 }
 
 function formatTimestamp(d: Date): string {
-  return d.toLocaleString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  // Match the AppMain ideias mockup format: `DD/MM/YYYY · HH:MM`.
+  // The native locale formatter inserts a comma separator we can't
+  // configure, so we manually assemble the parts.
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const day = pad(d.getDate());
+  const month = pad(d.getMonth() + 1);
+  const year = d.getFullYear();
+  const hour = pad(d.getHours());
+  const min = pad(d.getMinutes());
+  return `${day}/${month}/${year} · ${hour}:${min}`;
 }
 
 function colorForUser(id: string): number {
@@ -213,11 +216,12 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
 
   const versions = mockup.versions.map((v, vi) => {
     const resolved = nameMap.get(v.createdBy);
+    const isCurrent = v.id === mockup.currentVersionId;
     return {
       id: v.id,
       label: `v${mockup.versions.length - vi}`,
       sub: `${formatTimestamp(v.createdAt)} · ${resolved?.name ?? `${v.createdByType} ${v.createdBy.slice(-6)}`}`,
-      current: v.id === mockup.currentVersionId,
+      current: isCurrent,
     };
   });
 
