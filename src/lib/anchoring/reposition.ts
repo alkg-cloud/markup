@@ -82,14 +82,23 @@ export function getCharRect(node: Text, offset: number): DOMRect {
  * Callers turn `(tx, ty)` into `pin.style.top/left` via:
  *   left = tx - PIN_HALF
  *   top  = ty - PIN_HALF - PIN_TIP_OFFSET_Y
+ *
+ * When the canvas root lives inside an iframe (cross-document anchoring),
+ * pass `frameOrigin` = the host iframe's `getBoundingClientRect()` so the
+ * iframe-viewport-relative rects returned by `getBoundingClientRect` /
+ * Range get translated into outer-viewport coordinates before subtracting
+ * `layerRect` (which is itself outer-viewport relative).
  */
 export function computePinTarget(
   canvasRoot: Element,
   layerRect: DOMRect,
   anchor: Anchor,
+  frameOrigin?: { left: number; top: number },
 ): { tx: number; ty: number } | null {
   const el = resolveAnchor(canvasRoot, anchor.path);
   if (!el) return null;
+  const ox = frameOrigin?.left ?? 0;
+  const oy = frameOrigin?.top ?? 0;
 
   if (isTextAnchor(anchor)) {
     const pos: CharPosition | null = findCharPositionInElement(el, anchor.textOffset);
@@ -98,15 +107,15 @@ export function computePinTarget(
     const subX = clamp01(anchor.subX ?? 0.5);
     const subY = clamp01(anchor.subY ?? 0.5);
     return {
-      tx: r.left - layerRect.left + subX * r.width,
-      ty: r.top - layerRect.top + subY * r.height,
+      tx: ox + r.left - layerRect.left + subX * r.width,
+      ty: oy + r.top - layerRect.top + subY * r.height,
     };
   }
 
   const aRect = el.getBoundingClientRect();
   return {
-    tx: aRect.left - layerRect.left + anchor.offsetX * aRect.width,
-    ty: aRect.top - layerRect.top + anchor.offsetY * aRect.height,
+    tx: ox + aRect.left - layerRect.left + anchor.offsetX * aRect.width,
+    ty: oy + aRect.top - layerRect.top + anchor.offsetY * aRect.height,
   };
 }
 
