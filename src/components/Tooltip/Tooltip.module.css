@@ -1,0 +1,60 @@
+/* Tooltip — replacement for native `title` attribute. Glass-bg pill
+   anchored above its trigger via pseudo-element. The trigger must have
+   `position: relative` (or be already-positioned). Trigger gets the
+   `data-tooltip="text"` attribute; this stylesheet does the rest. */
+
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  width: max-content;
+  max-width: 220px;
+  padding: 5px 9px;
+  background: var(--surface-glass-bg);
+  backdrop-filter: var(--surface-glass-blur);
+  -webkit-backdrop-filter: var(--surface-glass-blur);
+  border: var(--surface-glass-border);
+  border-radius: var(--radius-xs);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-bright);
+  white-space: normal;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(2px);
+  transition:
+    opacity var(--motion-fast),
+    transform var(--motion-fast) var(--ease-spring);
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Variant for right-anchored tooltips (when the trigger is near the
+   right edge of the viewport — use `data-tooltip-align="right"`). */
+[data-tooltip][data-tooltip-align='right']::after {
+  left: auto;
+  right: 0;
+}
+
+/* Center-aligned variant for symmetric layouts. */
+[data-tooltip][data-tooltip-align='center']::after {
+  left: 50%;
+  transform: translateX(-50%) translateY(2px);
+}
+[data-tooltip][data-tooltip-align='center']:hover::after,
+[data-tooltip][data-tooltip-align='center']:focus-visible::after {
+  transform: translateX(-50%) translateY(0);
+}
