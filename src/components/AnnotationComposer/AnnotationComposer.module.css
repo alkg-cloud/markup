@@ -1,0 +1,201 @@
+/* AnnotationComposer — modal-first creation flow with optional
+   marking-mode for multi-pin placement (Option B). See spec §7. */
+
+.composer {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.composer.open {
+  display: flex;
+}
+.composer.marking {
+  pointer-events: none;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  transition: opacity var(--motion-base) var(--ease-standard);
+}
+.composer.marking .scrim {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.panel {
+  position: relative;
+  width: 440px;
+  max-width: calc(100vw - 32px);
+  background: var(--surface-glass-bg);
+  backdrop-filter: var(--surface-glass-blur);
+  -webkit-backdrop-filter: var(--surface-glass-blur);
+  border: var(--surface-glass-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-popover);
+  display: flex;
+  flex-direction: column;
+  transition:
+    opacity var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-spring);
+}
+.composer.marking .panel {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.92);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-bright);
+}
+.close {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-xs);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.close:hover {
+  background: var(--surface-hover);
+  color: var(--text-bright);
+}
+.close svg {
+  width: 12px;
+  height: 12px;
+}
+
+.body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 10px 12px;
+  background: rgb(0 0 0 / 30%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-bright);
+  font-size: 12px;
+  line-height: 1.5;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color var(--motion-fast);
+}
+.textarea::placeholder {
+  color: var(--text-muted);
+}
+.textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.pins {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+}
+.pinsLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.pinsLabel.hasPins {
+  color: var(--text);
+}
+.pinsLabel svg {
+  width: 12px;
+  height: 12px;
+  color: var(--accent);
+}
+.markingToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-overlay-mid);
+  border-radius: 9999px;
+  color: var(--accent-bright);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.markingToggle:hover {
+  background: var(--accent-overlay-mid);
+  border-color: var(--accent);
+}
+.markingToggle svg {
+  width: 11px;
+  height: 11px;
+}
+.addIcon { display: inline-flex; }
+.editIcon { display: none; }
+.markingToggle.hasPins .addIcon { display: none; }
+.markingToggle.hasPins .editIcon { display: inline-flex; }
+
+.foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-subtle);
+  background: rgb(7 12 15 / 30%);
+}
+.btn {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  border: 0;
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--text);
+}
+.btn.ghost:hover {
+  background: var(--surface-hover);
+  color: var(--text-bright);
+}
+.btn.accent {
+  background: var(--accent);
+  color: oklch(15% 0.04 165);
+}
+.btn.accent:hover {
+  background: var(--accent-bright);
+}
+.btn.accent:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

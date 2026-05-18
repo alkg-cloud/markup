@@ -1,0 +1,83 @@
+/* Top-center mode indicator that surfaces during composer marking mode.
+   Glass bg matching the rest of the floating chrome. See spec §7. */
+
+.bar {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  display: none;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 12px 8px 16px;
+  background: var(--surface-glass-bg);
+  backdrop-filter: var(--surface-glass-blur);
+  -webkit-backdrop-filter: var(--surface-glass-blur);
+  border: var(--surface-glass-border);
+  border-radius: 9999px;
+  box-shadow: var(--shadow-popover);
+  z-index: 90;
+  opacity: 0;
+  transition:
+    opacity var(--motion-fast),
+    transform var(--motion-base) var(--ease-spring);
+}
+.bar.open {
+  display: flex;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-bright);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: markingPulse 1.4s ease-in-out infinite;
+}
+@keyframes markingPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.8); }
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+  border: 1px solid var(--accent-overlay-mid);
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.done {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  background: var(--accent);
+  color: oklch(15% 0.04 165);
+  border: 0;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+.done:hover {
+  background: var(--accent-bright);
+}
