@@ -42,13 +42,12 @@ export function CanvasToolbar({
 
   const changeZoom = useCallback(
     (direction: 1 | -1) => {
-      setZoomIndex((idx) => {
-        const next = nextZoomIndex(idx, direction);
-        if (next !== idx) onZoomChange?.(ZOOM_STEPS[next]);
-        return next;
-      });
+      const next = nextZoomIndex(zoomIndex, direction);
+      if (next === zoomIndex) return;
+      setZoomIndex(next);
+      onZoomChange?.(ZOOM_STEPS[next]);
     },
-    [onZoomChange],
+    [zoomIndex, onZoomChange],
   );
 
   const resetZoom = useCallback(() => {
