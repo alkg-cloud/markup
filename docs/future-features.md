@@ -228,3 +228,47 @@ Items deferred from the v1.3 brainstorm `analyze-iteration-and-optimize`. Tier 1
 - **20 (G2):** when freeform comments outpace the chip selector and the per-annotation LLM cost is acceptable. Probably v1.5.
 - **21 (H):** when a 3rd or 4th agent persona is added in active deployment. Easy bolt-on whenever.
 - **22 (I):** when annotation volume × persona count makes manual triage a bottleneck. Co-spec with #7.
+
+---
+
+## AppMain redesign — parked surfaces
+
+Surfaces removed from the mockup viewer in the 2026-05 redesign. The
+viewer focuses on commenting; drawing/diff/edit-mode return as separate
+specs. Spec: `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md`.
+
+### 23. Drawing canvas (tldraw)
+
+**Where:** annotation modal canvas, annotation detail canvas, edit-mode toggle, save flow.
+
+**Today:** annotations are comment-only. Pins anchor to DOM elements via the anchoring strategy. No freehand drawings or shapes.
+
+**Fix:** reintroduce the tldraw overlay as an OPTIONAL annotation kind. The current Annotation row keeps `anchors[]` for pin-based annotations; a new `kind` discriminator distinguishes "comment" (anchors) from "drawing" (tldraw blob). Restore the screenshot capture + tldraw save flow when needed.
+
+**Why park it:** mockups change frequently; drawings drift from content faster than DOM-anchored pins. Comment-only is the high-signal default.
+
+**Size:** ~2 days (mostly UI restoration — tldraw worked previously).
+
+### 24. View diff modal
+
+**Where:** mockup viewer toolbar `View diff` button + diff modal.
+
+**Today:** diff is text-only via `GET /api/mockups/[id]/diff`. The viewer toolbar has no diff button.
+
+**Fix:** restore the inline diff view, ideally as a side-by-side or overlay diff using the existing diff API. Could be implemented as a new fullscreen mode rather than a modal.
+
+**Why park it:** diff UX is its own design problem — depends on what "diff" means (visual? structural? text?). Worth specifying separately.
+
+**Size:** ~3 days depending on diff representation.
+
+### 25. Edit-mode toggle + Pan/Select/Fit tools
+
+**Where:** mockup viewer toolbar.
+
+**Today:** the viewer has a single mode (comment). No pan / select / fit-to-screen tools.
+
+**Fix:** edit-mode returns with drawing (#23). Pan / Select / Fit are nice-to-haves but the floating-cockpit design with zoom + fullscreen covers the common cases.
+
+**Why park it:** depends on #23. Pan/Select tools without drawing don't add enough value to justify the toolbar real estate.
+
+**Size:** comes with #23, +1 day for pan/select/fit if desired.
