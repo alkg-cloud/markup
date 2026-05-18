@@ -54,8 +54,13 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 
 - [Full prototype](design/full-prototype.html) — the authoritative full-fidelity prototype (synced from Markup online)
 - [Design system spec](design/design-system/UX_SPEC.md) — UX spec with design tokens, patterns, and component inventory
-- `design/design-system/*.html` — 13 DS component mockups synced from "Markup dev" project (sidebar, breadcrumb, finder-pill, finder-overlay, project-card, icon-picker, new-project-dialog, dropdown-chevron, avatar-menu, agent-tokens, mockup-view, project-folder-view, buttons)
+- `design/design-system/*.html` — DS component mockups synced from "Markup dev" project (sidebar, breadcrumb, finder-pill, finder-overlay, project-card, icon-picker, new-project-dialog, dropdown-chevron, avatar-menu, agent-tokens, mockup-view, project-folder-view, buttons + AppMain components from the 2026-05 redesign)
 - `design/ideias/` — navigation variant explorations and sidebar ideas (synced from Markup online + local variants)
+
+### Active design specs (forward-looking)
+
+- [AppMain redesign](superpowers/specs/2026-05-18-app-main-redesign-spec.md) — floating-cockpit viewer layout, threaded annotations, reactions, glass surface standard, OS-aware shortcuts
+- [Pin anchoring strategy](superpowers/specs/2026-05-18-pin-anchoring-strategy.md) — DOM-anchored pin positioning resilient to viewport/zoom/fullscreen/reflow
 
 ## Process artefacts (point-in-time, local-only)
 
