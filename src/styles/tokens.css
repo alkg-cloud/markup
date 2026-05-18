@@ -270,6 +270,13 @@
      these tokens so the canvas remains the visual focus and tweaks land
      in one place. See AppMain spec §11. ──────────────────────────── */
   --surface-glass-bg: rgb(7 12 15 / 80%);
+  /* INLINED at usage sites — Lightning CSS (Next.js CSS minifier) drops the
+   * standard `backdrop-filter` declaration when its value uses `var()` and
+   * keeps only the `-webkit-` prefixed form, which Chrome doesn't apply
+   * (Chrome supports the unprefixed property natively). Glass components
+   * declare `backdrop-filter: blur(16px) saturate(140%)` literally to keep
+   * both standard + prefixed forms in the served CSS. Keep this token in
+   * lockstep so the design system stays single-sourced. */
   --surface-glass-blur: blur(16px) saturate(140%);
   --surface-glass-border: 1px solid var(--border);
 

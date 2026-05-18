@@ -24,8 +24,8 @@
   /* AppMain redesign: adopt the shared glass surface tokens so every
      overlay layer (sidebar, rail, toolbar, popovers) is visually consistent. */
   background: var(--surface-glass-bg);
-  backdrop-filter: var(--surface-glass-blur);
-  -webkit-backdrop-filter: var(--surface-glass-blur);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
   border-right: 1px solid var(--border-subtle);
   border-radius: 0;
   box-shadow: none;
