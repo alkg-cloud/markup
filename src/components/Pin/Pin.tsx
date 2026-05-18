@@ -1,5 +1,5 @@
 'use client';
-import { type MouseEvent, type Ref, forwardRef } from 'react';
+import { forwardRef, type MouseEvent, type Ref } from 'react';
 import styles from './Pin.module.css';
 
 export type PinStatus = 'idle' | 'active' | 'pending';

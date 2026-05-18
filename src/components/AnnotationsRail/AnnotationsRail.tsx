@@ -175,6 +175,8 @@ export function AnnotationsRail({
         </div>
       </div>
 
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: hover-expand is
+          progressive enhancement; keyboard users tab into the buttons directly. */}
       <div className={styles.collapsed} onMouseEnter={enter}>
         {badges.map((b) => (
           <button
@@ -193,6 +195,7 @@ export function AnnotationsRail({
         ))}
       </div>
 
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: see comment above. */}
       <div className={styles.expanded} onMouseEnter={enter}>
         <header className={styles.head}>
           <div className={styles.headTitle}>
@@ -219,10 +222,12 @@ export function AnnotationsRail({
         )}
       </div>
 
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: see comment above. */}
       <div className={styles.foot} onMouseEnter={enter}>
         <button type="button" className={styles.add} aria-label="New annotation" onClick={onCreate}>
           <span className={styles.addIcon} aria-hidden="true">
-            <svg viewBox="0 0 16 16" fill="currentColor">
+            <svg viewBox="0 0 16 16" fill="currentColor" aria-label="Plus icon">
+              <title>Plus icon</title>
               <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
             </svg>
           </span>

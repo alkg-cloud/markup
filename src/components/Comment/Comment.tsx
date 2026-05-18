@@ -1,11 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { initialsForName } from '@/lib/avatar';
 import { EmojiPicker } from '@/components/EmojiPicker/EmojiPicker';
-import {
-  ReactionPill,
-  formatReactorList,
-} from '@/components/ReactionPill/ReactionPill';
+import { formatReactorList, ReactionPill } from '@/components/ReactionPill/ReactionPill';
+import { initialsForName } from '@/lib/avatar';
 import styles from './Comment.module.css';
 
 export interface CommentReaction {
@@ -74,9 +71,7 @@ export function Comment({
     return () => document.removeEventListener('click', onDoc);
   }, [menuOpen]);
 
-  const cls = [styles.comment, variant === 'primary' && styles.primary]
-    .filter(Boolean)
-    .join(' ');
+  const cls = [styles.comment, variant === 'primary' && styles.primary].filter(Boolean).join(' ');
 
   return (
     <article className={cls} data-author={author} data-own={isOwn ? '1' : undefined}>
@@ -94,9 +89,7 @@ export function Comment({
               <>
                 <button
                   type="button"
-                  className={[styles.kebab, menuOpen && styles.menuOpen]
-                    .filter(Boolean)
-                    .join(' ')}
+                  className={[styles.kebab, menuOpen && styles.menuOpen].filter(Boolean).join(' ')}
                   data-tooltip="More actions"
                   aria-label="More actions"
                   aria-haspopup="menu"

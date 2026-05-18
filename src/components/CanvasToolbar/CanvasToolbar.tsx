@@ -1,19 +1,7 @@
 'use client';
-import {
-  type ReactNode,
-  type RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import styles from './CanvasToolbar.module.css';
-import {
-  ZOOM_DEFAULT_INDEX,
-  ZOOM_STEPS,
-  nextZoomIndex,
-  zoomLabel,
-} from './zoom';
+import { nextZoomIndex, ZOOM_DEFAULT_INDEX, ZOOM_STEPS, zoomLabel } from './zoom';
 
 export interface CanvasToolbarProps {
   /** Bounding container used for drag clamping. */
@@ -72,23 +60,20 @@ export function CanvasToolbar({
   // pointermove updates clamped to bounds with 8px margin, pointerup
   // releases.
   const dragState = useRef<{ ox: number; oy: number; sx: number; sy: number } | null>(null);
-  const onGrabPointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      const tb = toolbarRef.current;
-      if (!tb) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const r = tb.getBoundingClientRect();
-      dragState.current = {
-        ox: r.left,
-        oy: r.top,
-        sx: e.clientX,
-        sy: e.clientY,
-      };
-      setDrag(true);
-    },
-    [],
-  );
+  const onGrabPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const tb = toolbarRef.current;
+    if (!tb) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const r = tb.getBoundingClientRect();
+    dragState.current = {
+      ox: r.left,
+      oy: r.top,
+      sx: e.clientX,
+      sy: e.clientY,
+    };
+    setDrag(true);
+  }, []);
 
   useEffect(() => {
     if (!drag) return;

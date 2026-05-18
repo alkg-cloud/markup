@@ -36,7 +36,7 @@
    `:hover` on .fc-reactions; here we expose `data-comment-hover` so
    styles can opt-in without coupling. */
 :global(.fc-reactions:hover) .trigger,
-:global([data-comment-hover='1']) .trigger {
+:global([data-comment-hover="1"]) .trigger {
   opacity: 1;
 }
 .trigger svg {

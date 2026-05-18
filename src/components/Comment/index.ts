@@ -1,6 +1,6 @@
 export {
   Comment,
-  formatReactorList,
   type CommentProps,
   type CommentReaction,
+  formatReactorList,
 } from './Comment';

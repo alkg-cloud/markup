@@ -51,7 +51,9 @@
   border-radius: var(--radius-xs);
   color: var(--text-muted);
   cursor: pointer;
-  transition: background var(--motion-fast), color var(--motion-fast);
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast);
 }
 .btn:hover {
   background: var(--surface-hover);
@@ -103,7 +105,9 @@
   cursor: grab;
   color: var(--text-muted);
   border-radius: var(--radius-xs);
-  transition: background var(--motion-fast), color var(--motion-fast);
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast);
 }
 .grab:hover {
   background: var(--surface-hover);

@@ -1,22 +1,22 @@
-export { buildAnchorPath, resolveAnchor } from './path';
 export { buildAnchorFromClick, type ClickAnchorInput } from './click';
-export {
-  findCharPositionInElement,
-  getCharOffsetInElement,
-  type CharPosition,
-} from './text';
+export { buildAnchorPath, resolveAnchor } from './path';
 export {
   type Anchor,
+  applyPinPosition,
+  computePinTarget,
   type ElementAnchor,
-  type TextAnchor,
+  getCharRect,
+  isTextAnchor,
   PIN_HALF,
   PIN_SIZE,
   PIN_TIP_OFFSET_Y,
-  applyPinPosition,
-  computePinTarget,
-  getCharRect,
-  isTextAnchor,
+  type TextAnchor,
 } from './reposition';
+export {
+  type CharPosition,
+  findCharPositionInElement,
+  getCharOffsetInElement,
+} from './text';
 export {
   type UseAnchoredPinsApi,
   type UseAnchoredPinsOptions,

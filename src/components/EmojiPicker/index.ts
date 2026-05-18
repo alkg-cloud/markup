@@ -1,1 +1,1 @@
-export { EmojiPicker, REACTION_EMOJIS, type EmojiPickerProps } from './EmojiPicker';
+export { EmojiPicker, type EmojiPickerProps, REACTION_EMOJIS } from './EmojiPicker';

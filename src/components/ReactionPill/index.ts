@@ -1,5 +1,5 @@
 export {
-  ReactionPill,
   formatReactorList,
+  ReactionPill,
   type ReactionPillProps,
 } from './ReactionPill';

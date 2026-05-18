@@ -27,13 +27,9 @@ export function buildAnchorPath(root: Element, target: Element | null): string |
     const parent: Element | null = node.parentElement;
     if (!parent) break;
     const tag = node.tagName.toLowerCase();
-    const siblingsSameTag = Array.from(parent.children).filter(
-      (c) => c.tagName === node!.tagName,
-    );
+    const siblingsSameTag = Array.from(parent.children).filter((c) => c.tagName === node!.tagName);
     const idx = siblingsSameTag.indexOf(node);
-    parts.unshift(
-      siblingsSameTag.length > 1 ? `${tag}:nth-of-type(${idx + 1})` : tag,
-    );
+    parts.unshift(siblingsSameTag.length > 1 ? `${tag}:nth-of-type(${idx + 1})` : tag);
     node = parent;
   }
   return `:scope>${parts.join('>')}`;
@@ -44,10 +40,7 @@ export function buildAnchorPath(root: Element, target: Element | null): string |
  * element inside `root`. Empty/nullish path → returns root (canvas
  * background click). Invalid selector → returns null without throwing.
  */
-export function resolveAnchor(
-  root: Element,
-  path: string | null | undefined,
-): Element | null {
+export function resolveAnchor(root: Element, path: string | null | undefined): Element | null {
   if (!path) return root;
   try {
     return root.querySelector(path);

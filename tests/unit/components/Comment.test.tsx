@@ -26,9 +26,7 @@ describe('formatReactorList', () => {
     expect(formatReactorList(['Alex'], '👍')).toBe('Alex reacted with 👍');
   });
   it('handles 2 users with "and"', () => {
-    expect(formatReactorList(['Alex', 'Marina'], '👍')).toBe(
-      'Alex and Marina reacted with 👍',
-    );
+    expect(formatReactorList(['Alex', 'Marina'], '👍')).toBe('Alex and Marina reacted with 👍');
   });
   it('handles 3+ users with comma + and', () => {
     expect(formatReactorList(['Alex', 'Marina', 'Sam'], '👍')).toBe(
@@ -61,18 +59,13 @@ describe('Comment — reply variant', () => {
   });
 
   it('shows kebab (not reply icon) for own comments', () => {
-    const html = renderToStaticMarkup(
-      <Comment {...baseProps} author="Alexandre Camillo" isOwn />,
-    );
+    const html = renderToStaticMarkup(<Comment {...baseProps} author="Alexandre Camillo" isOwn />);
     expect(html).toContain('data-tooltip="More actions"');
   });
 
   it('renders reactions with current-user state', () => {
     const html = renderToStaticMarkup(
-      <Comment
-        {...baseProps}
-        reactions={[{ emoji: '👍', reactedBy: ['Alexandre', 'Marina'] }]}
-      />,
+      <Comment {...baseProps} reactions={[{ emoji: '👍', reactedBy: ['Alexandre', 'Marina'] }]} />,
     );
     expect(html).toContain('data-emoji="👍"');
     expect(html).toContain('>2<'); // count

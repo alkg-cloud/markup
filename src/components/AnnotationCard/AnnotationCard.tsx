@@ -95,6 +95,7 @@ export function AnnotationCard({
   };
 
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard focus lands on the inner Comment button; the card-region click is a mouse-only shortcut to expand without moving focus.
     <li
       className={[styles.item, active && styles.active].filter(Boolean).join(' ')}
       data-pin-target={annotationId}
@@ -140,12 +141,7 @@ export function AnnotationCard({
             <path d="M14.5 2h-13l-.5.5v9l.5.5H4v2.5l.854.354L7.707 12H14.5l.5-.5v-9l-.5-.5z" />
           </svg>
           <span>{replyCountLabel}</span>
-          <svg
-            className={styles.chev}
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            aria-hidden="true"
-          >
+          <svg className={styles.chev} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
             <path d="M3.2 5.8h9.6L8 11.4z" />
           </svg>
         </button>

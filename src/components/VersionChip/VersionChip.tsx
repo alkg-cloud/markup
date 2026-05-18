@@ -63,12 +63,7 @@ export function VersionChip({ versions, onSelect, onPromote, onDelete }: Version
           setActiveMenu(null);
         }}
       >
-        <svg
-          className={styles.history}
-          viewBox="0 0 16 16"
-          fill="currentColor"
-          aria-hidden="true"
-        >
+        <svg className={styles.history} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
           <path d="M13.507 12.324a7 7 0 0 0 .065-8.56A7 7 0 0 0 2 4.393V2H1v3.5l.5.5H5V5H2.811a6.008 6.008 0 1 1-.135 5.77l-.887.462a7 7 0 0 0 11.718 1.092zm-3.361-.97l.708-.707L8 7.792V4H7v4l.146.354 3 3z" />
         </svg>
         {label}
@@ -83,10 +78,11 @@ export function VersionChip({ versions, onSelect, onPromote, onDelete }: Version
         </div>
         <ul className={styles.list}>
           {versions.map((v) => (
+            // biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-checked marks the current row visually; interactive surfaces are the inner kebab + actions.
+            // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard users tab into the inner Promote/Delete buttons; row click is a mouse shortcut.
             <li
               key={v.id}
               className={[styles.item, v.current && styles.current].filter(Boolean).join(' ')}
-              role="menuitemradio"
               aria-checked={v.current ? 'true' : 'false'}
               onClick={(e) => {
                 if ((e.target as Element).closest(`.${styles.kebab}`)) return;

@@ -5,9 +5,7 @@ import { AnnotationsRail } from '@/components/AnnotationsRail/AnnotationsRail';
 
 describe('AnnotationsRail', () => {
   it('renders empty rail with no badges', () => {
-    const html = renderToStaticMarkup(
-      <AnnotationsRail badges={[]} />,
-    );
+    const html = renderToStaticMarkup(<AnnotationsRail badges={[]} />);
     expect(html).toContain('aria-label="Annotations"');
     expect(html).toContain('No annotations yet');
   });
@@ -34,27 +32,20 @@ describe('AnnotationsRail', () => {
 
   it('renders the expanded count badge from prop', () => {
     const html = renderToStaticMarkup(
-      <AnnotationsRail
-        badges={[{ annotationId: 'a1', colorIndex: 0, label: 1 }]}
-        count={7}
-      />,
+      <AnnotationsRail badges={[{ annotationId: 'a1', colorIndex: 0, label: 1 }]} count={7} />,
     );
     // Count appears in the expanded header
     expect(html).toContain('>7</span>');
   });
 
   it('renders the Lock-open button with Keep expanded tooltip', () => {
-    const html = renderToStaticMarkup(
-      <AnnotationsRail badges={[]} />,
-    );
+    const html = renderToStaticMarkup(<AnnotationsRail badges={[]} />);
     expect(html).toContain('data-tooltip="Keep expanded"');
     expect(html).toContain('aria-pressed="false"');
   });
 
   it('renders the add-annotation button with New annotation label', () => {
-    const html = renderToStaticMarkup(
-      <AnnotationsRail badges={[]} />,
-    );
+    const html = renderToStaticMarkup(<AnnotationsRail badges={[]} />);
     expect(html).toContain('aria-label="New annotation"');
     expect(html).toContain('New annotation');
   });
