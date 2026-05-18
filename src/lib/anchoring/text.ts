@@ -27,7 +27,7 @@ export function getCharOffsetInElement(
   offsetInNode: number,
 ): number {
   let count = 0;
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const walker = (root.ownerDocument ?? document).createTreeWalker(root, NodeFilter.SHOW_TEXT);
   let n: Node | null;
   while ((n = walker.nextNode())) {
     if (n === textNode) return count + offsetInNode;
@@ -48,7 +48,7 @@ export function findCharPositionInElement(
   charOffset: number,
 ): CharPosition | null {
   let count = 0;
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const walker = (root.ownerDocument ?? document).createTreeWalker(root, NodeFilter.SHOW_TEXT);
   let n: Node | null;
   let last: Text | null = null;
   while ((n = walker.nextNode())) {
