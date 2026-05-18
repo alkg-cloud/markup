@@ -1,0 +1,42 @@
+/* Slack-style reaction pill — emoji + (count when > 1). Custom tooltip
+   via [data-tooltip] anchored above. See spec §10. */
+
+.pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  height: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 9999px;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast),
+    border-color var(--motion-fast),
+    color var(--motion-fast);
+}
+.pill:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent-overlay-mid);
+}
+.pill.reacted {
+  background: var(--accent-soft);
+  border-color: var(--accent-overlay-mid);
+  color: var(--accent-bright);
+}
+.emoji {
+  font-size: 11px;
+  line-height: 1;
+}
+.count {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}

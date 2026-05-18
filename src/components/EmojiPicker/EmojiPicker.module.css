@@ -1,0 +1,85 @@
+/* Emoji picker — 4x4 grid popover triggered by the "+" button on a
+   comment's reactions row. See spec §10. */
+
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.trigger {
+  width: 22px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-subtle);
+  border-radius: 9999px;
+  color: var(--text-muted);
+  opacity: 0;
+  cursor: pointer;
+  transition:
+    opacity var(--motion-fast),
+    background var(--motion-fast),
+    color var(--motion-fast),
+    border-color var(--motion-fast);
+}
+.trigger:hover,
+.wrap.open .trigger {
+  opacity: 1;
+  background: var(--surface-hover);
+  color: var(--accent-bright);
+  border-color: var(--accent-overlay-mid);
+  border-style: solid;
+}
+/* Always reveal when the parent comment is hovered. The parent CSS owns
+   `:hover` on .fc-reactions; here we expose `data-comment-hover` so
+   styles can opt-in without coupling. */
+:global(.fc-reactions:hover) .trigger,
+:global([data-comment-hover='1']) .trigger {
+  opacity: 1;
+}
+.trigger svg {
+  width: 11px;
+  height: 11px;
+}
+
+.picker {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  padding: 6px;
+  background: var(--surface-glass-bg);
+  backdrop-filter: var(--surface-glass-blur);
+  -webkit-backdrop-filter: var(--surface-glass-blur);
+  border: var(--surface-glass-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-popover);
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  z-index: 80;
+}
+.wrap.open .picker {
+  display: grid;
+}
+
+.pick {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-radius: var(--radius-xs);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast),
+    transform var(--motion-fast) var(--ease-spring);
+}
+.pick:hover {
+  background: var(--surface-hover);
+  transform: scale(1.2);
+}

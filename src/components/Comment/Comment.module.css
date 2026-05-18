@@ -1,0 +1,205 @@
+/* Comment — one entry in an annotation's thread. Primary variant skips
+   the head row (author already shown in the AnnotationCard meta).
+   See spec §9. */
+
+.comment {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+}
+.comment + .comment {
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.by {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.avatar {
+  --pin-h: 165;
+  --pin-c: 0.18;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    oklch(78% var(--pin-c) var(--pin-h)),
+    oklch(60% var(--pin-c) var(--pin-h))
+  );
+  color: oklch(15% 0.04 var(--pin-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px oklch(35% var(--pin-c) var(--pin-h) / 0.4);
+}
+.avatar[data-color='0']  { --pin-h: 165; --pin-c: 0.18; }
+.avatar[data-color='1']  { --pin-h: 195; --pin-c: 0.15; }
+.avatar[data-color='2']  { --pin-h: 220; --pin-c: 0.14; }
+.avatar[data-color='3']  { --pin-h: 245; --pin-c: 0.13; }
+.avatar[data-color='4']  { --pin-h: 265; --pin-c: 0.13; }
+.avatar[data-color='5']  { --pin-h: 285; --pin-c: 0.13; }
+.avatar[data-color='6']  { --pin-h: 305; --pin-c: 0.12; }
+.avatar[data-color='7']  { --pin-h: 325; --pin-c: 0.12; }
+.avatar[data-color='8']  { --pin-h: 25;  --pin-c: 0.13; }
+.avatar[data-color='9']  { --pin-h: 50;  --pin-c: 0.14; }
+.avatar[data-color='10'] { --pin-h: 75;  --pin-c: 0.14; }
+.avatar[data-color='11'] { --pin-h: 95;  --pin-c: 0.15; }
+.avatar[data-color='12'] { --pin-h: 120; --pin-c: 0.15; }
+.avatar[data-color='13'] { --pin-h: 140; --pin-c: 0.16; }
+.avatar[data-color='14'] { --pin-h: 200; --pin-c: 0.16; }
+.avatar[data-color='15'] { --pin-h: 150; --pin-c: 0.17; }
+
+.name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+.time {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  position: relative;
+}
+.action,
+.kebab {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  border-radius: var(--radius-xs);
+  opacity: 0;
+  transition:
+    opacity var(--motion-fast),
+    background var(--motion-fast),
+    color var(--motion-fast);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.comment:hover .action,
+.comment:hover .kebab,
+.kebab.menuOpen {
+  opacity: 1;
+}
+.action:hover,
+.kebab:hover,
+.kebab.menuOpen {
+  background: var(--surface-hover);
+  color: var(--text-bright);
+}
+.action svg,
+.kebab svg {
+  width: 11px;
+  height: 11px;
+}
+
+.menu {
+  display: none;
+  position: absolute;
+  top: 24px;
+  right: 0;
+  flex-direction: column;
+  min-width: 130px;
+  padding: 4px;
+  background: var(--surface-glass-bg);
+  backdrop-filter: var(--surface-glass-blur);
+  -webkit-backdrop-filter: var(--surface-glass-blur);
+  border: var(--surface-glass-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-popover);
+  z-index: 50;
+}
+.menu.open {
+  display: flex;
+}
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  border-radius: var(--radius-xs);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.menuItem:hover {
+  background: var(--surface-hover);
+  color: var(--text-bright);
+}
+.menuItem.danger {
+  color: var(--danger);
+}
+.menuItem.danger:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.menuItem svg {
+  width: 11px;
+  height: 11px;
+  color: currentColor;
+  flex-shrink: 0;
+}
+
+.body {
+  font-size: 12px;
+  color: var(--text-bright);
+  line-height: 1.45;
+  padding-left: 26px; /* aligned past avatar */
+  word-break: break-word;
+}
+
+.reactions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+  padding-left: 26px;
+}
+
+/* Primary variant — used when this comment is rendered as the
+   annotation card body. Author name is in the meta row above, so we
+   drop the head entirely and tighten the indent to 10px. */
+.primary {
+  padding-top: 0;
+  gap: 6px;
+}
+.primary .body,
+.primary .reactions {
+  padding-left: 10px;
+}
