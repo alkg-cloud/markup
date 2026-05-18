@@ -237,10 +237,22 @@ Empty state component for projects and folders (`EmptyState.tsx`).
 
 ## mockup-viewer (AppMain redesign — 2026-05)
 
-Full-viewport mockup viewer at `/mockups/[id]` (`AppMainViewer.tsx`). The
-2026-05 redesign moved away from the topbar + sidebar shell — the viewer
-now occupies the entire viewport, with floating chrome (rail + toolbar)
-overlaying the canvas.
+Mockup viewer at `/mockups/[id]` (`AppMainViewer.tsx`). The 2026-05 redesign
+replaces the in-canvas toolbar + side panel with **floating, draggable chrome**
+(rail + toolbar + composer + marking-bar) directly above the canvas.
+
+**Layout in normal mode:** the viewer inhabits the in-shell area to the right
+of the project sidebar and below the topbar, exactly like every other `(app)`
+page (folder view, annotation view, settings). Sidebar and topbar **remain
+visible**. Floating chrome clamps to AppMain bounds (8 px margin), NOT the
+viewport. The topbar's breadcrumbs end at the mockup name; the sidebar tree
+highlights the active mockup leaf.
+
+**Layout in fullscreen mode** (toggled via `mockup-viewer-toolbar-fullscreen`
+or the `f` shortcut): uses the Fullscreen API on the AppMain element — the
+**only** state that hides the global sidebar + topbar. All floating chrome
+inside AppMain survives the transition because it lives inside the fullscreen
+element. Exiting fullscreen (Esc or `f` again) restores the in-shell layout.
 
 Specs:
 - `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md`
@@ -251,15 +263,18 @@ see `docs/future-features.md` #23/24/25.
 
 ### mockup-viewer-app-main
 
-The full-viewport viewer surface. No topbar, no sidebar; the canvas
-fills the visible area. Glass-bg chrome floats above.
+The viewer surface. Fills the in-shell area in normal mode; takes the full
+viewport when its Fullscreen API is active. Glass-bg chrome floats above.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `mockup-viewer-app-main` | Full-viewport `<main>` hosting canvas-stage + floating overlays | default, fullscreen |
-| `mockup-viewer-canvas-stage` | Scrollable container around the mockup iframe | overflow auto when zoomed past viewport |
+| `mockup-viewer-app-main` | `<main>` hosting canvas-stage + floating overlays. `position: relative; flex: 1; min-height: 0; overflow: hidden`. Sized by the `<main>` flex cell that sits to the right of `sidebar-shell` and below `topbar-bar`. | in-shell (default), fullscreen (via Fullscreen API on this element) |
+| `mockup-viewer-fullscreen-mode` | Fullscreen state. Triggered by `mockup-viewer-toolbar-fullscreen` or `f` shortcut. Uses `appMain.requestFullscreen()`; the browser removes shell chrome until `document.exitFullscreen()` or Esc. Floating rail/toolbar/composer/marking-bar all survive because they live inside the fullscreen element. | inactive, active |
+| `mockup-viewer-canvas-stage` | Scrollable container around the mockup iframe. `position: absolute; inset: 0; overflow: auto`. | overflow auto when zoomed past container bounds |
 | `mockup-viewer-mockup-doc` | The iframe rendering `/m/[id]/...`. Receives `transform: scale(var(--zoom))` for canvas zoom. | loading, loaded, error |
-| `mockup-viewer-pin-layer` | Non-scaling overlay (sibling of mockup-doc) hosting pin elements | `pointer-events: none` on layer; pins re-enable for click delegation |
+| `mockup-viewer-pin-layer` | Non-scaling overlay (sibling of mockup-doc) hosting pin elements. Positions reposition on container resize, scroll, zoom, and fullscreen transitions — NOT just viewport resize. | `pointer-events: none` on layer; pins re-enable for click delegation |
+| `mockup-viewer-in-shell-topbar` | The `topbar-bar` rendered above the viewer with breadcrumbs `[Project] / [Folder] / [Mockup]`. Hidden in fullscreen mode. | visible (in-shell), hidden (fullscreen) |
+| `mockup-viewer-in-shell-sidebar` | The `sidebar-shell` rendered to the left of the viewer. Same expand/collapse persistence as every other in-shell page. Hidden in fullscreen mode. | visible (in-shell), hidden (fullscreen) |
 
 ### mockup-viewer-pin
 
@@ -281,7 +296,7 @@ Left-side floating panel. See spec §4.
 | `mockup-viewer-rail-collapsed` | 60px-wide column of colored pin badges + drag handle (top) + "+ New annotation" button (bottom morphs round) | default state |
 | `mockup-viewer-rail-hover-expanded` | Transient 300px width on body mouseenter (NOT on drag handle) | width transition via `--motion-base` |
 | `mockup-viewer-rail-pinned` | Sticky 300px width via Lock-open toggle | persists past mouseleave, button shows pressed state |
-| `mockup-viewer-rail-drag` | Drag handle (3×2 dot grid) lets user reposition the rail anywhere inside appMain (8px margin clamping) | grab/grabbing cursor |
+| `mockup-viewer-rail-drag` | Drag handle (3×2 dot grid) lets user reposition the rail anywhere inside `mockup-viewer-app-main` (8 px margin clamping). Drag handle DOES NOT trigger hover-expand — only the rail body does. | grab/grabbing cursor |
 | `mockup-viewer-rail-lock-open` | Lock-open button (Vsc pin icon) — "Keep expanded" / "Unlock" tooltip | aria-pressed reflects state |
 | `mockup-viewer-rail-add-button` | "+ New annotation" button at foot. Morphs round → pill with label + ⌘⇧N (Ctrl+⇧+N on Windows/Linux) | collapsed/expanded width transition |
 
@@ -296,7 +311,7 @@ Center-bottom floating dock. See spec §5.
 | `mockup-viewer-toolbar-zoom-label` | Clickable % label — resets to 100% | hover, reset |
 | `mockup-viewer-toolbar-zoom-in` | Zoom-in button (`⌘+`) | enabled, disabled at 400% max |
 | `mockup-viewer-toolbar-fullscreen` | Fullscreen toggle (F) | inactive, active (pressed) |
-| `mockup-viewer-toolbar-drag` | Drag handle on right edge (2×3 dot grid) | grab/grabbing cursor |
+| `mockup-viewer-toolbar-drag` | Drag handle on right edge (2×3 dot grid). Drag clamps to `mockup-viewer-app-main` bounds (8 px margin), NOT viewport. | grab/grabbing cursor |
 
 ### mockup-viewer-version-chip
 
