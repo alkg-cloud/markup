@@ -60,6 +60,10 @@ Each invocation prints a fresh `https://<random>-<words>.trycloudflare.com` URL.
 
 The tunnel URL is randomly generated per run and not indexed publicly. It still exposes the dev DB to anyone who has the URL — don't share with people you don't trust, and don't leave it running unattended for long sessions.
 
+#### Cross-origin allowlist (already configured)
+
+`next.config.mjs` already includes `*.trycloudflare.com`, `*.ngrok.io`, and `*.ngrok-free.app` in `allowedDevOrigins`. Without these, Next 16's dev server **blocks client-side JS hydration** on non-localhost hosts — the login form renders but the submit handler never attaches, so clicking Sign in does a native form GET to `/login?` and "nothing happens" from the user's perspective. The config covers every fresh tunnel URL since the wildcard matches any subdomain. If you switch to a different tunnel provider, add its wildcard pattern there and restart `pnpm dev`.
+
 ---
 
 ## Seeded state
