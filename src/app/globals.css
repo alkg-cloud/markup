@@ -120,6 +120,10 @@ button {
   font: inherit;
   font-feature-settings: "ss01", "ss02", "cv11";
   cursor: pointer;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
 }
 
 input,
