@@ -22,3 +22,5 @@ docs/superpowers/
 .superpowers/
 .worktrees/
 .claude/
+dev-data/
+test-data/

@@ -17,7 +17,8 @@
     "prisma:deploy": "prisma migrate deploy",
     "reset:auth": "tsx scripts/reset-auth.ts",
     "reset:tokens": "tsx scripts/reset-tokens.ts",
-    "reset:all": "tsx scripts/reset-all.ts"
+    "reset:all": "tsx scripts/reset-all.ts",
+    "seed:dev": "node --env-file=.env --env-file=.env.local --import tsx scripts/seed-dev.ts"
   },
   "engines": {
     "node": ">=22"
