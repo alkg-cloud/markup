@@ -56,8 +56,14 @@ export function useAnchoredPins(opts: UseAnchoredPinsOptions): UseAnchoredPinsAp
     const layer = pinLayerRef.current;
     if (!canvas || !layer) return;
     const layerRect = layer.getBoundingClientRect();
+    // Cross-document case: the canvas root lives in an iframe. The
+    // anchor element rects we'll resolve are iframe-viewport-relative;
+    // shift them by the iframe's outer-viewport BCR so the math lines
+    // up with `layerRect` (which is in the outer document).
+    const frame = getHostFrame(canvas, layer);
+    const frameOrigin = frame ? frame.getBoundingClientRect() : undefined;
     for (const [pin, anchor] of getPins()) {
-      const target = computePinTarget(canvas, layerRect, anchor);
+      const target = computePinTarget(canvas, layerRect, anchor, frameOrigin);
       if (!target) continue;
       applyPinPosition(pin, target);
     }
@@ -68,9 +74,12 @@ export function useAnchoredPins(opts: UseAnchoredPinsOptions): UseAnchoredPinsAp
     if (typeof window === 'undefined') return;
     const canvas = canvasRootRef.current;
     const layer = pinLayerRef.current;
+    const frame = canvas && layer ? getHostFrame(canvas, layer) : null;
+    const innerWin = frame?.contentWindow ?? null;
 
     // ResizeObserver catches layout-driven changes (viewport, fullscreen,
-    // sidebar collapse, panel resize, etc.).
+    // sidebar collapse, panel resize, etc.). The canvas root may be in
+    // the iframe doc — that's fine, ResizeObserver works cross-document.
     let ro: ResizeObserver | undefined;
     if (typeof ResizeObserver !== 'undefined' && canvas && layer) {
       ro = new ResizeObserver(() => repositionAll());
@@ -92,13 +101,34 @@ export function useAnchoredPins(opts: UseAnchoredPinsOptions): UseAnchoredPinsAp
     window.addEventListener('resize', repositionAll);
     window.addEventListener('load', repositionAll);
 
+    // Cross-document signals: the iframe's own scroll and resize need
+    // to drive recompute too, since they shift the inner rects without
+    // firing events on the outer window.
+    innerWin?.addEventListener('scroll', repositionAll, { passive: true });
+    innerWin?.addEventListener('resize', repositionAll);
+
     return () => {
       ro?.disconnect();
       document.removeEventListener('fullscreenchange', onFsChange);
       window.removeEventListener('resize', repositionAll);
       window.removeEventListener('load', repositionAll);
+      innerWin?.removeEventListener('scroll', repositionAll);
+      innerWin?.removeEventListener('resize', repositionAll);
     };
   }, [canvasRootRef, pinLayerRef, repositionAll]);
 
   return { repositionAll };
+}
+
+/**
+ * If the canvas root lives in a different document than the pin layer
+ * (i.e., inside an iframe), return the host iframe element so callers
+ * can read its BCR for coordinate translation and subscribe to its
+ * contentWindow events. Returns null in the same-document case.
+ */
+function getHostFrame(canvas: Element, layer: HTMLElement): HTMLIFrameElement | null {
+  const canvasDoc = canvas.ownerDocument;
+  if (!canvasDoc || canvasDoc === layer.ownerDocument) return null;
+  const frame = canvasDoc.defaultView?.frameElement;
+  return frame instanceof HTMLIFrameElement ? frame : null;
 }

@@ -81,6 +81,62 @@ describe('reposition', () => {
     });
   });
 
+  describe('computePinTarget — cross-document (iframe canvas root)', () => {
+    it('adds frameOrigin offsets to element-anchor rects', () => {
+      const hero = root.querySelector('.hero')!;
+      // Inner BCR — iframe-viewport relative (e.g. element at top of iframe)
+      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(
+        new DOMRect(10, 20, 400, 200),
+      );
+      const frameOrigin = { left: 100, top: 50 };
+      const result = computePinTarget(
+        root,
+        new DOMRect(0, 0, 1000, 800),
+        { path: ':scope>div', offsetX: 0.5, offsetY: 0.5 },
+        frameOrigin,
+      );
+      // outerX = frame.left + inner.left + 0.5*inner.width = 100 + 10 + 200 = 310
+      // outerY = frame.top  + inner.top  + 0.5*inner.height = 50 + 20 + 100 = 170
+      // tx = outerX - layerRect.left = 310; ty = outerY - layerRect.top = 170
+      expect(result).toEqual({ tx: 310, ty: 170 });
+    });
+
+    it('combines frameOrigin and layerRect offsets correctly', () => {
+      const hero = root.querySelector('.hero')!;
+      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(
+        new DOMRect(10, 20, 400, 200),
+      );
+      const result = computePinTarget(
+        root,
+        new DOMRect(40, 30, 1000, 800),
+        { path: ':scope>div', offsetX: 0, offsetY: 0 },
+        { left: 100, top: 50 },
+      );
+      // outerX = 100 + 10 + 0 = 110; tx = 110 - 40 = 70
+      // outerY = 50 + 20 + 0 = 70; ty = 70 - 30 = 40
+      expect(result).toEqual({ tx: 70, ty: 40 });
+    });
+
+    it('omitted frameOrigin behaves like no offset (same-document)', () => {
+      const hero = root.querySelector('.hero')!;
+      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(
+        new DOMRect(100, 50, 400, 200),
+      );
+      const withoutOrigin = computePinTarget(
+        root,
+        layerRect,
+        { path: ':scope>div', offsetX: 0.25, offsetY: 0.5 },
+      );
+      const withZeroOrigin = computePinTarget(
+        root,
+        layerRect,
+        { path: ':scope>div', offsetX: 0.25, offsetY: 0.5 },
+        { left: 0, top: 0 },
+      );
+      expect(withZeroOrigin).toEqual(withoutOrigin);
+    });
+  });
+
   describe('applyPinPosition', () => {
     it('writes top/left so the tip lands on (tx, ty)', () => {
       const pin = document.createElement('div');
