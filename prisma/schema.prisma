@@ -104,7 +104,17 @@ model Annotation {
   mockup             Mockup         @relation(fields: [mockupId], references: [id], onDelete: Cascade)
   screenshotPath     String
   tldrawPath         String
-  pinCoords          String?        // JSON: { scrollX, scrollY, viewportWidth, viewportHeight, bboxX, bboxY, bboxW, bboxH }
+  // Legacy pin coords (scroll/viewport/bbox JSON) — preserved for backfill;
+  // dropped in Phase 13 after the anchors[] migration is verified.
+  pinCoords          String?
+  // AppMain redesign: array of Anchor objects (text-anchor or element-anchor),
+  // shape per `docs/superpowers/specs/2026-05-18-pin-anchoring-strategy.md`.
+  anchors            String         @default("[]")
+  // Per-annotation color index (0..15) into the rotating palette. Shared
+  // across all pins of this annotation, plus the rail badge and avatar.
+  colorIndex         Int            @default(0)
+  // Visual status surfaced as a pill in the rail header.
+  status             String         @default("open") // "open" | "needs review" | "resolved"
   intentType         String         @default("other")
   createdOnVersionId String?
   createdOnVersion   MockupVersion? @relation("CreatedOnVersion", fields: [createdOnVersionId], references: [id])
@@ -125,14 +135,29 @@ model Thread {
 }
 
 model Message {
-  id         String   @id @default(cuid())
+  id         String     @id @default(cuid())
   threadId   String
-  thread     Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  thread     Thread     @relation(fields: [threadId], references: [id], onDelete: Cascade)
   authorType String
   authorId   String
   body       String
-  createdAt  DateTime @default(now())
+  createdAt  DateTime   @default(now())
+  reactions  Reaction[]
   @@index([threadId])
+}
+
+// Slack-style emoji reactions on individual comment messages. The
+// (messageId, userId, emoji) tuple is unique — toggling a reaction is
+// a delete-or-create operation.
+model Reaction {
+  id        String   @id @default(cuid())
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
 }
 
 model Config {
