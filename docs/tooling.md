@@ -30,6 +30,7 @@ pnpm prisma:deploy        # prisma migrate deploy (CI-style — apply pending)
 pnpm reset:auth           # wipe admin + sessions; keeps mockups
 pnpm reset:tokens         # wipe agent tokens; reseed from AGENT_TOKENS env
 pnpm reset:all            # interactive nuke (use --force to skip confirmation)
+pnpm seed:dev             # wipe + re-seed admin + projects + mockups + annotations for QA (see `qa-dev-flow.md`)
 ```
 
 ## Prisma workflows
