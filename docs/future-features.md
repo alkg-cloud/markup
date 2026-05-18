@@ -310,3 +310,15 @@ specs. Spec: `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md`.
 - Long term — serve `/m/[mockupId]/…` from a separate origin (e.g. `mockup-content.markup.alego.cloud`) so the iframe is natively cross-origin, then proxy click coordinates via `postMessage` instead of reading the iframe DOM from the outer document. The anchoring runtime already has the cross-document scaffolding (`useAnchoredPins` detects `ownerDocument` mismatch) — the missing piece is replacing direct rect reads with a `postMessage` RPC since CORS blocks `getBoundingClientRect` on cross-origin documents.
 
 **Size:** trust-model doc + cookie hardening ~1 hour. Cross-origin serve + postMessage bridge ~1-2 days.
+
+### 29. Inline comment edit textarea
+
+**Where:** `src/components/Comment/Comment.tsx`.
+
+**Today:** `comment-kebab` → Edit fires a `window.prompt()` for the new body. Functional but jarring and breaks the glass aesthetic — the prompt is a plain OS dialog.
+
+**Fix:** add a local `editing` state to `Comment`. When `onEdit` fires, replace the body span with a textarea (pre-filled with current body) + Save / Cancel buttons. Save calls a new `onSaveEdit(commentId, nextBody)` callback that the parent wires to the PATCH endpoint. Cancel reverts. Same UX for primary and reply variants.
+
+**Why park it:** the API is wired (`PATCH /api/messages/[id]`), Edit reaches the backend and persists — the only gap is the input affordance. v1.1 polish.
+
+**Size:** ~2 hours including styling matching the reply textarea.
