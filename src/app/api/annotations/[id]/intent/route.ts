@@ -70,11 +70,22 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     return NextResponse.json({ error: 'no_current_version' }, { status: 404 });
   }
 
+  // Guard: an empty `tldrawPath` resolves to `DATA_DIR` itself, which is a
+  // directory — `readFileSync` would throw EISDIR. Treat empty-or-not-a-file
+  // as "no drawing" so the rest of the intent (DOM probe, comment, version)
+  // can still be served by a later branch if needed, or 404 cleanly here.
+  if (!annotation.tldrawPath || annotation.tldrawPath.trim() === '') {
+    return NextResponse.json({ error: 'no_drawing' }, { status: 404 });
+  }
   const tldrawAbs = path.join(env().DATA_DIR, annotation.tldrawPath);
   if (!fs.existsSync(tldrawAbs)) {
     return NextResponse.json({ error: 'tldraw_missing' }, { status: 404 });
   }
-  const tldrawMtime = fs.statSync(tldrawAbs).mtimeMs;
+  const tldrawStat = fs.statSync(tldrawAbs);
+  if (!tldrawStat.isFile()) {
+    return NextResponse.json({ error: 'no_drawing' }, { status: 404 });
+  }
+  const tldrawMtime = tldrawStat.mtimeMs;
   const cacheKey = `${tldrawMtime}:${mockup.currentVersionId}`;
   const annDir = path.dirname(tldrawAbs);
 

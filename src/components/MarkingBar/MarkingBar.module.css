@@ -17,7 +17,6 @@
   padding: 8px 12px 8px 16px;
   background: var(--surface-glass-bg);
   backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
   border: var(--surface-glass-border);
   border-radius: 9999px;
   box-shadow: var(--shadow-popover);

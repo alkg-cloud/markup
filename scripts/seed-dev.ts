@@ -292,7 +292,7 @@ async function main() {
     body: 'Headline kerning too tight at this size — try -0.02em across hero variants. Also lift leading from 0.96 → 0.98.',
     status: 'open',
     colorIndex: 0,
-    anchors: [{ path: ':scope>body>section.lede>h1', offsetX: 0.42, offsetY: 0.58 }],
+    anchors: [{ path: ':scope>body>main>section.lede>h1', offsetX: 0.42, offsetY: 0.58 }],
     replies: [
       'I tested -0.02em on the desktop comp — feels right. Mobile still reads tight.',
       'Maybe -0.025em for the 96px variant only?',
@@ -301,6 +301,10 @@ async function main() {
     primaryReactions: {
       '👍': [user.id],
       '🔥': [user.id],
+    },
+    replyReactions: {
+      0: { '👀': [user.id] },
+      2: { '✅': [user.id], '🎉': [user.id] },
     },
     versionId: v3.id,
   });
@@ -315,7 +319,7 @@ async function main() {
     colorIndex: 1,
     anchors: [
       { path: ':scope>body>header.brand>nav.nav', offsetX: 0.85, offsetY: 0.5 },
-      { path: ':scope>body>section.lede>h1', offsetX: 0.1, offsetY: 0.2 },
+      { path: ':scope>body>main>section.lede>h1', offsetX: 0.1, offsetY: 0.2 },
     ],
     replies: ['Brand prefers "Reserve" over "Order". Pinged copy to update.'],
     versionId: v3.id,
@@ -329,9 +333,12 @@ async function main() {
     body: 'Hero portrait crop — bring the eyes to thirds. Designer rebuilt the art on v3, looks good now.',
     status: 'resolved',
     colorIndex: 2,
-    anchors: [{ path: ':scope>body>aside.specimen', offsetX: 0.5, offsetY: 0.3 }],
+    anchors: [{ path: ':scope>body>main>aside.specimen', offsetX: 0.5, offsetY: 0.3 }],
     replies: ['v3 nails it.', 'Closing.'],
     primaryReactions: { '✅': [user.id] },
+    replyReactions: {
+      0: { '🚀': [user.id] },
+    },
     versionId: v3.id,
   });
 
@@ -343,7 +350,7 @@ async function main() {
     body: 'Price label feels heavy. Try lighter weight for the gram suffix.',
     status: 'open',
     colorIndex: 3,
-    anchors: [{ path: ':scope>body>aside.specimen>div.price', offsetX: 0.7, offsetY: 0.5 }],
+    anchors: [{ path: ':scope>body>main>aside.specimen>div.card>div.price', offsetX: 0.7, offsetY: 0.5 }],
     versionId: v3.id,
   });
 
