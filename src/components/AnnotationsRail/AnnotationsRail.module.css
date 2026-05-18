@@ -1,0 +1,320 @@
+/* Floating Annotations Rail — left-side panel that surfaces all
+   annotations for the current mockup. Has three states (collapsed,
+   hover-expanded, pinned-expanded) plus drag-to-reposition.
+
+   See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §4. */
+
+.rail {
+  position: absolute;
+  top: calc(50% - 200px);
+  left: 24px;
+  z-index: 30;
+  width: var(--rail-width-collapsed);
+  max-height: calc(100vh - 32px);
+  background: var(--surface-glass-bg);
+  backdrop-filter: var(--surface-glass-blur);
+  -webkit-backdrop-filter: var(--surface-glass-blur);
+  border: var(--surface-glass-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-popover);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition:
+    width var(--motion-base) var(--ease-spring),
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard);
+}
+
+.rail.hoverExpanded,
+.rail.pinned {
+  width: var(--rail-width-expanded);
+}
+.rail.pinned {
+  border-color: var(--accent-overlay-mid);
+  box-shadow: var(--shadow-popover), 0 0 0 1px var(--accent-overlay-soft);
+}
+.rail.dragging {
+  transition: none;
+  cursor: grabbing;
+}
+
+/* Drag handle — top of the rail. Three-col × two-row dot grid (the spec
+   asked for a 90deg-rotated grab pattern). Hovering this handle does
+   NOT trigger the rail's hover-expand. */
+.grab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 28px;
+  flex-shrink: 0;
+  cursor: grab;
+  color: var(--text-muted);
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.grab:hover {
+  background: var(--surface-hover);
+  color: var(--text-bright);
+}
+.grab:active,
+.rail.dragging .grab {
+  cursor: grabbing;
+  color: var(--accent-bright);
+}
+.grabDots {
+  display: grid;
+  grid-template-columns: repeat(3, 4px);
+  grid-template-rows: repeat(2, 4px);
+  gap: 3px;
+}
+.grabDots > span {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Collapsed view — vertical badge stack visible by default */
+.collapsed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  overflow-y: auto;
+}
+.rail.hoverExpanded .collapsed,
+.rail.pinned .collapsed {
+  display: none;
+}
+
+/* Expanded view — header + scrollable list + footer */
+.expanded {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.rail.hoverExpanded .expanded,
+.rail.pinned .expanded {
+  display: flex;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px 6px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.headTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--bg-card-active);
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-bright);
+}
+
+.lockToggle {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  border-radius: var(--radius-xs);
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast),
+    transform var(--motion-base) var(--ease-spring);
+}
+.lockToggle:hover {
+  background: var(--surface-hover);
+  color: var(--text-bright);
+}
+.lockToggle.pressed {
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+  transform: rotate(-25deg);
+}
+.lockToggle svg {
+  width: 14px;
+  height: 14px;
+}
+
+.list {
+  list-style: none;
+  padding: 6px 0 8px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+}
+
+.empty {
+  padding: 16px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Sticky add button at the bottom — morphs from circle (collapsed)
+   to a full-width pill with label (expanded). */
+.foot {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--surface-glass-bg) 40%
+  );
+  flex-shrink: 0;
+}
+.add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  width: 32px;
+  padding: 0;
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+  border: 1px solid var(--accent-overlay-mid);
+  border-radius: 9999px;
+  overflow: hidden;
+  transition:
+    width var(--motion-base) var(--ease-spring),
+    padding var(--motion-base) var(--ease-spring),
+    background var(--motion-fast);
+  cursor: pointer;
+}
+.add:hover {
+  background: var(--accent-overlay-mid);
+}
+.rail.hoverExpanded .add,
+.rail.pinned .add {
+  width: 100%;
+  padding: 0 14px;
+  justify-content: flex-start;
+}
+.addIcon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+.addIcon svg {
+  width: 14px;
+  height: 14px;
+}
+.addLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity var(--motion-fast),
+    transform var(--motion-base) var(--ease-spring);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.rail.hoverExpanded .addLabel,
+.rail.pinned .addLabel {
+  opacity: 1;
+  transform: translateX(0);
+}
+.shortcut {
+  margin-left: auto;
+  padding: 2px 5px;
+  background: var(--bg-card-active);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+/* Collapsed badge — circular numbered pip for each annotation */
+.badge {
+  --pin-h: 165;
+  --pin-c: 0.18;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: oklch(30% calc(var(--pin-c) * 0.7) var(--pin-h) / 0.32);
+  border: 1px solid oklch(60% var(--pin-c) var(--pin-h) / 0.45);
+  color: oklch(85% var(--pin-c) var(--pin-h));
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition:
+    transform var(--motion-fast) var(--ease-spring),
+    background var(--motion-fast),
+    box-shadow var(--motion-fast);
+}
+.badge:hover {
+  transform: scale(1.08);
+}
+.badge.active {
+  background: oklch(45% var(--pin-c) var(--pin-h) / 0.55);
+  color: oklch(95% calc(var(--pin-c) * 0.6) var(--pin-h));
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px oklch(74% var(--pin-c) var(--pin-h)),
+    0 0 14px oklch(74% var(--pin-c) var(--pin-h) / 0.55);
+}
+
+/* 16-color palette — same hues as Pin */
+.badge[data-color='0']  { --pin-h: 165; --pin-c: 0.18; }
+.badge[data-color='1']  { --pin-h: 195; --pin-c: 0.15; }
+.badge[data-color='2']  { --pin-h: 220; --pin-c: 0.14; }
+.badge[data-color='3']  { --pin-h: 245; --pin-c: 0.13; }
+.badge[data-color='4']  { --pin-h: 265; --pin-c: 0.13; }
+.badge[data-color='5']  { --pin-h: 285; --pin-c: 0.13; }
+.badge[data-color='6']  { --pin-h: 305; --pin-c: 0.12; }
+.badge[data-color='7']  { --pin-h: 325; --pin-c: 0.12; }
+.badge[data-color='8']  { --pin-h: 25;  --pin-c: 0.13; }
+.badge[data-color='9']  { --pin-h: 50;  --pin-c: 0.14; }
+.badge[data-color='10'] { --pin-h: 75;  --pin-c: 0.14; }
+.badge[data-color='11'] { --pin-h: 95;  --pin-c: 0.15; }
+.badge[data-color='12'] { --pin-h: 120; --pin-c: 0.15; }
+.badge[data-color='13'] { --pin-h: 140; --pin-c: 0.16; }
+.badge[data-color='14'] { --pin-h: 200; --pin-c: 0.16; }
+.badge[data-color='15'] { --pin-h: 150; --pin-c: 0.17; }
