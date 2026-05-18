@@ -1,4 +1,5 @@
 export { buildAnchorPath, resolveAnchor } from './path';
+export { buildAnchorFromClick, type ClickAnchorInput } from './click';
 export {
   findCharPositionInElement,
   getCharOffsetInElement,

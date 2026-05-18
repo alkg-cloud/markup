@@ -1,30 +1,33 @@
 'use client';
 /**
- * AppMainViewer — composition of all the new viewer components.
+ * AppMainViewer — composition of the redesigned floating-cockpit viewer.
  *
- * The redesign of MockupViewer per `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md`.
- * This replaces the old chrome-heavy viewer (topbar + sidebar) with the
- * floating-cockpit layout: full-viewport canvas with the AnnotationsRail
- * (left), CanvasToolbar (center-bottom), AnnotationComposer (modal),
- * MarkingBar (top during marking), and PinLayer overlay.
- *
- * Currently a scaffold — wires the components together with placeholder
- * data so the page renders. Full data integration with the API layer
- * lands in the follow-up (Phase 11.5 — see plan).
+ * Per `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md`.
+ * The mockup loads in a same-origin iframe; the canvas root is set to
+ * the iframe document's <html> after load. PinLayer + click capture
+ * cross the boundary via the cross-document anchoring runtime
+ * (`docs/superpowers/specs/2026-05-18-pin-anchoring-strategy.md`).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AnnotationCard, type AnnotationStatus, type ThreadComment } from '@/components/AnnotationCard';
+import {
+  AnnotationCard,
+  type AnnotationStatus,
+  type ThreadComment,
+} from '@/components/AnnotationCard';
 import { AnnotationComposer } from '@/components/AnnotationComposer';
 import { AnnotationsRail, type AnnotationsRailBadge } from '@/components/AnnotationsRail';
 import { AppMain } from '@/components/AppMain/AppMain';
 import { CanvasToolbar } from '@/components/CanvasToolbar';
 import { MarkingBar } from '@/components/MarkingBar';
-import { PinLayer, type PinDescriptor } from '@/components/PinLayer';
+import { type PinDescriptor, PinLayer } from '@/components/PinLayer';
 import { VersionChip, type VersionRow } from '@/components/VersionChip';
-import type { Anchor } from '@/lib/anchoring';
+import { type Anchor, buildAnchorFromClick } from '@/lib/anchoring';
 
 export interface AppMainAnnotation {
   id: string;
+  /** Thread id — used by wired wrappers for reply posts. Optional so
+   *  tests can stub annotations without a thread. */
+  threadId?: string;
   colorIndex: number;
   label: number;
   status: AnnotationStatus;
@@ -39,9 +42,7 @@ export interface AppMainAnnotation {
 export interface AppMainViewerProps {
   mockupId: string;
   mockupName: string;
-  /** Iframe src for the mockup's index.html — drives the canvas. */
   mockupSrc: string;
-  /** Display name of the logged-in user. */
   currentUser: string;
   versions: VersionRow[];
   initialAnnotations: AppMainAnnotation[];
@@ -49,13 +50,16 @@ export interface AppMainViewerProps {
   onCreateAnnotation?: (input: {
     body: string;
     anchors: Anchor[];
-  }) => Promise<{ id: string; colorIndex: number } | null>;
-  onPostReply?: (annotationId: string, body: string) => Promise<void>;
+    colorIndex: number;
+  }) => Promise<AppMainAnnotation | null>;
+  onPostReply?: (annotationId: string, body: string) => Promise<ThreadComment | null>;
   onReactionToggle?: (commentId: string, emoji: string) => Promise<void>;
   onVersionSelect?: (versionId: string) => void;
   onVersionPromote?: (versionId: string) => void;
   onVersionDelete?: (versionId: string) => void;
 }
+
+const COLOR_PALETTE_SIZE = 16;
 
 export function AppMainViewer({
   mockupSrc,
@@ -69,12 +73,9 @@ export function AppMainViewer({
   onVersionPromote,
   onVersionDelete,
 }: AppMainViewerProps) {
-  const appMainRef = useRef<HTMLElement | null>(null);
-  const canvasRootRef = useRef<HTMLIFrameElement | null>(null);
-  // Anchoring runtime resolves selectors against the iframe document.
-  // For now point at the iframe element itself; the wire-up will replace
-  // this with the iframe's contentDocument once cross-frame access lands.
-  const anchorRootRef = useRef<Element | null>(null);
+  const appMainRef = useRef<HTMLDivElement | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const canvasRootRef = useRef<Element | null>(null);
 
   const [annotations, setAnnotations] = useState<AppMainAnnotation[]>(initialAnnotations);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -83,6 +84,14 @@ export function AppMainViewer({
   const [pendingPins, setPendingPins] = useState<Anchor[]>([]);
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setFullscreen] = useState(false);
+  // Bumped on iframe load to force PinLayer to remount and re-bind to
+  // the new contentDocument's elements after a version switch.
+  const [iframeGen, setIframeGen] = useState(0);
+
+  const nextColorIndex = useMemo(
+    () => annotations.length % COLOR_PALETTE_SIZE,
+    [annotations.length],
+  );
 
   const badges: AnnotationsRailBadge[] = useMemo(
     () =>
@@ -108,21 +117,77 @@ export function AppMainViewer({
         });
       }
     }
-    // Render pending pins on top with a `pending` status so PinLayer
-    // shows them as dashed rings during marking mode.
     pendingPins.forEach((p, i) => {
       out.push({
         annotationId: `__pending-${i}`,
-        colorIndex: 0,
+        colorIndex: nextColorIndex,
         label: i + 1,
         anchor: p,
         status: 'pending',
       });
     });
     return out;
-  }, [annotations, activeId, pendingPins]);
+  }, [annotations, activeId, pendingPins, nextColorIndex]);
+
+  // Bind canvasRootRef and capture clicks in marking mode whenever the
+  // iframe reloads (initial load, version switch, src change).
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    const onLoad = () => {
+      const doc = iframe.contentDocument;
+      if (!doc) return;
+      canvasRootRef.current = doc.documentElement;
+      setIframeGen((n) => n + 1);
+    };
+    iframe.addEventListener('load', onLoad);
+    // If the iframe was already loaded when this effect runs, capture now.
+    if (iframe.contentDocument?.readyState === 'complete') onLoad();
+    return () => iframe.removeEventListener('load', onLoad);
+  }, []);
+
+  // Click capture inside the iframe: when marking is on, every click
+  // becomes a pending pin; when marking is off, click-on-background
+  // deactivates the current annotation.
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    const doc = iframe?.contentDocument;
+    const root = canvasRootRef.current;
+    if (!doc || !root) return;
+    const onClick = (e: Event) => {
+      const me = e as MouseEvent;
+      const target = me.target as Element | null;
+      if (!target) return;
+      if (marking) {
+        const anchor = buildAnchorFromClick({
+          canvasRoot: root,
+          target,
+          clientX: me.clientX,
+          clientY: me.clientY,
+        });
+        if (anchor) {
+          setPendingPins((p) => [...p, anchor]);
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      } else {
+        setActiveId(null);
+      }
+    };
+    doc.addEventListener('click', onClick, true);
+    return () => doc.removeEventListener('click', onClick, true);
+  }, [marking, iframeGen]);
 
   const onActivate = useCallback((annotationId: string) => {
+    setActiveId(annotationId);
+  }, []);
+
+  const onPinClick = useCallback((annotationId: string) => {
+    if (annotationId.startsWith('__pending-')) {
+      const idx = Number(annotationId.slice('__pending-'.length));
+      setPendingPins((p) => p.filter((_, i) => i !== idx));
+      return;
+    }
     setActiveId(annotationId);
   }, []);
 
@@ -139,16 +204,20 @@ export function AppMainViewer({
 
   const onComposerPost = useCallback(
     async (body: string) => {
-      const result = await onCreateAnnotation?.({ body, anchors: pendingPins });
-      if (result) {
-        // Optimistic append; full data sync happens in the parent.
-        // Placeholder: the parent will re-feed initialAnnotations.
+      const created = await onCreateAnnotation?.({
+        body,
+        anchors: pendingPins,
+        colorIndex: nextColorIndex,
+      });
+      if (created) {
+        setAnnotations((prev) => [created, ...prev]);
+        setActiveId(created.id);
       }
       setComposerOpen(false);
       setMarking(false);
       setPendingPins([]);
     },
-    [onCreateAnnotation, pendingPins],
+    [onCreateAnnotation, pendingPins, nextColorIndex],
   );
 
   const onMarkingToggle = useCallback(() => setMarking((m) => !m), []);
@@ -163,42 +232,83 @@ export function AppMainViewer({
     }
   }, []);
 
-  // Reflect fullscreen state in our local flag for the toolbar UI.
   useEffect(() => {
     const onChange = () => setFullscreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', onChange);
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
 
-  const onZoomChange = useCallback((next: number) => {
-    setZoom(next);
-    // The iframe parent applies CSS transform; pin reposition happens
-    // synchronously inside PinLayer because the useAnchoredPins hook
-    // observes the canvas root.
-  }, []);
+  const onZoomChange = useCallback((next: number) => setZoom(next), []);
+
+  const onPostReplyForCard = useCallback(
+    async (annotationId: string, body: string) => {
+      const reply = await onPostReply?.(annotationId, body);
+      if (!reply) return;
+      setAnnotations((prev) =>
+        prev.map((a) =>
+          a.id === annotationId ? { ...a, replies: [reply, ...(a.replies ?? [])] } : a,
+        ),
+      );
+    },
+    [onPostReply],
+  );
+
+  const onCommentReact = useCallback(
+    async (commentId: string, emoji: string) => {
+      await onReactionToggle?.(commentId, emoji);
+      // Optimistic toggle: mutate the matching comment's reactions array.
+      setAnnotations((prev) =>
+        prev.map((a) => {
+          const all = [a.primary, ...(a.replies ?? [])];
+          let touched = false;
+          const updated = all.map((c) => {
+            if (c.id !== commentId) return c;
+            touched = true;
+            const reactions = c.reactions ?? [];
+            const existing = reactions.find((r) => r.emoji === emoji);
+            if (!existing) {
+              return {
+                ...c,
+                reactions: [...reactions, { emoji, reactedBy: [currentUser] }],
+              };
+            }
+            const hasMe = existing.reactedBy.includes(currentUser);
+            const nextUsers = hasMe
+              ? existing.reactedBy.filter((u) => u !== currentUser)
+              : [...existing.reactedBy, currentUser];
+            const nextReactions = reactions
+              .map((r) => (r.emoji === emoji ? { ...r, reactedBy: nextUsers } : r))
+              .filter((r) => r.reactedBy.length > 0);
+            return { ...c, reactions: nextReactions };
+          });
+          if (!touched) return a;
+          return {
+            ...a,
+            primary: updated[0],
+            replies: updated.slice(1),
+          };
+        }),
+      );
+    },
+    [onReactionToggle, currentUser],
+  );
 
   return (
     <AppMain variant="viewer" ariaLabel="Mockup viewer">
       <div
-        ref={appMainRef as React.RefObject<HTMLDivElement>}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'var(--bg-iframe, #f4ede0)',
-        }}
+        ref={appMainRef}
+        style={{ position: 'fixed', inset: 0, background: 'var(--bg-iframe, #f4ede0)' }}
       >
         <div
           style={{
             position: 'absolute',
             inset: 0,
             overflow: 'auto',
+            cursor: marking ? 'crosshair' : 'default',
           }}
         >
           <iframe
-            ref={(el) => {
-              canvasRootRef.current = el;
-              anchorRootRef.current = el;
-            }}
+            ref={iframeRef}
             src={mockupSrc}
             title="Mockup"
             style={{
@@ -207,14 +317,16 @@ export function AppMainViewer({
               border: 0,
               transform: `scale(${zoom})`,
               transformOrigin: 'top left',
+              pointerEvents: marking ? 'auto' : 'auto',
             }}
           />
         </div>
 
         <PinLayer
-          canvasRootRef={anchorRootRef}
+          key={iframeGen}
+          canvasRootRef={canvasRootRef}
           pins={pins}
-          onPinClick={onActivate}
+          onPinClick={onPinClick}
         />
 
         <AnnotationsRail
@@ -239,10 +351,8 @@ export function AppMainViewer({
               currentUser={currentUser}
               active={a.id === activeId}
               onActivate={() => onActivate(a.id)}
-              onPostReply={(body) => onPostReply?.(a.id, body)}
-              onCommentReact={(commentId, emoji) =>
-                onReactionToggle?.(commentId, emoji)
-              }
+              onPostReply={(body) => onPostReplyForCard(a.id, body)}
+              onCommentReact={(commentId, emoji) => onCommentReact(commentId, emoji)}
             />
           ))}
         </AnnotationsRail>
@@ -271,11 +381,7 @@ export function AppMainViewer({
           onPost={onComposerPost}
         />
 
-        <MarkingBar
-          open={marking}
-          pinCount={pendingPins.length}
-          onDone={() => setMarking(false)}
-        />
+        <MarkingBar open={marking} pinCount={pendingPins.length} onDone={() => setMarking(false)} />
       </div>
     </AppMain>
   );

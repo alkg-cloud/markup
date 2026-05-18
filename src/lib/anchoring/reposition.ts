@@ -55,7 +55,7 @@ export function isTextAnchor(a: Anchor): a is TextAnchor {
  * meaningful (left, top).
  */
 export function getCharRect(node: Text, offset: number): DOMRect {
-  const range = document.createRange();
+  const range = (node.ownerDocument ?? document).createRange();
   const len = (node.nodeValue ?? '').length;
   if (offset < len) {
     range.setStart(node, offset);
