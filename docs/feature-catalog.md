@@ -235,61 +235,148 @@ Empty state component for projects and folders (`EmptyState.tsx`).
 | `empty-state-cta-secondary` | "Create folder" / "Create subfolder" secondary button (`btn-secondary`) | default, hover (`--btn-bg-hover` + `--border-strong`), focus-visible, active |
 | `empty-state-sidebar-inline` | Inline "Empty folder" text in sidebar when expanded folder has no children | shown below empty expanded folder |
 
-## mockup-viewer
+## mockup-viewer (AppMain redesign — 2026-05)
 
-Mockup viewer page at `/mockups/[id]` (`MockupViewer.tsx`) inside the standard sidebar + topbar shell.
+Full-viewport mockup viewer at `/mockups/[id]` (`AppMainViewer.tsx`). The
+2026-05 redesign moved away from the topbar + sidebar shell — the viewer
+now occupies the entire viewport, with floating chrome (rail + toolbar)
+overlaying the canvas.
 
-| ID | Surface / Interaction | States |
-|---|---|---|
-| `mockup-viewer-iframe` | Iframe rendering the current version via `/m/[id]/...` | loading, loaded, error |
-| `mockup-viewer-pin-overlay` | Pin overlay layer on top of iframe | pins rendered at scroll-relative coordinates |
-| `mockup-viewer-pin` | Individual annotation pin (`AnnotationPin.tsx`). Teardrop shape rotated -45 deg on child `<span>`, focus ring on outer `<a>` (axis-aligned) | default, hover (scale-up + glow), focus-visible (ring on outer `<a>`), active |
-| `mockup-viewer-pin-number` | Sequential number inside teardrop badge | sequential numbering |
-| `mockup-viewer-sidebar` | Annotation list sidebar panel | populated (annotation list), empty |
-| `mockup-viewer-versions` | Version list in sidebar (`Versions.tsx`) with promote action and timestamps | shows version history, promote button per version |
-| `mockup-viewer-toolbar` | Toolbar below the mockup-viewer title with nine controls: edit-mode toggle (`VscEdit`), comment-mode toggle (`VscComment`), zoom out (`VscRemove`), zoom % label, zoom in (`VscAdd`), fullscreen (`VscScreenFull`), history toggle (`VscHistory`), version pill (`v{N}` + `VscChevronDown`), view-diff button (`VscDiff`). All icons are VSCode codicons via `react-icons/vsc` per the icon-system rule in `docs/frontend/styling.md`. Zoom clamps to 25–400% and applies `transform: scale()` to the iframe wrapper. Fullscreen calls `requestFullscreen()` on the wrapper. History toggles the side Versions panel. Diff opens a modal with the unified diff between previous and current version (`Nothing to compare yet.` if only one version exists). | edit mode, comment mode; zoom 25–400% |
-| `mockup-viewer-add-comment` | "+ Comment" button | default, hover, focus-visible, active; captures iframe screenshot + opens `annotation-modal` |
+Specs:
+- `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md`
+- `docs/superpowers/specs/2026-05-18-pin-anchoring-strategy.md`
 
-## annotation-modal
+Drawing (tldraw), inline diff modal, and edit-mode toggle are PARKED —
+see `docs/future-features.md` #23/24/25.
 
-Annotation creation modal (`AnnotationModal.tsx`).
+### mockup-viewer-app-main
 
-| ID | Surface / Interaction | States |
-|---|---|---|
-| `annotation-modal-scrim` | Backdrop scrim | visible when modal open |
-| `annotation-modal-canvas` | Tldraw drawing canvas over captured screenshot | editable; see `tldraw-canvas-*` entries |
-| `annotation-modal-chip-strip` | Intent chip selector strip below canvas | chips: visual, copy, behavior, other; one active at a time; default: other |
-| `annotation-modal-chip` | Individual intent chip. Colors: **visual** (accent-overlay-soft bg, accent-bright fg), **copy** (info-soft bg, info fg), **behavior** (warning-soft bg, warning fg), **other** (bg-elevated bg, text-dim fg) | default, hover, focus-visible, active (selected — flat fill) |
-| `annotation-modal-textarea` | Comment textarea | idle, focused, filled |
-| `annotation-modal-submit` | "Save" / submit button | default, hover, focus-visible, active, disabled (empty comment or saving) |
-| `annotation-modal-cancel` | Cancel / close button | default, hover, focus-visible |
-
-## tldraw-canvas
-
-Tldraw wrapper component (`AnnotationCanvas.tsx`). Used in annotation modal and annotation detail.
+The full-viewport viewer surface. No topbar, no sidebar; the canvas
+fills the visible area. Glass-bg chrome floats above.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `tldraw-canvas-container` | Aspect-ratio container matching screenshot dimensions | sized via `aspectRatio: width / height` from PNG IHDR |
-| `tldraw-canvas-screenshot` | Screenshot image shape locked at (0,0). Base64 stripped at save (replaced with `asset.meta.externalRef = 'screenshot'` marker), rehydrated at load from `/api/annotations/[id]/screenshot` | on-disk tldraw.json: 2-5 KB (not 640 KB+) |
-| `tldraw-canvas-toolbar` | Tldraw drawing toolbar | visible in edit mode, hidden in read-only |
-| `tldraw-canvas-shapes` | User-drawn shapes: geo (rectangles, ellipses), arrow (from/to), text (rich-text flattened), draw (freehand pencil), image (user pastes) | persisted to `tldraw.json` sidecar |
-| `tldraw-canvas-readonly` | Read-only mode | toolbar hidden, shapes locked, `isReadonly: true` |
-| `tldraw-canvas-edit-mode` | Edit mode | toolbar visible, shapes editable |
-| `tldraw-canvas-strictmode` | StrictMode dedup guard — checks for existing screenshot asset before creating. Idempotent across remounts | prevents duplicate screenshot shapes |
-| `tldraw-canvas-watermark` | Tldraw eval license watermark | bottom-right "Get a license for production" (see future-features #14) |
+| `mockup-viewer-app-main` | Full-viewport `<main>` hosting canvas-stage + floating overlays | default, fullscreen |
+| `mockup-viewer-canvas-stage` | Scrollable container around the mockup iframe | overflow auto when zoomed past viewport |
+| `mockup-viewer-mockup-doc` | The iframe rendering `/m/[id]/...`. Receives `transform: scale(var(--zoom))` for canvas zoom. | loading, loaded, error |
+| `mockup-viewer-pin-layer` | Non-scaling overlay (sibling of mockup-doc) hosting pin elements | `pointer-events: none` on layer; pins re-enable for click delegation |
 
-## annotation-detail
+### mockup-viewer-pin
 
-Annotation detail page at `/annotations/[id]` (`ReadOnlyAnnotation.tsx`).
+DOM-anchored pin. Position recomputed via the anchoring runtime on
+every layout change. See spec §6.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `annotation-detail-canvas` | Tldraw canvas with existing drawing | starts read-only |
-| `annotation-detail-edit-btn` | "Edit drawings" toggle button | default, hover, focus-visible; flips canvas to edit mode |
-| `annotation-detail-save-btn` | "Save" button (edit mode). PUTs `editor.getSnapshot()` to `/api/annotations/[id]/tldraw`. Save deletes `intent.json` sidecar before writing new `tldraw.json` (cache invalidation) | default, hover, focus-visible, active |
-| `annotation-detail-thread` | Thread timeline below canvas | see `thread-timeline-*` entries |
-| `annotation-detail-intent-badge` | Intent type badge (visual/copy/behavior/other) with colored pill | static display |
+| `mockup-viewer-pin` | 30×30 teardrop pin rotated -45°. Glass bg, per-annotation accent border + number, opacity 0.55 default. | idle (0.55 opacity), hover (scale 1.12, opacity 1), active (pulsing glow ring), pending (dashed, transparent, no glass) |
+| `mockup-viewer-pin-anchor-text` | Text-anchor variant — stores `{path, textOffset, subX, subY}` so the pin tip lands on a specific character sub-position | resilient to reflow / wrap / font changes |
+| `mockup-viewer-pin-anchor-element` | Element-anchor variant — stores `{path, offsetX, offsetY}` for clicks outside text | fractional bbox offset |
+
+### mockup-viewer-rail (Annotations rail)
+
+Left-side floating panel. See spec §4.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `mockup-viewer-rail-collapsed` | 60px-wide column of colored pin badges + drag handle (top) + "+ New annotation" button (bottom morphs round) | default state |
+| `mockup-viewer-rail-hover-expanded` | Transient 300px width on body mouseenter (NOT on drag handle) | width transition via `--motion-base` |
+| `mockup-viewer-rail-pinned` | Sticky 300px width via Lock-open toggle | persists past mouseleave, button shows pressed state |
+| `mockup-viewer-rail-drag` | Drag handle (3×2 dot grid) lets user reposition the rail anywhere inside appMain (8px margin clamping) | grab/grabbing cursor |
+| `mockup-viewer-rail-lock-open` | Lock-open button (Vsc pin icon) — "Keep expanded" / "Unlock" tooltip | aria-pressed reflects state |
+| `mockup-viewer-rail-add-button` | "+ New annotation" button at foot. Morphs round → pill with label + ⌘⇧N (Ctrl+⇧+N on Windows/Linux) | collapsed/expanded width transition |
+
+### mockup-viewer-toolbar
+
+Center-bottom floating dock. See spec §5.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `mockup-viewer-toolbar` | Glass-bg dock with zoom + fullscreen + version chip + drag handle | default, dragging |
+| `mockup-viewer-toolbar-zoom-out` | Zoom-out button (`⌘−`) | enabled, disabled at 25% min |
+| `mockup-viewer-toolbar-zoom-label` | Clickable % label — resets to 100% | hover, reset |
+| `mockup-viewer-toolbar-zoom-in` | Zoom-in button (`⌘+`) | enabled, disabled at 400% max |
+| `mockup-viewer-toolbar-fullscreen` | Fullscreen toggle (F) | inactive, active (pressed) |
+| `mockup-viewer-toolbar-drag` | Drag handle on right edge (2×3 dot grid) | grab/grabbing cursor |
+
+### mockup-viewer-version-chip
+
+Replaces the removed standalone History button by embedding a clock icon
+inside the chip itself.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `mockup-viewer-version-chip` | Pill with clock icon + label + chev | closed, open (chev rotated 180°) |
+| `mockup-viewer-version-popover` | Glass popover with newest-first version list | closed, open; closes on outside click |
+| `mockup-viewer-version-item` | One row per version (dot + label + sub) | default, current (accent bg + glowing dot) |
+| `mockup-viewer-version-kebab` | Per-row kebab menu | opens Promote / Delete |
+| `mockup-viewer-version-action-promote` | Promote version to current | enabled, disabled on current row (with "Already current" tooltip) |
+| `mockup-viewer-version-action-delete` | Delete version | danger styling |
+
+### annotation-composer (replaces annotation-modal)
+
+Modal-first creation flow with optional multi-pin marking. See spec §7.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `annotation-composer` | Modal dialog hosting textarea + "Add pin" button + Post / Cancel | closed, open (idle), open (marking) |
+| `annotation-composer-scrim` | Backdrop scrim | 0.55 opacity idle, 0 opacity in marking |
+| `annotation-composer-panel` | Glass panel | full opacity idle, 0 opacity in marking |
+| `annotation-composer-textarea` | Annotation body textarea | idle, focused, filled |
+| `annotation-composer-pin-toggle` | "+ Add pin" / pencil "Edit pin" / pencil "Edit pins" morph | 0 / 1 / 2+ pending pins |
+| `annotation-composer-post` | "Post annotation" button | enabled, disabled (empty body) |
+| `annotation-composer-cancel` | Cancel button — discards pending pins | default |
+| `annotation-composer-close` | × close button (top-right) | default |
+| `mockup-viewer-marking-bar` | Top-center mode indicator surfaced during marking | hidden, open |
+| `mockup-viewer-marking-bar-pin-count` | Live pin count pill (`N pins`, singular/plural) | live |
+| `mockup-viewer-marking-bar-done` | Done button — exits marking mode | default |
+
+### annotation-card (one item in the rail's expanded list)
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `annotation-card` | Card with meta + primary comment + foot + chevron thread | default, active (accent bg 30% + left stripe), hover |
+| `annotation-card-badge` | Colored circular badge with annotation number | per-color palette 0..15 |
+| `annotation-card-author` | Author name in meta row | static |
+| `annotation-card-status-pill` | open / needs review / resolved | open (info), needs review (warning), resolved (success) |
+| `annotation-card-primary` | Primary comment rendered without head row (author in meta) | renders body + reactions only |
+| `annotation-card-foot-date` | Date + time | static |
+| `annotation-card-thread-toggle` | Chevron button — "No replies" / "1 reply" / "N replies" | closed, open (chev rotated 180°) |
+| `annotation-card-thread` | Hidden section with reply form + replies | closed, open |
+| `annotation-card-reply-form` | Textarea + Reply button | empty (button disabled), filled |
+
+### comment (thread message)
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `comment` | Avatar + name + time + body + reactions + actions | default, hover (actions revealed) |
+| `comment-avatar` | 20×20 circular gradient avatar with initials (first letter of first + last word) | per-author color palette 0..15 |
+| `comment-action-reply` | Reply icon for non-own comments | default, hover, focus-visible |
+| `comment-kebab` | Kebab menu for own comments | opens Reply / Edit / Delete |
+
+### reactions (Slack-style)
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `reaction-pill` | Pill with emoji + optional count (count shown when >1) | idle, reacted (current user in list, accent bg) |
+| `reaction-pill-tooltip` | Custom hover tooltip — "X and Y reacted with 👍" | glass bg matching `--surface-glass-*` |
+| `reaction-add` | Dashed "+" trigger button | hidden, comment-hover (revealed), open |
+| `emoji-picker` | 4×4 grid popover with 16 reaction emojis | closed, open; closes on outside click |
+| `emoji-picker-pick` | Individual emoji button | default, hover (scale 1.2) |
+
+### tooltip
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `tooltip` | Custom CSS-pseudo tooltip — replaces native `title=` per spec §12 | hidden, visible (hover or focus-visible) |
+| `tooltip-align-left` | Default alignment | left-anchored above trigger |
+| `tooltip-align-center` | Centered above trigger | for symmetric layouts |
+| `tooltip-align-right` | Right-aligned above trigger | for triggers near right edge |
+
+### glass-surface-standard
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `glass-surface-standard` | Shared `--surface-glass-bg` / `--surface-glass-blur` / `--surface-glass-border` tokens applied to every floating overlay (rail, toolbar, composer, popovers, tooltips, sidebar pill/full, kebab menus, emoji picker, version popover) | single source of truth |
 
 ## thread-timeline
 
