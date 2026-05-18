@@ -148,6 +148,9 @@ export async function GET(req: Request, ctx: { params: Promise<{ annotationId: s
         mockup_id: annotation.mockupId,
         intent_type: annotation.intentType,
         pin_coords: annotation.pinCoords ? JSON.parse(annotation.pinCoords) : null,
+        anchors: safeParseAnchors(annotation.anchors),
+        color_index: annotation.colorIndex,
+        status: annotation.status,
         created_by: annotation.createdBy,
         created_by_type: annotation.createdByType,
         created_at: annotation.createdAt,
@@ -177,6 +180,15 @@ export async function GET(req: Request, ctx: { params: Promise<{ annotationId: s
     },
     { headers: { ETag: etag } },
   );
+}
+
+function safeParseAnchors(raw: string): unknown[] {
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
 export const dynamic = 'force-dynamic';

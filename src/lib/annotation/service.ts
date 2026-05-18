@@ -162,7 +162,11 @@ export async function createCommentAnnotation(input: CreateCommentAnnotationInpu
         status: input.status ?? 'open',
         createdBy: input.authorId,
         createdByType: input.authorType,
-        intentType: 'comment',
+        // Comment-flow annotations are content-driven, not classified —
+        // leave the intent at the default until/unless the user picks one
+        // via the (future) chip selector. Per `docs/agent-loop/chips.md`
+        // the value must stay inside INTENT_KINDS.
+        intentType: 'other',
         createdOnVersionId,
       },
     });

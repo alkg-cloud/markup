@@ -518,8 +518,8 @@ Surfaces that compose the agent automation cycle. These are API-driven but have 
 
 | ID | Surface | User-visible in | API endpoint |
 |---|---|---|---|
-| `agent-annotation-create` | Annotation creation with screenshot + tldraw + intent chip + pinCoords | `annotation-modal` | `POST /api/mockups/[id]/annotations` |
-| `agent-intent-chip` | G1 intent type selector (visual/copy/behavior/other) | `annotation-modal-chip-strip` | persisted as `Annotation.intentType` |
+| `agent-annotation-create` | Annotation creation: JSON branch with `body` + `anchors[]` + `colorIndex` + `status` for comment-flow (drives `annotation-composer`); multipart branch with `screenshot` + `tldraw` + `pinCoords` retained for legacy/agent clients | `annotation-composer` (JSON branch); no UI for multipart branch | `POST /api/mockups/[id]/annotations` |
+| `agent-intent-chip` | Intent type (visual/copy/behavior/other) persisted on the annotation. Comment-flow defaults to `other`; agents set explicitly via the multipart branch | N/A in current UI | persisted as `Annotation.intentType` |
 | `agent-context-read` | Single-call context aggregator: annotation + intent + thread + inline source + diff_since_creation + project + folder_path. ETag for short-circuit | N/A (agent-only) | `GET /api/agent/context/[annotationId]` |
 | `agent-intent-parse` | Server-side intent extraction: drawings → DOM-resolved bbox + computed styles. Sidecar cached as `intent.json`, keyed by `(tldraw_mtime, current_version_id)` | `annotation-detail-intent-badge` | `GET /api/annotations/[id]/intent` |
 | `agent-version-patch` | Diff-based version update with `base_version_id`. Binary files reused by reference. 409 on conflict (stale base) | new version in `mockup-viewer-versions` | `PATCH /api/mockups/[id]/version-patch` |

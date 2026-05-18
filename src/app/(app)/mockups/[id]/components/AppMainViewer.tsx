@@ -78,10 +78,20 @@ export function AppMainViewer({
   const canvasRootRef = useRef<Element | null>(null);
 
   const [annotations, setAnnotations] = useState<AppMainAnnotation[]>(initialAnnotations);
+  // Sync local state when the parent reseeds `initialAnnotations` — this
+  // fires after `router.refresh()` in the wired wrapper, so newly
+  // created/promoted/deleted annotations from the server reach the UI
+  // without a full page reload.
+  useEffect(() => {
+    setAnnotations(initialAnnotations);
+  }, [initialAnnotations]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const [marking, setMarking] = useState(false);
-  const [pendingPins, setPendingPins] = useState<Anchor[]>([]);
+  // Pending pins use a stable client id keyed by creation so an index
+  // shuffle (remove pin 2 of 4) doesn't shift React keys onto a different
+  // anchor's identity.
+  const [pendingPins, setPendingPins] = useState<{ id: string; anchor: Anchor }[]>([]);
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setFullscreen] = useState(false);
   // Bumped on iframe load to force PinLayer to remount and re-bind to
@@ -119,10 +129,10 @@ export function AppMainViewer({
     }
     pendingPins.forEach((p, i) => {
       out.push({
-        annotationId: `__pending-${i}`,
+        annotationId: `__pending-${p.id}`,
         colorIndex: nextColorIndex,
         label: i + 1,
-        anchor: p,
+        anchor: p.anchor,
         status: 'pending',
       });
     });
@@ -166,7 +176,10 @@ export function AppMainViewer({
           clientY: me.clientY,
         });
         if (anchor) {
-          setPendingPins((p) => [...p, anchor]);
+          setPendingPins((p) => [
+            ...p,
+            { id: `pp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, anchor },
+          ]);
           e.preventDefault();
           e.stopPropagation();
         }
@@ -184,8 +197,8 @@ export function AppMainViewer({
 
   const onPinClick = useCallback((annotationId: string) => {
     if (annotationId.startsWith('__pending-')) {
-      const idx = Number(annotationId.slice('__pending-'.length));
-      setPendingPins((p) => p.filter((_, i) => i !== idx));
+      const id = annotationId.slice('__pending-'.length);
+      setPendingPins((p) => p.filter((pp) => pp.id !== id));
       return;
     }
     setActiveId(annotationId);
@@ -206,7 +219,7 @@ export function AppMainViewer({
     async (body: string) => {
       const created = await onCreateAnnotation?.({
         body,
-        anchors: pendingPins,
+        anchors: pendingPins.map((p) => p.anchor),
         colorIndex: nextColorIndex,
       });
       if (created) {
@@ -327,6 +340,7 @@ export function AppMainViewer({
           canvasRootRef={canvasRootRef}
           pins={pins}
           onPinClick={onPinClick}
+          repositionKey={`${zoom}:${isFullscreen ? 'fs' : 'win'}`}
         />
 
         <AnnotationsRail
@@ -375,7 +389,7 @@ export function AppMainViewer({
         <AnnotationComposer
           open={composerOpen}
           marking={marking}
-          pendingPins={pendingPins}
+          pendingPins={pendingPins.map((p) => p.anchor)}
           onEnterMarking={onMarkingToggle}
           onCancel={onComposerCancel}
           onPost={onComposerPost}

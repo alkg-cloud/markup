@@ -44,17 +44,17 @@
 
 /* Variant for right-anchored tooltips (when the trigger is near the
    right edge of the viewport — use `data-tooltip-align="right"`). */
-[data-tooltip][data-tooltip-align='right']::after {
+[data-tooltip][data-tooltip-align="right"]::after {
   left: auto;
   right: 0;
 }
 
 /* Center-aligned variant for symmetric layouts. */
-[data-tooltip][data-tooltip-align='center']::after {
+[data-tooltip][data-tooltip-align="center"]::after {
   left: 50%;
   transform: translateX(-50%) translateY(2px);
 }
-[data-tooltip][data-tooltip-align='center']:hover::after,
-[data-tooltip][data-tooltip-align='center']:focus-visible::after {
+[data-tooltip][data-tooltip-align="center"]:hover::after,
+[data-tooltip][data-tooltip-align="center"]:focus-visible::after {
   transform: translateX(-50%) translateY(0);
 }

@@ -1,12 +1,5 @@
 'use client';
-import {
-  type ReactNode,
-  type RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { modSymbol } from '@/lib/shortcuts/platform';
 import styles from './AnnotationsRail.module.css';
 
@@ -63,39 +56,49 @@ export function AnnotationsRail({
 
   // Hover-expand: only triggers when the cursor enters the rail body —
   // NOT the drag handle. Each child surface (collapsed, expanded, foot)
-  // owns its own mouseenter; the rail body owns mouseleave.
-  const enter = useCallback(() => {
-    if (!pinned) setHover(true);
-  }, [pinned]);
-  const leave = useCallback(() => {
-    if (!pinned) {
-      // Small debounce so brief gaps between sub-regions don't flicker.
-      const id = window.setTimeout(() => setHover(false), 120);
-      return () => window.clearTimeout(id);
+  // owns its own mouseenter; the rail body owns mouseleave. The leave
+  // handler debounces via a ref so a quick re-enter (gap between
+  // sub-regions) cancels the pending collapse instead of leaking it.
+  const leaveTimerRef = useRef<number | null>(null);
+  const cancelLeave = useCallback(() => {
+    if (leaveTimerRef.current !== null) {
+      window.clearTimeout(leaveTimerRef.current);
+      leaveTimerRef.current = null;
     }
-    return undefined;
-  }, [pinned]);
+  }, []);
+  const enter = useCallback(() => {
+    cancelLeave();
+    if (!pinned) setHover(true);
+  }, [pinned, cancelLeave]);
+  const leave = useCallback(() => {
+    if (pinned) return;
+    cancelLeave();
+    leaveTimerRef.current = window.setTimeout(() => {
+      setHover(false);
+      leaveTimerRef.current = null;
+    }, 120);
+  }, [pinned, cancelLeave]);
+  // Cancel any pending leave on unmount so stray timers can't fire
+  // setHover on a torn-down component.
+  useEffect(() => cancelLeave, [cancelLeave]);
 
   // Drag handler — pointerdown locks the rail to absolute pixels, then
   // pointermove updates left/top clamped to bounds with 8px margin.
   const dragState = useRef<{ ox: number; oy: number; sx: number; sy: number } | null>(null);
-  const onGrabPointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      const rail = railRef.current;
-      if (!rail) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const r = rail.getBoundingClientRect();
-      dragState.current = {
-        ox: r.left,
-        oy: r.top,
-        sx: e.clientX,
-        sy: e.clientY,
-      };
-      setDrag(true);
-    },
-    [],
-  );
+  const onGrabPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const rail = railRef.current;
+    if (!rail) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const r = rail.getBoundingClientRect();
+    dragState.current = {
+      ox: r.left,
+      oy: r.top,
+      sx: e.clientX,
+      sy: e.clientY,
+    };
+    setDrag(true);
+  }, []);
 
   useEffect(() => {
     if (!drag) return;
@@ -139,7 +142,14 @@ export function AnnotationsRail({
     : undefined;
 
   const visibleCount = count ?? badges.length;
-  const newAnnotationShortcut = `${modSymbol}⇧N`;
+  // Deferred to a client-only effect so the SSR pass renders the
+  // generic "Ctrl" symbol and hydration updates it to the OS-correct
+  // glyph without a mismatch warning.
+  const [shortcutMod, setShortcutMod] = useState('Ctrl');
+  useEffect(() => {
+    setShortcutMod(modSymbol());
+  }, []);
+  const newAnnotationShortcut = `${shortcutMod}⇧N`;
 
   return (
     <aside
@@ -170,10 +180,7 @@ export function AnnotationsRail({
           <button
             key={b.annotationId}
             type="button"
-            className={[
-              styles.badge,
-              activeAnnotationId === b.annotationId && styles.active,
-            ]
+            className={[styles.badge, activeAnnotationId === b.annotationId && styles.active]
               .filter(Boolean)
               .join(' ')}
             data-color={b.colorIndex}
@@ -206,21 +213,14 @@ export function AnnotationsRail({
           </button>
         </header>
         {badges.length === 0 ? (
-          <p className={styles.empty}>
-            No annotations yet — drop a pin to capture feedback.
-          </p>
+          <p className={styles.empty}>No annotations yet — drop a pin to capture feedback.</p>
         ) : (
           <ul className={styles.list}>{children}</ul>
         )}
       </div>
 
       <div className={styles.foot} onMouseEnter={enter}>
-        <button
-          type="button"
-          className={styles.add}
-          aria-label="New annotation"
-          onClick={onCreate}
-        >
+        <button type="button" className={styles.add} aria-label="New annotation" onClick={onCreate}>
           <span className={styles.addIcon} aria-hidden="true">
             <svg viewBox="0 0 16 16" fill="currentColor">
               <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />

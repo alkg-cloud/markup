@@ -29,13 +29,13 @@ describe('shortcuts/platform', () => {
   it('isMac returns true on macOS platform string', async () => {
     const mod = await withPlatform('MacIntel');
     expect(mod.isMac()).toBe(true);
-    expect(mod.modSymbol).toBe('⌘');
+    expect(mod.modSymbol()).toBe('⌘');
   });
 
   it('isMac returns false on Win32', async () => {
     const mod = await withPlatform('Win32');
     expect(mod.isMac()).toBe(false);
-    expect(mod.modSymbol).toBe('Ctrl');
+    expect(mod.modSymbol()).toBe('Ctrl');
   });
 
   it('isMod matches metaKey on mac', async () => {
