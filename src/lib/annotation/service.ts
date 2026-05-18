@@ -102,3 +102,81 @@ export async function updateAnnotationTldraw(id: string, snapshot: unknown) {
   fs.writeFileSync(abs, JSON.stringify(stripped));
   return annotation;
 }
+
+/** Anchor record persisted in `Annotation.anchors` (JSON array).
+ *  Matches the pin anchoring strategy spec — text-anchor OR element-anchor. */
+export interface TextAnchorRecord {
+  path: string;
+  textOffset: number;
+  subX?: number;
+  subY?: number;
+}
+export interface ElementAnchorRecord {
+  path: string;
+  offsetX: number;
+  offsetY: number;
+}
+export type AnchorRecord = TextAnchorRecord | ElementAnchorRecord;
+
+interface CreateCommentAnnotationInput {
+  mockupId: string;
+  body: string;
+  anchors: AnchorRecord[];
+  colorIndex: number;
+  status?: 'open' | 'needs review' | 'resolved';
+  authorId: string;
+  authorType: 'user' | 'agent';
+  createdOnVersionId?: string | null;
+}
+
+/**
+ * AppMain redesign: comment-only annotation creation flow.
+ *
+ * No screenshot, no tldraw drawing — pins anchor to DOM elements inside
+ * the mockup. The legacy `screenshotPath` and `tldrawPath` columns are
+ * filled with empty strings (still NOT NULL until Phase 13 drops them).
+ *
+ * See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §7
+ * and `docs/superpowers/specs/2026-05-18-pin-anchoring-strategy.md`.
+ */
+export async function createCommentAnnotation(input: CreateCommentAnnotationInput) {
+  let createdOnVersionId = input.createdOnVersionId ?? null;
+  if (createdOnVersionId === null) {
+    const mockup = await prisma.mockup.findUnique({
+      where: { id: input.mockupId },
+      select: { currentVersionId: true },
+    });
+    createdOnVersionId = mockup?.currentVersionId ?? null;
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const annotation = await tx.annotation.create({
+      data: {
+        mockupId: input.mockupId,
+        // Legacy columns required NOT NULL — store empty markers until
+        // Phase 13 drops them.
+        screenshotPath: '',
+        tldrawPath: '',
+        anchors: JSON.stringify(input.anchors),
+        colorIndex: input.colorIndex,
+        status: input.status ?? 'open',
+        createdBy: input.authorId,
+        createdByType: input.authorType,
+        intentType: 'comment',
+        createdOnVersionId,
+      },
+    });
+    const thread = await tx.thread.create({
+      data: { annotationId: annotation.id, status: 'open' },
+    });
+    const message = await tx.message.create({
+      data: {
+        threadId: thread.id,
+        authorType: input.authorType,
+        authorId: input.authorId,
+        body: input.body,
+      },
+    });
+    return { annotation, thread, message };
+  });
+}
