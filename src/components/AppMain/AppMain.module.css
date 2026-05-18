@@ -3,12 +3,26 @@
   min-height: 0;
 }
 
-/* Mockup viewer: full-bleed, internal scroll handled by sub-components */
+/* Mockup viewer: in-shell area below Topbar.
+ *
+ * Becomes the positioning context (and Fullscreen API target) for the
+ * floating rail/toolbar/composer. Sub-components use position:absolute
+ * relative to this element so drag-clamping stays inside the viewer
+ * region — never the full viewport.
+ */
 .viewer {
-  display: grid;
-  grid-template-rows: auto auto 1fr;
-  height: 100%;
+  position: relative;
+  flex: 1;
   min-height: 0;
+  overflow: hidden;
+  background: var(--bg-iframe, #f4ede0);
+}
+
+/* When the browser puts this element in fullscreen, drop the in-shell
+ * flex sizing — the Fullscreen API gives us the entire viewport. */
+.viewer:fullscreen {
+  width: 100vw;
+  height: 100vh;
 }
 
 /* Folder/project workspace: scrollable column */

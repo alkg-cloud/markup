@@ -1,11 +1,13 @@
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ThreadComment } from '@/components/AnnotationCard';
+import { Topbar } from '@/components/Topbar/Topbar';
 import type { Anchor } from '@/lib/anchoring';
 import { identify } from '@/lib/auth/identify';
 import { resolveDisplayNames } from '@/lib/auth/resolve-display-name';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { prisma } from '@/lib/prisma';
+import { projectDisplayName, projectHref } from '@/lib/project/routes';
 import type { AppMainAnnotation } from './components/AppMainViewer';
 import { AppMainViewerWired } from './components/AppMainViewerWired';
 
@@ -65,6 +67,9 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
       : { slug: mockupIdOrSlug },
     include: {
       versions: { orderBy: { createdAt: 'desc' } },
+      folder: {
+        select: { id: true, name: true, parentId: true, projectId: true },
+      },
       annotations: {
         orderBy: { createdAt: 'desc' },
         take: 100,
@@ -84,6 +89,57 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
   if (!mockup?.currentVersionId) {
     return <main style={{ padding: 24 }}>Mockup not found.</main>;
   }
+
+  // Resolve the logged-in user's name/email for the Topbar avatar.
+  let userName: string | undefined;
+  let userEmail: string | undefined;
+  if (id.kind === 'user') {
+    const u = await prisma.user.findUnique({
+      where: { id: id.userId },
+      select: { name: true, email: true },
+    });
+    userName = u?.name ?? undefined;
+    userEmail = u?.email ?? undefined;
+  }
+
+  // Walk folder.parent chain → project so the Topbar shows
+  // [Project] / [Folder] / … / [Mockup].
+  const breadcrumbs: { label: string; href: string }[] = [];
+  if (mockup.folder) {
+    const project = await prisma.project.findUnique({
+      where: { id: mockup.folder.projectId },
+      select: { slug: true, name: true },
+    });
+    if (project) {
+      breadcrumbs.push({
+        label: projectDisplayName(project),
+        href: projectHref(project.slug),
+      });
+      // Build the folder ancestor chain top-down.
+      const ancestors: { id: string; name: string }[] = [];
+      let cur: string | null = mockup.folder.parentId;
+      const seen = new Set<string>();
+      while (cur && !seen.has(cur)) {
+        seen.add(cur);
+        const parent: { id: string; name: string; parentId: string | null } | null =
+          await prisma.folder.findUnique({
+            where: { id: cur },
+            select: { id: true, name: true, parentId: true },
+          });
+        if (!parent) break;
+        ancestors.unshift({ id: parent.id, name: parent.name });
+        cur = parent.parentId;
+      }
+      for (const a of ancestors) {
+        breadcrumbs.push({ label: a.name, href: projectHref(project.slug, a.id) });
+      }
+      breadcrumbs.push({
+        label: mockup.folder.name,
+        href: projectHref(project.slug, mockup.folder.id),
+      });
+    }
+  }
+  breadcrumbs.push({ label: mockup.name, href: `/mockups/${mockup.id}` });
 
   // Resolve all author names in one batch (annotation authors, message
   // authors, version authors, reaction users).
@@ -166,15 +222,18 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
   });
 
   return (
-    <AppMainViewerWired
-      mockupId={mockup.id}
-      mockupName={mockup.name}
-      mockupSrc={`/m/${mockup.id}/index.html?v=${mockup.currentVersionId}`}
-      currentUser={currentUser}
-      currentUserColorIndex={currentUserColorIndex}
-      versions={versions}
-      initialAnnotations={annotations}
-    />
+    <>
+      <Topbar breadcrumbs={breadcrumbs} userName={userName} userEmail={userEmail} />
+      <AppMainViewerWired
+        mockupId={mockup.id}
+        mockupName={mockup.name}
+        mockupSrc={`/m/${mockup.id}/index.html?v=${mockup.currentVersionId}`}
+        currentUser={currentUser}
+        currentUserColorIndex={currentUserColorIndex}
+        versions={versions}
+        initialAnnotations={annotations}
+      />
+    </>
   );
 }
 
