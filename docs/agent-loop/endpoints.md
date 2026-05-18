@@ -30,7 +30,14 @@ Single-call aggregator. Reads everything an agent needs to start working on a fi
     "id": "cmox…",
     "mockup_id": "cmox…",
     "intent_type": "visual",
-    "pin_coords": { /* parsed JSON or null */ },
+    "pin_coords": { /* parsed JSON or null — LEGACY, dropped after Phase 13 */ },
+    "anchors": [
+      /* Array of Anchor objects per pin-anchoring spec.
+         text-anchor:    { path, textOffset, subX, subY }
+         element-anchor: { path, offsetX, offsetY } */
+    ],
+    "color_index": 0,
+    "status": "open",
     "created_by": "cmox…",
     "created_by_type": "user",
     "created_at": "2026-05-08T19:19:56.939Z",
@@ -214,11 +221,40 @@ Persist an updated drawing snapshot. Used when the user enters edit mode on an e
 
 ## `POST /api/mockups/[id]/annotations`
 
-Create an annotation. Multipart body.
+Create an annotation. Branches on `Content-Type`:
 
-**Auth:** cookie OR Bearer.
+### JSON body — comment-flow (AppMain redesign, 2026-05)
 
-**Form fields:**
+`Content-Type: application/json`
+
+```jsonc
+{
+  "body":     "Headline kerning too tight at this size.",
+  "anchors":  [
+    /* 0..20 anchors. Each is one of:
+       text-anchor:    { "path": ":scope>div>...>h1", "textOffset": 16, "subX": 0.4, "subY": 0.5 }
+       element-anchor: { "path": ":scope>div>div:nth-of-type(2)",        "offsetX": 0.42, "offsetY": 0.68 } */
+  ],
+  "colorIndex": 0,                 // 0..15 into the rotating palette
+  "status":     "open"              // "open" | "needs review" | "resolved" (optional, defaults to open)
+}
+```
+
+**Response 201:**
+
+```jsonc
+{
+  "id":         "cmox…",
+  "threadId":   "cmox…",
+  "colorIndex": 0,
+  "status":     "open",
+  "anchors":    [/* echo */]
+}
+```
+
+### Multipart body — legacy drawing-flow
+
+`Content-Type: multipart/form-data`
 
 | Field | Type | Required |
 |---|---|---|
@@ -233,6 +269,12 @@ Create an annotation. Multipart body.
 ```jsonc
 { "id": "cmox…", "threadId": "cmox…" }
 ```
+
+The legacy drawing-flow is preserved for backward compatibility; new
+agents and the redesigned viewer use the JSON flow. Drawing returns as
+an optional annotation kind later — see `docs/future-features.md` #23.
+
+**Auth:** cookie OR Bearer.
 
 **Errors:**
 
@@ -278,3 +320,39 @@ Append a message to a thread.
 | 404 | `not_found` | Thread doesn't exist |
 
 `authorType` and `authorId` are taken from the calling identity.
+
+## `POST /api/messages/[id]/reactions`
+
+Toggle a Slack-style emoji reaction on a comment. Idempotent — if the
+calling identity already reacted to the message with this emoji, the
+reaction is removed; otherwise it's created.
+
+**Auth:** cookie OR Bearer.
+
+**Body:**
+
+```jsonc
+{ "emoji": "👍" }
+```
+
+**Response 200:** the post-mutation reaction map for the message.
+
+```jsonc
+{
+  "reactions": {
+    "👍": ["user_marina", "user_sam"],
+    "❤️": ["user_alex"]
+  }
+}
+```
+
+**Errors:**
+
+| Status | `error` | When |
+|---|---|---|
+| 400 | `invalid_body` | Body missing `emoji` or it's empty |
+| 401 | `unauthorized` | No identity |
+| 404 | `not_found` | Message doesn't exist |
+
+The `(messageId, userId, emoji)` triple is uniquely indexed on the
+`Reaction` table, so concurrent toggles are race-safe.
