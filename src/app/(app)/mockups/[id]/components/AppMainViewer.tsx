@@ -106,10 +106,17 @@ export function AppMainViewer({
   // the new contentDocument's elements after a version switch.
   const [iframeGen, setIframeGen] = useState(0);
 
-  const nextColorIndex = useMemo(
-    () => annotations.length % COLOR_PALETTE_SIZE,
-    [annotations.length],
-  );
+  const nextColorIndex = useMemo(() => {
+    // Per spec §6: "lowest unused index, cycle to 0 when all 16 are used".
+    // Scan 0..15 and return the first slot not currently held by any
+    // annotation; fall back to 0 when every slot is taken (then the
+    // palette repeats from the start).
+    const used = new Set(annotations.map((a) => a.colorIndex));
+    for (let i = 0; i < COLOR_PALETTE_SIZE; i++) {
+      if (!used.has(i)) return i;
+    }
+    return 0;
+  }, [annotations]);
 
   const badges: AnnotationsRailBadge[] = useMemo(
     () =>
@@ -327,9 +334,10 @@ export function AppMainViewer({
   );
 
   const onCommentReact = useCallback(
-    async (commentId: string, emoji: string) => {
-      await onReactionToggle?.(commentId, emoji);
-      // Optimistic toggle: mutate the matching comment's reactions array.
+    (commentId: string, emoji: string) => {
+      // Optimistic toggle FIRST so the pill renders without waiting on the
+      // network. The POST is fire-and-forget — the wired handler already
+      // catches+swallows blips, and the next refresh reconciles state.
       setAnnotations((prev) =>
         prev.map((a) => {
           const all = [a.primary, ...(a.replies ?? [])];
@@ -362,6 +370,7 @@ export function AppMainViewer({
           };
         }),
       );
+      void onReactionToggle?.(commentId, emoji);
     },
     [onReactionToggle, currentUser],
   );
