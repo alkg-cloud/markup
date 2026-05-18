@@ -366,7 +366,7 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 | `comment` | Avatar + name + time + body + reactions + actions | default, hover (actions revealed) |
 | `comment-avatar` | 20×20 circular gradient avatar with initials (first letter of first + last word) | per-author color palette 0..15 |
 | `comment-action-reply` | Reply icon for non-own comments | default, hover, focus-visible |
-| `comment-kebab` | Kebab menu for own comments | opens Reply / Edit / Delete |
+| `comment-kebab` | Kebab menu for own comments. Reply opens the always-visible reply form below; Edit prompts for a new body and PATCHes `/api/messages/[id]`; Delete confirms then DELETEs `/api/messages/[id]`. The primary message (annotation body) cannot be deleted — the API returns 400 and surfaces "Delete the annotation instead". | opens Reply / Edit / Delete |
 
 ### reactions (Slack-style)
 
