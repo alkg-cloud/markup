@@ -110,6 +110,22 @@ export function AnnotationCard({
           <span className={styles.author}>{author}</span>
         </span>
         <span className={[styles.pill, pillClass].join(' ')}>{status}</span>
+        {primary.isOwn ? (
+          <button
+            type="button"
+            className={styles.editPrimary}
+            data-tooltip="Edit annotation body"
+            aria-label="Edit annotation body"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCommentEdit?.(primary.id);
+            }}
+          >
+            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <path d="M13.23 1h-1.46L3.52 9.25l-.16.22L1 13.59 2.41 15l4.12-2.36.22-.16L15 4.23V2.77L13.23 1zM13 4l-7 7L5 10l7-7 1 1z" />
+            </svg>
+          </button>
+        ) : null}
       </div>
 
       <Comment

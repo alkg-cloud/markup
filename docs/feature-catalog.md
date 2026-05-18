@@ -353,6 +353,7 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 | `annotation-card-badge` | Colored circular badge with annotation number | per-color palette 0..15 |
 | `annotation-card-author` | Author name in meta row | static |
 | `annotation-card-status-pill` | open / needs review / resolved | open (info), needs review (warning), resolved (success) |
+| `annotation-card-edit-primary` | Pencil icon button in the meta row, visible only when the primary comment is the current user's. Opens the same edit prompt as `comment-kebab` → Edit. Primary comments are not deletable (the API returns 400 on `DELETE /api/messages/[primaryId]`). | hidden (not own), visible (own); hover (surface-hover bg) |
 | `annotation-card-primary` | Primary comment rendered without head row (author in meta) | renders body + reactions only |
 | `annotation-card-foot-date` | Date + time | static |
 | `annotation-card-thread-toggle` | Chevron button — "No replies" / "1 reply" / "N replies" | closed, open (chev rotated 180°) |
