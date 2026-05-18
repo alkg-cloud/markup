@@ -1,8 +1,13 @@
 /* Top-center mode indicator that surfaces during composer marking mode.
    Glass bg matching the rest of the floating chrome. See spec §7. */
 
+/* Scoped to the AppMain inner container (absolute, not fixed) so the
+ * bar sits 24 px below the AppMain top edge — not the viewport top —
+ * which keeps it from clipping into the global topbar in normal mode.
+ * In fullscreen the AppMain takes the whole viewport, so 24 px from
+ * top is also correct there. */
 .bar {
-  position: fixed;
+  position: absolute;
   top: 24px;
   left: 50%;
   transform: translateX(-50%) translateY(-4px);

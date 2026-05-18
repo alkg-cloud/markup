@@ -83,13 +83,19 @@ export function CanvasToolbar({
       if (!s || !tb) return;
       const r = tb.getBoundingClientRect();
       const bounds = boundsRef?.current?.getBoundingClientRect();
+      // Clamp in screen coords against the AppMain bounds (8 px margin).
       const minLeft = (bounds?.left ?? 0) + 8;
       const minTop = (bounds?.top ?? 0) + 8;
       const maxLeft = (bounds?.right ?? window.innerWidth) - r.width - 8;
       const maxTop = (bounds?.bottom ?? window.innerHeight) - r.height - 8;
-      const nextLeft = Math.max(minLeft, Math.min(maxLeft, s.ox + (e.clientX - s.sx)));
-      const nextTop = Math.max(minTop, Math.min(maxTop, s.oy + (e.clientY - s.sy)));
-      setPos({ left: nextLeft, top: nextTop });
+      const screenLeft = Math.max(minLeft, Math.min(maxLeft, s.ox + (e.clientX - s.sx)));
+      const screenTop = Math.max(minTop, Math.min(maxTop, s.oy + (e.clientY - s.sy)));
+      // Toolbar is `position: absolute` inside its containing block
+      // (AppMain inner div); convert to container-relative coords.
+      setPos({
+        left: screenLeft - (bounds?.left ?? 0),
+        top: screenTop - (bounds?.top ?? 0),
+      });
     };
     const onUp = () => {
       setDrag(false);
@@ -104,7 +110,9 @@ export function CanvasToolbar({
   }, [drag, boundsRef]);
 
   const style: React.CSSProperties | undefined = pos
-    ? { left: pos.left, top: pos.top, transform: 'none' }
+    ? // Override CSS `bottom: 24px` so the inline `top` wins cleanly
+      // and the toolbar doesn't stretch vertically after drag.
+      { left: pos.left, top: pos.top, bottom: 'auto', right: 'auto', transform: 'none' }
     : undefined;
 
   return (

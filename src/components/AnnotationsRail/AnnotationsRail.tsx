@@ -108,13 +108,21 @@ export function AnnotationsRail({
       if (!s || !rail) return;
       const r = rail.getBoundingClientRect();
       const bounds = boundsRef?.current?.getBoundingClientRect();
+      // Clamp in screen coordinates so bounds.left/right are directly usable.
       const minLeft = (bounds?.left ?? 0) + 8;
       const minTop = (bounds?.top ?? 0) + 8;
       const maxLeft = (bounds?.right ?? window.innerWidth) - r.width - 8;
       const maxTop = (bounds?.bottom ?? window.innerHeight) - r.height - 8;
-      const nextLeft = Math.max(minLeft, Math.min(maxLeft, s.ox + (e.clientX - s.sx)));
-      const nextTop = Math.max(minTop, Math.min(maxTop, s.oy + (e.clientY - s.sy)));
-      setPos({ left: nextLeft, top: nextTop });
+      const screenLeft = Math.max(minLeft, Math.min(maxLeft, s.ox + (e.clientX - s.sx)));
+      const screenTop = Math.max(minTop, Math.min(maxTop, s.oy + (e.clientY - s.sy)));
+      // The rail is `position: absolute` inside its containing block (the
+      // AppMain inner div); convert the screen target to container-relative
+      // coords so the inline `left/top` style lands the rail on-screen
+      // where the cursor actually is.
+      setPos({
+        left: screenLeft - (bounds?.left ?? 0),
+        top: screenTop - (bounds?.top ?? 0),
+      });
     };
     const onUp = () => {
       setDrag(false);
