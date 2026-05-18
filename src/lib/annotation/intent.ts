@@ -8,9 +8,7 @@ export function isIntentType(value: unknown): value is IntentType {
 
 /**
  * Display-pill colours used on the annotation detail page next to the
- * timestamp. The active chip in the AnnotationModal selector uses a
- * different treatment (flat --accent fill) — these colours are for the
- * read-only badge only. See docs/agent-loop/chips.md.
+ * timestamp. See docs/agent-loop/chips.md.
  */
 export const INTENT_PILL_COLORS: Record<IntentType, { bg: string; fg: string }> = {
   visual: { bg: 'var(--accent-overlay-soft)', fg: 'var(--accent-bright)' },
