@@ -32,7 +32,9 @@
 }
 .rail.pinned {
   border-color: var(--accent-overlay-mid);
-  box-shadow: var(--shadow-popover), 0 0 0 1px var(--accent-overlay-soft);
+  box-shadow:
+    var(--shadow-popover),
+    0 0 0 1px var(--accent-overlay-soft);
 }
 .rail.dragging {
   transition: none;
@@ -51,7 +53,9 @@
   flex-shrink: 0;
   cursor: grab;
   color: var(--text-muted);
-  transition: background var(--motion-fast), color var(--motion-fast);
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast);
 }
 .grab:hover {
   background: var(--surface-hover);
@@ -186,11 +190,7 @@
   display: flex;
   justify-content: center;
   padding: 8px;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    var(--surface-glass-bg) 40%
-  );
+  background: linear-gradient(to bottom, transparent, var(--surface-glass-bg) 40%);
   flex-shrink: 0;
 }
 .add {
@@ -302,19 +302,67 @@
 }
 
 /* 16-color palette — same hues as Pin */
-.badge[data-color='0']  { --pin-h: 165; --pin-c: 0.18; }
-.badge[data-color='1']  { --pin-h: 195; --pin-c: 0.15; }
-.badge[data-color='2']  { --pin-h: 220; --pin-c: 0.14; }
-.badge[data-color='3']  { --pin-h: 245; --pin-c: 0.13; }
-.badge[data-color='4']  { --pin-h: 265; --pin-c: 0.13; }
-.badge[data-color='5']  { --pin-h: 285; --pin-c: 0.13; }
-.badge[data-color='6']  { --pin-h: 305; --pin-c: 0.12; }
-.badge[data-color='7']  { --pin-h: 325; --pin-c: 0.12; }
-.badge[data-color='8']  { --pin-h: 25;  --pin-c: 0.13; }
-.badge[data-color='9']  { --pin-h: 50;  --pin-c: 0.14; }
-.badge[data-color='10'] { --pin-h: 75;  --pin-c: 0.14; }
-.badge[data-color='11'] { --pin-h: 95;  --pin-c: 0.15; }
-.badge[data-color='12'] { --pin-h: 120; --pin-c: 0.15; }
-.badge[data-color='13'] { --pin-h: 140; --pin-c: 0.16; }
-.badge[data-color='14'] { --pin-h: 200; --pin-c: 0.16; }
-.badge[data-color='15'] { --pin-h: 150; --pin-c: 0.17; }
+.badge[data-color="0"] {
+  --pin-h: 165;
+  --pin-c: 0.18;
+}
+.badge[data-color="1"] {
+  --pin-h: 195;
+  --pin-c: 0.15;
+}
+.badge[data-color="2"] {
+  --pin-h: 220;
+  --pin-c: 0.14;
+}
+.badge[data-color="3"] {
+  --pin-h: 245;
+  --pin-c: 0.13;
+}
+.badge[data-color="4"] {
+  --pin-h: 265;
+  --pin-c: 0.13;
+}
+.badge[data-color="5"] {
+  --pin-h: 285;
+  --pin-c: 0.13;
+}
+.badge[data-color="6"] {
+  --pin-h: 305;
+  --pin-c: 0.12;
+}
+.badge[data-color="7"] {
+  --pin-h: 325;
+  --pin-c: 0.12;
+}
+.badge[data-color="8"] {
+  --pin-h: 25;
+  --pin-c: 0.13;
+}
+.badge[data-color="9"] {
+  --pin-h: 50;
+  --pin-c: 0.14;
+}
+.badge[data-color="10"] {
+  --pin-h: 75;
+  --pin-c: 0.14;
+}
+.badge[data-color="11"] {
+  --pin-h: 95;
+  --pin-c: 0.15;
+}
+.badge[data-color="12"] {
+  --pin-h: 120;
+  --pin-c: 0.15;
+}
+.badge[data-color="13"] {
+  --pin-h: 140;
+  --pin-c: 0.16;
+}
+.badge[data-color="14"] {
+  --pin-h: 200;
+  --pin-c: 0.16;
+}
+.badge[data-color="15"] {
+  --pin-h: 150;
+  --pin-c: 0.17;
+}

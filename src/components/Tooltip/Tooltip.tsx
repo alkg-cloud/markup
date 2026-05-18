@@ -1,11 +1,6 @@
 'use client';
-import {
-  type ReactElement,
-  cloneElement,
-  isValidElement,
-  type ReactNode,
-} from 'react';
-import './Tooltip.module.css';
+import { cloneElement, isValidElement, type ReactElement, type ReactNode } from 'react';
+import './Tooltip.css';
 
 export type TooltipAlign = 'left' | 'center' | 'right';
 

@@ -1,4 +1,5 @@
 @import "../styles/tokens.css";
+@import "../components/Tooltip/Tooltip.css";
 
 /*
  * Markup global styles — v1.3 grapesjs-aligned.

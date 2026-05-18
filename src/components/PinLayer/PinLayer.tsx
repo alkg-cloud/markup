@@ -1,7 +1,7 @@
 'use client';
 import { type RefObject, useCallback, useMemo, useRef } from 'react';
-import { type Anchor, useAnchoredPins } from '@/lib/anchoring';
 import { Pin } from '@/components/Pin/Pin';
+import { type Anchor, useAnchoredPins } from '@/lib/anchoring';
 import styles from './PinLayer.module.css';
 
 export interface PinDescriptor {
@@ -24,6 +24,13 @@ export interface PinLayerProps {
   pins: PinDescriptor[];
   /** Fired when a non-pending pin is clicked. */
   onPinClick?: (annotationId: string) => void;
+  /**
+   * Token that forces a synchronous reposition when it changes. Consumers
+   * bump this after layout-affecting state mutations (zoom, fullscreen,
+   * iframe load) that the hook's ResizeObserver / scroll listeners don't
+   * naturally observe.
+   */
+  repositionKey?: unknown;
 }
 
 /**
@@ -33,7 +40,7 @@ export interface PinLayerProps {
  *
  * See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §6.
  */
-export function PinLayer({ canvasRootRef, pins, onPinClick }: PinLayerProps) {
+export function PinLayer({ canvasRootRef, pins, onPinClick, repositionKey }: PinLayerProps) {
   const layerRef = useRef<HTMLDivElement | null>(null);
   const pinElsRef = useRef<Map<string, HTMLButtonElement>>(new Map());
 
@@ -55,11 +62,12 @@ export function PinLayer({ canvasRootRef, pins, onPinClick }: PinLayerProps) {
   });
 
   // Re-position synchronously whenever the pin list changes (new pin
-  // added, pin removed, anchor edited). This complements the hook's
-  // ResizeObserver / fullscreenchange triggers.
+  // added, pin removed, anchor edited) OR when the parent bumps
+  // `repositionKey` to signal a layout change (zoom, fullscreen, iframe
+  // load) that the hook's ResizeObserver / scroll listeners don't catch.
   useMemo(() => {
     repositionAll();
-  }, [pins, repositionAll]);
+  }, [pins, repositionAll, repositionKey]);
 
   return (
     <div ref={layerRef} className={styles.pinLayer} aria-hidden="false">
