@@ -310,7 +310,11 @@ export function AppMainViewer({
     <AppMain variant="viewer" ariaLabel="Mockup viewer">
       <div
         ref={appMainRef}
-        style={{ position: 'fixed', inset: 0, background: 'var(--bg-iframe, #f4ede0)' }}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'var(--bg-iframe, #f4ede0)',
+        }}
       >
         <div
           style={{
