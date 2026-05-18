@@ -1,14 +1,46 @@
-import fs from 'node:fs';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { Topbar } from '@/components/Topbar/Topbar';
+import type { ThreadComment } from '@/components/AnnotationCard';
+import type { Anchor } from '@/lib/anchoring';
 import { identify } from '@/lib/auth/identify';
 import { resolveDisplayNames } from '@/lib/auth/resolve-display-name';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
-import { env } from '@/lib/env';
-import { thumbnailPath } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
-import { MockupViewer } from './MockupViewer';
+import type { AppMainAnnotation } from './components/AppMainViewer';
+import { AppMainViewerWired } from './components/AppMainViewerWired';
+
+const COLOR_PALETTE_SIZE = 16;
+
+function parseAnchors(raw: string): Anchor[] {
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as Anchor[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function asStatus(s: string): AppMainAnnotation['status'] {
+  return s === 'needs review' || s === 'resolved' ? s : 'open';
+}
+
+function formatTimestamp(d: Date): string {
+  return d.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function colorForUser(id: string): number {
+  // Cheap deterministic hash → palette slot. Same author always gets
+  // the same color across comments + avatars.
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  return Math.abs(h) % COLOR_PALETTE_SIZE;
+}
 
 export default async function MockupViewerPage({ params }: { params: Promise<{ id: string }> }) {
   if (!(await isSetupCompleted())) redirect('/setup');
@@ -32,83 +64,117 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
       ? { id: mockupIdOrSlug }
       : { slug: mockupIdOrSlug },
     include: {
-      project: { select: { id: true, name: true, slug: true } },
-      folder: { select: { id: true, name: true, parentId: true } },
       versions: { orderBy: { createdAt: 'desc' } },
       annotations: {
         orderBy: { createdAt: 'desc' },
-        take: 50,
-        include: { thread: { include: { _count: { select: { messages: true } } } } },
+        take: 100,
+        include: {
+          thread: {
+            include: {
+              messages: {
+                orderBy: { createdAt: 'asc' },
+                include: { reactions: true },
+              },
+            },
+          },
+        },
       },
     },
   });
   if (!mockup?.currentVersionId) {
     return <main style={{ padding: 24 }}>Mockup not found.</main>;
   }
-  const hasThumbnail = fs.existsSync(thumbnailPath(env().DATA_DIR, mockup.id));
-  const nameMap = await resolveDisplayNames([
-    ...mockup.versions.map((v) => ({ createdBy: v.createdBy, createdByType: v.createdByType })),
-  ]);
 
-  // Build the topbar breadcrumb: project › ...folder path › mockup
-  const breadcrumbs: { label: string; href?: string }[] = [];
-  if (mockup.project) {
-    breadcrumbs.push({
-      label: mockup.project.name,
-      href: `/?project=${mockup.project.slug}`,
+  // Resolve all author names in one batch (annotation authors, message
+  // authors, version authors, reaction users).
+  const authorRefs = new Map<string, 'user' | 'agent'>();
+  for (const v of mockup.versions) authorRefs.set(v.createdBy, v.createdByType as 'user' | 'agent');
+  for (const a of mockup.annotations) {
+    authorRefs.set(a.createdBy, a.createdByType as 'user' | 'agent');
+    for (const m of a.thread?.messages ?? []) {
+      authorRefs.set(m.authorId, m.authorType as 'user' | 'agent');
+      for (const r of m.reactions) authorRefs.set(r.userId, 'user');
+    }
+  }
+  const nameMap = await resolveDisplayNames(
+    [...authorRefs.entries()].map(([createdBy, createdByType]) => ({
+      createdBy,
+      createdByType,
+    })),
+  );
+  const resolvedName = (uid: string): string => nameMap.get(uid)?.name ?? `user ${uid.slice(-6)}`;
+
+  // The logged-in user's id for `isOwn` checks.
+  const currentUserId = id.kind === 'user' ? id.userId : id.tokenId;
+  const currentUser = resolvedName(currentUserId);
+  const currentUserColorIndex = colorForUser(currentUserId);
+
+  // Build the thread-comment list for each annotation. Newest-first
+  // replies; primary is the first message.
+  const annotations: AppMainAnnotation[] = mockup.annotations
+    .filter((a) => a.thread && a.thread.messages.length > 0)
+    .map((a, idx) => {
+      const messages = a.thread!.messages;
+      const buildComment = (m: (typeof messages)[number]): ThreadComment => {
+        const reactionsByEmoji = new Map<string, string[]>();
+        for (const r of m.reactions) {
+          const list = reactionsByEmoji.get(r.emoji) ?? [];
+          list.push(resolvedName(r.userId));
+          reactionsByEmoji.set(r.emoji, list);
+        }
+        return {
+          id: m.id,
+          author: resolvedName(m.authorId),
+          authorColorIndex: colorForUser(m.authorId),
+          isOwn: m.authorId === currentUserId,
+          timestamp: formatTimestamp(m.createdAt),
+          body: m.body,
+          reactions: [...reactionsByEmoji.entries()].map(([emoji, reactedBy]) => ({
+            emoji,
+            reactedBy,
+          })),
+        };
+      };
+      const primary = buildComment(messages[0]);
+      const replies = messages.slice(1).reverse().map(buildComment);
+      return {
+        id: a.id,
+        threadId: a.thread!.id,
+        colorIndex: a.colorIndex,
+        // Reverse-chronological list — newest annotation gets the highest
+        // number. Earlier annotations bear lower numbers (more stable
+        // across new creations).
+        label: mockup.annotations.length - idx,
+        status: asStatus(a.status),
+        author: resolvedName(a.createdBy),
+        authorColorIndex: colorForUser(a.createdBy),
+        date: formatTimestamp(a.createdAt),
+        primary,
+        replies,
+        anchors: parseAnchors(a.anchors),
+      };
     });
-  }
-  if (mockup.folder && mockup.project) {
-    // Walk up the folder chain so the breadcrumb shows the full path.
-    const chain: { id: string; name: string }[] = [];
-    let cursor: { id: string; name: string; parentId: string | null } | null = mockup.folder;
-    const guard = new Set<string>();
-    while (cursor && !guard.has(cursor.id)) {
-      guard.add(cursor.id);
-      chain.unshift({ id: cursor.id, name: cursor.name });
-      cursor = cursor.parentId
-        ? await prisma.folder.findUnique({
-            where: { id: cursor.parentId },
-            select: { id: true, name: true, parentId: true },
-          })
-        : null;
-    }
-    for (const f of chain) {
-      breadcrumbs.push({
-        label: f.name,
-        href: `/?project=${mockup.project.slug}&folder=${f.id}`,
-      });
-    }
-  }
-  breadcrumbs.push({ label: mockup.name });
+
+  const versions = mockup.versions.map((v, vi) => {
+    const resolved = nameMap.get(v.createdBy);
+    return {
+      id: v.id,
+      label: `v${mockup.versions.length - vi}`,
+      sub: `${formatTimestamp(v.createdAt)} · ${resolved?.name ?? `${v.createdByType} ${v.createdBy.slice(-6)}`}`,
+      current: v.id === mockup.currentVersionId,
+    };
+  });
 
   return (
-    <>
-      <Topbar breadcrumbs={breadcrumbs} />
-      <MockupViewer
-        mockupId={mockup.id}
-        mockupName={mockup.name}
-        currentVersionId={mockup.currentVersionId}
-        hasThumbnail={hasThumbnail}
-        versions={mockup.versions.map((v) => {
-          const resolved = nameMap.get(v.createdBy);
-          return {
-            id: v.id,
-            createdAt: v.createdAt.toISOString(),
-            authorName: resolved?.name ?? `${v.createdByType} ${v.createdBy.slice(-6)}`,
-            authorKind: (resolved?.kind ?? v.createdByType) as 'user' | 'agent',
-          };
-        })}
-        annotations={mockup.annotations.map((a) => ({
-          id: a.id,
-          createdAt: a.createdAt.toISOString(),
-          screenshotPath: a.screenshotPath,
-          threadStatus: a.thread?.status ?? 'open',
-          messageCount: a.thread?._count.messages ?? 0,
-          pinCoords: a.pinCoords, // raw JSON string; parsed in client
-        }))}
-      />
-    </>
+    <AppMainViewerWired
+      mockupId={mockup.id}
+      mockupName={mockup.name}
+      mockupSrc={`/m/${mockup.id}/index.html?v=${mockup.currentVersionId}`}
+      currentUser={currentUser}
+      currentUserColorIndex={currentUserColorIndex}
+      versions={versions}
+      initialAnnotations={annotations}
+    />
   );
 }
 
