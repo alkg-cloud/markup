@@ -54,6 +54,12 @@ export interface AppMainViewerProps {
   }) => Promise<AppMainAnnotation | null>;
   onPostReply?: (annotationId: string, body: string) => Promise<ThreadComment | null>;
   onReactionToggle?: (commentId: string, emoji: string) => Promise<void>;
+  /** Edit a comment's body. Receives the new body string on success
+   *  (caller updates optimistic state); returns null when the user
+   *  cancels or the request fails. */
+  onCommentEdit?: (commentId: string, currentBody: string) => Promise<string | null>;
+  /** Delete a comment. Returns true on success. */
+  onCommentDelete?: (commentId: string) => Promise<boolean>;
   onVersionSelect?: (versionId: string) => void;
   onVersionPromote?: (versionId: string) => void;
   onVersionDelete?: (versionId: string) => void;
@@ -69,6 +75,8 @@ export function AppMainViewer({
   onCreateAnnotation,
   onPostReply,
   onReactionToggle,
+  onCommentEdit,
+  onCommentDelete,
   onVersionSelect,
   onVersionPromote,
   onVersionDelete,
@@ -266,6 +274,58 @@ export function AppMainViewer({
     [onPostReply],
   );
 
+  const onCommentEditForCard = useCallback(
+    async (commentId: string) => {
+      // Look up the comment's current body across all annotations.
+      let current: string | null = null;
+      for (const a of annotations) {
+        if (a.primary.id === commentId) {
+          current = a.primary.body;
+          break;
+        }
+        const r = a.replies?.find((m) => m.id === commentId);
+        if (r) {
+          current = r.body;
+          break;
+        }
+      }
+      if (current === null) return;
+      const next = await onCommentEdit?.(commentId, current);
+      if (next === null || next === undefined) return;
+      setAnnotations((prev) =>
+        prev.map((a) => {
+          if (a.primary.id === commentId) {
+            return { ...a, primary: { ...a.primary, body: next } };
+          }
+          if (a.replies?.some((r) => r.id === commentId)) {
+            return {
+              ...a,
+              replies: a.replies.map((r) => (r.id === commentId ? { ...r, body: next } : r)),
+            };
+          }
+          return a;
+        }),
+      );
+    },
+    [annotations, onCommentEdit],
+  );
+
+  const onCommentDeleteForCard = useCallback(
+    async (commentId: string) => {
+      const ok = await onCommentDelete?.(commentId);
+      if (!ok) return;
+      setAnnotations((prev) =>
+        prev.map((a) => {
+          if (a.replies?.some((r) => r.id === commentId)) {
+            return { ...a, replies: a.replies.filter((r) => r.id !== commentId) };
+          }
+          return a;
+        }),
+      );
+    },
+    [onCommentDelete],
+  );
+
   const onCommentReact = useCallback(
     async (commentId: string, emoji: string) => {
       await onReactionToggle?.(commentId, emoji);
@@ -370,6 +430,8 @@ export function AppMainViewer({
               active={a.id === activeId}
               onActivate={() => onActivate(a.id)}
               onPostReply={(body) => onPostReplyForCard(a.id, body)}
+              onCommentEdit={(commentId) => onCommentEditForCard(commentId)}
+              onCommentDelete={(commentId) => onCommentDeleteForCard(commentId)}
               onCommentReact={(commentId, emoji) => onCommentReact(commentId, emoji)}
             />
           ))}

@@ -120,6 +120,42 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
     });
   }, []);
 
+  const onCommentEdit = useCallback(
+    async (commentId: string, currentBody: string): Promise<string | null> => {
+      // Minimal edit UX: prompt for the new body. Inline-textarea edit
+      // mode is parked for a follow-up — see future-features #29.
+      const next = window.prompt('Edit comment', currentBody)?.trim();
+      if (!next || next === currentBody) return null;
+      const res = await fetch(`/api/messages/${commentId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ body: next }),
+      });
+      if (!res.ok) return null;
+      router.refresh();
+      return next;
+    },
+    [router],
+  );
+
+  const onCommentDelete = useCallback(
+    async (commentId: string): Promise<boolean> => {
+      if (!window.confirm('Delete this comment? This cannot be undone.')) return false;
+      const res = await fetch(`/api/messages/${commentId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const detail = await res
+          .json()
+          .then((j) => j?.detail ?? j?.error ?? 'Delete failed.')
+          .catch(() => 'Delete failed.');
+        window.alert(detail);
+        return false;
+      }
+      router.refresh();
+      return true;
+    },
+    [router],
+  );
+
   const onVersionSelect = useCallback((versionId: string) => {
     // Future: navigate to a permalink for the version. For now no-op.
     void versionId;
@@ -156,6 +192,8 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
       onCreateAnnotation={onCreateAnnotation}
       onPostReply={onPostReply}
       onReactionToggle={onReactionToggle}
+      onCommentEdit={onCommentEdit}
+      onCommentDelete={onCommentDelete}
       onVersionSelect={onVersionSelect}
       onVersionPromote={onVersionPromote}
       onVersionDelete={onVersionDelete}
