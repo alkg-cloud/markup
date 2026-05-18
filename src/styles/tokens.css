@@ -261,6 +261,18 @@
   --content-max: 1200px;
   --hero-max: 1280px;
 
+  /* ─── AppMain rail (floating annotations panel) ──────────────────── */
+  --rail-width-collapsed: 60px;
+  --rail-width-expanded: 300px;
+
+  /* ─── Glass surface (toolbar, rail, composer, popovers, tooltips, sidebar)
+     Single source of truth — every translucent overlay layer pulls from
+     these tokens so the canvas remains the visual focus and tweaks land
+     in one place. See AppMain spec §11. ──────────────────────────── */
+  --surface-glass-bg: rgb(7 12 15 / 80%);
+  --surface-glass-blur: blur(16px) saturate(140%);
+  --surface-glass-border: 1px solid var(--border);
+
   /* ─── Sidebar pill-morph ─────────────────────────────────────────── */
   --pill-width: 84px;
   --pill-height: 40px;
