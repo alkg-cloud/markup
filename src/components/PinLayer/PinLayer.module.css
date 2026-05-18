@@ -1,0 +1,13 @@
+/* Pin layer — sibling of .mockup-doc inside .canvas-stage so the
+   mockup zoom transform doesn't scale the pins. Pins inside read like
+   a UI overlay, not part of the content. Layer ignores pointer events;
+   individual pins re-enable them so clicks pass through empty space. */
+.pinLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+.pinLayer > * {
+  pointer-events: auto;
+}
