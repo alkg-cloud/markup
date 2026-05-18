@@ -272,3 +272,27 @@ specs. Spec: `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md`.
 **Why park it:** depends on #23. Pan/Select tools without drawing don't add enough value to justify the toolbar real estate.
 
 **Size:** comes with #23, +1 day for pan/select/fit if desired.
+
+### 26. Global keyboard-shortcut hook (`useShortcuts`)
+
+**Where:** new `src/lib/shortcuts/useShortcuts.ts` + wiring in `AppMainViewer`.
+
+**Today:** the AnnotationsRail header shows the `⌘⇧N` hint next to the "+ New annotation" button, but no global keydown handler exists. Pressing the chord does nothing. Same gap for `⌘=`/`⌘-`/`⌘0` (zoom), `F` (fullscreen), `⌘⇧V` (versions). Only the in-composer `Escape` is wired.
+
+**Fix:** implement the hook per spec §13: register a single document-level keydown listener, gate on the OS-aware modifier (via `isMod`), guard against IME composition + form-field focus, dispatch to a registry of `{combo, handler}` pairs the viewer registers on mount. Add OS-aware tooltip strings (`formatShortcut(['shift','n'])`).
+
+**Why park it:** the visible affordance ships (the hint label), all click paths work — keyboard parity is a clear v1.1 follow-up rather than a launch blocker.
+
+**Size:** ~half a day.
+
+### 27. Per-mockup auth on reactions endpoint
+
+**Where:** `src/app/api/messages/[id]/reactions/route.ts`.
+
+**Today:** the route calls `identify(req)` and proceeds as long as the caller is authenticated. There is no JOIN to verify the message → thread → annotation → mockup chain is in a project the caller can access.
+
+**Fix:** fetch the message with its thread → annotation → mockup, and reuse the same access check the annotations endpoints apply (currently a single-tenant assumption — when multi-tenant lands the check goes in at the boundary).
+
+**Why park it:** Markup is single-tenant today; the gap is real but theoretical. Should be closed before any multi-tenant work.
+
+**Size:** ~1 hour (write once the access helper exists).
