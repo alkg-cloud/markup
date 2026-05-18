@@ -296,3 +296,17 @@ specs. Spec: `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md`.
 **Why park it:** Markup is single-tenant today; the gap is real but theoretical. Should be closed before any multi-tenant work.
 
 **Size:** ~1 hour (write once the access helper exists).
+
+### 28. Mockup iframe trust boundary
+
+**Where:** `src/app/(app)/mockups/[id]/components/AppMainViewer.tsx` iframe + `src/app/m/[mockupId]/[[...path]]/route.ts` serve + `src/lib/csp.ts`.
+
+**Today:** mockups are served same-origin and the iframe has no `sandbox` attribute. The mockup CSP allows `script-src 'self' 'unsafe-inline' 'unsafe-eval'`, so any uploaded mockup HTML can run script, and that script can reach the parent window's API surface via `window.parent.fetch('/api/…', { credentials: 'include' })` — including admin-only endpoints like `POST /api/agent-tokens`. Effectively: uploading a mockup is equivalent to running JavaScript in the admin's browser.
+
+**Status:** pre-existing on `main` (the deleted `MockupViewer.tsx` had the same arrangement). The redesign's new click capture is read-only DOM access — it does not widen the boundary, only inherits it. Flagged here so the trust model is on record.
+
+**Fix path:**
+- Short term — document the trust model in `docs/agent-loop/`: "uploading a mockup = running script in the admin's browser; only upload mockups you trust." Add `Set-Cookie SameSite=Strict` on the session if not already; drop `'unsafe-eval'` from the mockup CSP (most mockups don't need it).
+- Long term — serve `/m/[mockupId]/…` from a separate origin (e.g. `mockup-content.markup.alego.cloud`) so the iframe is natively cross-origin, then proxy click coordinates via `postMessage` instead of reading the iframe DOM from the outer document. The anchoring runtime already has the cross-document scaffolding (`useAnchoredPins` detects `ownerDocument` mismatch) — the missing piece is replacing direct rect reads with a `postMessage` RPC since CORS blocks `getBoundingClientRect` on cross-origin documents.
+
+**Size:** trust-model doc + cookie hardening ~1 hour. Cross-origin serve + postMessage bridge ~1-2 days.
