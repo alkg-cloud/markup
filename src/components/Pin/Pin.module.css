@@ -1,0 +1,135 @@
+/* Pin — annotation marker on the mockup canvas.
+   Glass tag aesthetic: dark translucent background with the
+   per-annotation accent color as border + number color.
+   See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §6
+   and `docs/superpowers/specs/2026-05-18-pin-anchoring-strategy.md`. */
+
+.pin {
+  --pin-h: 165;
+  --pin-c: 0.18;
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: rgb(7 12 15 / 70%);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  border: 1.5px solid oklch(78% var(--pin-c) var(--pin-h));
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.55;
+  transition:
+    opacity var(--motion-fast),
+    transform var(--motion-fast) var(--ease-spring),
+    box-shadow var(--motion-fast),
+    border-color var(--motion-fast);
+  z-index: 10;
+  pointer-events: auto;
+  padding: 0;
+}
+.pin > span {
+  transform: rotate(45deg);
+  color: oklch(82% var(--pin-c) var(--pin-h));
+  font-weight: 800;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+.pin:hover {
+  opacity: 1;
+  transform: rotate(-45deg) scale(1.12);
+}
+
+/* Outer glow ring — visible only when active. */
+.pin::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50% 50% 50% 0;
+  box-shadow:
+    0 0 0 4px oklch(74% var(--pin-c) var(--pin-h) / 0.28),
+    0 0 16px oklch(74% var(--pin-c) var(--pin-h) / 0.4);
+  opacity: 0;
+  transition: opacity var(--motion-fast), box-shadow var(--motion-fast);
+  pointer-events: none;
+}
+
+.active {
+  opacity: 1;
+  transform: rotate(-45deg) scale(1.06);
+  z-index: 11;
+  border-color: oklch(84% var(--pin-c) var(--pin-h));
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 0 0 2px oklch(82% var(--pin-c) var(--pin-h) / 0.45);
+}
+.active::after {
+  opacity: 1;
+  animation: pinActiveGlow 2.4s ease-in-out infinite;
+}
+@keyframes pinActiveGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 4px oklch(78% var(--pin-c) var(--pin-h) / 0.28),
+      0 0 14px oklch(78% var(--pin-c) var(--pin-h) / 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 7px oklch(78% var(--pin-c) var(--pin-h) / 0.18),
+      0 0 22px oklch(82% var(--pin-c) var(--pin-h) / 0.5);
+  }
+}
+
+/* Pending pin (during the composer's marking mode) — fully transparent
+   bg, dashed outline, pulse animation. Stands out by motion rather than fill. */
+.pending {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 2px dashed oklch(82% var(--pin-c) var(--pin-h));
+  box-shadow: none;
+  opacity: 0.95;
+  animation: pendingPulse 1.6s ease-in-out infinite;
+}
+.pending > span {
+  color: oklch(90% var(--pin-c) var(--pin-h));
+  font-weight: 900;
+}
+.pending::after {
+  display: none;
+}
+@keyframes pendingPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(74% var(--pin-c) var(--pin-h) / 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+
+/* 16-color rotating palette. Each annotation picks an index 0..15.
+   `data-color` propagates from the annotation to every pin / badge /
+   avatar so they share visual identity. */
+.pin[data-color='0']  { --pin-h: 165; --pin-c: 0.18; }
+.pin[data-color='1']  { --pin-h: 195; --pin-c: 0.15; }
+.pin[data-color='2']  { --pin-h: 220; --pin-c: 0.14; }
+.pin[data-color='3']  { --pin-h: 245; --pin-c: 0.13; }
+.pin[data-color='4']  { --pin-h: 265; --pin-c: 0.13; }
+.pin[data-color='5']  { --pin-h: 285; --pin-c: 0.13; }
+.pin[data-color='6']  { --pin-h: 305; --pin-c: 0.12; }
+.pin[data-color='7']  { --pin-h: 325; --pin-c: 0.12; }
+.pin[data-color='8']  { --pin-h: 25;  --pin-c: 0.13; }
+.pin[data-color='9']  { --pin-h: 50;  --pin-c: 0.14; }
+.pin[data-color='10'] { --pin-h: 75;  --pin-c: 0.14; }
+.pin[data-color='11'] { --pin-h: 95;  --pin-c: 0.15; }
+.pin[data-color='12'] { --pin-h: 120; --pin-c: 0.15; }
+.pin[data-color='13'] { --pin-h: 140; --pin-c: 0.16; }
+.pin[data-color='14'] { --pin-h: 200; --pin-c: 0.16; }
+.pin[data-color='15'] { --pin-h: 150; --pin-c: 0.17; }
