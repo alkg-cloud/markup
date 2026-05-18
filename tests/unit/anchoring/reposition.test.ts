@@ -124,6 +124,35 @@ describe('reposition', () => {
       );
       expect(withZeroOrigin).toEqual(withoutOrigin);
     });
+
+    it('applies frameOrigin.scale to iframe-local rects (canvas zoom)', () => {
+      // Element at iframe-local (10, 20, 400, 200). Iframe outer position
+      // (100, 50) with CSS scale 1.25 → element appears on screen at
+      // x = 100 + (10 + 0.5*400) * 1.25 = 100 + 262.5 = 362.5
+      // y = 50  + (20 + 0.5*200) * 1.25 = 50  + 150   = 200
+      const hero = root.querySelector('.hero')!;
+      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(new DOMRect(10, 20, 400, 200));
+      const result = computePinTarget(
+        root,
+        new DOMRect(0, 0, 1000, 800),
+        { path: ':scope>div', offsetX: 0.5, offsetY: 0.5 },
+        { left: 100, top: 50, scale: 1.25 },
+      );
+      expect(result).toEqual({ tx: 362.5, ty: 200 });
+    });
+
+    it('scale=0.5 halves iframe-local coordinates', () => {
+      const hero = root.querySelector('.hero')!;
+      vi.spyOn(hero, 'getBoundingClientRect').mockReturnValue(new DOMRect(40, 60, 200, 100));
+      const result = computePinTarget(
+        root,
+        new DOMRect(0, 0, 1000, 800),
+        { path: ':scope>div', offsetX: 0, offsetY: 0 },
+        { left: 100, top: 50, scale: 0.5 },
+      );
+      // x = 100 + 40*0.5 = 120; y = 50 + 60*0.5 = 80
+      expect(result).toEqual({ tx: 120, ty: 80 });
+    });
   });
 
   describe('applyPinPosition', () => {
