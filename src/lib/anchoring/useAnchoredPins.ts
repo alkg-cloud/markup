@@ -57,7 +57,16 @@ export function useAnchoredPins(opts: UseAnchoredPinsOptions): UseAnchoredPinsAp
     // shift them by the iframe's outer-viewport BCR so the math lines
     // up with `layerRect` (which is in the outer document).
     const frame = getHostFrame(canvas, layer);
-    const frameOrigin = frame ? frame.getBoundingClientRect() : undefined;
+    let frameOrigin: { left: number; top: number; scale: number } | undefined;
+    if (frame) {
+      const fr = frame.getBoundingClientRect();
+      // CSS scale on the iframe (`transform: scale(zoom)`) makes the
+      // outer BCR width grow while `offsetWidth` stays the layout box.
+      // Divide to recover the on-screen scale factor; default to 1 when
+      // the iframe is unscaled (offsetWidth == 0 guard for safety).
+      const scale = frame.offsetWidth ? fr.width / frame.offsetWidth : 1;
+      frameOrigin = { left: fr.left, top: fr.top, scale };
+    }
     for (const [pin, anchor] of getPins()) {
       const target = computePinTarget(canvas, layerRect, anchor, frameOrigin);
       if (!target) continue;

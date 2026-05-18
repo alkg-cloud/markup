@@ -1,8 +1,12 @@
 /* AnnotationComposer — modal-first creation flow with optional
    marking-mode for multi-pin placement (Option B). See spec §7. */
 
+/* Scoped to its parent (the AppMain inner container) — absolute, not
+ * fixed — so the scrim and modal cover only the viewer area. The
+ * sidebar and topbar stay interactive while composing. See
+ * `docs/feature-catalog.md` mockup-viewer-app-main. */
 .composer {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 80;
   display: none;

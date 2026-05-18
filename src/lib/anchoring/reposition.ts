@@ -88,17 +88,25 @@ export function getCharRect(node: Text, offset: number): DOMRect {
  * iframe-viewport-relative rects returned by `getBoundingClientRect` /
  * Range get translated into outer-viewport coordinates before subtracting
  * `layerRect` (which is itself outer-viewport relative).
+ *
+ * When the iframe is CSS-scaled (canvas zoom uses `transform: scale(zoom)`
+ * on the iframe), the iframe-local rects are NOT scaled — they describe
+ * the unscaled layout box. Pass `frameOrigin.scale` so the math multiplies
+ * the iframe-local coordinates by the actual on-screen scale before
+ * shifting by `frameOrigin.left/top` (which IS scale-aware, since `BCR`
+ * on the iframe returns its scaled rect with `transformOrigin: top left`).
  */
 export function computePinTarget(
   canvasRoot: Element,
   layerRect: DOMRect,
   anchor: Anchor,
-  frameOrigin?: { left: number; top: number },
+  frameOrigin?: { left: number; top: number; scale?: number },
 ): { tx: number; ty: number } | null {
   const el = resolveAnchor(canvasRoot, anchor.path);
   if (!el) return null;
   const ox = frameOrigin?.left ?? 0;
   const oy = frameOrigin?.top ?? 0;
+  const s = frameOrigin?.scale ?? 1;
 
   if (isTextAnchor(anchor)) {
     const pos: CharPosition | null = findCharPositionInElement(el, anchor.textOffset);
@@ -107,15 +115,15 @@ export function computePinTarget(
     const subX = clamp01(anchor.subX ?? 0.5);
     const subY = clamp01(anchor.subY ?? 0.5);
     return {
-      tx: ox + r.left - layerRect.left + subX * r.width,
-      ty: oy + r.top - layerRect.top + subY * r.height,
+      tx: ox + (r.left + subX * r.width) * s - layerRect.left,
+      ty: oy + (r.top + subY * r.height) * s - layerRect.top,
     };
   }
 
   const aRect = el.getBoundingClientRect();
   return {
-    tx: ox + aRect.left - layerRect.left + anchor.offsetX * aRect.width,
-    ty: oy + aRect.top - layerRect.top + anchor.offsetY * aRect.height,
+    tx: ox + (aRect.left + anchor.offsetX * aRect.width) * s - layerRect.left,
+    ty: oy + (aRect.top + anchor.offsetY * aRect.height) * s - layerRect.top,
   };
 }
 
