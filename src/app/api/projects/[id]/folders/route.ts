@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { identify, requireAdmin } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { createFolder } from '@/lib/project/service';
 import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
 
@@ -14,6 +15,8 @@ const createSchema = z.object({
 });
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   try {
     requireAdmin(await identify(req));
   } catch (e) {
