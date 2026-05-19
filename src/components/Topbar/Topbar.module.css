@@ -90,7 +90,7 @@
   backdrop-filter: blur(16px) saturate(140%);
   border: var(--surface-glass-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-glow), var(--shadow-popover);
+  box-shadow: var(--shadow-popover);
 }
 .accountMenu:popover-open {
   display: flex;
