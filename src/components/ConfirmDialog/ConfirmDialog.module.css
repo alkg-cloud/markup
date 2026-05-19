@@ -2,15 +2,16 @@
    (rail, toolbar, popovers, tooltips, sidebar). See spec §11 +
    docs/feature-catalog.md `confirm-dialog`. */
 
-/* Scrim sits a touch below the dialog. Lower-opacity tint + the same
-   2px blur the composer scrim uses — keeps the canvas legible behind
-   the dialog so the dialog's own translucent glass surface reads the
-   way the rail/toolbar do (canvas content blurred through). */
+/* Scrim carries the **standard glass blur** so the page content
+ * visibly blurs behind the dialog — same effect the rail/toolbar
+ * produce over the mockup canvas. Tint is kept low so the blur reads
+ * as the dominant treatment. See `tokens.css § Glass surface`. */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.32);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
   z-index: 1000;
   animation: overlayIn var(--motion-base) var(--ease-standard);
 }

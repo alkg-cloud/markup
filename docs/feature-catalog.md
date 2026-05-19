@@ -143,9 +143,9 @@ Global command palette (`CommandPalette.tsx`). Opens via `Ctrl+K` / `⌘K` or to
 | ID | Surface / Interaction | States |
 |---|---|---|
 | `command-palette-trigger` | `Ctrl+K` on Windows/Linux, `⌘K` on Apple platforms, or search pill click. The shortcut and search pill dispatch an `open-command-palette` custom event on `document`; `CommandPalette` listens for this event to open. Other overlays (e.g. the Topbar avatar dropdown) also listen and close themselves so no two overlays coexist. | opens overlay |
-| `command-palette-scrim` | Backdrop scrim with `backdrop-filter: blur(8px)`, `--scrim-strong` | visible when open; click dismisses |
-| `command-palette-panel` | Glassmorphism dark panel with `--shadow-glow` signature, `--bg-elevated` bg, `--border` border | scale-in animation on open, positioned top-center |
-| `command-palette-input` | Search text input with VscSearch icon, auto-focus. Matching text highlighted with `<mark>` (accent-overlay-mid bg, accent-bright text) | idle, typing (filters results live, staggered 20 ms entry animation per result) |
+| `command-palette-scrim` | Backdrop scrim — light tint (`rgba(0,0,0,0.20)`) + the **standard glass blur** (`backdrop-filter: blur(16px) saturate(140%)`). Same recipe as every other modal scrim in the product. | visible when open; click dismisses |
+| `command-palette-panel` | Glass panel using the standard tokens (`--surface-glass-bg`, blur 16 px / saturate 140%, `--surface-glass-border`, `--shadow-popover`). Positioned top-center, `min(640px, 92vw)`. | scale-in animation on open |
+| `command-palette-input` | Search text input with VscSearch icon. **Auto-focuses every time the palette opens** — focus is wired via a `useEffect` that fires when `open` flips to `true`, so the keyboard shortcut (`Ctrl/⌘+K`) AND the search-pill click both land focus in the input without an extra Tab. Matching text highlighted with `<mark>` (accent-overlay-mid bg, accent-bright text). | idle, typing (filters results live, staggered 20 ms entry animation per result) |
 | `command-palette-results` | Grouped result list: projects first, then folders, then mockups. Each with appropriate icon (project icon, VscFolder, VscFile) | populated, empty ("No results"), loading |
 | `command-palette-result-item` | Individual result row with icon + name + path (mono) | default, hover (`--surface-hover`), focused (keyboard), selected |
 | `command-palette-keyboard-nav` | ArrowUp/Down to move, Enter to select, Escape to close | full keyboard loop |
@@ -408,7 +408,7 @@ Promise-based replacement for `window.confirm`/`window.alert`/`window.prompt`. N
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `glass-surface-standard` | Shared `--surface-glass-bg` / `--surface-glass-blur` / `--surface-glass-border` + `--shadow-popover` applied to **every** floating overlay: rail, toolbar, composer, command palette, popovers (account menu, project-tree kebab, comment kebab, annotation-card primary kebab, emoji picker, version chip + per-row kebab), tooltips, sidebar pill/full, toasts, generic dialog, confirm dialog. No accent-glow ring on neutral surfaces — `--shadow-glow` is reserved for explicitly accent-tinted elements (e.g. the sidebar pill collapsing morph). | single source of truth |
+| `glass-surface-standard` | Shared `--surface-glass-bg` / `--surface-glass-blur` / `--surface-glass-border` + `--shadow-popover` applied to **every** floating overlay: rail, toolbar, composer, command palette, popovers (account menu, project-tree kebab, comment kebab, annotation-card primary kebab, emoji picker, version chip + per-row kebab), tooltips, sidebar pill/full, toasts, generic dialog, confirm dialog. **Rule:** every component that paints over other content carries `backdrop-filter: blur(16px) saturate(140%)` — this includes scrims under modals (dialog, confirm dialog, command palette, annotation composer), not just the cards on top. The blur is the dominant visual treatment; scrim tint is kept low (~0.20) so blurred page content reads through. No accent-glow ring on neutral surfaces — `--shadow-glow` is reserved for explicitly accent-tinted elements (e.g. the sidebar pill collapsing morph). | single source of truth |
 
 ## thread-timeline
 
@@ -458,7 +458,7 @@ Reusable modal dialog (`Dialog.tsx`). Shares the **glass-surface standard** with
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `dialog-scrim` | Backdrop scrim — `rgba(0,0,0,0.32)` + `backdrop-filter: blur(2px)`. Click outside dismisses. Same scrim recipe as `confirm-dialog` and `command-palette`. | visible when dialog open |
+| `dialog-scrim` | Backdrop scrim — light tint (`rgba(0,0,0,0.20)`) + the **standard glass blur** (`backdrop-filter: blur(16px) saturate(140%)`). Carries the same blur as the rail / toolbar / sidebar so page content behind the dialog visibly blurs through, not just dims. Click outside dismisses. Identical recipe in `confirm-dialog` and `command-palette`. | visible when dialog open |
 | `dialog-card` | Dialog card. `width: min(440px, calc(100vw - 32px))`, 18 px padding, gap 8 px between rows. Animates in with the same scale-in spring as `confirm-dialog` (`--motion-base` / `--ease-spring`). | scale-in animation on open |
 | `dialog-title` | Title text — 13 px / 700 / 0.01em tracking, `--text-bright`, no margin (the card itself supplies the gap). | static |
 | `dialog-field` | Form field wrapper. Label is `--text-dim` 10 px uppercase + 0.08em tracking; hint sits under the input at 11 px `--text-muted`; error replaces hint at 11 px `--danger`. Input is 34 px tall with `--bg-card` background, focus flips border to `--accent-bright` + 3 px `--accent-soft` ring (matches the inline-edit textarea elsewhere in the product). | idle, focused, error |
