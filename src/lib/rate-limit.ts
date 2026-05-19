@@ -1,3 +1,5 @@
+import 'server-only';
+
 interface Bucket {
   tokens: number;
   lastRefill: number;

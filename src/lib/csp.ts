@@ -1,3 +1,5 @@
+import 'server-only';
+
 export function buildMockupCSP(): string {
   return [
     "default-src 'self'",

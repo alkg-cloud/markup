@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { prisma } from '@/lib/prisma';
 import { buildFolderNamePath } from '@/lib/project/path-resolver';
 import { mockupSlugHref } from '@/lib/project/routes';

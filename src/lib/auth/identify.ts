@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type { NextRequest } from 'next/server';
 
 import { verifyAgentToken } from './agent-token';

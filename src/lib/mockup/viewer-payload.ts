@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type { ThreadComment } from '@/components/AnnotationCard';
 import type { AppMainAnnotation } from '@/components/MockupViewer/AppMainViewer';
 import type { VersionRow } from '@/components/VersionChip';

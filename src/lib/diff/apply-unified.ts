@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { applyPatch } from 'diff';
 
 export class DiffApplyError extends Error {
