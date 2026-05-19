@@ -20,6 +20,11 @@ export default defineConfig({
     pool: 'forks',
     fileParallelism: false,
     maxWorkers: 1,
+    // CI runners have slower disks than dev workstations; integration
+    // tests that upload + unzip mockup fixtures can brush past the
+    // default 5s. 10s covers the slowest CI runs without masking real
+    // hangs.
+    testTimeout: 10000,
   },
   resolve: {
     alias: {
