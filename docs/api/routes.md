@@ -1,5 +1,7 @@
 # API Routes
 
+API routes are the only server-side surface in the project — the UI is [client-rendered](../frontend/INDEX.md) and consumes these routes via `fetch`. Routes that read mutable state (cookies, DB rows, files on disk) declare `export const dynamic = 'force-dynamic'`; pure-static routes (none today) do not need it.
+
 ## Folder convention
 
 Routes live under `src/app/api/` and follow Next.js App Router rules:

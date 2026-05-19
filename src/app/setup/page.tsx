@@ -1,5 +1,7 @@
-import { redirect } from 'next/navigation';
-import { isSetupCompleted } from '@/lib/auth/setup-state';
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Form } from './Form';
 
 /* ─── Inline styles — no new deps, pure CSS vars from tokens.css ─────────── */
@@ -34,8 +36,36 @@ const wordmarkDotStyle: React.CSSProperties = {
   marginLeft: 2,
 };
 
-export default async function SetupPage() {
-  if (await isSetupCompleted()) redirect('/login');
+export default function SetupPage() {
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/auth/setup-status')
+      .then(async (res) => {
+        if (cancelled) return;
+        if (!res.ok) {
+          setReady(true);
+          return;
+        }
+        const json: { completed: boolean } = await res.json();
+        if (cancelled) return;
+        if (json.completed) {
+          router.replace('/login');
+          return;
+        }
+        setReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  if (!ready) return null;
 
   return (
     <>
@@ -64,9 +94,7 @@ export default async function SetupPage() {
       `}</style>
 
       <main className="mu-setup-grid" style={pageStyle}>
-        {/* Left panel — visible ≥ 900px */}
         <div className="mu-setup-left" style={leftPanelStyle}>
-          {/* Top: wordmark + tagline */}
           <div>
             <div style={wordmarkStyle}>
               <span>Markup</span>
@@ -90,7 +118,6 @@ export default async function SetupPage() {
             </p>
           </div>
 
-          {/* Bottom: meta */}
           <div
             style={{
               fontFamily: 'var(--font-mono)',
@@ -104,7 +131,6 @@ export default async function SetupPage() {
           </div>
         </div>
 
-        {/* Right panel — form */}
         <div
           className="mu-setup-right"
           style={{
@@ -116,7 +142,6 @@ export default async function SetupPage() {
           }}
         >
           <div style={{ width: '100%', maxWidth: 400, marginInline: 'auto' }}>
-            {/* Mobile wordmark — hidden ≥ 900px */}
             <div
               className="mu-setup-wordmark-mobile"
               style={{ ...wordmarkStyle, marginBottom: 'var(--space-3xl)' }}
@@ -127,7 +152,6 @@ export default async function SetupPage() {
               </span>
             </div>
 
-            {/* Step indicator */}
             <div
               style={{
                 display: 'flex',
@@ -154,7 +178,6 @@ export default async function SetupPage() {
               Step 1 of 1 · Create the admin account
             </div>
 
-            {/* Heading */}
             <h1
               style={{
                 fontFamily: 'var(--font-display)',
@@ -187,5 +210,3 @@ export default async function SetupPage() {
     </>
   );
 }
-
-export const dynamic = 'force-dynamic';
