@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>19 — Canvas Toolbar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
+.page{padding:48px 32px 96px;max-width:1200px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  padding:50px 24px;display:flex;align-items:center;justify-content:center;position:relative;
+}
+.stage-label{position:absolute;top:8px;left:12px;font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted)}
+
+/* CanvasToolbar (CanvasToolbar.module.css verbatim) */
+.toolbar{
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  display:flex;align-items:center;gap:4px;padding:6px;
+  border-radius:14px;box-shadow:var(--shadow-popover);
+}
+.toolbar.dragging{box-shadow:var(--shadow-popover),0 0 0 1px var(--accent-overlay-mid)}
+.group{display:inline-flex;align-items:center;gap:2px;padding:0 8px;border-right:1px solid var(--border-subtle);height:32px}
+.group:last-child{border-right:0;padding-right:4px}
+.group:first-child{padding-left:4px}
+.btn{
+  width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-xs);color:var(--text-muted);
+  transition:background var(--motion-fast),color var(--motion-fast);
+}
+.btn:hover{background:var(--surface-hover);color:var(--text-bright)}
+.btn.active{background:var(--accent-soft);color:var(--accent-bright);box-shadow:inset 0 0 0 1px var(--accent-overlay-mid)}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.btn svg{width:16px;height:16px}
+.zoom{
+  font-family:var(--font-mono);font-size:12px;color:var(--text-bright);min-width:48px;height:32px;padding:0 6px;
+  text-align:center;letter-spacing:-0.01em;font-weight:500;background:transparent;border:0;border-radius:var(--radius-sm);
+}
+.zoom:hover{background:var(--surface-hover)}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;
+  background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:9999px;
+  font-size:11px;font-weight:600;color:var(--text);font-family:var(--font-mono);
+}
+.chip.current{background:var(--accent-soft);color:var(--accent-bright);border-color:var(--accent-overlay-mid)}
+.chip .clock{color:var(--text-muted);font-size:13px}
+.chip.current .clock{color:var(--accent)}
+.chip .chev{color:var(--text-muted);font-size:9px}
+.grab{
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  width:25px;height:32px;margin-left:2px;cursor:grab;color:var(--text-muted);border-radius:var(--radius-xs);
+}
+.grab svg{width:25px;height:25px}
+
+/* Version popover (top-layer paint demo) */
+.version-pop{
+  position:absolute;top:0;right:0;transform:translate(-10px,-110%);
+  background:var(--surface-glass-bg);backdrop-filter:blur(16px) saturate(140%);border:1px solid var(--border);
+  border-radius:var(--radius-sm);box-shadow:var(--shadow-popover);min-width:220px;padding:6px 0;
+}
+.v-item{display:flex;align-items:center;gap:10px;padding:6px 12px;font-size:11px;color:var(--text);position:relative}
+.v-item.current{background:var(--accent-overlay-soft);color:var(--accent-bright)}
+.v-dot{width:8px;height:8px;border-radius:50%;background:var(--text-muted);box-shadow:none}
+.v-item.current .v-dot{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.v-label{font-family:var(--font-mono);font-weight:700}
+.v-sub{font-size:10px;color:var(--text-muted);margin-left:auto}
+
+/* Tokens */
+.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
+.tokens dt{color:var(--text-dim)}.tokens dt::before{content:'--'}.tokens dd{color:var(--text-bright)}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1 class="h1">19 — Canvas Toolbar</h1>
+  <p class="lede">Center-bottom floating dock (<code>src/components/CanvasToolbar</code>) inside the mockup viewer. Glass surface; groups separated by 1 px <code>--border-subtle</code> dividers. Hosts zoom controls + fullscreen toggle + version chip + drag handle. Drag handle uses <code>GoGrabber</code> 25 × 25; clamps to <code>mockup-viewer-app-main</code> bounds (8 px margin), not the viewport.</p>
+
+  <section class="section">
+    <div class="section-title">A — Default state</div>
+    <div class="stage">
+      <span class="stage-label">100% zoom · in-shell mode</span>
+      <div class="toolbar">
+        <div class="group">
+          <button class="btn" data-tooltip="Zoom out (Ctrl+−)" aria-label="Zoom out"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H1V7h13z"/></svg></button>
+          <button class="zoom">100%</button>
+          <button class="btn" data-tooltip="Zoom in (Ctrl++)" aria-label="Zoom in"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
+        </div>
+        <div class="group">
+          <button class="btn" data-tooltip="Toggle fullscreen (F)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 2H6V3H3V6H2V2.5L2.5 2ZM3 10H2V13.5L2.5 14H6V13H3V10ZM13 13H10V14H13.5L14 13.5V10H13V13ZM13.5 2H10V3H13V6H14V2.5L13.5 2Z"/></svg></button>
+        </div>
+        <div class="group">
+          <span class="chip current"><span class="clock">🕐</span> v3 <span class="chev">▾</span></span>
+        </div>
+        <div class="group">
+          <button class="grab" data-tooltip="Move toolbar"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">B — Zoomed in (60%) — zoom-out enabled, label clickable</div>
+    <div class="stage">
+      <span class="stage-label">60% zoom</span>
+      <div class="toolbar">
+        <div class="group">
+          <button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H1V7h13z"/></svg></button>
+          <button class="zoom" style="background:var(--surface-hover);color:var(--text-bright)">60%</button>
+          <button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
+        </div>
+        <div class="group"><button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 2H6V3H3V6H2V2.5L2.5 2ZM3 10H2V13.5L2.5 14H6V13H3V10ZM13 13H10V14H13.5L14 13.5V10H13V13ZM13.5 2H10V3H13V6H14V2.5L13.5 2Z"/></svg></button></div>
+        <div class="group"><span class="chip current"><span class="clock">🕐</span> v3 <span class="chev">▾</span></span></div>
+        <div class="group"><button class="grab"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">C — At max zoom (400%) — zoom-in disabled</div>
+    <div class="stage">
+      <span class="stage-label">400% zoom · zoom-in disabled</span>
+      <div class="toolbar">
+        <div class="group">
+          <button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H1V7h13z"/></svg></button>
+          <button class="zoom">400%</button>
+          <button class="btn" disabled><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
+        </div>
+        <div class="group"><button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 2H6V3H3V6H2V2.5L2.5 2ZM3 10H2V13.5L2.5 14H6V13H3V10ZM13 13H10V14H13.5L14 13.5V10H13V13ZM13.5 2H10V3H13V6H14V2.5L13.5 2Z"/></svg></button></div>
+        <div class="group"><span class="chip current"><span class="clock">🕐</span> v3 <span class="chev">▾</span></span></div>
+        <div class="group"><button class="grab"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">D — Fullscreen toggle pressed</div>
+    <div class="stage">
+      <span class="stage-label">Fullscreen mode active</span>
+      <div class="toolbar">
+        <div class="group">
+          <button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H1V7h13z"/></svg></button>
+          <button class="zoom">100%</button>
+          <button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
+        </div>
+        <div class="group">
+          <button class="btn active" data-tooltip="Exit fullscreen (F)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 2H6V3H3V6H2V2.5L2.5 2ZM3 10H2V13.5L2.5 14H6V13H3V10ZM13 13H10V14H13.5L14 13.5V10H13V13ZM13.5 2H10V3H13V6H14V2.5L13.5 2Z"/></svg></button>
+        </div>
+        <div class="group"><span class="chip current"><span class="clock">🕐</span> v3 <span class="chev">▾</span></span></div>
+        <div class="group"><button class="grab"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">E — Dragging state (accent ring)</div>
+    <div class="stage">
+      <span class="stage-label">User drags toolbar</span>
+      <div class="toolbar dragging" style="transform:translate(40px,-20px) rotate(-1.5deg)">
+        <div class="group">
+          <button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H1V7h13z"/></svg></button>
+          <button class="zoom">100%</button>
+          <button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
+        </div>
+        <div class="group"><button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 2H6V3H3V6H2V2.5L2.5 2ZM3 10H2V13.5L2.5 14H6V13H3V10ZM13 13H10V14H13.5L14 13.5V10H13V13ZM13.5 2H10V3H13V6H14V2.5L13.5 2Z"/></svg></button></div>
+        <div class="group"><span class="chip current"><span class="clock">🕐</span> v3 <span class="chev">▾</span></span></div>
+        <div class="group"><button class="grab" style="color:var(--accent-bright)"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">F — Version popover open (top-layer paint)</div>
+    <div class="stage" style="min-height:260px">
+      <span class="stage-label">Version chip → newest-first list</span>
+      <div style="position:relative">
+        <div class="version-pop">
+          <div class="v-item current"><span class="v-dot"></span><span class="v-label">v3</span> <span class="v-sub">2 min ago · current</span></div>
+          <div class="v-item"><span class="v-dot"></span><span class="v-label">v2</span> <span class="v-sub">yesterday</span></div>
+          <div class="v-item"><span class="v-dot"></span><span class="v-label">v1</span> <span class="v-sub">3 days ago</span></div>
+        </div>
+        <div class="toolbar">
+          <div class="group">
+            <button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H1V7h13z"/></svg></button>
+            <button class="zoom">100%</button>
+            <button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
+          </div>
+          <div class="group"><button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 2H6V3H3V6H2V2.5L2.5 2ZM3 10H2V13.5L2.5 14H6V13H3V10ZM13 13H10V14H13.5L14 13.5V10H13V13ZM13.5 2H10V3H13V6H14V2.5L13.5 2Z"/></svg></button></div>
+          <div class="group"><span class="chip current"><span class="clock">🕐</span> v3 <span class="chev" style="transform:rotate(180deg);display:inline-block">▾</span></span></div>
+          <div class="group"><button class="grab"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>position<dd>absolute; bottom 24 px; left 50% translateX(-50%)
+      <dt>border-radius<dd>14 px
+      <dt>padding<dd>6 px
+      <dt>gap<dd>4 px (outer) / 2 px (group inner)
+      <dt>btn<dd>32 × 32, --radius-xs, svg 16 × 16
+      <dt>btn hover<dd>--surface-hover bg, --text-bright
+      <dt>btn active<dd>--accent-soft bg + inset 1 px --accent-overlay-mid ring + --accent-bright color
+      <dt>btn disabled<dd>0.4 opacity, not-allowed cursor
+      <dt>zoom label<dd>48 px min-width, 12 px mono, clickable (resets to 100%)
+      <dt>version chip<dd>28 px tall pill, --bg-card border-subtle; current variant uses --accent-soft + --accent-overlay-mid
+      <dt>group divider<dd>1 px --border-subtle vertical
+      <dt>grab handle<dd>25 × 32 slot, GoGrabber 25 × 25
+      <dt>dragging<dd>--shadow-popover + 0 0 0 1px --accent-overlay-mid ring
+      <dt>clamping<dd>AppMain bounds (8 px margin), NOT viewport
+    </dl>
+  </section>
+</div>
+
+</body>
+</html>

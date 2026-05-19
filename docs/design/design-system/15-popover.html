@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>15 — Popover</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
+  --success:oklch(76% 0.16 152);--success-soft:oklch(28% 0.07 152);
+  --warning:oklch(80% 0.15 80);--warning-soft:oklch(30% 0.07 80);
+  --info:oklch(74% 0.13 200);--info-soft:oklch(26% 0.06 200);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
+.page{padding:48px 32px 96px}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
+.section{margin-bottom:56px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px}
+.stage{
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  padding:36px 18px;min-height:260px;display:flex;flex-direction:column;align-items:center;gap:8px;justify-content:flex-start;
+}
+.stage-label{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:16px;align-self:flex-start}
+.trigger{
+  display:inline-flex;align-items:center;gap:6px;
+  height:28px;padding:0 10px;
+  background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  color:var(--text);font-size:12px;
+}
+.trigger.active{background:var(--accent-soft);color:var(--accent-bright);border-color:var(--accent-overlay-mid)}
+.kebab{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius-xs);color:var(--text-muted);background:var(--surface-hover)}
+
+/* Popover container — composes floatingSurface */
+.popover{
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-popover);
+  min-width:180px;
+  padding:4px;
+}
+.popover.large{min-width:240px}
+
+/* Menu items */
+.item{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:6px 10px;border-radius:var(--radius-xs);
+  font-size:12px;color:var(--text);text-align:left;
+  transition:background var(--motion-fast),color var(--motion-fast);
+}
+.item:hover{background:var(--surface-hover);color:var(--text-bright)}
+.item .ico{display:inline-flex;align-items:center;color:var(--text-muted)}
+.item .shortcut{margin-left:auto;font-family:var(--font-mono);font-size:9px;color:var(--text-muted);background:var(--bg-card-active);padding:1px 5px;border-radius:var(--radius-xs)}
+.item.danger{color:var(--danger)}
+.item.danger:hover{background:var(--danger-soft);color:var(--danger)}
+.item.danger .ico{color:var(--danger)}
+.divider{height:1px;background:var(--border-subtle);margin:4px 0}
+
+/* Status toggle group (annotation-card-status-toggle) */
+.status-group{display:flex;gap:2px;padding:4px 4px 6px;margin-bottom:4px;border-bottom:1px solid var(--border-subtle)}
+.status-opt{
+  width:32px;height:28px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-xs);color:var(--text-muted);position:relative;
+  transition:background var(--motion-fast),color var(--motion-fast);
+}
+.status-opt:hover{background:var(--surface-hover)}
+.status-opt.info{color:var(--info)}
+.status-opt.warning{color:var(--warning)}
+.status-opt.success{color:var(--success)}
+.status-opt.active.info{background:var(--info-soft);box-shadow:inset 0 0 0 1px var(--info)}
+.status-opt.active.warning{background:var(--warning-soft);box-shadow:inset 0 0 0 1px var(--warning)}
+.status-opt.active.success{background:var(--success-soft);box-shadow:inset 0 0 0 1px var(--success)}
+
+/* Anchor lines (for align demo) */
+.anchor-row{display:flex;align-items:flex-start;gap:48px;width:100%;justify-content:center;flex-wrap:wrap}
+.anchor-col{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.align-label{font-family:var(--font-mono);font-size:9px;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase}
+
+/* Tokens table */
+.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
+.tokens dt{color:var(--text-dim)}
+.tokens dt::before{content:'--'}
+.tokens dd{color:var(--text-bright)}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1 class="h1">15 — Popover</h1>
+  <p class="lede">The single popover primitive (<code>src/lib/popover/usePopover.ts</code>). Wraps the native HTML popover API (<code>popover="auto"</code> + <code>popovertarget</code>) plus <code>positionPopover</code> which anchors to the trigger via <code>getBoundingClientRect</code>, flips above when there's no room below, and clamps to the viewport with a 4 px gutter. Paints in the browser top-layer — escapes every overflow ancestor and stacking context. Browser owns light-dismiss, ESC, and the single-popover-auto invariant.</p>
+
+  <section class="section">
+    <div class="section-title">A — Project tree kebab (3 row variants)</div>
+    <div class="grid">
+      <div class="stage">
+        <span class="stage-label">Project kebab</span>
+        <button class="kebab" aria-haspopup="menu">⋯</button>
+        <div class="popover" role="menu">
+          <button class="item"><span class="ico">↗</span> Open</button>
+          <button class="item"><span class="ico">✎</span> Edit</button>
+          <button class="item"><span class="ico">+</span> New folder</button>
+          <div class="divider"></div>
+          <button class="item danger"><span class="ico">⌫</span> Delete</button>
+        </div>
+      </div>
+      <div class="stage">
+        <span class="stage-label">Folder kebab</span>
+        <button class="kebab">⋯</button>
+        <div class="popover" role="menu">
+          <button class="item"><span class="ico">↗</span> Open</button>
+          <button class="item"><span class="ico">✎</span> Rename</button>
+          <button class="item"><span class="ico">+</span> New subfolder</button>
+          <div class="divider"></div>
+          <button class="item danger"><span class="ico">⌫</span> Delete</button>
+        </div>
+      </div>
+      <div class="stage">
+        <span class="stage-label">Mockup kebab</span>
+        <button class="kebab">⋯</button>
+        <div class="popover" role="menu">
+          <button class="item"><span class="ico">↗</span> Open</button>
+          <button class="item"><span class="ico">✎</span> Rename</button>
+          <div class="divider"></div>
+          <button class="item danger"><span class="ico">⌫</span> Delete</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">B — Annotation-card kebab (status toggle + edit + delete)</div>
+    <div class="stage" style="min-height:300px">
+      <span class="stage-label">Annotation-card-primary-menu — own annotation</span>
+      <button class="kebab" style="margin-bottom:0">⋯</button>
+      <div class="popover" role="menu">
+        <div class="status-group" role="radiogroup" aria-label="Status">
+          <button class="status-opt info active" data-tooltip="Open"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
+          <button class="status-opt warning" data-tooltip="Needs review"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 2h-13l-.5.5v9l.5.5H4v2.5l.854.354L7.707 12H14.5l.5-.5v-9l-.5-.5zm-.5 9H7.5l-.354.146L5 13.293V11.5l-.5-.5H2V3h12v8z"/><circle cx="8" cy="7" r="1"/></svg></button>
+          <button class="status-opt success" data-tooltip="Resolved"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14.43 4.43L13 3l-7 7-3-3L1.57 8.43 6 12.86l8.43-8.43z"/></svg></button>
+        </div>
+        <button class="item"><span class="ico">✎</span> Edit</button>
+        <div class="divider"></div>
+        <button class="item danger"><span class="ico">⌫</span> Delete</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">C — Topbar avatar menu (align: right)</div>
+    <div class="stage">
+      <span class="stage-label">Right-aligned to avatar</span>
+      <div style="display:flex;width:100%;justify-content:flex-end">
+        <div style="display:inline-flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <button style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,oklch(20% 0.025 322 / 0.95) 7%,oklch(15% 0.02 322 / 0.95) 98%);color:var(--text-bright);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border)">AC</button>
+          <div class="popover" role="menu">
+            <button class="item"><span class="ico">🔑</span> Agent Tokens</button>
+            <div class="divider"></div>
+            <button class="item danger"><span class="ico">⎋</span> Sign Out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">D — Comment kebab + version row kebab (nested)</div>
+    <div class="grid">
+      <div class="stage">
+        <span class="stage-label">Comment kebab (own message)</span>
+        <button class="kebab">⋯</button>
+        <div class="popover" role="menu">
+          <button class="item"><span class="ico">↩</span> Reply</button>
+          <button class="item"><span class="ico">✎</span> Edit</button>
+          <div class="divider"></div>
+          <button class="item danger"><span class="ico">⌫</span> Delete</button>
+        </div>
+      </div>
+      <div class="stage">
+        <span class="stage-label">Version row kebab (Promote / Delete)</span>
+        <button class="kebab">⋯</button>
+        <div class="popover" role="menu">
+          <button class="item"><span class="ico">⤴</span> Promote</button>
+          <div class="divider"></div>
+          <button class="item danger"><span class="ico">⌫</span> Delete</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">E — Alignment positions (align prop)</div>
+    <div class="stage" style="min-height:280px">
+      <div class="anchor-row">
+        <div class="anchor-col">
+          <span class="align-label">align="left"</span>
+          <button class="kebab">⋯</button>
+          <div class="popover"><button class="item">Open</button><button class="item">Edit</button></div>
+        </div>
+        <div class="anchor-col" style="align-items:center">
+          <span class="align-label">align="center"</span>
+          <button class="kebab">⋯</button>
+          <div class="popover"><button class="item">Open</button><button class="item">Edit</button></div>
+        </div>
+        <div class="anchor-col" style="align-items:flex-end">
+          <span class="align-label">align="right"</span>
+          <button class="kebab">⋯</button>
+          <div class="popover"><button class="item">Open</button><button class="item">Edit</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>surface-glass-bg<dd>rgb(7 12 15 / 80%)
+      <dt>backdrop-filter<dd>blur(16px) saturate(140%)
+      <dt>border<dd>1px solid --border
+      <dt>radius<dd>--radius-sm (8 px)
+      <dt>padding<dd>4 px (container)
+      <dt>menu item<dd>6 px 10 px, 12 px / 400, --text
+      <dt>menu item hover<dd>--surface-hover bg, --text-bright color
+      <dt>menu item danger<dd>--danger text → hover --danger-soft bg
+      <dt>divider<dd>1 px --border-subtle, 4 px margin
+      <dt>shortcut chip<dd>--font-mono 9 px, --bg-card-active bg, --radius-xs
+      <dt>shadow<dd>--shadow-popover
+      <dt>position<dd>fixed; inset auto; margin 0 — JS writes top + left
+      <dt>z-paint<dd>browser top-layer (popover="auto")
+    </dl>
+  </section>
+</div>
+
+</body>
+</html>
