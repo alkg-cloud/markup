@@ -6,6 +6,7 @@ import { PICKER_ICONS } from '@/components/IconPicker/icons';
 import { usePopover } from '@/lib/popover/usePopover';
 import { MAX_FOLDER_DEPTH } from '@/lib/project/constants';
 import { folderHref, mockupSlugHref, projectHref } from '@/lib/project/routes';
+import { validateUrlSafeName } from '@/lib/validation/url-safe-name';
 import { InlineFolderCreate } from './InlineFolderCreate';
 import styles from './ProjectTree.module.css';
 import type { DnDNode } from './useTreeDnD';
@@ -472,6 +473,7 @@ export function ProjectTree({
   } | null>(null);
   const [renaming, setRenaming] = useState<{ id: string; type: 'folder' | 'mockup' } | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const [renameError, setRenameError] = useState<string | null>(null);
   const treeRef = useRef<HTMLDivElement>(null);
   const announceRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLDivElement | null>(null);
@@ -872,35 +874,57 @@ export function ProjectTree({
                 <span className={cx(styles.icon, iconClass)}>{iconElement}</span>
 
                 {isRenaming ? (
-                  <input
-                    className={styles.renameInput}
-                    value={renameValue}
-                    ref={(el) => el?.focus()}
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    onBlur={async () => {
-                      const nextName = renameValue.trim();
-                      setRenaming(null);
-                      if (nextName && nextName !== displayLabel && onRename) {
-                        await onRename(node.id, renaming.type, nextName);
-                      }
-                    }}
-                    onKeyDown={async (e) => {
-                      if (e.key === 'Escape') {
-                        e.stopPropagation();
-                        setRenaming(null);
-                        return;
-                      }
-                      if (e.key === 'Enter') {
-                        e.stopPropagation();
+                  <span className={styles.renameField}>
+                    <input
+                      className={cx(styles.renameInput, renameError && styles.renameInputError)}
+                      value={renameValue}
+                      ref={(el) => el?.focus()}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => {
+                        const next = e.target.value;
+                        setRenameValue(next);
+                        const v = validateUrlSafeName(next.trim());
+                        setRenameError(v ? v.message : null);
+                      }}
+                      onBlur={async () => {
                         const nextName = renameValue.trim();
+                        const v = validateUrlSafeName(nextName);
+                        if (v) {
+                          setRenaming(null);
+                          setRenameError(null);
+                          return;
+                        }
                         setRenaming(null);
+                        setRenameError(null);
                         if (nextName && nextName !== displayLabel && onRename) {
                           await onRename(node.id, renaming.type, nextName);
                         }
-                      }
-                    }}
-                  />
+                      }}
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Escape') {
+                          e.stopPropagation();
+                          setRenaming(null);
+                          setRenameError(null);
+                          return;
+                        }
+                        if (e.key === 'Enter') {
+                          e.stopPropagation();
+                          const nextName = renameValue.trim();
+                          const v = validateUrlSafeName(nextName);
+                          if (v) {
+                            setRenameError(v.message);
+                            return;
+                          }
+                          setRenaming(null);
+                          setRenameError(null);
+                          if (nextName && nextName !== displayLabel && onRename) {
+                            await onRename(node.id, renaming.type, nextName);
+                          }
+                        }
+                      }}
+                    />
+                    {renameError && <span className={styles.renameError}>{renameError}</span>}
+                  </span>
                 ) : (
                   <span className={styles.label}>{displayLabel}</span>
                 )}

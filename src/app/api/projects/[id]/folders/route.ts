@@ -2,13 +2,18 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { identify, requireAdmin } from '@/lib/auth/identify';
 import { createFolder } from '@/lib/project/service';
+import { URL_SAFE_NAME_PATTERN } from '@/lib/validation/url-safe-name';
 
 interface ErrorWithStatus extends Error {
   status?: number;
 }
 
 const createSchema = z.object({
-  name: z.string().min(1).max(255),
+  name: z
+    .string()
+    .min(1)
+    .max(255)
+    .regex(URL_SAFE_NAME_PATTERN, 'name_not_url_safe'),
   parentId: z.string().min(1).nullish(),
 });
 

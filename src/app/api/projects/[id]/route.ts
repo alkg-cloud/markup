@@ -2,13 +2,19 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { identify, requireAdmin } from '@/lib/auth/identify';
 import { deleteProject, getProject, updateProject } from '@/lib/project/service';
+import { URL_SAFE_NAME_PATTERN } from '@/lib/validation/url-safe-name';
 
 interface ErrorWithStatus extends Error {
   status?: number;
 }
 
 const patchSchema = z.object({
-  name: z.string().min(1).max(200).optional(),
+  name: z
+    .string()
+    .min(1)
+    .max(200)
+    .regex(URL_SAFE_NAME_PATTERN, 'name_not_url_safe')
+    .optional(),
   icon: z.string().max(100).nullable().optional(),
 });
 

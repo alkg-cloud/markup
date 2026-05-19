@@ -251,7 +251,10 @@ export function Comment({
         <div className={styles.body}>{body}</div>
       )}
 
-      <footer className={styles.reactions}>
+      <footer
+        className={styles.reactions}
+        data-empty={reactions.length === 0 ? 'true' : undefined}
+      >
         {reactions.map((r) => (
           <ReactionPill
             key={r.emoji}

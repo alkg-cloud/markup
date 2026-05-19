@@ -1,6 +1,11 @@
 'use client';
 import { type FormEvent, useState } from 'react';
-import { VscReply } from 'react-icons/vsc';
+import {
+  VscCircleLarge,
+  VscCommentUnresolved,
+  VscPass,
+  VscReply,
+} from 'react-icons/vsc';
 import { Comment, type CommentReaction } from '@/components/Comment/Comment';
 import { usePopover } from '@/lib/popover/usePopover';
 import styles from './AnnotationCard.module.css';
@@ -168,21 +173,41 @@ export function AnnotationCard({
             </button>
             <div {...primaryKebab.popoverProps} className={styles.primaryMenu} role="menu">
               <div className={styles.statusGroup} role="radiogroup" aria-label="Annotation status">
-                {(['open', 'needs review', 'resolved'] as AnnotationStatus[]).map((s) => (
+                {(
+                  [
+                    { value: 'open', label: 'Open', Icon: VscCircleLarge, slot: 'open' },
+                    {
+                      value: 'needs review',
+                      label: 'Needs review',
+                      Icon: VscCommentUnresolved,
+                      slot: 'review',
+                    },
+                    { value: 'resolved', label: 'Resolved', Icon: VscPass, slot: 'resolved' },
+                  ] as Array<{
+                    value: AnnotationStatus;
+                    label: string;
+                    Icon: typeof VscPass;
+                    slot: 'open' | 'review' | 'resolved';
+                  }>
+                ).map(({ value, label, Icon, slot }) => (
+                  // biome-ignore lint/a11y/useSemanticElements: <input type="radio"> can't host the icon + tooltip pattern; the role is intentional and `aria-checked` is set.
                   <button
-                    key={s}
+                    key={value}
                     type="button"
                     role="radio"
-                    aria-checked={status === s ? 'true' : 'false'}
-                    className={[styles.statusOption, status === s && styles.statusOptionActive]
+                    aria-checked={status === value ? 'true' : 'false'}
+                    aria-label={label}
+                    data-tooltip={label}
+                    data-status={slot}
+                    className={[styles.statusOption, status === value && styles.statusOptionActive]
                       .filter(Boolean)
                       .join(' ')}
                     onClick={() => {
                       primaryKebab.close();
-                      if (status !== s) void onAnnotationStatusChange?.(s);
+                      if (status !== value) void onAnnotationStatusChange?.(value);
                     }}
                   >
-                    {s}
+                    <Icon aria-hidden="true" />
                   </button>
                 ))}
               </div>
@@ -212,7 +237,7 @@ export function AnnotationCard({
                 <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                   <path d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9z" />
                 </svg>
-                Delete annotation
+                Delete
               </button>
             </div>
           </div>
