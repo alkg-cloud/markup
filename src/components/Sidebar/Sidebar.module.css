@@ -183,6 +183,12 @@
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
+  /* Pull out of the flex layout entirely so the pill's 40 px height
+     is owned exclusively by the header. With `flex: 1` + the
+     overflow-hidden sidebar, the scroll element was still occupying
+     a flex slot and forcing the header to render at a negative
+     offset (header.y reported as -12 px on the live page). */
+  display: none;
 }
 
 .scrollExpanded {
@@ -201,6 +207,9 @@
 .footerCollapsed {
   opacity: 0;
   pointer-events: none;
+  /* Same reason as `.scrollCollapsed`: hide from the flex layout in
+     the pill so the header is the only main-axis child. */
+  display: none;
 }
 
 .footerExpanded {
