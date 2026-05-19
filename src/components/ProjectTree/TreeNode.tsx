@@ -7,7 +7,7 @@ import styles from './ProjectTree.module.css';
 import { ChevronIcon, FolderIcon, MockupIcon, ProjectIcon, ProjectIconResolved } from './TreeIcons';
 import { TreeNodeKebab } from './TreeNodeKebab';
 import type { FlatNode, TreeProject } from './treeTypes';
-import type { useTreeDnD } from './useTreeDnD';
+import type { DnDNode, useTreeDnD } from './useTreeDnD';
 
 const cx = (...classes: (string | false | undefined | null)[]) => classes.filter(Boolean).join(' ');
 
@@ -25,6 +25,7 @@ export interface CreatingTarget {
 
 interface TreeNodeProps {
   node: FlatNode;
+  dndNode: DnDNode;
   index: number;
   focusIndex: number;
   isEmptyFolder: boolean;
@@ -61,6 +62,7 @@ interface TreeNodeProps {
  */
 export function TreeNode({
   node,
+  dndNode,
   index,
   focusIndex,
   isEmptyFolder,
@@ -158,37 +160,10 @@ export function TreeNode({
           if (node.href) onNavigate(node.href);
         }}
         onFocus={() => onFocusNode(index)}
-        onDragStart={(e) =>
-          dnd.handleDragStart(e, {
-            id: node.id,
-            type: node.type,
-            parentId: node.parentId,
-            level: node.level,
-            projectId: node.projectId,
-            expandable: node.expandable,
-          })
-        }
-        onDragOver={(e) =>
-          dnd.handleDragOver(e, {
-            id: node.id,
-            type: node.type,
-            parentId: node.parentId,
-            level: node.level,
-            projectId: node.projectId,
-            expandable: node.expandable,
-          })
-        }
+        onDragStart={(e) => dnd.handleDragStart(e, dndNode)}
+        onDragOver={(e) => dnd.handleDragOver(e, dndNode)}
         onDragLeave={dnd.handleDragLeave}
-        onDrop={(e) =>
-          dnd.handleDrop(e, {
-            id: node.id,
-            type: node.type,
-            parentId: node.parentId,
-            level: node.level,
-            projectId: node.projectId,
-            expandable: node.expandable,
-          })
-        }
+        onDrop={(e) => dnd.handleDrop(e, dndNode)}
         onDragEnd={dnd.handleDragEnd}
         className={cx(
           styles.treeItem,
