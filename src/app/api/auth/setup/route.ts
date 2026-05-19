@@ -4,7 +4,9 @@ import { assertSameOrigin } from '@/lib/auth/origin';
 import { hashPassword } from '@/lib/auth/password';
 import { createSession, SESSION_COOKIE, SESSION_TTL_SECONDS } from '@/lib/auth/session';
 import { isSetupCompleted, markSetupCompleted } from '@/lib/auth/setup-state';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
+import { clientIp, setupLimiter } from '@/lib/rate-limit';
 
 const bodySchema = z.object({
   email: z.string().email(),
@@ -17,6 +19,15 @@ const bodySchema = z.object({
 export async function POST(req: Request) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
+  const ip = clientIp(req);
+  const limit = setupLimiter.consume(`setup:${ip}`);
+  if (!limit.ok) {
+    logger.warn({ event: 'setup_rate_limited', ip }, 'setup throttled');
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfter: limit.retryAfterSeconds },
+      { status: 429, headers: { 'retry-after': String(limit.retryAfterSeconds) } },
+    );
+  }
   if (await isSetupCompleted()) {
     return NextResponse.json({ error: 'setup_already_completed' }, { status: 403 });
   }

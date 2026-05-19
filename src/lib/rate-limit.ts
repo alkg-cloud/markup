@@ -43,6 +43,15 @@ export function createRateLimiter(opts: RateLimitOptions): RateLimiter {
 // 10 attempts per minute = 1 per 6s = ~0.167/sec, capacity 10 (burst).
 export const loginLimiter = createRateLimiter({ capacity: 10, refillPerSecond: 10 / 60 });
 
+// 5 attempts per minute. The setup endpoint is idempotent (returns 403 once
+// `setup_completed` is set), but a burst rate-limit guards against a race
+// before the first successful POST locks the flag.
+//
+// In-memory by design: dev runs as a single Node process backed by SQLite,
+// so per-process counters are accurate. A horizontal-scale deployment would
+// need to swap this for a Redis-backed limiter.
+export const setupLimiter = createRateLimiter({ capacity: 5, refillPerSecond: 5 / 60 });
+
 export function clientIp(req: Request): string {
   const xff = req.headers.get('x-forwarded-for');
   if (xff) return xff.split(',')[0].trim();
