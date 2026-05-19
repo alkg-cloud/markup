@@ -146,3 +146,25 @@ These endpoints replace the heavy data transformation that used to happen inside
 ## Why not SWR / React Query?
 
 The product is single-tenant, the data graph is shallow, and most pages need exactly one fetch on mount + targeted refetch on mutation. A library would add a dependency for caching we don't need. If the navigation pattern ever grows to "many small overlapping fetches that share data" we revisit; until then, hand-rolled `useEffect` keeps the surface explicit.
+
+## When `useEffect` is the right tool
+
+`useEffect` is an escape hatch from React's declarative model — every effect is a fresh render that the harness has to schedule, run, clean up, and re-run when deps change. Reach for it only when the work it does cannot happen during render:
+
+- **Fetching on mount** (the canonical pattern above).
+- **Subscribing to a non-React signal** — `window`/`document` event listeners, `ResizeObserver`, `IntersectionObserver`, `MutationObserver`, iframe `load`, tldraw store changes.
+- **Persisting state into storage** (cookie, `localStorage`) when the source-of-truth state changes.
+- **Imperative DOM commands** — focus/blur, scroll-into-view, `showPopover`, fullscreen API.
+- **Timer / animation frame lifecycles** — `setInterval`, `setTimeout`, `requestAnimationFrame`, plus matching cleanup.
+- **Imperative side effects keyed off state** — e.g. writing a CSS custom property on `<html>` when a flag toggles.
+
+When the desired output is derived from props or state, write it during render:
+
+- **Derived values** → compute inline (memoize only if expensive). No effect-then-`setState`.
+- **Reset ALL state on prop change** → key the component (`<Child key={resetToken} />`) so React unmounts and the child re-initializes naturally. Only use this when every piece of internal state should reset together; a `key` is a sledgehammer that throws away zoom, hover, pinned, drag, focus, refs — all of it.
+- **Reset ONE piece of state on prop change** → keep the `useEffect` with the prop in the dep array; the alternative (key the whole component) discards adjacent state the user expects to persist.
+- **Initial state from storage / a one-shot computation** → use `useState(() => …)` lazy initializer. Pages are CSR-only, so `window`/`localStorage` are reachable during the first render.
+- **OS-aware labels / `navigator` reads** → call the helper during render (also CSR-only).
+- **Event-handler logic** → put it inside the handler. Effects that exist to react to a click/submit are almost always a refactor candidate.
+
+The smell test: if an effect's body is `setState(fnOf(props))`, the state is redundant — derive at render time, OR (if the whole component should reset) lift the reset to a `key`, OR (if only one slice resets) keep the effect.

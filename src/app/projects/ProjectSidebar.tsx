@@ -200,7 +200,14 @@ export function ProjectSidebar({
         onDelete={handleDelete}
       />
       {projects.length > 0 && (
-        <RecentsSection projectSlug={projects[0].slug} mockups={recentMockups} />
+        // `key` remounts the section when the active project slug
+        // changes so the localStorage-fed recents list re-reads from
+        // the new key without a sync useEffect inside the hook.
+        <RecentsSection
+          key={projects[0].slug}
+          projectSlug={projects[0].slug}
+          mockups={recentMockups}
+        />
       )}
     </>
   );
