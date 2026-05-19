@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { flattenProjectTree } from '@/components/CommandPalette/flatten';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { NewProjectDialog } from '@/components/NewProjectDialog/NewProjectDialog';
 import type { TreeMockup, TreeProject } from '@/components/ProjectTree/ProjectTree';
@@ -38,24 +39,14 @@ export function ProjectSidebar({
   const router = useRouter();
   const { confirm, dialog: confirmDialog } = useConfirm();
 
-  // Flat lookup so the delete handler can resolve a node's name + parent
-  // by id without re-walking the tree (also used by the kebab to surface
-  // a useful confirmation copy).
-  const nodeIndex = useMemo(() => {
-    const idx = new Map<string, { name: string; type: 'project' | 'folder' | 'mockup' }>();
-    for (const p of projects) {
-      idx.set(p.id, { name: p.name, type: 'project' });
-      const walk = (folders: TreeProject['folders']) => {
-        for (const f of folders) {
-          idx.set(f.id, { name: f.name, type: 'folder' });
-          for (const m of f.mockups) idx.set(m.id, { name: m.name, type: 'mockup' });
-          walk(f.children);
-        }
-      };
-      walk(p.folders);
-      for (const m of p.mockups) idx.set(m.id, { name: m.name, type: 'mockup' });
-    }
-    for (const m of orphanMockups) idx.set(m.id, { name: m.name, type: 'mockup' });
+  // Flat id → name lookup so the delete confirm dialog can quote the
+  // target row's display name. Reuses `flattenProjectTree` (the same
+  // walker the command palette uses) so we don't ship a second tree
+  // traversal that can drift out of sync.
+  const nodeNameById = useMemo(() => {
+    const idx = new Map<string, string>();
+    for (const item of flattenProjectTree(projects)) idx.set(item.id, item.name);
+    for (const m of orphanMockups) idx.set(m.id, m.name);
     return idx;
   }, [projects, orphanMockups]);
 
@@ -130,33 +121,35 @@ export function ProjectSidebar({
     [router],
   );
 
-  // Per-noun copy is centralised here so the danger dialog stays
-  // consistent across project / folder / mockup. The dialog itself comes
-  // from `useConfirm` (styled Radix alert) — never `window.confirm`.
+  // Per-noun copy is centralised so the danger dialog stays consistent
+  // across project / folder / mockup. The dialog itself comes from
+  // `useConfirm` (styled Radix alert) — never `window.confirm`.
   const handleDelete = useCallback(
     async (nodeId: string, nodeType: 'project' | 'folder' | 'mockup') => {
-      const meta = nodeIndex.get(nodeId);
-      const name = meta?.name ?? 'this item';
-      const description =
-        nodeType === 'project'
-          ? `"${name}" will be removed along with all its folders, mockups, versions, and annotations. This cannot be undone.`
-          : nodeType === 'folder'
-            ? `"${name}" and every mockup it contains (including their versions and annotations) will be removed. This cannot be undone.`
-            : `"${name}" will be removed along with every version and annotation it owns. This cannot be undone.`;
+      const name = nodeNameById.get(nodeId) ?? 'this item';
+      const DELETE_COPY = {
+        project: {
+          api: `/api/projects/${nodeId}`,
+          description: `"${name}" will be removed along with all its folders, mockups, versions, and annotations. This cannot be undone.`,
+        },
+        folder: {
+          api: `/api/folders/${nodeId}`,
+          description: `"${name}" and every mockup it contains (including their versions and annotations) will be removed. This cannot be undone.`,
+        },
+        mockup: {
+          api: `/api/mockups/${nodeId}`,
+          description: `"${name}" will be removed along with every version and annotation it owns. This cannot be undone.`,
+        },
+      } as const;
+      const copy = DELETE_COPY[nodeType];
       const ok = await confirm({
         title: `Delete ${nodeType}`,
-        description,
+        description: copy.description,
         confirmLabel: 'Delete',
         danger: true,
       });
       if (!ok) return;
-      const url =
-        nodeType === 'project'
-          ? `/api/projects/${nodeId}`
-          : nodeType === 'folder'
-            ? `/api/folders/${nodeId}`
-            : `/api/mockups/${nodeId}`;
-      const res = await fetch(url, { method: 'DELETE' });
+      const res = await fetch(copy.api, { method: 'DELETE' });
       if (!res.ok) {
         const detail = await res
           .json()
@@ -172,7 +165,7 @@ export function ProjectSidebar({
       }
       router.refresh();
     },
-    [confirm, nodeIndex, router],
+    [confirm, nodeNameById, router],
   );
 
   useEffect(() => {
