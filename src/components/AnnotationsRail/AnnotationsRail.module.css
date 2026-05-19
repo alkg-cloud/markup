@@ -79,10 +79,11 @@
 }
 /* `GoGrabber` ships vertical (2-col × 3-row). The rail's grab slot is a
  * horizontal bar at the top, so rotate the icon 90° to keep the
- * original 3-col × 2-row grab pattern. */
+ * original 3-col × 2-row grab pattern. Min 25px so the affordance is
+ * obvious + finger-friendly on touch. */
 .grabIcon {
-  width: 18px;
-  height: 18px;
+  width: 25px;
+  height: 25px;
   transform: rotate(90deg);
 }
 
