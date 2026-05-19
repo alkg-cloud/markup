@@ -1,3 +1,5 @@
+import 'server-only';
+
 export const INTENT_KINDS = ['visual', 'copy', 'behavior', 'other'] as const;
 
 export type IntentType = (typeof INTENT_KINDS)[number];

@@ -1,3 +1,5 @@
+import 'server-only';
+
 import fs from 'node:fs';
 import { env } from '@/lib/env';
 import { versionDir } from '@/lib/mockup/storage';
