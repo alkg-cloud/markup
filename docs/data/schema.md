@@ -43,6 +43,8 @@ model AgentToken {
   id          String    @id @default(cuid())
   name        String    @unique
   tokenHash   String    @unique
+  prefix      String?
+  lastFour    String?
   createdAt   DateTime  @default(now())
   lastUsedAt  DateTime?
 }
@@ -50,6 +52,7 @@ model AgentToken {
 
 - Plaintext shown once at creation and never persisted; only the SHA-256 hash is stored
 - `name` is the human-friendly identifier (`claude-code-prod`, `designer-bot`, `ci-builder`, etc.)
+- `prefix` (e.g. `mka_`) and `lastFour` are the display hints rendered in the agent-tokens settings list (`mka_…ab12`) — derived at creation time so the UI never has to read the plaintext token back. Nullable for rows seeded before the columns existed.
 
 ### Project
 
@@ -135,18 +138,22 @@ model MockupVersion {
   id                   String       @id @default(cuid())
   mockupId             String
   mockup               Mockup       @relation(fields: [mockupId], references: [id], onDelete: Cascade)
+  number               Int          @default(1)
   path                 String
   createdAt            DateTime     @default(now())
   createdBy            String
   createdByType        String
   annotationsCreatedOn Annotation[] @relation("CreatedOnVersion")
+  @@unique([mockupId, number])
   @@index([mockupId])
 }
 ```
 
+- `number` is the stable, monotonically-increasing label within a mockup (`v1`, `v2`, …). The service assigns `max(number) + 1` at create time and the label is NEVER reused on delete — `v3` stays `v3` even after `v1` / `v2` are removed. Enforced by `@@unique([mockupId, number])`.
 - `path` is the relative path under `${DATA_DIR}` to the extracted build directory (e.g. `mockups/<mid>/versions/<vid>/build`)
 - `createdByType` is `'user' | 'agent'` — string, not enum
 - The reverse relation `annotationsCreatedOn` powers the time-travel scope of an annotation (which version was current when the user drew on it)
+- Cascade: deleting a `Mockup` cascades to all its `MockupVersion` rows
 
 ### Annotation
 
@@ -158,6 +165,9 @@ model Annotation {
   screenshotPath     String
   tldrawPath         String
   pinCoords          String?
+  anchors            String         @default("[]")
+  colorIndex         Int            @default(0)
+  status             String         @default("open")
   intentType         String         @default("other")
   createdOnVersionId String?
   createdOnVersion   MockupVersion? @relation("CreatedOnVersion", fields: [createdOnVersionId], references: [id])
@@ -170,8 +180,11 @@ model Annotation {
 }
 ```
 
-- `screenshotPath` and `tldrawPath` are relative paths under `${DATA_DIR}` to sidecar files in the annotation's directory
-- `pinCoords` is JSON-encoded `{ scrollX, scrollY, viewportWidth, viewportHeight, bboxX, bboxY, bboxW, bboxH }` — null when the annotation has no drawn shapes
+- `screenshotPath` and `tldrawPath` are relative paths under `${DATA_DIR}` to sidecar files in the annotation's directory. Comment-only annotations (AppMain redesign) reference empty placeholders so the JSON columns stay non-null.
+- `pinCoords` is the legacy JSON-encoded bbox `{ scrollX, scrollY, viewportWidth, viewportHeight, bboxX, bboxY, bboxW, bboxH }` — null when the annotation has no drawn shapes. Preserved for backfill; comment annotations leave it null and pin positioning derives from `anchors` instead.
+- `anchors` is JSON-encoded `Anchor[]` — each entry is either a text-anchor (`{ path, textOffset, subX, subY }`) or an element-anchor (`{ path, offsetX, offsetY }`). Up to 20 entries per annotation. Defaults to `"[]"` for legacy rows. Defined by the pin-anchoring strategy spec.
+- `colorIndex` is `0..15` into the rotating per-annotation palette. Shared across every pin of the annotation plus the rail badge and the avatar tint.
+- `status` is the visual status pill surfaced in the rail header: `'open' | 'needs review' | 'resolved'` — string, not enum.
 - `intentType` is `'visual' | 'copy' | 'behavior' | 'other'` — set by the G1 chip selector or defaulted; see [`docs/agent-loop/chips.md`](../agent-loop/chips.md)
 - `createdOnVersionId` is the mockup's `currentVersionId` at annotation-creation time — used by `/agent/context` to compute `diff_since_creation`. Nullable to handle race conditions where the version row is gone.
 
@@ -194,19 +207,41 @@ model Thread {
 
 ```prisma
 model Message {
-  id         String   @id @default(cuid())
+  id         String     @id @default(cuid())
   threadId   String
-  thread     Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  thread     Thread     @relation(fields: [threadId], references: [id], onDelete: Cascade)
   authorType String
   authorId   String
   body       String
-  createdAt  DateTime @default(now())
+  createdAt  DateTime   @default(now())
+  reactions  Reaction[]
   @@index([threadId])
 }
 ```
 
 - `authorType` is `'user' | 'agent'`; `authorId` is the cuid of either a `User` or an `AgentToken`
 - The display layer resolves the cuid to a human-readable name via `resolveDisplayName` — never render the raw cuid
+- The reverse relation `reactions` powers the Slack-style emoji reaction pills under each comment
+
+### Reaction
+
+```prisma
+model Reaction {
+  id        String   @id @default(cuid())
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+}
+```
+
+- Slack-style emoji reactions on individual comment messages
+- The `(messageId, userId, emoji)` triple is uniquely indexed — toggling a reaction is a delete-or-create operation, so concurrent toggles are race-safe (see `POST /api/messages/[id]/reactions`)
+- `userId` is the cuid of the calling identity (`User.id` for human authors; agent reactions are not minted today but the column allows it)
+- Cascade: deleting a `Message` cascades to its `Reaction` rows
 
 ### Config
 
@@ -234,7 +269,7 @@ Folder ──<? Mockup (SetNull)
                 │
 Mockup ─┬─< MockupVersion (optional FK from Annotation.createdOnVersionId)
         │
-        └─< Annotation ─── Thread ─< Message
+        └─< Annotation ─── Thread ─< Message ─< Reaction
                 ↑
         AgentToken ─ (no FK; authorId is a soft string reference matched by authorType)
 ```
@@ -246,7 +281,8 @@ Cascade rules:
 - Deleting a `Folder` cascades to its child `Folder`s; sets `Mockup.folderId` to `NULL`
 - Deleting a `Mockup` cascades to its `MockupVersion`s and `Annotation`s
 - Deleting an `Annotation` cascades to its `Thread` and `Message`s
-- Deleting a `MockupVersion` sets `Annotation.createdOnVersionId` to `NULL` (`onDelete: SetNull`)
+- Deleting a `Message` cascades to its `Reaction`s
+- Deleting a `MockupVersion` sets `Annotation.createdOnVersionId` to `NULL` (`onDelete: SetNull` — the Prisma default for an optional FK without an explicit clause)
 
 ## Conventions
 
