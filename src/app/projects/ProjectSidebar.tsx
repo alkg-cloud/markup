@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useConfirm } from '@/components/ConfirmDialog';
 import { NewProjectDialog } from '@/components/NewProjectDialog/NewProjectDialog';
 import type { TreeMockup, TreeProject } from '@/components/ProjectTree/ProjectTree';
 import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
@@ -35,6 +36,28 @@ export function ProjectSidebar({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
+  const { confirm, dialog: confirmDialog } = useConfirm();
+
+  // Flat lookup so the delete handler can resolve a node's name + parent
+  // by id without re-walking the tree (also used by the kebab to surface
+  // a useful confirmation copy).
+  const nodeIndex = useMemo(() => {
+    const idx = new Map<string, { name: string; type: 'project' | 'folder' | 'mockup' }>();
+    for (const p of projects) {
+      idx.set(p.id, { name: p.name, type: 'project' });
+      const walk = (folders: TreeProject['folders']) => {
+        for (const f of folders) {
+          idx.set(f.id, { name: f.name, type: 'folder' });
+          for (const m of f.mockups) idx.set(m.id, { name: m.name, type: 'mockup' });
+          walk(f.folders);
+        }
+      };
+      walk(p.folders);
+      for (const m of p.mockups) idx.set(m.id, { name: m.name, type: 'mockup' });
+    }
+    for (const m of orphanMockups) idx.set(m.id, { name: m.name, type: 'mockup' });
+    return idx;
+  }, [projects, orphanMockups]);
 
   const handleProjectSaved = useCallback(
     (project: { id: string; slug: string }) => {
@@ -107,6 +130,51 @@ export function ProjectSidebar({
     [router],
   );
 
+  // Per-noun copy is centralised here so the danger dialog stays
+  // consistent across project / folder / mockup. The dialog itself comes
+  // from `useConfirm` (styled Radix alert) — never `window.confirm`.
+  const handleDelete = useCallback(
+    async (nodeId: string, nodeType: 'project' | 'folder' | 'mockup') => {
+      const meta = nodeIndex.get(nodeId);
+      const name = meta?.name ?? 'this item';
+      const description =
+        nodeType === 'project'
+          ? `"${name}" will be removed along with all its folders, mockups, versions, and annotations. This cannot be undone.`
+          : nodeType === 'folder'
+            ? `"${name}" and every mockup it contains (including their versions and annotations) will be removed. This cannot be undone.`
+            : `"${name}" will be removed along with every version and annotation it owns. This cannot be undone.`;
+      const ok = await confirm({
+        title: `Delete ${nodeType}`,
+        description,
+        confirmLabel: 'Delete',
+        danger: true,
+      });
+      if (!ok) return;
+      const url =
+        nodeType === 'project'
+          ? `/api/projects/${nodeId}`
+          : nodeType === 'folder'
+            ? `/api/folders/${nodeId}`
+            : `/api/mockups/${nodeId}`;
+      const res = await fetch(url, { method: 'DELETE' });
+      if (!res.ok) {
+        const detail = await res
+          .json()
+          .then((j) => j?.detail ?? j?.error ?? 'Delete failed.')
+          .catch(() => 'Delete failed.');
+        await confirm({
+          title: 'Could not delete',
+          description: detail,
+          confirmLabel: 'OK',
+          cancelLabel: 'Dismiss',
+        });
+        return;
+      }
+      router.refresh();
+    },
+    [confirm, nodeIndex, router],
+  );
+
   useEffect(() => {
     if (mobileOpen && dialogRef.current && !dialogRef.current.open) {
       dialogRef.current.showModal();
@@ -136,6 +204,7 @@ export function ProjectSidebar({
         onMove={handleMove}
         onRename={handleRename}
         onEditProject={setEditingProjectId}
+        onDelete={handleDelete}
       />
       {projects.length > 0 && (
         <RecentsSection projectSlug={projects[0].slug} mockups={recentMockups} />
@@ -160,6 +229,7 @@ export function ProjectSidebar({
   return (
     <div>
       <ToastProvider>
+        {confirmDialog}
         <NewProjectDialog
           open={newProjectOpen}
           onClose={() => setNewProjectOpen(false)}
