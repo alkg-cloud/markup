@@ -121,19 +121,19 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
   }, []);
 
   const onCommentEdit = useCallback(
-    async (commentId: string, currentBody: string): Promise<string | null> => {
-      // Minimal edit UX: prompt for the new body. Inline-textarea edit
-      // mode is parked for a follow-up — see future-features #29.
-      const next = window.prompt('Edit comment', currentBody)?.trim();
-      if (!next || next === currentBody) return null;
+    async (commentId: string, newBody: string): Promise<boolean> => {
+      // The inline edit UI in AnnotationCard / Comment owns the textarea
+      // + save/cancel buttons; this handler only persists. Returns true
+      // when the PATCH succeeded so the caller can dismiss the editor +
+      // apply the optimistic body swap.
       const res = await fetch(`/api/messages/${commentId}`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ body: next }),
+        body: JSON.stringify({ body: newBody }),
       });
-      if (!res.ok) return null;
+      if (!res.ok) return false;
       router.refresh();
-      return next;
+      return true;
     },
     [router],
   );

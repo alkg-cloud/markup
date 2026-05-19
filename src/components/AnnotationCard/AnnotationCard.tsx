@@ -33,11 +33,18 @@ export interface AnnotationCardProps {
   currentUser: string;
   /** Whether this annotation is currently selected. */
   active?: boolean;
+  /** Accordion: whether THIS card's reply thread is currently expanded.
+   *  When omitted the card falls back to local state (legacy behaviour). */
+  threadOpen?: boolean;
+  /** Fired when the user toggles this card's thread (chevron click). */
+  onThreadToggle?: () => void;
 
   onActivate?: () => void;
   onPostReply?: (body: string) => void;
   onCommentReply?: (commentId: string) => void;
-  onCommentEdit?: (commentId: string) => void;
+  /** Persist an inline edit. Returns true on success so the card can
+   *  dismiss the textarea and update local state via its parent. */
+  onCommentEditSave?: (commentId: string, newBody: string) => void | Promise<void>;
   onCommentDelete?: (commentId: string) => void;
   onCommentReact?: (commentId: string, emoji: string) => void;
 }
@@ -64,15 +71,34 @@ export function AnnotationCard({
   replies = [],
   currentUser,
   active = false,
+  threadOpen: threadOpenProp,
+  onThreadToggle,
   onActivate,
   onPostReply,
   onCommentReply,
-  onCommentEdit,
+  onCommentEditSave,
   onCommentDelete,
   onCommentReact,
 }: AnnotationCardProps) {
-  const [threadOpen, setThreadOpen] = useState(false);
+  // Accordion-controlled when `threadOpen` is supplied by the parent;
+  // otherwise the card manages its own state (preserves the previous
+  // local-toggle behaviour for callers that don't lift state).
+  const [threadOpenLocal, setThreadOpenLocal] = useState(false);
+  const threadOpen = threadOpenProp ?? threadOpenLocal;
+  const toggleThread = () => {
+    if (onThreadToggle) onThreadToggle();
+    else setThreadOpenLocal((o) => !o);
+  };
   const [replyDraft, setReplyDraft] = useState('');
+  // Track which comment is currently being edited inline. Only one at a
+  // time so the textarea doesn't get cloned across primary + replies.
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const startEdit = (commentId: string) => setEditingId(commentId);
+  const cancelEdit = () => setEditingId(null);
+  const saveEdit = async (commentId: string, newBody: string) => {
+    await onCommentEditSave?.(commentId, newBody);
+    setEditingId(null);
+  };
 
   const pillClass =
     status === 'resolved'
@@ -118,7 +144,7 @@ export function AnnotationCard({
             aria-label="Edit annotation body"
             onClick={(e) => {
               e.stopPropagation();
-              onCommentEdit?.(primary.id);
+              startEdit(primary.id);
             }}
           >
             <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -137,6 +163,9 @@ export function AnnotationCard({
         isOwn={primary.isOwn}
         currentUser={currentUser}
         variant="primary"
+        isEditing={editingId === primary.id}
+        onEditSave={(body) => saveEdit(primary.id, body)}
+        onEditCancel={cancelEdit}
         onReactionToggle={(emoji) => onCommentReact?.(primary.id, emoji)}
       />
 
@@ -150,7 +179,7 @@ export function AnnotationCard({
           data-tooltip={threadOpen ? `Hide ${replyCountLabel}` : `Show ${replyCountLabel}`}
           onClick={(e) => {
             e.stopPropagation();
-            setThreadOpen((o) => !o);
+            toggleThread();
           }}
         >
           <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -197,8 +226,11 @@ export function AnnotationCard({
             reactions={r.reactions}
             isOwn={r.isOwn}
             currentUser={currentUser}
+            isEditing={editingId === r.id}
+            onEditSave={(body) => saveEdit(r.id, body)}
+            onEditCancel={cancelEdit}
             onReply={() => onCommentReply?.(r.id)}
-            onEdit={() => onCommentEdit?.(r.id)}
+            onEdit={() => startEdit(r.id)}
             onDelete={() => onCommentDelete?.(r.id)}
             onReactionToggle={(emoji) => onCommentReact?.(r.id, emoji)}
           />

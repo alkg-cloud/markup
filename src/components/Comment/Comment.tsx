@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { type KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { EmojiPicker } from '@/components/EmojiPicker/EmojiPicker';
 import { formatReactorList, ReactionPill } from '@/components/ReactionPill/ReactionPill';
 import { initialsForName } from '@/lib/avatar';
@@ -29,6 +29,15 @@ export interface CommentProps {
   /** Whether to render in "primary" mode (no head row; tighter padding).
    *  Primary is used when the comment is rendered as the AnnotationCard body. */
   variant?: 'reply' | 'primary';
+  /** Inline edit mode — replaces the body div with a styled textarea +
+   *  save/cancel affordances. Owned by the parent (AnnotationCard) so
+   *  only one comment is in edit mode at a time. */
+  isEditing?: boolean;
+  /** Save the textarea's current value. The parent persists to the
+   *  server and dismisses the editor. */
+  onEditSave?: (newBody: string) => void;
+  /** Discard the draft and exit edit mode. */
+  onEditCancel?: () => void;
 
   // Action callbacks
   onReply?: () => void;
@@ -54,6 +63,9 @@ export function Comment({
   isOwn = false,
   currentUser,
   variant = 'reply',
+  isEditing = false,
+  onEditSave,
+  onEditCancel,
   onReply,
   onEdit,
   onDelete,
@@ -61,6 +73,42 @@ export function Comment({
 }: CommentProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  // Edit-mode draft. Reset whenever the editor opens with a fresh body so
+  // re-entering edit after a save shows the canonical (saved) text.
+  const [draft, setDraft] = useState(body);
+  const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  useEffect(() => {
+    if (isEditing) {
+      setDraft(body);
+      // Focus + place cursor at end on the next tick so the user can keep
+      // typing without manually clicking the textarea.
+      const t = window.setTimeout(() => {
+        const ta = editTextareaRef.current;
+        if (!ta) return;
+        ta.focus();
+        const len = ta.value.length;
+        ta.setSelectionRange(len, len);
+      }, 0);
+      return () => window.clearTimeout(t);
+    }
+  }, [isEditing, body]);
+  const commitEdit = () => {
+    const trimmed = draft.trim();
+    if (!trimmed || trimmed === body) {
+      onEditCancel?.();
+      return;
+    }
+    onEditSave?.(trimmed);
+  };
+  const onEditKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      onEditCancel?.();
+    } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      commitEdit();
+    }
+  };
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -71,7 +119,13 @@ export function Comment({
     return () => document.removeEventListener('click', onDoc);
   }, [menuOpen]);
 
-  const cls = [styles.comment, variant === 'primary' && styles.primary].filter(Boolean).join(' ');
+  const cls = [
+    styles.comment,
+    variant === 'primary' && styles.primary,
+    isEditing && styles.editing,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <article className={cls} data-author={author} data-own={isOwn ? '1' : undefined}>
@@ -170,7 +224,47 @@ export function Comment({
         </header>
       ) : null}
 
-      <div className={styles.body}>{body}</div>
+      {isEditing ? (
+        <div className={styles.editBody}>
+          <textarea
+            ref={editTextareaRef}
+            className={styles.editTextarea}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={onEditKey}
+            onClick={(e) => e.stopPropagation()}
+            rows={3}
+            aria-label="Edit comment"
+          />
+          <div className={styles.editActions}>
+            <button
+              type="button"
+              className={styles.editCancel}
+              // mousedown (not click) so it fires before the textarea's
+              // blur — otherwise blur would commit before cancel runs.
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onEditCancel?.();
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={styles.editSave}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                commitEdit();
+              }}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.body}>{body}</div>
+      )}
 
       <footer className={styles.reactions}>
         {reactions.map((r) => (

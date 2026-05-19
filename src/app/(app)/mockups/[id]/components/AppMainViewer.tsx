@@ -54,10 +54,10 @@ export interface AppMainViewerProps {
   }) => Promise<AppMainAnnotation | null>;
   onPostReply?: (annotationId: string, body: string) => Promise<ThreadComment | null>;
   onReactionToggle?: (commentId: string, emoji: string) => Promise<void>;
-  /** Edit a comment's body. Receives the new body string on success
-   *  (caller updates optimistic state); returns null when the user
-   *  cancels or the request fails. */
-  onCommentEdit?: (commentId: string, currentBody: string) => Promise<string | null>;
+  /** Persist an edited comment body. Receives the new body string from
+   *  the inline edit UI; returns true on success so callers can apply
+   *  the optimistic local update + dismiss the editor. */
+  onCommentEdit?: (commentId: string, newBody: string) => Promise<boolean>;
   /** Delete a comment. Returns true on success. */
   onCommentDelete?: (commentId: string) => Promise<boolean>;
   onVersionSelect?: (versionId: string) => void;
@@ -94,6 +94,12 @@ export function AppMainViewer({
     setAnnotations(initialAnnotations);
   }, [initialAnnotations]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  // Accordion: only one thread expanded at a time so the rail stays
+  // skimmable. Opening a thread on card B collapses card A's thread.
+  const [openThreadId, setOpenThreadId] = useState<string | null>(null);
+  const onThreadToggle = useCallback((annotationId: string) => {
+    setOpenThreadId((cur) => (cur === annotationId ? null : annotationId));
+  }, []);
   const [composerOpen, setComposerOpen] = useState(false);
   const [marking, setMarking] = useState(false);
   // Pending pins use a stable client id keyed by creation so an index
@@ -282,8 +288,11 @@ export function AppMainViewer({
   );
 
   const onCommentEditForCard = useCallback(
-    async (commentId: string) => {
-      // Look up the comment's current body across all annotations.
+    async (commentId: string, newBody: string) => {
+      const trimmed = newBody.trim();
+      if (!trimmed) return;
+      // Look up the comment's current body — skip the network call when
+      // nothing changed.
       let current: string | null = null;
       for (const a of annotations) {
         if (a.primary.id === commentId) {
@@ -296,18 +305,18 @@ export function AppMainViewer({
           break;
         }
       }
-      if (current === null) return;
-      const next = await onCommentEdit?.(commentId, current);
-      if (next === null || next === undefined) return;
+      if (current === null || trimmed === current) return;
+      const ok = await onCommentEdit?.(commentId, trimmed);
+      if (!ok) return;
       setAnnotations((prev) =>
         prev.map((a) => {
           if (a.primary.id === commentId) {
-            return { ...a, primary: { ...a.primary, body: next } };
+            return { ...a, primary: { ...a.primary, body: trimmed } };
           }
           if (a.replies?.some((r) => r.id === commentId)) {
             return {
               ...a,
-              replies: a.replies.map((r) => (r.id === commentId ? { ...r, body: next } : r)),
+              replies: a.replies.map((r) => (r.id === commentId ? { ...r, body: trimmed } : r)),
             };
           }
           return a;
@@ -437,9 +446,11 @@ export function AppMainViewer({
               replies={a.replies}
               currentUser={currentUser}
               active={a.id === activeId}
+              threadOpen={a.id === openThreadId}
+              onThreadToggle={() => onThreadToggle(a.id)}
               onActivate={() => onActivate(a.id)}
               onPostReply={(body) => onPostReplyForCard(a.id, body)}
-              onCommentEdit={(commentId) => onCommentEditForCard(commentId)}
+              onCommentEditSave={(commentId, newBody) => onCommentEditForCard(commentId, newBody)}
               onCommentDelete={(commentId) => onCommentDeleteForCard(commentId)}
               onCommentReact={(commentId, emoji) => onCommentReact(commentId, emoji)}
             />
