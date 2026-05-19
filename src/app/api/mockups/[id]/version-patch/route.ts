@@ -3,6 +3,7 @@ import path from 'node:path';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { identify } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { applyUnifiedDiff, DiffApplyError } from '@/lib/diff/apply-unified';
 import { env } from '@/lib/env';
 import { addVersionFromFiles } from '@/lib/mockup/service';
@@ -32,6 +33,8 @@ function listFiles(dir: string, prefix = ''): Record<string, Buffer> {
 }
 
 async function applyVersionPatch(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   const ident = await identify(req);
   if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id: mockupId } = await ctx.params;
