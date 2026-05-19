@@ -8,6 +8,7 @@ import { ANNOTATION_STATUSES } from '@/lib/annotation/status';
 import { identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { env } from '@/lib/env';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 
 const PatchSchema = z.object({
@@ -102,6 +103,15 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
     await prisma.thread.delete({ where: { id: existing.thread.id } });
   }
   await prisma.annotation.delete({ where: { id } });
+  logger.info(
+    {
+      event: 'annotation_deleted',
+      annotationId: id,
+      mockupId: existing.mockupId,
+      identityKind: ident.kind,
+    },
+    'annotation deleted',
+  );
   return NextResponse.json({ ok: true });
 }
 

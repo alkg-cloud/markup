@@ -42,6 +42,7 @@ export async function POST(req: Request) {
     data: { email: parsed.email, name: parsed.name, passwordHash, role: 'admin' },
   });
   await markSetupCompleted();
+  logger.info({ event: 'setup_completed', userId: user.id, ip }, 'admin created');
   const { token } = await createSession(user.id);
   const res = NextResponse.json({ id: user.id, email: user.email, name: user.name });
   res.cookies.set(SESSION_COOKIE, token, {

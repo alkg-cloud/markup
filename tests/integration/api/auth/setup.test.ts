@@ -53,18 +53,24 @@ describe('POST /api/auth/setup', () => {
     // 5 successful (or normally-handled) attempts; subsequent gets a 429.
     for (let i = 0; i < 5; i++) {
       const r = await POST(
-        reqJson({ email: `a${i}@x.com`, password: 'longpassword123', name: `A${i}` }, {
-          'x-forwarded-for': ip,
-        }),
+        reqJson(
+          { email: `a${i}@x.com`, password: 'longpassword123', name: `A${i}` },
+          {
+            'x-forwarded-for': ip,
+          },
+        ),
       );
       // First call creates the admin; subsequent should be 403 (setup
       // already completed) — both consume a bucket token.
       expect([200, 403]).toContain(r.status);
     }
     const sixth = await POST(
-      reqJson({ email: 'z@x.com', password: 'longpassword123', name: 'Z' }, {
-        'x-forwarded-for': ip,
-      }),
+      reqJson(
+        { email: 'z@x.com', password: 'longpassword123', name: 'Z' },
+        {
+          'x-forwarded-for': ip,
+        },
+      ),
     );
     expect(sixth.status).toBe(429);
     const body = await sixth.json();
