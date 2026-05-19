@@ -22,4 +22,15 @@ describe('agent token service', () => {
     expect(a).toBe(b);
     expect(a).not.toBe(hashAgentSecret('world'));
   });
+
+  it('verify on unknown well-formed token returns null without scanning all rows', async () => {
+    // Seed multiple tokens; verify a well-formed but non-existent one. The
+    // function must not return any of the seeded ones.
+    await generateAgentToken('agent-a');
+    await generateAgentToken('agent-b');
+    await generateAgentToken('agent-c');
+    const fake = `mk_test_${'a'.repeat(64)}`;
+    const out = await verifyAgentToken(fake);
+    expect(out).toBeNull();
+  });
 });
