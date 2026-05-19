@@ -6,6 +6,20 @@
     </linearGradient>
   </defs>
   <rect width="256" height="256" rx="56" fill="url(#bg)"/>
-  <path d="M52 64h22l30 96h2l30-96h22v128h-18V100h-2l-26 84h-14l-26-84h-2v92H52z" fill="#f5f5f5"/>
-  <rect x="178" y="172" width="22" height="22" rx="2" fill="#34d399"/>
+  <!--
+    "M." mirrors `sidebar-logo` (`src/components/Sidebar/Sidebar.module.css`):
+      • Manrope-700-style M with chunky verticals + V centre
+      • Period scaled like the sidebar's 1.5em accent dot, sitting on
+        the M's baseline (right of the M's right leg)
+    Glyphs are paths so the favicon ships without a bundled font face.
+  -->
+  <g transform="translate(40 50)">
+    <!-- M  (cap-height 140, width 152, baseline at y=140) -->
+    <path
+      d="M0 140V0h32l44 92 44-92h32v140h-34V64l-30 66H64L34 64v76z"
+      fill="#f5f5f5"
+    />
+    <!-- "." — accent-green round dot, ~0.36 of cap-height, baseline-aligned -->
+    <circle cx="178" cy="118" r="22" fill="#34d399"/>
+  </g>
 </svg>
