@@ -45,8 +45,10 @@ export function CanvasToolbar({
   const [zoomIndex, setZoomIndex] = useState(ZOOM_DEFAULT_INDEX);
   const [drag, setDrag] = useState(false);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
-  // Reset the dragged position when the parent bumps the key — see
-  // AnnotationsRail's matching effect.
+  // Reset only the dragged-position state when the parent bumps the key
+  // (e.g. on fullscreen toggle, where the containing-block bounds shift
+  // and a previously-dragged toolbar can land off-screen). A `key`-based
+  // remount would also reset zoomIndex, which we want to preserve.
   useEffect(() => {
     setPos(null);
   }, [resetPositionKey]);
