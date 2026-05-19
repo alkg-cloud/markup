@@ -215,6 +215,7 @@ export function AnnotationsRail({
             className={[styles.lockToggle, pinned && styles.pressed].filter(Boolean).join(' ')}
             aria-pressed={pinned ? 'true' : 'false'}
             data-tooltip={pinned ? 'Unlock' : 'Keep expanded'}
+            data-tooltip-align="right"
             aria-label={pinned ? 'Unlock' : 'Keep expanded'}
             onClick={() => setPinned((p) => !p)}
           >
