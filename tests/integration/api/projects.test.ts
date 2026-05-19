@@ -151,6 +151,40 @@ describe('projects API', () => {
     const r = await listProjectsRoute(new Request('http://l'));
     expect(r.status).toBe(401);
   });
+
+  it('list returns mockupCount + folderCount + icon so all-projects grid can render directly', async () => {
+    const cookie = await adminCookie();
+    const project = await (
+      await createProjectRoute(
+        new Request('http://l', jsonReq(cookie, { name: 'Counted', icon: 'emoji:🚀' })),
+      )
+    ).json();
+
+    await createFolderRoute(new Request('http://l', jsonReq(cookie, { name: 'Folder-A' })), {
+      params: Promise.resolve({ id: project.id }),
+    });
+    await prisma.mockup.create({
+      data: {
+        name: 'M-counted',
+        slug: 'm-counted',
+        projectId: project.id,
+        folderId: null,
+        position: 0,
+      },
+    });
+
+    const listed = await listProjectsRoute(new Request('http://l', jsonReq(cookie)));
+    expect(listed.status).toBe(200);
+    const { projects } = await listed.json();
+    const row = projects.find((p: { id: string }) => p.id === project.id);
+    expect(row).toBeTruthy();
+    expect(row.icon).toBe('emoji:🚀');
+    expect(row.mockupCount).toBe(1);
+    expect(row.folderCount).toBe(1);
+    // The Prisma `_count` shape MUST NOT leak — the API contract owns
+    // the flat `{mockupCount, folderCount}` shape now.
+    expect(row._count).toBeUndefined();
+  });
 });
 
 describe('folders API', () => {
