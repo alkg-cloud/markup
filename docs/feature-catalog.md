@@ -408,7 +408,7 @@ Promise-based replacement for `window.confirm`/`window.alert`/`window.prompt`. N
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `glass-surface-standard` | Shared `--surface-glass-bg` / `--surface-glass-blur` / `--surface-glass-border` tokens applied to every floating overlay (rail, toolbar, composer, popovers, tooltips, sidebar pill/full, kebab menus, emoji picker, version popover) | single source of truth |
+| `glass-surface-standard` | Shared `--surface-glass-bg` / `--surface-glass-blur` / `--surface-glass-border` + `--shadow-popover` applied to **every** floating overlay: rail, toolbar, composer, command palette, popovers (account menu, project-tree kebab, comment kebab, annotation-card primary kebab, emoji picker, version chip + per-row kebab), tooltips, sidebar pill/full, toasts, generic dialog, confirm dialog. No accent-glow ring on neutral surfaces — `--shadow-glow` is reserved for explicitly accent-tinted elements (e.g. the sidebar pill collapsing morph). | single source of truth |
 
 ## thread-timeline
 
@@ -454,15 +454,16 @@ Agent token management page at `/settings/agents` (`AgentsClient.tsx`). Accessib
 
 ## dialog
 
-Reusable modal dialog (`Dialog.tsx`).
+Reusable modal dialog (`Dialog.tsx`). Shares the **glass-surface standard** with `confirm-dialog`, the rail, toolbar, composer, and every popover — same `--surface-glass-bg`, blur 16px / saturate 140%, glass border, `--shadow-popover`, 14 px radius. The two dialog kinds (generic `Dialog` for forms, Radix `AlertDialog` for confirms) read as one design system on screen.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `dialog-scrim` | Backdrop scrim overlay with `backdrop-filter: blur(20px)` | visible when dialog open; click outside dismisses |
-| `dialog-card` | Dialog card container | scale-in animation on open |
-| `dialog-title` | Title text | static |
-| `dialog-field` | Form field wrapper (label + input) | idle, focused, error |
-| `dialog-actions` | Actions row: cancel (`btn-secondary`) + confirm (`btn-accent`) | standard layout |
+| `dialog-scrim` | Backdrop scrim — `rgba(0,0,0,0.32)` + `backdrop-filter: blur(2px)`. Click outside dismisses. Same scrim recipe as `confirm-dialog` and `command-palette`. | visible when dialog open |
+| `dialog-card` | Dialog card. `width: min(440px, calc(100vw - 32px))`, 18 px padding, gap 8 px between rows. Animates in with the same scale-in spring as `confirm-dialog` (`--motion-base` / `--ease-spring`). | scale-in animation on open |
+| `dialog-title` | Title text — 13 px / 700 / 0.01em tracking, `--text-bright`, no margin (the card itself supplies the gap). | static |
+| `dialog-field` | Form field wrapper. Label is `--text-dim` 10 px uppercase + 0.08em tracking; hint sits under the input at 11 px `--text-muted`; error replaces hint at 11 px `--danger`. Input is 34 px tall with `--bg-card` background, focus flips border to `--accent-bright` + 3 px `--accent-soft` ring (matches the inline-edit textarea elsewhere in the product). | idle, focused, error |
+| `dialog-actions` | Actions row aligned to the end, gap 8 px, margin-top 10 px. | standard layout |
+| `dialog-button` | Shared button primitive (`DialogButton` from `@/components/Dialog/Dialog`). 30 px tall, 12 px / 700 / 0.02em tracking, `--radius-xs`, same easing tokens as `confirm-dialog`. Three variants: `secondary` (transparent → `--surface-hover` on hover), `accent` (primary action — `--accent-soft` bg + `--accent-bright` text + `--accent-overlay-mid` border → `--accent-overlay-mid` bg on hover), `danger` (`--danger-soft` bg + `--danger` text + `--danger` border → solid `--danger` bg on hover). Disabled state: 0.4 opacity + not-allowed cursor. Replaces every ad-hoc `btnAccent` / `btnSecondary` that used to live in dialog-consumer CSS files. | secondary, accent, danger; idle, hover, focus-visible (3 px `--accent-soft` ring), disabled |
 
 ## popover-primitive
 
@@ -483,7 +484,7 @@ Toast notification system (`Toast.tsx`, `useToast.ts`).
 | ID | Surface / Interaction | States |
 |---|---|---|
 | `toast-container` | Fixed bottom-center container | positioned absolutely |
-| `toast-pill` | Individual toast message pill | success, error, warning, info variants; slide-in animation, auto-dismiss |
+| `toast-pill` | Individual toast message pill. Uses the **glass-surface standard**: `--surface-glass-bg`, blur 16 px / saturate 140%, `--surface-glass-border`, `--shadow-popover`. No accent glow ring — toasts are neutral surfaces. | slide-in animation (`--motion-fast` / `--ease-spring`), auto-dismiss |
 | `toast-reduced-motion` | Reduced motion override | animation zeroed via `prefers-reduced-motion` |
 
 ## app-nav
