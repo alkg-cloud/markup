@@ -82,7 +82,7 @@ export async function updateProject(id: string, input: { name?: string; icon?: s
   // Slug stays stable if only the icon is changing.
   const renamed = input.name != null && input.name !== existing.name;
   const slug = renamed ? await ensureUniqueProjectSlug(input.name as string) : undefined;
-  return prisma.project.update({
+  const updated = await prisma.project.update({
     where: { id },
     data: {
       name: input.name,
@@ -90,6 +90,8 @@ export async function updateProject(id: string, input: { name?: string; icon?: s
       ...(slug ? { slug } : {}),
     },
   });
+  log.info({ projectId: id, renamed, iconChanged: input.icon !== undefined }, 'project_updated');
+  return updated;
 }
 
 export async function deleteProject(id: string) {
@@ -221,12 +223,12 @@ export async function updateFolder(id: string, input: { name?: string }) {
     if (duplicate) return { error: 'name_exists' as const };
   }
 
-  return {
-    folder: await prisma.folder.update({
-      where: { id },
-      data: { name: input.name },
-    }),
-  };
+  const folder = await prisma.folder.update({
+    where: { id },
+    data: { name: input.name },
+  });
+  log.info({ folderId: id, projectId: existing.projectId }, 'folder_updated');
+  return { folder };
 }
 
 export async function deleteFolder(id: string) {
