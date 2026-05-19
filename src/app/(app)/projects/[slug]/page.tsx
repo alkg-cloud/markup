@@ -3,6 +3,8 @@
 import { notFound, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
+import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { useIdentity } from '@/lib/hooks/use-require-auth';
 import { ProjectContent } from '../../../projects/[slug]/ProjectContent';
 
@@ -72,10 +74,10 @@ export default function ProjectPage() {
 
   if (status === 'not_found') notFound();
   if (status === 'error') {
-    return <main style={{ padding: 24, color: 'var(--danger)' }}>Failed to load project.</main>;
+    return <ErrorState error="Failed to load project." />;
   }
   if (status === 'loading' || !data) {
-    return null;
+    return <LoadingState />;
   }
 
   return (
