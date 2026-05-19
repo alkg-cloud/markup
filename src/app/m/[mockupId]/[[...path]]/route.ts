@@ -1,8 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
+import { identify } from '@/lib/auth/identify';
 import { buildMockupCSP } from '@/lib/csp';
 import { env } from '@/lib/env';
+import { logger } from '@/lib/logger';
 import { resolveServePath, versionBuildDir } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
 
@@ -32,6 +34,11 @@ export async function GET(
   req: Request,
   ctx: { params: Promise<{ mockupId: string; path?: string[] }> },
 ) {
+  const ident = await identify(req);
+  if (!ident) {
+    logger.warn({ event: 'mockup_serve_unauthorized', path: new URL(req.url).pathname }, 'unauth');
+    return new NextResponse('unauthorized', { status: 401 });
+  }
   const { mockupId: mockupIdOrSlug, path: rawSegments } = await ctx.params;
   const segments = rawSegments ?? ['index.html'];
   const url = new URL(req.url);
