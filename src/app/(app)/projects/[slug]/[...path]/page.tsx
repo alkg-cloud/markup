@@ -4,7 +4,7 @@ import { notFound, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { MockupViewerPage } from '@/components/MockupViewer/MockupViewerPage';
-import { useRequireAuth } from '@/lib/hooks/use-require-auth';
+import { useIdentity } from '@/lib/hooks/use-require-auth';
 import { ProjectContent } from '../../../../projects/[slug]/ProjectContent';
 
 interface FolderSummary {
@@ -50,12 +50,12 @@ export default function ProjectPathPage() {
   const pathSegments = (params.path ?? []) as string[];
   const pathQuery = pathSegments.map(encodeURIComponent).join('/');
 
-  const { identity, loading: authLoading } = useRequireAuth();
+  const identity = useIdentity();
   const [resolution, setResolution] = useState<ResolvePayload | null>(null);
   const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
 
   useEffect(() => {
-    if (!slug || pathQuery === '' || authLoading || !identity) return;
+    if (!slug || pathQuery === '') return;
     let cancelled = false;
     fetch(`/api/projects/by-slug/${encodeURIComponent(slug)}/resolve?path=${pathQuery}`, {
       credentials: 'include',
@@ -85,7 +85,7 @@ export default function ProjectPathPage() {
     return () => {
       cancelled = true;
     };
-  }, [slug, pathQuery, authLoading, identity]);
+  }, [slug, pathQuery]);
 
   if (status === 'not_found') notFound();
   if (status === 'error') {

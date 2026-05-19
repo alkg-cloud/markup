@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Topbar } from '@/components/Topbar/Topbar';
-import { useRequireAuth } from '@/lib/hooks/use-require-auth';
+import { useIdentity } from '@/lib/hooks/use-require-auth';
 import { AgentsClient } from './AgentsClient';
 
 interface AgentTokenRow {
@@ -19,12 +19,11 @@ interface AgentTokensResponse {
 }
 
 export default function AgentsPage() {
-  const { identity, loading: authLoading } = useRequireAuth();
+  const identity = useIdentity();
   const [tokens, setTokens] = useState<AgentTokenRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (authLoading || !identity) return;
     let cancelled = false;
     fetch('/api/agent-tokens', { credentials: 'include' })
       .then(async (res) => {
@@ -50,7 +49,7 @@ export default function AgentsPage() {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, identity]);
+  }, []);
 
   if (error) {
     return (
