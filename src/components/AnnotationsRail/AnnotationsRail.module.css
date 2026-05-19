@@ -229,6 +229,12 @@
   border: 1px solid var(--accent-overlay-mid);
   border-radius: 9999px;
   overflow: hidden;
+  /* The collapsed foot's inner width is narrower than the button's
+     declared 32 px (rail 60 − rail-border 2 − foot-padding 28 = 30).
+     Without `flex-shrink: 0` the button collapses to 30, which the
+     30 × 30 icon then overflows by 1 px to the right; pinning the
+     flex basis keeps the button at the spec-default 32 × 32. */
+  flex-shrink: 0;
   transition:
     width var(--motion-base) var(--ease-spring),
     padding var(--motion-base) var(--ease-spring),
