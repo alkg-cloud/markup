@@ -41,10 +41,9 @@ export function useRequireAuth(): { identity: AuthMe | null; loading: boolean } 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
-    fetch('/api/auth/me', { credentials: 'include' })
+    const controller = new AbortController();
+    fetch('/api/auth/me', { credentials: 'include', signal: controller.signal })
       .then(async (res) => {
-        if (cancelled) return;
         if (res.status === 401) {
           router.replace('/login');
           return;
@@ -54,16 +53,16 @@ export function useRequireAuth(): { identity: AuthMe | null; loading: boolean } 
           return;
         }
         const json: AuthMe = await res.json();
-        if (cancelled) return;
         setIdentity(json);
         setLoading(false);
       })
-      .catch(() => {
-        if (!cancelled) setLoading(false);
+      .catch((e) => {
+        // Aborts are the normal teardown path — ignore them so the
+        // unmounted component doesn't flip into an error state.
+        if (e?.name === 'AbortError') return;
+        setLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [router]);
 
   return { identity, loading };

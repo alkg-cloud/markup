@@ -41,28 +41,25 @@ export default function SetupPage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-    fetch('/api/auth/setup-status')
+    const controller = new AbortController();
+    fetch('/api/auth/setup-status', { signal: controller.signal })
       .then(async (res) => {
-        if (cancelled) return;
         if (!res.ok) {
           setReady(true);
           return;
         }
         const json: { completed: boolean } = await res.json();
-        if (cancelled) return;
         if (json.completed) {
           router.replace('/login');
           return;
         }
         setReady(true);
       })
-      .catch(() => {
-        if (!cancelled) setReady(true);
+      .catch((e) => {
+        if (e?.name === 'AbortError') return;
+        setReady(true);
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [router]);
 
   if (!ready) return null;

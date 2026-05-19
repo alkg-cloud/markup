@@ -52,12 +52,12 @@ export function MockupViewerPage({
 
   useEffect(() => {
     if (!mockupId) return;
-    let cancelled = false;
+    const controller = new AbortController();
     fetch(`/api/mockups/${encodeURIComponent(mockupId)}/viewer`, {
       credentials: 'include',
+      signal: controller.signal,
     })
       .then(async (res) => {
-        if (cancelled) return;
         if (res.status === 401) {
           window.location.replace('/login');
           return;
@@ -71,16 +71,14 @@ export function MockupViewerPage({
           return;
         }
         const json: ViewerPayload = await res.json();
-        if (cancelled) return;
         setData(json);
         setStatus('ok');
       })
-      .catch(() => {
-        if (!cancelled) setStatus('error');
+      .catch((e) => {
+        if (e?.name === 'AbortError') return;
+        setStatus('error');
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [mockupId]);
 
   if (status === 'not_found') {
