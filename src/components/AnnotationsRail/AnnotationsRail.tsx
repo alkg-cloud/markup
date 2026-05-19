@@ -32,6 +32,10 @@ export interface AnnotationsRailProps {
    *  containing block's bounds, which can leave the rail off-screen if
    *  it was previously dragged; bumping this key resets the layout. */
   resetPositionKey?: string | number;
+  /** Bumped by the parent (e.g. on pin click) to pin the rail open from
+   *  outside. When the number changes, the rail pins itself. The user
+   *  can still unpin via the lock toggle. */
+  expandSignal?: number;
 }
 
 /**
@@ -54,6 +58,7 @@ export function AnnotationsRail({
   onCreate,
   count,
   resetPositionKey,
+  expandSignal,
 }: AnnotationsRailProps) {
   const railRef = useRef<HTMLElement | null>(null);
   const [hover, setHover] = useState(false);
@@ -66,6 +71,15 @@ export function AnnotationsRail({
   useEffect(() => {
     setPos(null);
   }, [resetPositionKey]);
+
+  // Parent-driven expand: bumping `expandSignal` pins the rail open
+  // (e.g. when the user clicks a pin on the canvas). The user can still
+  // unpin via the lock toggle inside the rail.
+  useEffect(() => {
+    if (expandSignal === undefined) return;
+    setPinned(true);
+    setHover(false);
+  }, [expandSignal]);
 
   // Hover-expand: only triggers when the cursor enters the rail body —
   // NOT the drag handle. Each child surface (collapsed, expanded, foot)

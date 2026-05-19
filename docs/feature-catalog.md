@@ -117,8 +117,8 @@ Inline folder creation input in the sidebar (`InlineFolderCreate.tsx`).
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `sidebar-folder-create-input` | Inline text input for folder name. Placeholder: "Nome da pasta" | idle, focused, error (duplicate name: "Já existe uma pasta com esse nome aqui.") |
-| `sidebar-folder-create-confirm` | Enter key confirms creation | success: folder appears in tree; empty name: no action, focus stays |
+| `sidebar-folder-create-input` | Inline text input for folder name. Placeholder: "Nome da pasta". On every keystroke `validateUrlSafeName` runs; an illegal character flips the input border to `--danger` and renders the inline error below it (e.g. `" " is not allowed. Use only letters (a–z, A–Z), digits, hyphens (-), or underscores (_).`). | idle, focused, error (URL-safe violation OR duplicate name "Já existe uma pasta com esse nome aqui.") |
+| `sidebar-folder-create-confirm` | Enter key confirms creation. Blocks submit when the URL-safe validator fails — the inline error remains until the user fixes the name. | success: folder appears in tree; empty name: no action, focus stays |
 | `sidebar-folder-create-cancel` | Escape key cancels | input removed, no folder created |
 | `sidebar-folder-create-maxlen` | Names > 255 chars truncated silently | no visible error |
 
@@ -160,9 +160,9 @@ New Project creation dialog (`NewProjectDialog.tsx`).
 |---|---|---|
 | `new-project-dialog-scrim` | Modal scrim backdrop | visible when open; click outside dismisses |
 | `new-project-dialog-card` | Dialog card with scale-in animation | open, closed |
-| `new-project-dialog-name-input` | Project name text field | idle, focused, error (empty on submit) |
+| `new-project-dialog-name-input` | Project name text field. Validates URL-safety on every keystroke via `validateUrlSafeName`: an illegal character renders the inline `dialog-error` below the input and disables the primary action. Hint text below the field reads "Use letters, digits, hyphens, or underscores." | idle, focused, error (empty OR URL-safe violation) |
 | `new-project-dialog-icon-picker` | Embedded icon picker (same component as project kebab "Change icon") | shows `icon-picker` inline in dialog |
-| `new-project-dialog-labels` | Field labels render in ALL-CAPS (`PROJECT NAME`, `ICON`). Primary action button is `Create Project` in create mode and `Update Project` in edit mode. Name input placeholder is `My Project`. | create mode, edit mode |
+| `new-project-dialog-labels` | Field labels render in ALL-CAPS (`PROJECT NAME`, `ICON`). Primary action button is `Create Project` in create mode and `Update Project` in edit mode. Name input placeholder is `My-Project` (hyphen instead of space — names are URL path segments now). | create mode, edit mode |
 | `new-project-dialog-cancel` | Cancel button (`btn-secondary`) | default, hover, focus-visible |
 | `new-project-dialog-create` | `Create Project` accent button in create mode, `Update Project` in edit mode | default, hover (`--accent-bright`), focus-visible, active, disabled (submitting) |
 
@@ -173,7 +173,7 @@ Project update dialog (`NewProjectDialog.tsx` in edit mode).
 | ID | Surface / Interaction | States |
 |---|---|---|
 | `edit-project-dialog-card` | Dialog card matching New Project, prefilled with current project name and icon | open, closed |
-| `edit-project-dialog-name-input` | Project name text field | idle, focused, error (empty on submit) |
+| `edit-project-dialog-name-input` | Project name text field. Same URL-safe validation as `new-project-dialog-name-input`. | idle, focused, error (empty OR URL-safe violation) |
 | `edit-project-dialog-icon-picker` | Embedded icon picker | shows `icon-picker` inline in dialog |
 | `edit-project-dialog-update` | "Update project" accent button (`btn-accent`) | default, hover, focus-visible, active, disabled (submitting) |
 
@@ -283,7 +283,7 @@ every layout change. See spec §6.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `mockup-viewer-pin` | 30×30 teardrop pin rotated -45°. Glass bg, per-annotation accent border + number, opacity 0.55 default. The tooltip pseudo-element counter-rotates 45° so the label reads horizontally above the rotated shape. | idle (0.55 opacity), hover (opacity 1, accent border brightens — no scale), active (accent border + 2px soft glow ring — no animation), pending (same glass tag as idle + dashed accent border + 1.6s soft pulse) |
+| `mockup-viewer-pin` | 30×30 teardrop pin rotated -45°. Glass bg, per-annotation accent border + number, opacity 0.55 default. The tooltip pseudo-element counter-rotates 45° so the label reads horizontally above the rotated shape. Clicking a pin activates the matching annotation AND pins `mockup-viewer-rail` open (via the rail's `expandSignal` prop) so the matching card is visible without an extra hover gesture; the user can still unpin the rail via `mockup-viewer-rail-lock-open`. | idle (0.55 opacity), hover (opacity 1, accent border brightens — no scale), active (accent border + 2px soft glow ring — no animation), pending (same glass tag as idle + dashed accent border + 1.6s soft pulse) |
 | `mockup-viewer-pin-anchor-text` | Text-anchor variant — stores `{path, textOffset, subX, subY}` so the pin tip lands on a specific character sub-position | resilient to reflow / wrap / font changes |
 | `mockup-viewer-pin-anchor-element` | Element-anchor variant — stores `{path, offsetX, offsetY}` for clicks outside text | fractional bbox offset |
 
@@ -295,7 +295,7 @@ Left-side floating panel. See spec §4.
 |---|---|---|
 | `mockup-viewer-rail-collapsed` | 60px-wide column of colored pin badges + drag handle (top) + "+ New annotation" button (bottom morphs round). Capped at `max-height: 70vh` (`80vh` on viewports ≤768px) so a long list never overflows the canvas; inner list scrolls vertically. | default state |
 | `mockup-viewer-rail-hover-expanded` | Transient 300px width on body mouseenter (NOT on drag handle). Same `max-height` cap as collapsed. | width transition via `--motion-base` |
-| `mockup-viewer-rail-pinned` | Sticky 300px width via Lock-open toggle | persists past mouseleave, button shows pressed state |
+| `mockup-viewer-rail-pinned` | Sticky 300px width via Lock-open toggle. Also driven externally by bumping `expandSignal` from `AppMainViewer` — a canvas pin click pins the rail open so the matching card is in view. | persists past mouseleave, button shows pressed state |
 | `mockup-viewer-rail-drag` | Drag handle (3×2 dot grid) lets user reposition the rail anywhere inside `mockup-viewer-app-main` (8 px margin clamping). Drag handle DOES NOT trigger hover-expand — only the rail body does. Has `touch-action: none` so pointer drag works on touchscreens. Dragged position is cleared when fullscreen toggles so the rail returns to its spec-default coordinates instead of being stranded off-screen. | grab/grabbing cursor |
 | `mockup-viewer-rail-lock-open` | Lock-open button rendered with `react-icons/vsc` `VscPinned` — "Keep expanded" / "Unlock" tooltip. Pressed state only changes `background` + `color` (no rotation) — the icon stays upright. | aria-pressed reflects state |
 | `mockup-viewer-rail-add-button` | "+ New annotation" button at foot. Morphs round → pill with label + ⌘⇧N (Ctrl+⇧+N on Windows/Linux). Pinned via `flex-shrink: 0` to the spec-default 32 × 32 pill so the inner 30 × 30 icon sits dead-centre even though the collapsed foot inner is narrower than the button's declared width. | collapsed/expanded width transition |
@@ -320,12 +320,12 @@ inside the chip itself.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `mockup-viewer-version-chip` | Pill with clock icon + label (plain `vN`, no " · current" suffix — the popover already signals active state) + chev. Opens `mockup-viewer-version-popover` via `usePopover('right')`. | closed, open (chev rotated 180°) |
+| `mockup-viewer-version-chip` | Pill with clock icon + label `vN` (no " · current" suffix — the popover already signals active state) + chev. `N` is the version's **stable** number — persisted on the row via the `MockupVersion.number` column, monotonically increasing per mockup, **never reused** on delete (deleting v1 of [v1,v2,v3] leaves [v2,v3]; the next upload becomes v4). Opens `mockup-viewer-version-popover` via `usePopover('right')`. | closed, open (chev rotated 180°) |
 | `mockup-viewer-version-popover` | Native HTML popover (`popover="auto"`) with newest-first version list. Top-layer paint — escapes the toolbar's clip and stacking. Browser-managed light-dismiss + ESC. | closed, open |
 | `mockup-viewer-version-item` | One row per version (dot + label + sub). Rendered by the `VersionListRow` subcomponent so each row carries its own `usePopover` for the per-row kebab; nested popovers stack natively via the HTML spec's ancestor relationship — opening a row kebab does NOT close the parent version list. | default, current (accent bg + glowing dot) |
 | `mockup-viewer-version-kebab` | Per-row kebab menu (nested popover) — opens Promote / Delete via `usePopover('right')`. | opens Promote / Delete |
 | `mockup-viewer-version-action-promote` | Promote version to current | enabled, disabled on current row (with "Already current" tooltip) |
-| `mockup-viewer-version-action-delete` | Delete version | danger styling |
+| `mockup-viewer-version-action-delete` | Per-row "Delete" item (label dropped the redundant noun) — opens a `confirm-dialog` quoting the version label (e.g. "Delete v3") + warning that anchors pointing at this version lose their source-of-truth pin. DELETE `/api/mockups/[id]/versions/[vid]` only after confirm. | danger styling |
 
 ### annotation-composer (replaces annotation-modal)
 
@@ -354,9 +354,9 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 | `annotation-card-author` | Author name in meta row | static |
 | `annotation-card-status-pill` | open / needs review / resolved | open (info), needs review (warning), resolved (success) |
 | `annotation-card-primary-kebab` | 3-dot kebab button in the meta row, visible only when the primary comment is the current user's. Opens `annotation-card-primary-menu` via `usePopover('right')`. Hosts the status toggle group + Edit + Delete affordances. Replaces the previous standalone pencil. | hidden (not own), visible (own); hover (surface-hover bg), open (accent bg) |
-| `annotation-card-primary-menu` | Native HTML popover (`popover="auto"`) anchored to the kebab. Hosts the status toggle group, "Edit" item, and "Delete annotation" (danger) item. Top-layer paint — escapes the rail's `overflow-y: auto`. Browser-managed light-dismiss + ESC; menu items also call `close()` before firing their action so the popover closes with the same gesture. | closed, open |
-| `annotation-card-status-toggle` | Radio-group of three status options (Open / Needs review / Resolved) at the top of the kebab menu. Active option uses the accent palette. Clicking dispatches `PATCH /api/annotations/[id] { status }`. | per-option idle / hover / active |
-| `annotation-card-delete` | Danger menu item that deletes the annotation via `DELETE /api/annotations/[id]` after a `confirm-dialog` accept. Cascades through the thread → messages → reactions. | idle, hover (danger bg) |
+| `annotation-card-primary-menu` | Native HTML popover (`popover="auto"`) anchored to the kebab. Hosts the status toggle group, "Edit" item, and "Delete" (danger) item. Top-layer paint — escapes the rail's `overflow-y: auto`. Browser-managed light-dismiss + ESC; menu items also call `close()` before firing their action so the popover closes with the same gesture. | closed, open |
+| `annotation-card-status-toggle` | Icon-only radio group of three status options at the top of the kebab menu: **Open** (`VscCircleLarge`, `--info`), **Needs review** (`VscCommentUnresolved`, `--warning`), **Resolved** (`VscPass`, `--success`). Each icon takes the colour of its matching `annotation-card-status-pill`. The verbose label is exposed via `data-tooltip` + `aria-label`; the body of the button is just the icon. Active option draws an inset 1 px ring in its own colour over the matching `*-soft` background. Clicking dispatches `PATCH /api/annotations/[id] { status }`. | per-option idle / hover / active |
+| `annotation-card-delete` | Danger menu item labelled simply **Delete** (drops the redundant noun — the kebab is already scoped to the annotation). Deletes the annotation via `DELETE /api/annotations/[id]` after a `confirm-dialog` accept. Cascades through the thread → messages → reactions. | idle, hover (danger bg) |
 | `annotation-card-primary` | Primary comment rendered without head row (author in meta) | renders body + reactions only |
 | `annotation-card-foot-date` | Date + time | static |
 | `annotation-card-thread-toggle` | Chevron button — "No replies" / "1 reply" / "N replies". Behaves as an accordion: opening one card's thread auto-collapses any other expanded thread. | closed, open (chev rotated 180°) |
@@ -380,7 +380,8 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 |---|---|---|
 | `reaction-pill` | Pill with emoji + optional count (count shown when >1) | idle, reacted (current user in list, accent bg) |
 | `reaction-pill-tooltip` | Custom hover tooltip — "X and Y reacted with 👍" | glass bg matching `--surface-glass-*` |
-| `reaction-add` | Dashed "+" trigger button, always visible next to the existing pills | idle, hover (accent border + bg), open (popover anchored above) |
+| `reaction-add` | Dashed "+" trigger button. Visibility tracks the parent comment's hover/focus-within via the `--reaction-add-opacity` CSS contract: hidden at rest, revealed when the user hovers/focuses the comment. | idle, hover (accent border + bg), open (popover anchored above) |
+| `reactions-row-empty-collapse` | When a comment has zero reactions, the `.reactions` footer collapses to `max-height: 0` + `opacity: 0` so no dead vertical lane is reserved. Hovering or focusing the comment animates the row open to `max-height: 28px` (motion-base / ease-standard) and reveals `reaction-add`. Once a comment has reactions, the row stays visible at rest and only the "+" trigger fades on hover (the previous behaviour). | empty + at-rest (collapsed), empty + hover (animated open), non-empty (always open) |
 | `emoji-picker` | 4×4 grid native HTML popover (`popover="auto"`) with 16 reaction emojis. Opens via `usePopover('left')` from the comment's "+" reaction trigger. Top-layer paint + browser-managed light-dismiss + ESC. | closed, open |
 | `emoji-picker-pick` | Individual emoji button | default, hover (scale 1.2) |
 
@@ -511,6 +512,8 @@ Cross-cutting visual and interaction surfaces defined in `globals.css` and `toke
 | `global-typography-jetbrains` | JetBrains Mono (code/tabular), 400/500, 10-12 px | tabular-nums for timestamps, token strings |
 | `global-routing-path-based` | All in-shell URLs are human-readable path segments resolved server-side. `/` = workspace landing. `/projects` = projects index. `/projects/<slug>` = project view. `/projects/<slug>/<...folders>/<mockup-slug>` = mockup viewer (catch-all `[...path]` resolved by `resolveProjectPath` to either a folder or a mockup; mockups render `MockupViewerPage`, folders render the folder view). `/projects/unsorted/<mockup-slug>` covers orphan mockups. `/annotations/[id]` and `/settings/agents` retain stable single-segment routes. The legacy `/mockups/[id]` viewer route has been removed; `/api/mockups/[id]/*` API endpoints continue to use the mockup id. | server-resolved; canonical paths produced by `routes.ts` helpers (`projectsHref`, `projectHref`, `folderHref`, `mockupSlugHref`) |
 | `global-sidebar-collapse-ssr` | Sidebar collapse state is hydration-stable: the server reads the `markup-sidebar-collapsed` cookie via `next/headers cookies()` in the `(app)` shell and passes `defaultCollapsed` to `Sidebar`. No `useEffect`-driven flash on first paint. The client persists changes to the cookie + `localStorage` in the same write. | cookie-driven SSR — no hydration mismatch |
+| `global-favicon` | App favicon at `src/app/icon.svg` — Next.js 16 auto-serves it at `/icon.svg` and `<link rel="icon">` is injected at build time. The SVG is a 256 × 256 dark rounded square with a white serif **M** and an accent-green square as the period (matches `sidebar-logo`'s "Markup." typography). | rendered in all browsers; no separate raster ico shipped |
+| `global-name-validation` | Single source of truth for URL-safe names: `src/lib/validation/url-safe-name.ts`. Pattern `/^[A-Za-z0-9_-]+$/` is exported as `URL_SAFE_NAME_PATTERN`; `validateUrlSafeName(value)` returns `{ offendingChar, message }` or `null`. Used client-side by `new-project-dialog`, `edit-project-dialog`, `sidebar-inline-folder-create`, and the tree rename input — same `URL_SAFE_NAME_HINT` copy everywhere. Used server-side by `POST /api/projects`, `PATCH /api/projects/[id]`, `POST /api/projects/[id]/folders`, `PATCH /api/folders/[id]`, `POST /api/mockups`, and `PATCH /api/mockups/[id]` — invalid names return `400 name_not_url_safe`. | client error: inline danger message below input; server error: `400 name_not_url_safe` |
 
 ---
 

@@ -90,11 +90,16 @@ model MockupVersion {
   id                   String       @id @default(cuid())
   mockupId             String
   mockup               Mockup       @relation(fields: [mockupId], references: [id], onDelete: Cascade)
+  /// Stable, monotonically-increasing label within a mockup. NEVER
+  /// reused on delete — v3 stays v3 even after v1 / v2 are removed. The
+  /// service assigns `max(number) + 1` at create time.
+  number               Int          @default(1)
   path                 String
   createdAt            DateTime     @default(now())
   createdBy            String
   createdByType        String
   annotationsCreatedOn Annotation[] @relation("CreatedOnVersion")
+  @@unique([mockupId, number])
   @@index([mockupId])
 }
 

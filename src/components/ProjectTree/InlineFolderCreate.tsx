@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { validateUrlSafeName } from '@/lib/validation/url-safe-name';
 import styles from './InlineFolderCreate.module.css';
 
 interface InlineFolderCreateProps {
@@ -22,6 +23,11 @@ export function InlineFolderCreate({ indent, onConfirm, onCancel }: InlineFolder
   const handleSubmit = useCallback(async () => {
     const trimmed = value.trim();
     if (!trimmed) return;
+    const validation = validateUrlSafeName(trimmed);
+    if (validation) {
+      setError(validation.message);
+      return;
+    }
     if (trimmed.length > 255) {
       setValue(trimmed.slice(0, 255));
     }
@@ -51,8 +57,10 @@ export function InlineFolderCreate({ indent, onConfirm, onCancel }: InlineFolder
         placeholder="Nome da pasta"
         value={value}
         onChange={(e) => {
-          setValue(e.target.value);
-          setError(null);
+          const next = e.target.value;
+          setValue(next);
+          const v = validateUrlSafeName(next.trim());
+          setError(v ? v.message : null);
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {

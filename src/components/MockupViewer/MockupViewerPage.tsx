@@ -159,12 +159,12 @@ export async function MockupViewerPage({
       };
     });
 
-  const versions = mockup.versions.map((v, vi) => {
+  const versions = mockup.versions.map((v) => {
     const resolved = nameMap.get(v.createdBy);
     const isCurrent = v.id === mockup.currentVersionId;
     return {
       id: v.id,
-      label: `v${mockup.versions.length - vi}`,
+      label: `v${v.number}`,
       sub: `${formatTimestamp(v.createdAt)} · ${resolved?.name ?? `${v.createdByType} ${v.createdBy.slice(-6)}`}`,
       current: isCurrent,
     };

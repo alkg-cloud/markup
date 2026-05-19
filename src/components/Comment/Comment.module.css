@@ -327,6 +327,29 @@
   gap: 3px;
   flex-wrap: wrap;
   padding-left: 26px;
+  overflow: hidden;
+  transition:
+    max-height var(--motion-base) var(--ease-standard),
+    opacity var(--motion-fast) var(--ease-standard),
+    margin var(--motion-base) var(--ease-standard);
+}
+
+/* When there are no reactions yet, the row collapses to 0 height
+   (including the EmojiPicker "+" trigger) so the comment doesn't
+   reserve dead vertical space. Hovering or focusing the comment
+   expands the row + reveals the picker. Comments that already have
+   reactions keep the row visible at rest (the picker fades in on
+   hover via its own `--reaction-add-opacity` contract). */
+.reactions[data-empty="true"] {
+  max-height: 0;
+  opacity: 0;
+  margin-top: -2px;
+}
+.comment:hover .reactions[data-empty="true"],
+.comment:focus-within .reactions[data-empty="true"] {
+  max-height: 28px;
+  opacity: 1;
+  margin-top: 0;
 }
 
 /* Primary variant — used when this comment is rendered as the

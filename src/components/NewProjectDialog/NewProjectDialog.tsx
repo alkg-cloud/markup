@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogField, DialogInput } from '@/components/Dialog/Dialog';
 import { IconPicker } from '@/components/IconPicker/IconPicker';
 import { useToast } from '@/components/Toast/useToast';
+import { validateUrlSafeName } from '@/lib/validation/url-safe-name';
 import styles from './NewProjectDialog.module.css';
 
 interface NewProjectDialogProps {
@@ -32,14 +33,18 @@ export function NewProjectDialog({ open, onClose, onSaved, project }: NewProject
     onClose();
   }
 
+  const trimmedName = name.trim();
+  const nameError = useMemo(() => validateUrlSafeName(trimmedName), [trimmedName]);
+  const canSubmit = trimmedName.length > 0 && !nameError;
+
   async function handleSubmit() {
-    if (!name.trim() || loading) return;
+    if (!canSubmit || loading) return;
     setLoading(true);
     try {
       const res = await fetch(isEdit ? `/api/projects/${project.id}` : '/api/projects', {
         method: isEdit ? 'PATCH' : 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), icon }),
+        body: JSON.stringify({ name: trimmedName, icon }),
       });
       if (!res.ok)
         throw new Error(isEdit ? 'Failed to update project' : 'Failed to create project');
@@ -67,7 +72,7 @@ export function NewProjectDialog({ open, onClose, onSaved, project }: NewProject
           <button
             type="button"
             className={styles.btnAccent}
-            disabled={!name.trim() || loading}
+            disabled={!canSubmit || loading}
             onClick={handleSubmit}
           >
             {isEdit ? 'Update Project' : 'Create Project'}
@@ -75,10 +80,14 @@ export function NewProjectDialog({ open, onClose, onSaved, project }: NewProject
         </>
       }
     >
-      <DialogField label="PROJECT NAME">
+      <DialogField
+        label="PROJECT NAME"
+        hint="Use letters, digits, hyphens, or underscores."
+        error={nameError?.message ?? null}
+      >
         <DialogInput
           autoFocus
-          placeholder="My Project"
+          placeholder="My-Project"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => {

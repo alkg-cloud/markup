@@ -210,8 +210,9 @@
   display: flex;
 }
 
-/* Status toggle group — three radio-like options stacked at the top of
-   the menu. Active option uses the accent palette. */
+/* Status toggle group — three radio-like icon buttons. Each carries
+   the colour of the matching `pill` (open=info, review=warning,
+   resolved=success); tooltips supply the verbose label. */
 .statusGroup {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -222,28 +223,48 @@
   margin-bottom: 4px;
 }
 .statusOption {
-  padding: 5px 6px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  height: 28px;
   background: transparent;
   border-radius: var(--radius-xs);
   cursor: pointer;
-  text-align: center;
+  color: var(--text-muted);
   transition:
     background var(--motion-fast),
     color var(--motion-fast);
 }
+.statusOption svg {
+  width: 14px;
+  height: 14px;
+}
+.statusOption[data-status="open"] {
+  color: var(--info);
+}
+.statusOption[data-status="review"] {
+  color: var(--warning);
+}
+.statusOption[data-status="resolved"] {
+  color: var(--success);
+}
 .statusOption:hover {
   background: var(--surface-hover);
-  color: var(--text-bright);
 }
 .statusOptionActive,
 .statusOptionActive:hover {
-  background: var(--accent-soft);
-  color: var(--accent-bright);
+  background: var(--surface-active, var(--surface-hover));
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+.statusOption[data-status="open"].statusOptionActive {
+  background: var(--info-soft);
+}
+.statusOption[data-status="review"].statusOptionActive {
+  background: var(--warning-soft);
+}
+.statusOption[data-status="resolved"].statusOptionActive {
+  background: var(--success-soft);
 }
 
 .primaryMenuItem {

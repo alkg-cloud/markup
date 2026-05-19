@@ -71,6 +71,7 @@ export async function createMockupFromZip(input: CreateInput) {
     data: {
       id: vid,
       mockupId: mid,
+      number: 1,
       path: path.posix.join('mockups', mid, 'versions', vid, 'build'),
       createdBy: input.createdBy,
       createdByType: input.createdByType,
@@ -99,10 +100,19 @@ export async function addVersion(input: {
   if (thumb) {
     fs.writeFileSync(thumbnailPath(root, input.mockupId), thumb);
   }
+  // `number` is the high-water mark within the mockup. We use the
+  // maximum existing number rather than the row count so deleting v1
+  // leaves the next-created version at v(N+1), not v(N) again.
+  const maxNumber = await prisma.mockupVersion.aggregate({
+    where: { mockupId: input.mockupId },
+    _max: { number: true },
+  });
+  const nextNumber = (maxNumber._max.number ?? 0) + 1;
   const version = await prisma.mockupVersion.create({
     data: {
       id: vid,
       mockupId: input.mockupId,
+      number: nextNumber,
       path: path.posix.join('mockups', input.mockupId, 'versions', vid, 'build'),
       createdBy: input.createdBy,
       createdByType: input.createdByType,

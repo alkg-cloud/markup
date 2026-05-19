@@ -6,6 +6,7 @@ import { identify } from '@/lib/auth/identify';
 import { env } from '@/lib/env';
 import { createMockupFromZip, listMockups } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
+import { URL_SAFE_NAME_PATTERN } from '@/lib/validation/url-safe-name';
 
 const VALID_STATUSES = ['open', 'resolved', 'archived'] as const;
 type Status = (typeof VALID_STATUSES)[number];
@@ -22,6 +23,9 @@ export async function POST(req: Request) {
   const file = fd.get('build');
   if (typeof name !== 'string' || !(file instanceof Blob)) {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+  }
+  if (!URL_SAFE_NAME_PATTERN.test(name)) {
+    return NextResponse.json({ error: 'name_not_url_safe' }, { status: 400 });
   }
   if (slug != null && typeof slug !== 'string') {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
