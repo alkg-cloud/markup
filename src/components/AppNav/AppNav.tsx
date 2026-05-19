@@ -11,7 +11,7 @@ interface NavItem {
 }
 
 const ITEMS: NavItem[] = [
-  { href: '/', label: 'Projetos' },
+  { href: '/', label: 'Projects' },
   { href: '/settings/agents', label: 'Agents', matchPrefix: '/settings/agents' },
 ];
 

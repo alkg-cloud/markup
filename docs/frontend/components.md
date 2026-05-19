@@ -176,6 +176,12 @@ The page-scoped pattern means `MockupViewer.tsx` is co-located with its `page.ts
 
 `AppShell.tsx` lives directly under `src/app/` (not inside `(app)/`) because the route-group layout imports it via a relative path.
 
+## Copy / i18n
+
+The UI ships in **English**. All visible labels, aria attributes, button copy, section headers, and toast messages are written in EN. The product is not localised — every translated string is a bug.
+
+When adding a new surface, write the strings in EN directly in JSX (no `t()` helper, no locale map). Pre-existing PT-BR text in any new PR must be translated as part of the change.
+
 ## Composition rules
 
 - **Pages are client components** that fetch data via `fetch('/api/…')` in `useEffect` and render loading / error / success states. They do not import Prisma; they do not call `identify()`.
