@@ -92,6 +92,14 @@
       --radius-pill: 9999px;
       --shadow-sm: 0 2px 6px oklch(0%,0,0/0.45);
       --shadow-md: 0 6px 16px oklch(0%,0,0/0.5);
+      --info: oklch(74% 0.13 200);
+      --info-soft: oklch(26% 0.06 200);
+      --warning-soft: oklch(30% 0.07 80);
+      --success-soft: oklch(28% 0.07 152);
+      --surface-glass-bg: rgb(7 12 15 / 80%);
+      --bg-iframe: oklch(10% 0.02 165 / 0.5);
+      --rail-width-collapsed: 60px;
+      --rail-width-expanded: 300px;
     }
     @media (prefers-reduced-motion: reduce) {
       :root { --motion-fast: 0ms; --motion-base: 0ms; --morph-dur: 0ms; }
@@ -1066,234 +1074,185 @@
     }
     .picker-token { color: var(--accent); }
 
-    /* ─── MOCKUP VIEW ───────────────────────────────────────────── */
+    /* ─── MOCKUP VIEW (floating-cockpit) ────────────────────────── */
     .mockup-view {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-    .mockup-view-toolbar {
-      height: 44px;
-      min-height: 44px;
-      background: var(--bg-elevated);
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      align-items: center;
-      padding: 0 12px;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-    .mockup-view-toolbar .toolbar-group {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .toolbar-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-xs);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-dim);
-      transition: background var(--motion-fast), color var(--motion-fast);
-    }
-    .toolbar-btn:hover { background: var(--surface-hover); color: var(--text); }
-    .toolbar-btn.active { background: var(--accent-overlay-soft); color: var(--accent); }
-    .toolbar-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
-    .toolbar-label {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-dim);
-      padding: 0 4px;
-    }
-    .mockup-view-body {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
-    .mockup-canvas-area {
-      flex: 1;
-      background: var(--bg);
       position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .mockup-canvas-placeholder {
-      width: 80%;
-      max-width: 900px;
-      aspect-ratio: 16/10;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .canvas-placeholder-bar {
-      height: 28px;
-      background: var(--bg-elevated);
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      align-items: center;
-      padding: 0 10px;
-      gap: 6px;
-    }
-    .canvas-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--border-strong);
-    }
-    .canvas-placeholder-body {
-      flex: 1;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .canvas-skel { border-radius: var(--radius-xs); background: var(--bg-card-active); }
-    .canvas-skel-title { width: 40%; height: 18px; }
-    .canvas-skel-text { width: 70%; height: 10px; }
-    .canvas-skel-text-short { width: 50%; height: 10px; }
-    .canvas-skel-block { width: 100%; height: 60px; border-radius: var(--radius-sm); }
-
-    /* Annotation markers */
-    .annotation-marker {
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: var(--accent);
-      color: var(--bg);
-      font-size: 11px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 0 0 3px oklch(74.4% 0.193 165 / 0.3);
-      transition: transform var(--motion-fast);
-    }
-    .annotation-marker:hover { transform: scale(1.15); }
-
-    /* Annotations panel */
-    .annotations-panel {
-      width: 320px;
-      min-width: 320px;
-      background: var(--bg-elevated);
-      border-left: 1px solid var(--border-subtle);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .annotations-panel-header {
-      height: 44px;
-      display: flex;
-      align-items: center;
-      padding: 0 14px;
-      gap: 8px;
-      border-bottom: 1px solid var(--border-subtle);
-      flex-shrink: 0;
-    }
-    .annotations-panel-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-bright);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-    .annotation-count {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--text-muted);
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-pill);
-      padding: 1px 6px;
-    }
-    .annotations-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px;
-    }
-    .annotation-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      padding: 12px;
-      margin-bottom: 8px;
-      transition: border-color var(--motion-fast);
-    }
-    .annotation-card:hover { border-color: var(--border); }
-    .annotation-card-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .annotation-number {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-size: 10px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .annotation-author {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .annotation-time {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-left: auto;
-    }
-    .annotation-text {
-      font-size: 13px;
-      color: var(--text-dim);
-      line-height: 1.5;
-    }
-    .annotation-text .intent-tag {
-      display: inline-block;
-      font-size: 10px;
-      font-weight: 600;
-      background: var(--accent-soft);
-      color: var(--accent);
-      border-radius: var(--radius-xs);
-      padding: 1px 5px;
-      margin-right: 4px;
-    }
-    .annotation-input-area {
-      padding: 8px;
-      border-top: 1px solid var(--border-subtle);
-      flex-shrink: 0;
-    }
-    .annotation-input {
       width: 100%;
-      min-height: 56px;
-      padding: 10px 12px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-family: var(--font-body);
-      color: var(--text-bright);
-      resize: vertical;
-      outline: none;
-      transition: border-color var(--motion-fast);
+      height: 100%;
+      background: var(--bg-iframe);
+      overflow: hidden;
     }
-    .annotation-input:focus { border-color: var(--accent); }
-    .annotation-input::placeholder { color: var(--text-muted); }
+    /* Full-bleed iframe replacement (skeleton mock so the prototype works
+       offline). In code this is a same-origin <iframe>. */
+    .mockup-canvas-mock {
+      position: absolute;
+      inset: 0;
+      background: #fafafa;
+      color: #1a1a1a;
+      font-family: var(--font-body);
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+    }
+    .mockup-canvas-mock .iframe-top {
+      height: 64px; background: #fff; border-bottom: 1px solid rgba(0,0,0,0.06);
+      display: flex; align-items: center; padding: 0 40px; gap: 24px;
+    }
+    .mockup-canvas-mock .iframe-brand { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; color: #0a0a0a; }
+    .mockup-canvas-mock .iframe-nav { display: flex; gap: 18px; font-size: 13px; color: #525252; margin-left: 24px; }
+    .mockup-canvas-mock .iframe-cta { margin-left: auto; padding: 7px 14px; background: #0a0a0a; color: #fff; border-radius: 9999px; font-size: 12px; font-weight: 600; }
+    .mockup-canvas-mock .iframe-hero { padding: 56px 80px 48px; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 48px; align-items: center; }
+    .mockup-canvas-mock .iframe-eyebrow { font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: #737373; margin-bottom: 14px; }
+    .mockup-canvas-mock .iframe-h1 { font-size: 52px; line-height: 1.05; letter-spacing: -0.025em; font-weight: 800; color: #0a0a0a; margin-bottom: 16px; }
+    .mockup-canvas-mock .iframe-sub { font-size: 14px; line-height: 1.55; color: #52525b; margin-bottom: 22px; max-width: 480px; }
+    .mockup-canvas-mock .iframe-btnrow { display: flex; gap: 10px; }
+    .mockup-canvas-mock .iframe-btn-primary { padding: 10px 18px; background: #0a0a0a; color: #fff; border-radius: 9999px; font-weight: 600; font-size: 13px; }
+    .mockup-canvas-mock .iframe-btn-secondary { padding: 10px 18px; background: transparent; color: #0a0a0a; border: 1px solid #e4e4e7; border-radius: 9999px; font-weight: 600; font-size: 13px; }
+    .mockup-canvas-mock .iframe-art { aspect-ratio: 4/3; background: linear-gradient(135deg, #fde68a 0%, #fb923c 60%, #7c2d12 100%); border-radius: 16px; box-shadow: 0 24px 48px rgba(0,0,0,0.15); }
+    .mockup-canvas-mock .iframe-feat { padding: 32px 80px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .mockup-canvas-mock .iframe-card { background: #fff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 20px; }
+    .mockup-canvas-mock .iframe-card-h { font-size: 14px; font-weight: 700; color: #0a0a0a; margin-bottom: 6px; }
+    .mockup-canvas-mock .iframe-card-b { font-size: 12px; color: #52525b; line-height: 1.5; }
+
+    /* PinLayer */
+    .pinlayer { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+    .pin {
+      --pin-h: 165; --pin-c: 0.18;
+      position: absolute; width: 30px; height: 30px;
+      border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+      background: rgb(7 12 15 / 70%);
+      backdrop-filter: blur(6px) saturate(140%);
+      -webkit-backdrop-filter: blur(6px) saturate(140%);
+      border: 1.5px solid oklch(78% var(--pin-c) var(--pin-h));
+      box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; opacity: 0.55; pointer-events: auto;
+      transition: opacity var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast);
+    }
+    .pin > span { transform: rotate(45deg); color: oklch(82% var(--pin-c) var(--pin-h)); font-weight: 800; font-size: 12px; font-family: var(--font-mono); line-height: 1; }
+    .pin:hover { opacity: 1; border-color: oklch(88% var(--pin-c) var(--pin-h)); }
+    .pin.active { opacity: 1; border-color: oklch(88% var(--pin-c) var(--pin-h)); box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 0 2px oklch(82% var(--pin-c) var(--pin-h) / 0.45); }
+    .pin[data-color="0"] { --pin-h: 165; --pin-c: 0.18; }
+    .pin[data-color="1"] { --pin-h: 195; --pin-c: 0.15; }
+    .pin[data-color="2"] { --pin-h: 220; --pin-c: 0.14; }
+    .pin[data-color="3"] { --pin-h: 245; --pin-c: 0.13; }
+    .pin[data-color="4"] { --pin-h: 265; --pin-c: 0.13; }
+    .pin[data-color="5"] { --pin-h: 285; --pin-c: 0.13; }
+    .pin[data-color="6"] { --pin-h: 305; --pin-c: 0.12; }
+
+    /* AnnotationsRail — floating glass column on the left */
+    .rail {
+      position: absolute; top: calc(50% - 200px); left: 24px; z-index: 30;
+      width: var(--rail-width-collapsed); max-height: 70vh;
+      background: var(--surface-glass-bg);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      border: 1px solid var(--border);
+      border-radius: 14px; box-shadow: var(--shadow-popover);
+      display: flex; flex-direction: column; overflow: visible;
+      transition: width var(--motion-base) var(--ease-spring);
+    }
+    .rail.pinned { width: var(--rail-width-expanded); border-color: var(--accent-overlay-mid); box-shadow: var(--shadow-popover), 0 0 0 1px var(--accent-overlay-soft); }
+    .rail .grab { display: flex; align-items: center; justify-content: center; width: 100%; height: 28px; flex-shrink: 0; cursor: grab; color: var(--text-muted); }
+    .rail .grab svg { width: 25px; height: 25px; transform: rotate(90deg); }
+    .rail .collapsed { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px 0; overflow-y: auto; }
+    .rail.pinned .collapsed { display: none; }
+    .rail .badge {
+      --pin-h: 165; --pin-c: 0.18;
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: oklch(30% calc(var(--pin-c) * 0.7) var(--pin-h) / 0.32);
+      border: 1px solid oklch(60% var(--pin-c) var(--pin-h) / 0.45);
+      color: oklch(85% var(--pin-c) var(--pin-h));
+      font-size: 12px; font-weight: 700; font-family: var(--font-mono); cursor: pointer;
+      transition: transform var(--motion-fast) var(--ease-spring);
+    }
+    .rail .badge:hover { transform: scale(1.08); }
+    .rail .badge[data-color="0"] { --pin-h: 165; --pin-c: 0.18; }
+    .rail .badge[data-color="1"] { --pin-h: 195; --pin-c: 0.15; }
+    .rail .badge[data-color="2"] { --pin-h: 220; --pin-c: 0.14; }
+    .rail .badge[data-color="3"] { --pin-h: 245; --pin-c: 0.13; }
+    .rail .badge[data-color="4"] { --pin-h: 265; --pin-c: 0.13; }
+    .rail .badge[data-color="5"] { --pin-h: 285; --pin-c: 0.13; }
+    .rail .badge[data-color="6"] { --pin-h: 305; --pin-c: 0.12; }
+    .rail .expanded-body { display: none; flex-direction: column; flex: 1; min-height: 0; }
+    .rail.pinned .expanded-body { display: flex; }
+    .rail .head { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px 6px 14px; border-bottom: 1px solid var(--border-subtle); }
+    .rail .head-title { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+    .rail .count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; background: var(--bg-card-active); border-radius: 9999px; font-family: var(--font-mono); font-size: 10px; font-weight: 800; color: var(--text-bright); }
+    .rail .lock { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--accent-bright); background: var(--accent-soft); border-radius: var(--radius-xs); }
+    .rail .lock svg { width: 14px; height: 14px; }
+    .rail-list { list-style: none; padding: 6px 0 8px; overflow-y: auto; flex: 1; min-height: 0; margin: 0; }
+    .rail-item { padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); display: grid; gap: 5px; cursor: pointer; position: relative; transition: background var(--motion-fast); }
+    .rail-item:hover { background: var(--surface-hover); }
+    .rail-item:last-child { border-bottom: 0; }
+    .rail-item.active { background: oklch(28% 0.08 165 / 0.3); box-shadow: inset 3px 0 0 var(--accent); }
+    .rail-item .meta { display: flex; align-items: center; gap: 8px; }
+    .rail-item .dot-badge {
+      width: 18px; height: 18px; border-radius: 50%; font-family: var(--font-mono); font-size: 9px; font-weight: 800;
+      display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+      background: linear-gradient(135deg, oklch(78% var(--pin-c) var(--pin-h)), oklch(60% var(--pin-c) var(--pin-h)));
+      color: oklch(15% 0.04 var(--pin-h));
+      box-shadow: 0 0 0 1px oklch(35% var(--pin-c) var(--pin-h) / 0.4);
+      --pin-h: 165; --pin-c: 0.18;
+    }
+    .rail-item .dot-badge[data-color="0"] { --pin-h: 165; --pin-c: 0.18; }
+    .rail-item .dot-badge[data-color="1"] { --pin-h: 195; --pin-c: 0.15; }
+    .rail-item .dot-badge[data-color="2"] { --pin-h: 220; --pin-c: 0.14; }
+    .rail-item .dot-badge[data-color="3"] { --pin-h: 245; --pin-c: 0.13; }
+    .rail-item .author { font-size: 11px; font-weight: 700; color: var(--text-bright); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rail-item .pill { padding: 2px 8px; border-radius: 9999px; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0; }
+    .rail-item .pill.open { background: var(--info-soft); color: var(--info); }
+    .rail-item .pill.review { background: var(--warning-soft); color: var(--warning); }
+    .rail-item .pill.resolved { background: var(--success-soft); color: var(--success); }
+    .rail-item .body-text { font-size: 12px; color: var(--text); line-height: 1.45; }
+    .rail-item .body-text .intent {
+      display: inline-block; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
+      background: var(--accent-soft); color: var(--accent-bright); border-radius: var(--radius-xs);
+      padding: 1px 5px; margin-right: 5px; text-transform: uppercase;
+    }
+    .rail-item .row-foot { display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: var(--text-dim); font-family: var(--font-mono); letter-spacing: 0.02em; }
+    .rail-foot { position: sticky; bottom: 0; display: flex; justify-content: flex-start; padding: 8px 14px; background: linear-gradient(to bottom, transparent, var(--surface-glass-bg) 40%); flex-shrink: 0; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+    .rail-add { display: flex; align-items: center; height: 32px; width: 32px; padding: 0; background: var(--accent-soft); color: var(--accent-bright); border: 1px solid var(--accent-overlay-mid); border-radius: 9999px; overflow: hidden; flex-shrink: 0; transition: width var(--motion-base) var(--ease-spring), background var(--motion-fast); }
+    .rail-add:hover { background: var(--accent-overlay-mid); }
+    .rail.pinned .rail-add { width: 100%; }
+    .rail-add .icon { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
+    .rail-add .icon svg { width: 14px; height: 14px; }
+    .rail-add .label { display: none; align-items: center; justify-content: space-between; gap: 8px; flex: 1; padding: 0 14px 0 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+    .rail.pinned .rail-add .label { display: flex; }
+    .rail-add .shortcut { padding: 2px 5px; background: var(--bg-card-active); border-radius: var(--radius-xs); font-family: var(--font-mono); font-size: 9px; font-weight: 600; color: var(--text-dim); letter-spacing: 0.02em; text-transform: none; }
+
+    /* CanvasToolbar — center-bottom floating dock */
+    .canvas-toolbar {
+      position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 4px; padding: 6px;
+      background: var(--surface-glass-bg);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      border: 1px solid var(--border);
+      border-radius: 14px; box-shadow: var(--shadow-popover);
+      z-index: 20;
+    }
+    .canvas-toolbar .tb-group { display: inline-flex; align-items: center; gap: 2px; padding: 0 8px; border-right: 1px solid var(--border-subtle); height: 32px; }
+    .canvas-toolbar .tb-group:last-of-type { border-right: 0; padding-right: 4px; }
+    .canvas-toolbar .tb-group:first-of-type { padding-left: 4px; }
+    .canvas-toolbar .tb-btn { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-muted); transition: background var(--motion-fast), color var(--motion-fast); }
+    .canvas-toolbar .tb-btn:hover { background: var(--surface-hover); color: var(--text-bright); }
+    .canvas-toolbar .tb-btn.active { background: var(--accent-soft); color: var(--accent-bright); box-shadow: inset 0 0 0 1px var(--accent-overlay-mid); }
+    .canvas-toolbar .tb-btn svg { width: 16px; height: 16px; }
+    .canvas-toolbar .zoom-label { font-family: var(--font-mono); font-size: 12px; color: var(--text-bright); min-width: 48px; height: 32px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; letter-spacing: -0.01em; font-weight: 500; background: transparent; border: 0; border-radius: var(--radius-sm); }
+    .canvas-toolbar .zoom-label:hover { background: var(--surface-hover); }
+    .canvas-toolbar .tb-grab { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 25px; height: 32px; margin-left: 2px; cursor: grab; color: var(--text-muted); border-radius: var(--radius-xs); }
+    .canvas-toolbar .tb-grab svg { width: 25px; height: 25px; }
+    .vchip {
+      display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px 0 10px;
+      background: var(--accent-soft); border: 1px solid var(--accent-overlay-mid); border-radius: 9999px;
+      color: var(--accent-bright); font-size: 12px; font-weight: 700; font-family: var(--font-mono);
+      letter-spacing: -0.01em; cursor: pointer; transition: all var(--motion-fast) var(--ease-standard);
+    }
+    .vchip:hover { background: var(--accent-overlay-mid); }
+    .vchip .clock { width: 13px; height: 13px; color: var(--accent); opacity: 0.85; }
+    .vchip .chev { width: 11px; height: 11px; color: var(--accent); }
 
     /* ─── TOAST ─────────────────────────────────────────────────── */
     #toast-container {
@@ -2034,99 +1993,118 @@ function renderMockupView(el, mockupId, projectName, mockupName) {
   el.style.padding = '0';
   el.innerHTML = `
     <div class="mockup-view">
-      <div class="mockup-view-toolbar">
-        <div class="toolbar-group">
-          <button class="toolbar-btn active" title="Select">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
-          </button>
-          <button class="toolbar-btn" title="Draw">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
-          </button>
-          <button class="toolbar-btn" title="Arrow">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </button>
-          <button class="toolbar-btn" title="Text">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9.5" y1="20" x2="14.5" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-          </button>
+      <!-- Full-bleed mockup canvas (iframe replacement) -->
+      <div class="mockup-canvas-mock">
+        <div class="iframe-top">
+          <span class="iframe-brand">Lumen Coffee</span>
+          <div class="iframe-nav"><span>Story</span><span>Beans</span><span>Café</span><span>Wholesale</span></div>
+          <span class="iframe-cta">Visit Café</span>
         </div>
-        <div class="toolbar-divider"></div>
-        <span class="toolbar-label">${mockupName || 'Hero v3'}</span>
-        <div style="flex:1"></div>
-        <div class="toolbar-group">
-          <button class="toolbar-btn" title="Zoom in">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-          </button>
-          <span class="toolbar-label">100%</span>
-          <button class="toolbar-btn" title="Zoom out">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-          </button>
+        <div class="iframe-hero">
+          <div>
+            <div class="iframe-eyebrow">Single-origin · Slow-batch · Brooklyn</div>
+            <h1 class="iframe-h1">A morning that tastes like somewhere.</h1>
+            <p class="iframe-sub">Lumen sources micro-lots from small farms across Ethiopia and Colombia, roasts in tiny batches, and ships every Tuesday — never a day older than ten.</p>
+            <div class="iframe-btnrow"><button class="iframe-btn-primary">Shop subscriptions</button><button class="iframe-btn-secondary">Read the journal</button></div>
+          </div>
+          <div class="iframe-art"></div>
+        </div>
+        <div class="iframe-feat">
+          <div class="iframe-card"><div class="iframe-card-h">Roasted Tuesdays</div><div class="iframe-card-b">Beans ship the same day they leave the roaster — peak in 72 hours.</div></div>
+          <div class="iframe-card"><div class="iframe-card-h">No subscription trap</div><div class="iframe-card-b">Pause, swap, cancel from a single link — no email back-and-forth.</div></div>
+          <div class="iframe-card"><div class="iframe-card-h">Café in-residence</div><div class="iframe-card-b">Park Slope, every weekend. New origin every two weeks.</div></div>
         </div>
       </div>
-      <div class="mockup-view-body">
-        <div class="mockup-canvas-area">
-          <div class="mockup-canvas-placeholder">
-            <div class="canvas-placeholder-bar">
-              <span class="canvas-dot"></span>
-              <span class="canvas-dot"></span>
-              <span class="canvas-dot"></span>
-            </div>
-            <div class="canvas-placeholder-body">
-              <div class="canvas-skel canvas-skel-title"></div>
-              <div class="canvas-skel canvas-skel-text"></div>
-              <div class="canvas-skel canvas-skel-text-short"></div>
-              <div class="canvas-skel canvas-skel-block"></div>
-              <div class="canvas-skel canvas-skel-text"></div>
-              <div class="canvas-skel canvas-skel-text-short"></div>
-            </div>
-          </div>
-          <div class="annotation-marker" style="top:25%;left:30%">1</div>
-          <div class="annotation-marker" style="top:55%;left:65%">2</div>
-          <div class="annotation-marker" style="top:70%;left:20%">3</div>
+
+      <!-- PinLayer (over the canvas, beneath the chrome) -->
+      <div class="pinlayer">
+        <div class="pin" data-color="0" style="top:128px;left:152px"><span>1</span></div>
+        <div class="pin active" data-color="1" style="top:226px;left:362px"><span>2</span></div>
+        <div class="pin" data-color="2" style="top:188px;left:608px"><span>3</span></div>
+        <div class="pin" data-color="3" style="top:310px;left:286px"><span>4</span></div>
+        <div class="pin" data-color="4" style="top:436px;left:476px"><span>5</span></div>
+      </div>
+
+      <!-- AnnotationsRail (pinned open on first load) -->
+      <aside class="rail pinned" aria-label="Annotations">
+        <button class="grab" title="Drag to reposition">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+        </button>
+        <div class="collapsed">
+          <button class="badge" data-color="0">1</button>
+          <button class="badge" data-color="1">2</button>
+          <button class="badge" data-color="2">3</button>
+          <button class="badge" data-color="3">4</button>
+          <button class="badge" data-color="4">5</button>
         </div>
-        <div class="annotations-panel">
-          <div class="annotations-panel-header">
-            <span class="annotations-panel-title">Annotations</span>
-            <span class="annotation-count">3</span>
-          </div>
-          <div class="annotations-list">
-            <div class="annotation-card">
-              <div class="annotation-card-header">
-                <span class="annotation-number">1</span>
-                <span class="annotation-author">Agent UX</span>
-                <span class="annotation-time">2h ago</span>
+        <div class="expanded-body">
+          <header class="head">
+            <div class="head-title"><span>Annotations</span><span class="count">5</span></div>
+            <button class="lock" title="Unlock"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L8 7v3H6v10h12V10h-2V7l-4-5zm0 2.7L14.5 8H9.5L12 4.7zM8 12h8v6H8v-6z"/></svg></button>
+          </header>
+          <ul class="rail-list">
+            <li class="rail-item">
+              <div class="meta">
+                <span class="dot-badge" data-color="0">1</span>
+                <span class="author">Agent UX</span>
+                <span class="pill open">Open</span>
               </div>
-              <div class="annotation-text">
-                <span class="intent-tag">FIX</span>
-                Increase the contrast ratio of this heading. Currently at 3.2:1, needs to be at least 4.5:1 for WCAG AA.
+              <div class="body-text"><span class="intent">fix</span>Increase the contrast ratio of this heading. Currently 3.2:1, needs ≥ 4.5:1 (WCAG AA).</div>
+              <div class="row-foot"><span>2h ago</span><span>↩ 2</span></div>
+            </li>
+            <li class="rail-item active">
+              <div class="meta">
+                <span class="dot-badge" data-color="1">2</span>
+                <span class="author">Alexandre</span>
+                <span class="pill review">Review</span>
               </div>
-            </div>
-            <div class="annotation-card">
-              <div class="annotation-card-header">
-                <span class="annotation-number">2</span>
-                <span class="annotation-author">Alexandre</span>
-                <span class="annotation-time">1h ago</span>
+              <div class="body-text"><span class="intent">change</span>CTA copy should match the spec — "Start a subscription", not "Shop subscriptions".</div>
+              <div class="row-foot"><span>1h ago</span><span>↩ 1</span></div>
+            </li>
+            <li class="rail-item">
+              <div class="meta">
+                <span class="dot-badge" data-color="2">3</span>
+                <span class="author">Agent UX</span>
+                <span class="pill resolved">Done</span>
               </div>
-              <div class="annotation-text">
-                <span class="intent-tag">CHANGE</span>
-                Replace this CTA button with the primary variant from the design system. It should use the accent color.
+              <div class="body-text"><span class="intent">add</span>Add a secondary action link below the CTA — "Read the journal".</div>
+              <div class="row-foot"><span>45m ago</span></div>
+            </li>
+            <li class="rail-item">
+              <div class="meta">
+                <span class="dot-badge" data-color="3">4</span>
+                <span class="author">Riley North</span>
+                <span class="pill open">Open</span>
               </div>
-            </div>
-            <div class="annotation-card">
-              <div class="annotation-card-header">
-                <span class="annotation-number">3</span>
-                <span class="annotation-author">Agent UX</span>
-                <span class="annotation-time">45m ago</span>
-              </div>
-              <div class="annotation-text">
-                <span class="intent-tag">ADD</span>
-                Add a secondary action link below the CTA. Text: "Learn more about pricing".
-              </div>
-            </div>
-          </div>
-          <div class="annotation-input-area">
-            <textarea class="annotation-input" placeholder="Add annotation... (click on the mockup to place a marker)"></textarea>
+              <div class="body-text">Cards row needs breathing room at 1280 px — currently collides with the hero CTA.</div>
+              <div class="row-foot"><span>2d ago</span></div>
+            </li>
+          </ul>
+          <div class="rail-foot">
+            <button class="rail-add">
+              <span class="icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span>
+              <span class="label"><span>New annotation</span><span class="shortcut">⌘⇧N</span></span>
+            </button>
           </div>
         </div>
+      </aside>
+
+      <!-- CanvasToolbar — zoom + version chip + drag -->
+      <div class="canvas-toolbar" role="toolbar" aria-label="Mockup actions">
+        <div class="tb-group">
+          <button class="tb-btn" title="Zoom out"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 7h8v2H4z"/></svg></button>
+          <button class="zoom-label" title="Reset zoom">100%</button>
+          <button class="tb-btn" title="Zoom in"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M9 4H7v3H4v2h3v3h2V9h3V7H9z"/></svg></button>
+          <button class="tb-btn" title="Fullscreen (F)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 12h2v1H2v-3h1v2zm10-2h-2v1h1v1h-1v1h2v-3zm-3-7v1h2v2h1V3h-3zm-7 3V4h2V3H2v3h1z"/></svg></button>
+        </div>
+        <div class="tb-group">
+          <button class="vchip" title="Versions">
+            <svg class="clock" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 7 7 7 7 0 0 0-7-7zm0 13a6 6 0 1 1 6-6 6 6 0 0 1-6 6zm3-6H8V5h1v2h2z"/></svg>
+            <span>${mockupName ? 'v3' : 'v1'}</span>
+            <svg class="chev" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4z"/></svg>
+          </button>
+        </div>
+        <button class="tb-grab" title="Drag toolbar"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button>
       </div>
     </div>
   `;
