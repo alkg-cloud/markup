@@ -72,8 +72,8 @@ export function RecentsSection({ projectSlug, mockups }: RecentsSectionProps) {
   if (visibleIds.length === 0) return null;
 
   return (
-    <section aria-label="Recentes">
-      <div className={headerStyles.header}>Recentes</div>
+    <section aria-label="Recents">
+      <div className={headerStyles.header}>Recents</div>
       <div className={listStyles.list}>
         {visibleIds.map((id) => {
           const m = mockups[id];

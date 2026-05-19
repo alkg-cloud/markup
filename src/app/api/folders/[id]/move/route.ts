@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { identify, requireAdmin } from '@/lib/auth/identify';
+import { handleAuthError, identify, requireAdmin } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { moveFolder } from '@/lib/project/service';
-
-interface ErrorWithStatus extends Error {
-  status?: number;
-}
 
 const moveSchema = z.object({
   parentId: z.string().min(1).nullable(),
@@ -19,8 +15,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   try {
     requireAdmin(await identify(req));
   } catch (e) {
-    const err = e as ErrorWithStatus;
-    return NextResponse.json({ error: err.message }, { status: err.status ?? 500 });
+    return handleAuthError(e);
   }
   const { id } = await ctx.params;
   const parsed = moveSchema.safeParse(await req.json().catch(() => ({})));

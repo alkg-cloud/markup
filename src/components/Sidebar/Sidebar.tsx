@@ -11,7 +11,13 @@ const SIDEBAR_COOKIE_KEY = 'markup-sidebar-collapsed';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 function writeStoredCollapsedState(next: boolean) {
+  // The Cookie Store API is still unshipped on Safari (and gated
+  // behind an origin trial on Firefox), so `document.cookie` remains
+  // the portable channel for a single short string. The server reads
+  // this cookie via `next/headers` to render the matching
+  // `defaultCollapsed` on the first paint.
   try {
+    // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API not portable; see comment above.
     document.cookie = `${SIDEBAR_COOKIE_KEY}=${next ? 'true' : 'false'}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}; samesite=lax`;
   } catch {
     // Cookie write can fail in some browser modes; SSR will catch up

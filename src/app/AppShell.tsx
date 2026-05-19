@@ -31,11 +31,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [shellError, setShellError] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
     if (authLoading || !identity) return;
-    fetch('/api/shell', { credentials: 'include' })
+    const controller = new AbortController();
+    fetch('/api/shell', { credentials: 'include', signal: controller.signal })
       .then(async (res) => {
-        if (cancelled) return;
         if (res.status === 401) {
           window.location.replace('/login');
           return;
@@ -45,14 +44,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           return;
         }
         const json: ShellPayload = await res.json();
-        if (!cancelled) setShell(json);
+        setShell(json);
       })
       .catch((e) => {
-        if (!cancelled) setShellError(String(e));
+        if (e?.name === 'AbortError') return;
+        setShellError(String(e));
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [authLoading, identity]);
 
   if (authLoading || !identity || !shell) {

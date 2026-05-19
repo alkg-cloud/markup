@@ -6,6 +6,7 @@ import { identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { applyUnifiedDiff, DiffApplyError } from '@/lib/diff/apply-unified';
 import { env } from '@/lib/env';
+import { logger } from '@/lib/logger';
 import { addVersionFromFiles } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
 
@@ -94,6 +95,17 @@ async function applyVersionPatch(req: Request, ctx: { params: Promise<{ id: stri
     createdBy: ident.kind === 'user' ? ident.userId : ident.tokenId,
     createdByType: ident.kind,
   });
+  logger.info(
+    {
+      event: 'mockup_version_patched',
+      mockupId,
+      versionId: version.id,
+      baseVersionId: base_version_id,
+      patchedFiles: Object.keys(patches),
+      identityKind: ident.kind,
+    },
+    'version patched',
+  );
 
   return NextResponse.json(
     { id: version.id, mockupId, createdAt: version.createdAt },

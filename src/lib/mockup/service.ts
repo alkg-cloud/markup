@@ -61,7 +61,9 @@ export async function renameMockup(id: string, name: string) {
   if (!existing) return null;
   const renamed = name !== existing.name;
   const slug = renamed ? await ensureUniqueSlug(name, id) : existing.slug;
-  return prisma.mockup.update({ where: { id }, data: { name, slug } });
+  const updated = await prisma.mockup.update({ where: { id }, data: { name, slug } });
+  if (renamed) log.info({ mockupId: id }, 'mockup_renamed');
+  return updated;
 }
 
 export async function createMockupFromZip(input: CreateInput) {
@@ -155,6 +157,15 @@ export async function addVersion(input: {
     where: { id: input.mockupId },
     data: { currentVersionId: vid },
   });
+  log.info(
+    {
+      mockupId: input.mockupId,
+      versionId: vid,
+      number: version.number,
+      createdByType: input.createdByType,
+    },
+    'mockup_version_created',
+  );
   return version;
 }
 
@@ -251,5 +262,7 @@ export async function listMockups(opts: { status: string[]; cursor?: string; lim
 }
 
 export async function setMockupStatus(id: string, status: 'open' | 'resolved' | 'archived') {
-  return prisma.mockup.update({ where: { id }, data: { status } });
+  const updated = await prisma.mockup.update({ where: { id }, data: { status } });
+  log.info({ mockupId: id, status }, 'mockup_status_changed');
+  return updated;
 }
