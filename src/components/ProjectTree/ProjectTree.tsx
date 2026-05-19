@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { GoGrabber } from 'react-icons/go';
 import { PICKER_ICONS } from '@/components/IconPicker/icons';
 import { usePopover } from '@/lib/popover/usePopover';
 import { MAX_FOLDER_DEPTH } from '@/lib/project/constants';
@@ -130,19 +131,6 @@ function KebabIcon() {
       <circle cx="4" cy="8" r="1.2" />
       <circle cx="8" cy="8" r="1.2" />
       <circle cx="12" cy="8" r="1.2" />
-    </svg>
-  );
-}
-
-function DragHandleIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
-      <circle cx="4" cy="3" r="1" />
-      <circle cx="8" cy="3" r="1" />
-      <circle cx="4" cy="6" r="1" />
-      <circle cx="8" cy="6" r="1" />
-      <circle cx="4" cy="9" r="1" />
-      <circle cx="8" cy="9" r="1" />
     </svg>
   );
 }
@@ -850,7 +838,7 @@ export function ProjectTree({
                     className={styles.dragHandle}
                     aria-label={`Arrastar ${displayLabel}`}
                   >
-                    <DragHandleIcon />
+                    <GoGrabber aria-hidden="true" />
                   </button>
                 ) : null}
 

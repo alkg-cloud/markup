@@ -285,7 +285,8 @@
 /* ── Drag handle ────────────────────────────────────────────────────── */
 
 .dragHandle {
-  width: 12px;
+  width: 14px;
+  height: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -297,6 +298,10 @@
   border: none;
   padding: 0;
   transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.dragHandle > svg {
+  width: 14px;
+  height: 14px;
 }
 
 .treeItem:hover .dragHandle {
