@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { identify, requireAdmin } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { promoteVersion } from '@/lib/mockup/version-service';
 
 interface ErrorWithStatus extends Error {
@@ -7,6 +8,8 @@ interface ErrorWithStatus extends Error {
 }
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string; vid: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   try {
     requireAdmin(await identify(req));
   } catch (e) {

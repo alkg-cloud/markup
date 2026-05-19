@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { verifyPassword } from '@/lib/auth/password';
 import { createSession, SESSION_COOKIE, SESSION_TTL_SECONDS } from '@/lib/auth/session';
 import { prisma } from '@/lib/prisma';
@@ -9,6 +10,8 @@ const bodySchema = z.object({ email: z.string().email(), password: z.string().mi
 
 // Public — entry point that establishes the session; no identity exists yet.
 export async function POST(req: Request) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   const ip = clientIp(req);
   const limit = loginLimiter.consume(`login:${ip}`);
   if (!limit.ok) {

@@ -10,6 +10,7 @@ import {
 } from '@/lib/annotation/service';
 import { ANNOTATION_STATUSES } from '@/lib/annotation/status';
 import { identify } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { prisma } from '@/lib/prisma';
 
 // AppMain redesign: comment-only annotation payload. Detected by JSON
@@ -34,6 +35,8 @@ const CommentPayloadSchema = z.object({
 });
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   const id = await identify(req);
   if (!id) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id: mockupId } = await ctx.params;
