@@ -200,6 +200,30 @@ if (!ok) return;
 
 For one-off messages (e.g. surfacing an API error), call `confirm()` with a single button + a cancel label of "Dismiss" — same component, no extra primitive. For multi-step flows or forms, build on top of `@radix-ui/react-dialog` and host the new component under `src/components/<Name>Dialog/`.
 
+## Glass surfaces: floatingSurface / floatingScrim, no exceptions
+
+Every component that paints **above other content** — dialogs, popovers, tooltips, alerts, toasts, the rail, the canvas toolbar, the marking bar, the annotation composer, the sidebar, the command palette, every custom popup — must adopt the canonical glass treatment by composing from `src/styles/glass.module.css`. The utility ships two classes:
+
+- `floatingSurface` — sets `background: var(--surface-glass-bg)`, `backdrop-filter: blur(16px) saturate(140%)`, `border: var(--surface-glass-border)`. Use on the floating card / panel / popover itself.
+- `floatingScrim` — sets `background: var(--scrim-glass-bg)`, `backdrop-filter: blur(16px) saturate(140%)`. Use on the dimming scrim under a modal.
+
+Required pattern in any CSS Module that paints a floating overlay:
+```css
+.myDialog {
+  composes: floatingSurface from '../../styles/glass.module.css';
+  /* …layout, padding, border-radius, box-shadow, z-index… */
+}
+```
+
+Forbidden:
+- Re-declaring `background`, `backdrop-filter`, and `border` inline on a floating component. The utility owns these properties; the component owns position / size / radius / shadow.
+- Writing `-webkit-backdrop-filter` manually next to `backdrop-filter`. Lightning CSS de-dupes the pair and silently keeps only the prefixed form — Chrome then ignores it. Declare only the unprefixed property; the build tool auto-prefixes.
+- Using `var()` inside `backdrop-filter`. Lightning CSS strips that declaration too. The utility writes the value literally.
+
+The tooltip (`src/components/Tooltip/Tooltip.css`) is the only floating element not composed from the utility — it's a global CSS file because `popover="hint"` lives at the document root. It declares the same property block inline by exception; keep its values in lockstep with the utility.
+
+See `docs/feature-catalog.md § glass-surface-standard`.
+
 ## Popovers: usePopover, no exceptions
 
 Every popover (kebab menu, version chip, emoji picker, account menu, anchored option list, anything that floats next to a trigger) MUST use the `usePopover` hook from `src/lib/popover/usePopover.ts`. The hook wraps the native HTML popover API (`popover="auto"` + `popovertarget`) and pairs it with the project's position calculator (`src/lib/popover/position.ts`). The popover paints in the browser's top-layer — the same guarantee `TooltipPortal` uses — so it escapes every overflow ancestor and stacking context. The browser owns light-dismiss, ESC-to-close, and the single-active invariant.
