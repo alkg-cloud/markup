@@ -17,6 +17,8 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 | `POST` | `/api/auth/login` | Email + password → session cookie |
 | `POST` | `/api/auth/logout` | Clear session cookie |
 | `POST` | `/api/auth/setup` | First-run admin creation (idempotent) |
+| `GET` | `/api/auth/setup-status` | Public — returns `{ completed: boolean }` so `/login` and `/setup` can route themselves client-side |
+| `GET` | `/api/auth/me` | Resolve the current identity into `{ kind, id, name?, email? }` for the client-side auth guard |
 
 ### Projects
 
@@ -30,6 +32,8 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 | `GET` | `/api/projects/[id]/tree` | Full recursive tree (folders + mockups) for sidebar |
 | `POST` | `/api/projects/[id]/folders` | Create folder (`name`, optional `parentId`) |
 | `POST` | `/api/projects/reorder` | Reorder projects (`ids` array) |
+| `GET` | `/api/projects/by-slug/[slug]/view` | Aggregator for `/projects/[slug]` — project + root folders/mockups + breadcrumb |
+| `GET` | `/api/projects/by-slug/[slug]/resolve?path=…` | Aggregator for `/projects/[slug]/[...path]` — returns folder or mockup payload with breadcrumbs |
 
 ### Folders
 
@@ -51,6 +55,8 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 | `POST` | `/api/mockups/[id]/version` | Add new version from zip (full upload) |
 | `PATCH` | `/api/mockups/[id]/version-patch` | Add new version from unified diff |
 | `GET` | `/api/mockups/[id]/diff?from=<vid>&to=<vid>&format=unified\|json` | Text-mode diff |
+| `GET` | `/api/mockups/[id]/diff-versions?from=<vid>&to=<vid>` | Aggregator for `/mockups/[id]/diff` — resolves the version pair + viewer href + timestamps |
+| `GET` | `/api/mockups/[id]/viewer` | Aggregator for the mockup viewer page — mockup + versions + annotations + thread tree + display names |
 | `GET` | `/api/mockups/[id]/thumbnail` | PNG thumbnail (sidecar) |
 | `POST` | `/api/mockups/[id]/thumbnail` | Replace thumbnail |
 | `GET` | `/api/mockups/[id]/versions` | List versions |
@@ -67,6 +73,7 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 | `GET` | `/api/annotations/[id]/screenshot` | Full PNG screenshot |
 | `GET` | `/api/annotations/[id]/region` | Bbox-cropped PNG (sidecar-cached) |
 | `GET` | `/api/annotations/[id]/intent` | Server-resolved intent (sidecar-cached) |
+| `GET` | `/api/annotations/[id]/detail` | Aggregator for `/annotations/[id]` — annotation + screenshot dims + tldraw JSON + thread + names + mockup blurb + viewerHref |
 | `PUT` | `/api/annotations/[id]/tldraw` | Persist edited drawings |
 
 ### Agent
@@ -92,6 +99,12 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 | `POST` | `/api/agent-tokens` | Create (returns `plaintext` once) |
 | `DELETE` | `/api/agent-tokens/[id]` | Revoke |
 
+### Shell
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/shell` | Single aggregator for `AppShell` — viewer profile + tree (projects + orphans) + mockup names + recents map + persisted sidebar-collapsed flag |
+
 ### Mockup serve
 
 | Method | Path | Purpose |
@@ -111,6 +124,7 @@ All routes call `identify(req)` first, except for three documented public surfac
 | `GET /api/health` | Container healthcheck — must respond before any session can exist |
 | `POST /api/auth/login` | Entry point that establishes the session |
 | `POST /api/auth/setup` | First-run admin creation; no identity exists yet |
+| `GET /api/auth/setup-status` | Drives client-side routing for `/login` and `/setup` before any session can exist |
 
 Each of these routes carries an inline comment documenting the reason. Any new public surface must do the same.
 

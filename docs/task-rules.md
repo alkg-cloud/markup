@@ -67,7 +67,7 @@ The migration file in `prisma/migrations/<timestamp>_<name>/migration.sql` and t
 - Component states cover `:hover`, `:focus-visible`, `:active`
 - New design tokens go in `src/styles/tokens.css`, not inline
 - `prefers-reduced-motion` overrides accompany every new `@keyframes` rule
-- New routes/pages added to `src/app/` follow the `page.tsx` server component + `*Client.tsx` client component pattern when interactivity is needed
+- New routes/pages added to `src/app/` are client components (`'use client'`) that fetch their data via `fetch('/api/…')`; co-located helpers (`*Client.tsx`, `*Form.tsx`, `*Viewer.tsx`) handle sub-surfaces. See [Frontend INDEX](frontend/INDEX.md) and [Data fetching](frontend/data-fetching.md).
 
 ### Schema change
 

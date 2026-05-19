@@ -1,5 +1,7 @@
-import { redirect } from 'next/navigation';
-import { isSetupCompleted } from '@/lib/auth/setup-state';
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Form } from './Form';
 
 /* ─── Inline styles — no new deps, pure CSS vars from tokens.css ─────────── */
@@ -34,8 +36,36 @@ const wordmarkDotStyle: React.CSSProperties = {
   marginLeft: 2,
 };
 
-export default async function LoginPage() {
-  if (!(await isSetupCompleted())) redirect('/setup');
+export default function LoginPage() {
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/auth/setup-status')
+      .then(async (res) => {
+        if (cancelled) return;
+        if (!res.ok) {
+          setReady(true);
+          return;
+        }
+        const json: { completed: boolean } = await res.json();
+        if (cancelled) return;
+        if (!json.completed) {
+          router.replace('/setup');
+          return;
+        }
+        setReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  if (!ready) return null;
 
   return (
     <>
@@ -66,7 +96,6 @@ export default async function LoginPage() {
       <main className="mu-login-grid" style={pageStyle}>
         {/* Left panel — visible ≥ 900px */}
         <div className="mu-login-left" style={leftPanelStyle}>
-          {/* Top: wordmark + tagline */}
           <div>
             <div style={wordmarkStyle}>
               <span>Markup</span>
@@ -90,7 +119,6 @@ export default async function LoginPage() {
             </p>
           </div>
 
-          {/* Bottom: meta */}
           <div
             style={{
               fontFamily: 'var(--font-mono)',
@@ -104,7 +132,6 @@ export default async function LoginPage() {
           </div>
         </div>
 
-        {/* Right panel — form */}
         <div
           className="mu-login-right"
           style={{
@@ -116,7 +143,6 @@ export default async function LoginPage() {
           }}
         >
           <div style={{ width: '100%', maxWidth: 400, marginInline: 'auto' }}>
-            {/* Mobile wordmark — hidden ≥ 900px */}
             <div
               className="mu-login-wordmark-mobile"
               style={{ ...wordmarkStyle, marginBottom: 'var(--space-3xl)' }}
@@ -127,7 +153,6 @@ export default async function LoginPage() {
               </span>
             </div>
 
-            {/* Heading */}
             <h1
               style={{
                 fontFamily: 'var(--font-display)',
@@ -160,5 +185,3 @@ export default async function LoginPage() {
     </>
   );
 }
-
-export const dynamic = 'force-dynamic';

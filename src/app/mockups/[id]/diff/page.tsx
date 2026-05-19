@@ -1,41 +1,74 @@
-import { cookies, headers } from 'next/headers';
+'use client';
+
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
-import { identify } from '@/lib/auth/identify';
-import { isSetupCompleted } from '@/lib/auth/setup-state';
-import { pathForMockup } from '@/lib/mockup/url';
+import { notFound, useParams, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { DiffViewer } from './DiffViewer';
-import { resolveDiffParams } from './resolve';
 
-export default async function DiffPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string; to?: string }>;
-}) {
-  if (!(await isSetupCompleted())) redirect('/setup');
-  const cs = await cookies();
-  const hs = await headers();
-  const fakeReq = {
-    cookies: {
-      get: (k: string) => {
-        const c = cs.get(k);
-        return c ? { value: c.value } : undefined;
-      },
-    },
-    headers: { get: (k: string) => hs.get(k) },
-  } as Parameters<typeof identify>[0];
-  const session = await identify(fakeReq);
-  if (!session) redirect('/login');
+type DiffPayload =
+  | {
+      kind: 'ok';
+      viewerHref: string;
+      from: { id: string; createdAt: string };
+      to: { id: string; createdAt: string };
+    }
+  | { kind: 'invalid'; viewerHref: string };
 
-  const { id: mockupId } = await params;
-  const { from, to } = await searchParams;
-  const resolved = await resolveDiffParams(mockupId, from ?? null, to ?? null);
-  if (resolved.kind === 'not_found') notFound();
-  // Back-to-mockup link uses the canonical path-based URL.
-  const viewerHref = (await pathForMockup(mockupId)) ?? '/projects';
-  if (resolved.kind === 'invalid') {
+export default function DiffPage() {
+  const { id: mockupId } = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
+  const to = searchParams.get('to');
+
+  const [payload, setPayload] = useState<DiffPayload | null>(null);
+  const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
+
+  useEffect(() => {
+    if (!mockupId) return;
+    let cancelled = false;
+    const url = new URL(
+      `/api/mockups/${encodeURIComponent(mockupId)}/diff-versions`,
+      window.location.origin,
+    );
+    if (from) url.searchParams.set('from', from);
+    if (to) url.searchParams.set('to', to);
+    fetch(url.toString(), { credentials: 'include' })
+      .then(async (res) => {
+        if (cancelled) return;
+        if (res.status === 401) {
+          window.location.replace('/login');
+          return;
+        }
+        if (res.status === 404) {
+          setStatus('not_found');
+          return;
+        }
+        if (!res.ok) {
+          setStatus('error');
+          return;
+        }
+        const json: DiffPayload = await res.json();
+        if (cancelled) return;
+        setPayload(json);
+        setStatus('ok');
+      })
+      .catch(() => {
+        if (!cancelled) setStatus('error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [mockupId, from, to]);
+
+  if (status === 'not_found') notFound();
+  if (status === 'error') {
+    return <main style={{ padding: 24, color: 'var(--danger)' }}>Failed to load diff.</main>;
+  }
+  if (status === 'loading' || !payload) {
+    return null;
+  }
+
+  if (payload.kind === 'invalid') {
     return (
       <main
         style={{
@@ -75,7 +108,7 @@ export default async function DiffPage({
           &quot;to&quot; version to compare.
         </p>
         <Link
-          href={viewerHref}
+          href={payload.viewerHref}
           style={{
             marginTop: 'var(--space-xs)',
             fontSize: 'var(--type-sm)',
@@ -88,16 +121,15 @@ export default async function DiffPage({
       </main>
     );
   }
+
   return (
     <DiffViewer
       mockupId={mockupId}
-      viewerHref={viewerHref}
-      fromVid={resolved.from.id}
-      toVid={resolved.to.id}
-      fromCreatedAt={resolved.from.createdAt.toISOString()}
-      toCreatedAt={resolved.to.createdAt.toISOString()}
+      viewerHref={payload.viewerHref}
+      fromVid={payload.from.id}
+      toVid={payload.to.id}
+      fromCreatedAt={payload.from.createdAt}
+      toCreatedAt={payload.to.createdAt}
     />
   );
 }
-
-export const dynamic = 'force-dynamic';
