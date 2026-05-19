@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { invalidateSession, SESSION_COOKIE } from '@/lib/auth/session';
+
 export async function POST(req: Request) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
