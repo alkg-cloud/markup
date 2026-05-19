@@ -118,9 +118,7 @@ export function ThreadTimeline({
                 </div>
 
                 {/* Message text */}
-                <div
-                  className={cx(styles.messageText, isAgent && styles.messageTextAgent)}
-                >
+                <div className={cx(styles.messageText, isAgent && styles.messageTextAgent)}>
                   {m.body}
                 </div>
               </div>
