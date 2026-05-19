@@ -5,10 +5,7 @@ import { defineConfig } from 'vitest/config';
 // `react-server` bundling condition. Vitest doesn't run that condition,
 // so we alias the package to its `empty.js` (the same file Next picks)
 // to make `import 'server-only'` inert in tests.
-const serverOnlyEmpty = path.resolve(
-  __dirname,
-  'node_modules/server-only/empty.js',
-);
+const serverOnlyEmpty = path.resolve(__dirname, 'node_modules/server-only/empty.js');
 
 export default defineConfig({
   test: {
