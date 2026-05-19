@@ -7,10 +7,13 @@ import { type PinCoords, serializePinCoords } from '@/lib/annotation/pin-coords'
 import type { AnnotationStatus } from '@/lib/annotation/status';
 import { env } from '@/lib/env';
 import { deleteIntentCache } from '@/lib/intent/cache';
+import { logger } from '@/lib/logger';
 import { annotationDir } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
 import { stripScreenshotBase64 } from '@/lib/tldraw/snapshot-screenshot';
 import type { IntentType } from './intent';
+
+const log = logger.child({ name: 'annotation-service' });
 
 export type { IntentType };
 
@@ -51,7 +54,7 @@ export async function createAnnotation(input: CreateInput) {
     createdOnVersionId = mockup?.currentVersionId ?? null;
   }
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const annotation = await tx.annotation.create({
       data: {
         id: aid,
@@ -76,6 +79,16 @@ export async function createAnnotation(input: CreateInput) {
     });
     return { annotation, thread, message };
   });
+  log.info(
+    {
+      annotationId: result.annotation.id,
+      mockupId: input.mockupId,
+      authorType: input.authorType,
+      kind: 'drawing',
+    },
+    'annotation_created',
+  );
+  return result;
 }
 
 export async function listAnnotations(mockupId: string) {
@@ -152,7 +165,7 @@ export async function createCommentAnnotation(input: CreateCommentAnnotationInpu
     createdOnVersionId = mockup?.currentVersionId ?? null;
   }
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const annotation = await tx.annotation.create({
       data: {
         mockupId: input.mockupId,
@@ -186,4 +199,15 @@ export async function createCommentAnnotation(input: CreateCommentAnnotationInpu
     });
     return { annotation, thread, message };
   });
+  log.info(
+    {
+      annotationId: result.annotation.id,
+      mockupId: input.mockupId,
+      authorType: input.authorType,
+      kind: 'comment',
+      anchorCount: input.anchors.length,
+    },
+    'annotation_created',
+  );
+  return result;
 }

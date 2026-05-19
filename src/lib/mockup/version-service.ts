@@ -2,8 +2,11 @@ import 'server-only';
 
 import fs from 'node:fs';
 import { env } from '@/lib/env';
+import { logger } from '@/lib/logger';
 import { versionDir } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
+
+const log = logger.child({ name: 'version-service' });
 
 interface ErrorWithStatus extends Error {
   status: number;
@@ -19,6 +22,7 @@ export async function promoteVersion(mockupId: string, vid: string) {
   const version = await prisma.mockupVersion.findUnique({ where: { id: vid } });
   if (!version || version.mockupId !== mockupId) http(404, 'version not found');
   await prisma.mockup.update({ where: { id: mockupId }, data: { currentVersionId: vid } });
+  log.info({ mockupId, versionId: vid }, 'mockup_version_promoted');
 }
 
 export async function deleteVersion(mockupId: string, vid: string) {
@@ -33,4 +37,5 @@ export async function deleteVersion(mockupId: string, vid: string) {
   await prisma.mockupVersion.delete({ where: { id: vid } });
   const dir = versionDir(env().DATA_DIR, mockupId, vid);
   if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
+  log.info({ mockupId, versionId: vid }, 'mockup_version_deleted');
 }

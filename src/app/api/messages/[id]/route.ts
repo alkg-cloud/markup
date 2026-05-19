@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 
 const PatchSchema = z.object({
@@ -45,6 +46,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     data: { body: parsed.data.body },
     select: { id: true, body: true },
   });
+  logger.info(
+    { event: 'message_updated', messageId, authorType: callerType, threadId: message.threadId },
+    'message edited',
+  );
 
   return NextResponse.json(updated);
 }
@@ -89,6 +94,10 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   }
 
   await prisma.message.delete({ where: { id: messageId } });
+  logger.info(
+    { event: 'message_deleted', messageId, authorType: callerType, threadId: message.threadId },
+    'message deleted',
+  );
   return NextResponse.json({ ok: true });
 }
 
