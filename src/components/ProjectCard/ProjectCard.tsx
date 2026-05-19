@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { PICKER_ICONS } from '@/components/IconPicker/icons';
+import { resolveIconToken } from '@/components/IconPicker/icons';
 import { usePopover } from '@/lib/popover/usePopover';
 import { projectHref } from '@/lib/project/routes';
 import styles from './ProjectCard.module.css';
@@ -20,20 +20,6 @@ interface ProjectCardProps {
   onOpen: () => void;
   onEdit: () => void;
   onDelete: () => void;
-}
-
-/* ── Icon resolver ──────────────────────────────────────────────────────── */
-
-function resolveIconToken(token: string): { type: 'svg' | 'emoji'; content: string } | null {
-  if (token.startsWith('emoji:')) {
-    return { type: 'emoji', content: token.slice(6) };
-  }
-  for (const group of Object.values(PICKER_ICONS)) {
-    const entry = group.find((e) => e.token === token);
-    if (entry?.svg) return { type: 'svg', content: entry.svg };
-    if (entry?.label) return { type: 'emoji', content: entry.label };
-  }
-  return null;
 }
 
 /** Default project glyph — used when `Project.icon` is null OR points

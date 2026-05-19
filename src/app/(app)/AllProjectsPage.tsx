@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { NewProjectDialog } from '@/components/NewProjectDialog/NewProjectDialog';
 import { ProjectCard, type ProjectCardData } from '@/components/ProjectCard/ProjectCard';
@@ -30,11 +30,17 @@ export function AllProjectsPage({ projects, onMutated }: AllProjectsPageProps) {
   const [newOpen, setNewOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const editingProject = useMemo(() => {
-    if (!editingId) return undefined;
-    const p = projects.find((x) => x.id === editingId);
-    return p ? { id: p.id, name: p.name, slug: p.slug, icon: p.icon } : undefined;
-  }, [editingId, projects]);
+  // n is tiny (project count, never paginated) — inline find is fine
+  // and skips a useMemo identity dance for every parent rerender.
+  const editingMatch = editingId ? projects.find((p) => p.id === editingId) : undefined;
+  const editingProject = editingMatch
+    ? {
+        id: editingMatch.id,
+        name: editingMatch.name,
+        slug: editingMatch.slug,
+        icon: editingMatch.icon,
+      }
+    : undefined;
 
   const handleSaved = useCallback(
     (project: { id: string; slug: string }) => {
