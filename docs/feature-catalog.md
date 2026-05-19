@@ -293,10 +293,10 @@ Left-side floating panel. See spec §4.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `mockup-viewer-rail-collapsed` | 60px-wide column of colored pin badges + drag handle (top) + "+ New annotation" button (bottom morphs round) | default state |
-| `mockup-viewer-rail-hover-expanded` | Transient 300px width on body mouseenter (NOT on drag handle) | width transition via `--motion-base` |
+| `mockup-viewer-rail-collapsed` | 60px-wide column of colored pin badges + drag handle (top) + "+ New annotation" button (bottom morphs round). Capped at `max-height: 70vh` (`80vh` on viewports ≤768px) so a long list never overflows the canvas; inner list scrolls vertically. | default state |
+| `mockup-viewer-rail-hover-expanded` | Transient 300px width on body mouseenter (NOT on drag handle). Same `max-height` cap as collapsed. | width transition via `--motion-base` |
 | `mockup-viewer-rail-pinned` | Sticky 300px width via Lock-open toggle | persists past mouseleave, button shows pressed state |
-| `mockup-viewer-rail-drag` | Drag handle (3×2 dot grid) lets user reposition the rail anywhere inside `mockup-viewer-app-main` (8 px margin clamping). Drag handle DOES NOT trigger hover-expand — only the rail body does. Has `touch-action: none` so pointer drag works on touchscreens. | grab/grabbing cursor |
+| `mockup-viewer-rail-drag` | Drag handle (3×2 dot grid) lets user reposition the rail anywhere inside `mockup-viewer-app-main` (8 px margin clamping). Drag handle DOES NOT trigger hover-expand — only the rail body does. Has `touch-action: none` so pointer drag works on touchscreens. Dragged position is cleared when fullscreen toggles so the rail returns to its spec-default coordinates instead of being stranded off-screen. | grab/grabbing cursor |
 | `mockup-viewer-rail-lock-open` | Lock-open button (Vsc pin icon) — "Keep expanded" / "Unlock" tooltip. Pressed state only changes `background` + `color` (no rotation) — the icon stays upright. | aria-pressed reflects state |
 | `mockup-viewer-rail-add-button` | "+ New annotation" button at foot. Morphs round → pill with label + ⌘⇧N (Ctrl+⇧+N on Windows/Linux) | collapsed/expanded width transition |
 
@@ -311,7 +311,7 @@ Center-bottom floating dock. See spec §5.
 | `mockup-viewer-toolbar-zoom-label` | Clickable % label — resets to 100% | hover, reset |
 | `mockup-viewer-toolbar-zoom-in` | Zoom-in button (`⌘+`) | enabled, disabled at 400% max |
 | `mockup-viewer-toolbar-fullscreen` | Fullscreen toggle (F) | inactive, active (pressed) |
-| `mockup-viewer-toolbar-drag` | Drag handle on right edge (2×3 dot grid). Drag clamps to `mockup-viewer-app-main` bounds (8 px margin), NOT viewport. Has `touch-action: none` so pointer drag works on touchscreens (without this, the browser's native page-pan claims the gesture). | grab/grabbing cursor |
+| `mockup-viewer-toolbar-drag` | Drag handle on right edge (2×3 dot grid). Drag clamps to `mockup-viewer-app-main` bounds (8 px margin), NOT viewport. Has `touch-action: none` so pointer drag works on touchscreens (without this, the browser's native page-pan claims the gesture). Dragged position is cleared when fullscreen toggles so the toolbar returns to its centered-bottom default after the containing block's bounds shift. | grab/grabbing cursor |
 
 ### mockup-viewer-version-chip
 
@@ -320,7 +320,7 @@ inside the chip itself.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `mockup-viewer-version-chip` | Pill with clock icon + label + chev | closed, open (chev rotated 180°) |
+| `mockup-viewer-version-chip` | Pill with clock icon + label (plain `vN`, no " · current" suffix — the popover already signals active state) + chev | closed, open (chev rotated 180°) |
 | `mockup-viewer-version-popover` | Glass popover with newest-first version list | closed, open; closes on outside click |
 | `mockup-viewer-version-item` | One row per version (dot + label + sub) | default, current (accent bg + glowing dot) |
 | `mockup-viewer-version-kebab` | Per-row kebab menu | opens Promote / Delete |
@@ -353,7 +353,10 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 | `annotation-card-badge` | Colored circular badge with annotation number | per-color palette 0..15 |
 | `annotation-card-author` | Author name in meta row | static |
 | `annotation-card-status-pill` | open / needs review / resolved | open (info), needs review (warning), resolved (success) |
-| `annotation-card-edit-primary` | Pencil icon button in the meta row, visible only when the primary comment is the current user's. Flips the primary comment into `comment-edit-inline` mode (no prompt). Primary comments are not deletable (the API returns 400 on `DELETE /api/messages/[primaryId]`). | hidden (not own), visible (own); hover (surface-hover bg) |
+| `annotation-card-primary-kebab` | 3-dot kebab button in the meta row, visible only when the primary comment is the current user's. Opens `annotation-card-primary-menu` with status toggle group + Edit + Delete affordances. Replaces the previous standalone pencil. | hidden (not own), visible (own); hover (surface-hover bg), open (accent bg) |
+| `annotation-card-primary-menu` | Glass popover anchored under the kebab. Hosts the status toggle group, "Edit" item, and "Delete annotation" (danger) item. Closes on outside click or after a menu action fires. | closed, open |
+| `annotation-card-status-toggle` | Radio-group of three status options (Open / Needs review / Resolved) at the top of the kebab menu. Active option uses the accent palette. Clicking dispatches `PATCH /api/annotations/[id] { status }`. | per-option idle / hover / active |
+| `annotation-card-delete` | Danger menu item that deletes the annotation via `DELETE /api/annotations/[id]` after a `confirm-dialog` accept. Cascades through the thread → messages → reactions. | idle, hover (danger bg) |
 | `annotation-card-primary` | Primary comment rendered without head row (author in meta) | renders body + reactions only |
 | `annotation-card-foot-date` | Date + time | static |
 | `annotation-card-thread-toggle` | Chevron button — "No replies" / "1 reply" / "N replies". Behaves as an accordion: opening one card's thread auto-collapses any other expanded thread. | closed, open (chev rotated 180°) |
@@ -369,6 +372,7 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 | `comment-action-reply` | Reply icon for non-own comments | default, hover, focus-visible |
 | `comment-kebab` | Kebab menu for own comments. Reply opens the always-visible reply form below; Edit flips the comment into `comment-edit-inline` mode (no native prompt); Delete confirms then DELETEs `/api/messages/[id]`. The primary message (annotation body) cannot be deleted — the API returns 400 and surfaces "Delete the annotation instead". | opens Reply / Edit / Delete |
 | `comment-edit-inline` | Inline edit affordance — replaces the comment body with a glass-styled textarea pre-filled with the current body, focused on mount. **Save** persists (PATCH `/api/messages/[id]`) and dismisses; **Cancel** discards. Blur commits (acts like Save). Esc cancels; Cmd/Ctrl+Enter commits. Save and Cancel buttons fire on `mousedown` so they run before the textarea's blur handler. | editing, saving (post-blur, awaiting API), error (left in edit mode) |
+| `comment-action-reply` (icon) | Reply affordance uses `VscReply` from `react-icons/vsc` (replaces the inline SVG path); same for the kebab menu's Reply item and the AnnotationCard's submit button. | — |
 
 ### reactions (Slack-style)
 
@@ -379,6 +383,16 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 | `reaction-add` | Dashed "+" trigger button, always visible next to the existing pills | idle, hover (accent border + bg), open (popover anchored above) |
 | `emoji-picker` | 4×4 grid popover with 16 reaction emojis | closed, open; closes on outside click |
 | `emoji-picker-pick` | Individual emoji button | default, hover (scale 1.2) |
+
+### confirm-dialog
+
+Promise-based replacement for `window.confirm`/`window.alert`/`window.prompt`. Native browser dialogs are banned project-wide — see `docs/code-style.md § Never use native browser dialogs`.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `confirm-dialog` | Styled Radix `AlertDialog`. Glass surface matching `--surface-glass-*` tokens; overlay 55% black + 2px blur. Used for delete confirmations and surfacing API errors. Imperative API via `useConfirm()` hook — returns `{ confirm, dialog }`; `confirm({ title, description, confirmLabel, danger })` resolves to `boolean`. | closed, open; danger (primary button uses `--danger` palette), neutral |
+| `confirm-dialog-cancel` | Cancel/escape button | idle, hover, focus-visible |
+| `confirm-dialog-confirm` | Primary action button | idle, hover, focus-visible; danger variant |
 
 ### tooltip
 
