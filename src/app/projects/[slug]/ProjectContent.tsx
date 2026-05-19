@@ -32,6 +32,9 @@ interface ProjectContentProps {
   folderName?: string | null;
   /** The current folder ID when viewing a sub-folder; null/undefined at project root. */
   currentFolderId?: string | null;
+  /** Ancestor folder names (root → current) used to build sub-folder
+   *  URLs. Empty/undefined at the project root. */
+  folderPathNames?: ReadonlyArray<string>;
   folders: FolderSummary[];
   mockups: MockupSummary[];
   breadcrumbs: BreadcrumbSegment[];
@@ -44,6 +47,7 @@ export function ProjectContent({
   projectIcon,
   folderName,
   projectSlug,
+  folderPathNames,
   folders,
   mockups,
   breadcrumbs,
@@ -73,7 +77,12 @@ export function ProjectContent({
             }}
           >
             {folders.map((f) => (
-              <FolderCard key={f.id} folder={f} projectSlug={projectSlug} />
+              <FolderCard
+                key={f.id}
+                folder={f}
+                projectSlug={projectSlug}
+                folderPath={[...(folderPathNames ?? []), f.name]}
+              />
             ))}
             {mockups.map((m) => (
               <MockupCard

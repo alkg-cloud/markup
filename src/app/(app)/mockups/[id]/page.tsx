@@ -7,7 +7,7 @@ import { identify } from '@/lib/auth/identify';
 import { resolveDisplayNames } from '@/lib/auth/resolve-display-name';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { prisma } from '@/lib/prisma';
-import { projectDisplayName, projectHref } from '@/lib/project/routes';
+import { folderHref, projectDisplayName, projectHref } from '@/lib/project/routes';
 import type { AppMainAnnotation } from './components/AppMainViewer';
 import { AppMainViewerWired } from './components/AppMainViewerWired';
 
@@ -133,12 +133,17 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
         ancestors.unshift({ id: parent.id, name: parent.name });
         cur = parent.parentId;
       }
+      // Path-based crumbs walk the same name list incrementally — each
+      // ancestor links to its own cumulative folder URL.
+      const pathSoFar: string[] = [];
       for (const a of ancestors) {
-        breadcrumbs.push({ label: a.name, href: projectHref(project.slug, a.id) });
+        pathSoFar.push(a.name);
+        breadcrumbs.push({ label: a.name, href: folderHref(project.slug, [...pathSoFar]) });
       }
+      pathSoFar.push(mockup.folder.name);
       breadcrumbs.push({
         label: mockup.folder.name,
-        href: projectHref(project.slug, mockup.folder.id),
+        href: folderHref(project.slug, [...pathSoFar]),
       });
     }
   }
