@@ -143,18 +143,26 @@
   color: var(--text-dim);
 }
 
-.iconExpand {
+/* Both variants are pinned to the same 14 × 14 box so the swap
+   never reflows the surrounding pill. The previous declaration set
+   `height` only, which let `display: block` stretch the span to the
+   button's full width — the SVG then rendered as a thin tall sliver
+   during the morph (the "broken pill" the user reported). */
+.iconExpand,
+.iconCollapse {
   display: none;
+  width: 14px;
   height: 14px;
+  align-items: center;
+  justify-content: center;
 }
 
 .iconCollapse {
-  display: block;
-  height: 14px;
+  display: flex;
 }
 
 .collapseBtnCollapsed .iconExpand {
-  display: block;
+  display: flex;
 }
 
 .collapseBtnCollapsed .iconCollapse {
