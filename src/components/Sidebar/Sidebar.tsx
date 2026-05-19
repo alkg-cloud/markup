@@ -4,67 +4,53 @@ import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { VscLayoutSidebarLeft, VscLayoutSidebarLeftOff } from 'react-icons/vsc';
 import styles from './Sidebar.module.css';
 
-const SIDEBAR_COLLAPSED_STORAGE_KEY = 'markup.sidebar.collapsed';
+const SIDEBAR_COOKIE_KEY = 'markup-sidebar-collapsed';
+// Persist for ~1 year so the user's choice survives the session. Same
+// expiry as auth so the cookie is "settings"-grade, not session-grade.
+const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
-let cachedCollapsedState: boolean | null = null;
-
-function readStoredCollapsedState() {
+function writeStoredCollapsedState(next: boolean) {
   try {
-    return window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === 'true';
+    document.cookie = `${SIDEBAR_COOKIE_KEY}=${next ? 'true' : 'false'}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}; samesite=lax`;
   } catch {
-    return false;
+    // Cookie write can fail in some browser modes; SSR will catch up
+    // on the next request anyway.
   }
-}
-
-/**
- * Resolve the initial collapsed state synchronously during the first
- * render so SSR/CSR don't disagree. Order of precedence:
- *
- * 1. `cachedCollapsedState` (module-level cache populated by prior
- *    mounts or by the inline boot script in `app/layout.tsx`).
- * 2. `documentElement.dataset.sidebarCollapsed === '1'` (the inline
- *    script's signal — runs before React boots so this attribute is
- *    present on the very first paint).
- * 3. localStorage as a last resort.
- *
- * Falls back to `false` (expanded) on the server / when nothing is set.
- */
-function getInitialCollapsedState() {
-  if (cachedCollapsedState !== null) return cachedCollapsedState;
-  if (typeof document !== 'undefined') {
-    if (document.documentElement.dataset.sidebarCollapsed === '1') return true;
-    return readStoredCollapsedState();
-  }
-  return false;
 }
 
 interface SidebarProps {
   children: ReactNode;
   footer?: ReactNode;
+  /** Initial collapsed state — read from the cookie on the server so
+   *  SSR + first paint match the persisted user choice and React
+   *  hydration doesn't have to do a one-frame morph from expanded →
+   *  collapsed. */
+  defaultCollapsed?: boolean;
 }
 
-export function Sidebar({ children, footer }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(getInitialCollapsedState);
+export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarProps) {
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
   const toggle = useCallback(
     () =>
       setCollapsed((current) => {
         const next = !current;
-        cachedCollapsedState = next;
-        try {
-          window.localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(next));
-        } catch {
-          // Storage can be unavailable in private modes; in-memory state still works.
-        }
+        writeStoredCollapsedState(next);
         return next;
       }),
     [],
   );
 
+  // Keep React state aligned with the cookie if it changes elsewhere
+  // (e.g. another tab toggles via `storage` event). Cookie itself is
+  // the source of truth.
   useEffect(() => {
-    const stored = readStoredCollapsedState();
-    cachedCollapsedState = stored;
-    setCollapsed(stored);
+    const onStorage = () => {
+      const cookieMatch = document.cookie.match(new RegExp(`${SIDEBAR_COOKIE_KEY}=(true|false)`));
+      if (cookieMatch) setCollapsed(cookieMatch[1] === 'true');
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
   useEffect(() => {

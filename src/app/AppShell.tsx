@@ -68,6 +68,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
         orphanMockups={orphanMockups}
         mockupNames={mockupNames}
         recentMockups={recentMockups}
+        defaultCollapsed={cs.get('markup-sidebar-collapsed')?.value === 'true'}
       />
       <main className={styles.main}>{children}</main>
       <CommandPalette projects={treeProjects} />
