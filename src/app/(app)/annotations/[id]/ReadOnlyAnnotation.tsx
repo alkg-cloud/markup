@@ -1,7 +1,18 @@
 'use client';
 import type { Editor, TLEditorSnapshot } from '@tldraw/tldraw';
+import dynamic from 'next/dynamic';
 import { useRef, useState } from 'react';
-import { AnnotationCanvas } from '@/components/AnnotationCanvas/AnnotationCanvas';
+import { LoadingState } from '@/components/LoadingState/LoadingState';
+
+// Lazy-load the tldraw-backed canvas so the ~1 MB editor bundle only
+// hits the network when an annotation actually has a drawing to render.
+// `ssr: false` is required because tldraw touches `window` on import;
+// every Markup page is CSR-only anyway (see docs/frontend/components.md),
+// so this is safe.
+const AnnotationCanvas = dynamic(
+  () => import('@/components/AnnotationCanvas/AnnotationCanvas').then((m) => m.AnnotationCanvas),
+  { ssr: false, loading: () => <LoadingState message="Loading canvas…" /> },
+);
 
 interface Props {
   annotationId: string;
