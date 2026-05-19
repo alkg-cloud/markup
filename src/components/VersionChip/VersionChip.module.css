@@ -58,11 +58,13 @@
   transform: rotate(180deg);
 }
 
+/* Native HTML popover — top-layer paint, fixed positioning written by
+   `usePopover`. */
 .popover {
+  position: fixed;
+  inset: auto;
+  margin: 0;
   display: none;
-  position: absolute;
-  bottom: calc(100% + 8px);
-  right: 0;
   min-width: 280px;
   max-width: 320px;
   background: var(--surface-glass-bg);
@@ -71,9 +73,8 @@
   border-radius: 12px;
   box-shadow: var(--shadow-popover);
   flex-direction: column;
-  z-index: 60;
 }
-.popover.open {
+.popover:popover-open {
   display: flex;
 }
 
@@ -184,11 +185,13 @@
   height: 12px;
 }
 
+/* Per-row actions popover — nested popover that stacks with the parent
+   version list popover (HTML popover-auto ancestor relationship). */
 .actions {
+  position: fixed;
+  inset: auto;
+  margin: 0;
   display: none;
-  position: absolute;
-  top: 8px;
-  right: 32px;
   flex-direction: column;
   min-width: 140px;
   padding: 4px;
@@ -197,9 +200,8 @@
   border: var(--surface-glass-border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-popover);
-  z-index: 70;
 }
-.actions.open {
+.actions:popover-open {
   display: flex;
 }
 .action {
