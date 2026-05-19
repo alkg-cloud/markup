@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { AppMain } from '@/components/AppMain/AppMain';
+import { useConfirm } from '@/components/ConfirmDialog';
 import styles from './AgentsClient.module.css';
 
 interface AgentToken {
@@ -100,6 +101,9 @@ export function AgentsClient({
   const [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<CreatedToken | null>(null);
   const [copied, setCopied] = useState(false);
+  // Styled Radix alert replaces the native `window.confirm` ban — see
+  // `docs/code-style.md § Never use native browser dialogs`.
+  const { confirm, dialog: confirmDialog } = useConfirm();
 
   async function refresh() {
     const r = await fetch('/api/agent-tokens');
@@ -131,9 +135,14 @@ export function AgentsClient({
     await refresh();
   }
 
-  async function onRevoke(id: string, _tokenName: string) {
-    if (!confirm('Revoke this agent token? Any client using it will lose access immediately.'))
-      return;
+  async function onRevoke(id: string, tokenName: string) {
+    const ok = await confirm({
+      title: 'Revoke agent token',
+      description: `"${tokenName}" will lose API access immediately. Any client using it will start receiving 401 errors. This cannot be undone.`,
+      confirmLabel: 'Revoke',
+      danger: true,
+    });
+    if (!ok) return;
     await fetch(`/api/agent-tokens/${id}`, { method: 'DELETE' });
     if (revealed?.id === id) setRevealed(null);
     await refresh();
@@ -156,6 +165,7 @@ export function AgentsClient({
 
   return (
     <AppMain variant="centered" className={styles.page} ariaLabel="Agent tokens settings">
+      {confirmDialog}
       <h1 className={styles.title}>Agent Tokens</h1>
       <p className={styles.subtitle}>
         API tokens for agent integrations. Create, copy and revoke tokens.

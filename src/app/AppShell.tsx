@@ -1,5 +1,4 @@
 import { cookies, headers } from 'next/headers';
-import { mockupSlugHref } from '@/lib/project/routes';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
@@ -7,6 +6,7 @@ import type { TreeMockup } from '@/components/ProjectTree/ProjectTree';
 import { identify } from '@/lib/auth/identify';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { prisma } from '@/lib/prisma';
+import { mockupSlugHref } from '@/lib/project/routes';
 import { getProjectTree, listProjects } from '@/lib/project/service';
 import styles from './projects/layout.module.css';
 import { ProjectSidebar } from './projects/ProjectSidebar';

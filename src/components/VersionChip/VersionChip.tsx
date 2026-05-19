@@ -145,10 +145,7 @@ function VersionListRow({ row, onSelect, onPromote, onDelete }: VersionListRowPr
           }}
         >
           <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path
-              fillRule="evenodd"
-              d="M8 1.5 14 7l-.7.7L8.5 3v9.5h-1V3L2.7 7.7 2 7l6-5.5z"
-            />
+            <path fillRule="evenodd" d="M8 1.5 14 7l-.7.7L8.5 3v9.5h-1V3L2.7 7.7 2 7l6-5.5z" />
           </svg>
           {row.current ? 'Already current' : 'Promote'}
         </button>

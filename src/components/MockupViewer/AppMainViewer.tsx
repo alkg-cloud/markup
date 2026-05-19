@@ -59,10 +59,7 @@ export interface AppMainViewerProps {
   /** Delete a comment. Returns true on success. */
   onCommentDelete?: (commentId: string) => Promise<boolean>;
   /** Change an annotation's status. Returns true on success. */
-  onAnnotationStatusChange?: (
-    annotationId: string,
-    status: AnnotationStatus,
-  ) => Promise<boolean>;
+  onAnnotationStatusChange?: (annotationId: string, status: AnnotationStatus) => Promise<boolean>;
   /** Delete an annotation (cascades thread + messages + reactions). */
   onAnnotationDelete?: (annotationId: string) => Promise<boolean>;
   onVersionSelect?: (versionId: string) => void;
@@ -480,9 +477,7 @@ export function AppMainViewer({
               onAnnotationStatusChange={async (status) => {
                 const ok = await onAnnotationStatusChange?.(a.id, status);
                 if (ok) {
-                  setAnnotations((prev) =>
-                    prev.map((p) => (p.id === a.id ? { ...p, status } : p)),
-                  );
+                  setAnnotations((prev) => prev.map((p) => (p.id === a.id ? { ...p, status } : p)));
                 }
               }}
               onAnnotationDelete={async () => {

@@ -192,7 +192,7 @@
 /* Native HTML popover — top-layer paint, fixed positioning written by
    `usePopover`. */
 .primaryMenu {
-  composes: floatingSurface from '../../styles/glass.module.css';
+  composes: floatingSurface from "../../styles/glass.module.css";
   position: fixed;
   inset: auto;
   margin: 0;

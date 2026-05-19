@@ -61,7 +61,7 @@
 /* Native HTML popover — top-layer paint, fixed positioning written by
    `usePopover`. */
 .popover {
-  composes: floatingSurface from '../../styles/glass.module.css';
+  composes: floatingSurface from "../../styles/glass.module.css";
   position: fixed;
   inset: auto;
   margin: 0;
@@ -186,7 +186,7 @@
 /* Per-row actions popover — nested popover that stacks with the parent
    version list popover (HTML popover-auto ancestor relationship). */
 .actions {
-  composes: floatingSurface from '../../styles/glass.module.css';
+  composes: floatingSurface from "../../styles/glass.module.css";
   position: fixed;
   inset: auto;
   margin: 0;

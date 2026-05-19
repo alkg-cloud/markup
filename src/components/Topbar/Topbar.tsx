@@ -106,13 +106,7 @@ export function Topbar({ breadcrumbs, userName, userEmail, onSearchClick }: Topb
               router.push('/settings/agents');
             }}
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              aria-hidden="true"
-            >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"
@@ -128,13 +122,7 @@ export function Topbar({ breadcrumbs, userName, userEmail, onSearchClick }: Topb
             className={`${styles.menuItem} ${styles.menuItemDanger}`}
             onClick={handleLogout}
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              aria-hidden="true"
-            >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"

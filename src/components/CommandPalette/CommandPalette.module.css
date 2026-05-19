@@ -1,7 +1,7 @@
 /* ─── Scrim ─────────────────────────────────────────────────────── */
 
 .scrim {
-  composes: floatingScrim from '../../styles/glass.module.css';
+  composes: floatingScrim from "../../styles/glass.module.css";
   position: fixed;
   inset: 0;
   z-index: 900;
@@ -19,7 +19,7 @@
 /* ─── Panel ─────────────────────────────────────────────────────── */
 
 .panel {
-  composes: floatingSurface from '../../styles/glass.module.css';
+  composes: floatingSurface from "../../styles/glass.module.css";
   position: fixed;
   top: 80px;
   left: 50%;
