@@ -7,8 +7,15 @@
  * the iframe document's <html> after load. PinLayer + click capture
  * cross the boundary via the cross-document anchoring runtime
  * (`docs/superpowers/specs/2026-05-18-pin-anchoring-strategy.md`).
+ *
+ * State and effects are split across focused hooks:
+ *   - `useAppMainAnnotations` — annotation list + reply/edit/delete/react
+ *   - `useViewerCanvas`        — iframe wiring + in-iframe click capture
+ *   - `useViewerFullscreen`    — fullscreen toggle + state mirror
+ * and a memoized `ViewerCanvas` sub-component holds the iframe + PinLayer
+ * so composer/rail churn doesn't reload the mockup.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   AnnotationCard,
   type AnnotationStatus,
@@ -19,9 +26,13 @@ import { AnnotationsRail, type AnnotationsRailBadge } from '@/components/Annotat
 import { AppMain } from '@/components/AppMain/AppMain';
 import { CanvasToolbar } from '@/components/CanvasToolbar';
 import { MarkingBar } from '@/components/MarkingBar';
-import { type PinDescriptor, PinLayer } from '@/components/PinLayer';
+import type { PinDescriptor } from '@/components/PinLayer';
 import { VersionChip, type VersionRow } from '@/components/VersionChip';
-import { type Anchor, buildAnchorFromClick } from '@/lib/anchoring';
+import type { Anchor } from '@/lib/anchoring';
+import { useAppMainAnnotations } from './useAppMainAnnotations';
+import { useViewerCanvas } from './useViewerCanvas';
+import { useViewerFullscreen } from './useViewerFullscreen';
+import { ViewerCanvas } from './ViewerCanvas';
 
 export interface AppMainAnnotation {
   id: string;
@@ -67,8 +78,6 @@ export interface AppMainViewerProps {
   onVersionDelete?: (versionId: string) => void;
 }
 
-const COLOR_PALETTE_SIZE = 16;
-
 export function AppMainViewer({
   mockupSrc,
   currentUser,
@@ -86,17 +95,28 @@ export function AppMainViewer({
   onVersionDelete,
 }: AppMainViewerProps) {
   const appMainRef = useRef<HTMLDivElement | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const canvasRootRef = useRef<Element | null>(null);
 
-  const [annotations, setAnnotations] = useState<AppMainAnnotation[]>(initialAnnotations);
-  // Sync local state when the parent reseeds `initialAnnotations` — this
-  // fires after `router.refresh()` in the wired wrapper, so newly
-  // created/promoted/deleted annotations from the server reach the UI
-  // without a full page reload.
-  useEffect(() => {
-    setAnnotations(initialAnnotations);
-  }, [initialAnnotations]);
+  const {
+    annotations,
+    nextColorIndex,
+    postReply,
+    editComment,
+    deleteComment,
+    toggleReaction,
+    changeStatus,
+    deleteAnnotation,
+    prependCreated,
+  } = useAppMainAnnotations({
+    initialAnnotations,
+    currentUser,
+    onPostReply,
+    onReactionToggle,
+    onCommentEdit,
+    onCommentDelete,
+    onAnnotationStatusChange,
+    onAnnotationDelete,
+  });
+
   const [activeId, setActiveId] = useState<string | null>(null);
   // Accordion: only one thread expanded at a time so the rail stays
   // skimmable. Opening a thread on card B collapses card A's thread.
@@ -111,7 +131,6 @@ export function AppMainViewer({
   // anchor's identity.
   const [pendingPins, setPendingPins] = useState<{ id: string; anchor: Anchor }[]>([]);
   const [zoom, setZoom] = useState(1);
-  const [isFullscreen, setFullscreen] = useState(false);
   // Bumped each time the user clicks a canvas pin so the rail pins
   // itself open. Decoupling the trigger from `activeId` lets the rail
   // stay collapsed when the active annotation changes from the rail
@@ -119,21 +138,22 @@ export function AppMainViewer({
   // rail's expand-signal effect skips the initial commit and the rail
   // only pins after a real pin-click.
   const [railExpandSignal, setRailExpandSignal] = useState<number | undefined>(undefined);
-  // Bumped on iframe load to force PinLayer to remount and re-bind to
-  // the new contentDocument's elements after a version switch.
-  const [iframeGen, setIframeGen] = useState(0);
 
-  const nextColorIndex = useMemo(() => {
-    // Per spec §6: "lowest unused index, cycle to 0 when all 16 are used".
-    // Scan 0..15 and return the first slot not currently held by any
-    // annotation; fall back to 0 when every slot is taken (then the
-    // palette repeats from the start).
-    const used = new Set(annotations.map((a) => a.colorIndex));
-    for (let i = 0; i < COLOR_PALETTE_SIZE; i++) {
-      if (!used.has(i)) return i;
-    }
-    return 0;
-  }, [annotations]);
+  const onPinFromIframe = useCallback((anchor: Anchor) => {
+    setPendingPins((p) => [
+      ...p,
+      { id: `pp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, anchor },
+    ]);
+  }, []);
+  const onMissFromIframe = useCallback(() => setActiveId(null), []);
+
+  const { iframeRef, canvasRootRef, iframeGen } = useViewerCanvas({
+    marking,
+    onPin: onPinFromIframe,
+    onMiss: onMissFromIframe,
+  });
+
+  const { isFullscreen, toggle: onFullscreenToggle } = useViewerFullscreen(appMainRef);
 
   const badges: AnnotationsRailBadge[] = useMemo(
     () =>
@@ -171,58 +191,6 @@ export function AppMainViewer({
     return out;
   }, [annotations, activeId, pendingPins, nextColorIndex]);
 
-  // Bind canvasRootRef and capture clicks in marking mode whenever the
-  // iframe reloads (initial load, version switch, src change).
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-    const onLoad = () => {
-      const doc = iframe.contentDocument;
-      if (!doc) return;
-      canvasRootRef.current = doc.documentElement;
-      setIframeGen((n) => n + 1);
-    };
-    iframe.addEventListener('load', onLoad);
-    // If the iframe was already loaded when this effect runs, capture now.
-    if (iframe.contentDocument?.readyState === 'complete') onLoad();
-    return () => iframe.removeEventListener('load', onLoad);
-  }, []);
-
-  // Click capture inside the iframe: when marking is on, every click
-  // becomes a pending pin; when marking is off, click-on-background
-  // deactivates the current annotation.
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    const doc = iframe?.contentDocument;
-    const root = canvasRootRef.current;
-    if (!doc || !root) return;
-    const onClick = (e: Event) => {
-      const me = e as MouseEvent;
-      const target = me.target as Element | null;
-      if (!target) return;
-      if (marking) {
-        const anchor = buildAnchorFromClick({
-          canvasRoot: root,
-          target,
-          clientX: me.clientX,
-          clientY: me.clientY,
-        });
-        if (anchor) {
-          setPendingPins((p) => [
-            ...p,
-            { id: `pp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, anchor },
-          ]);
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      } else {
-        setActiveId(null);
-      }
-    };
-    doc.addEventListener('click', onClick, true);
-    return () => doc.removeEventListener('click', onClick, true);
-  }, [marking, iframeGen]);
-
   const onActivate = useCallback((annotationId: string) => {
     setActiveId(annotationId);
   }, []);
@@ -258,151 +226,43 @@ export function AppMainViewer({
         colorIndex: nextColorIndex,
       });
       if (created) {
-        setAnnotations((prev) => [created, ...prev]);
+        prependCreated(created);
         setActiveId(created.id);
       }
       setComposerOpen(false);
       setMarking(false);
       setPendingPins([]);
     },
-    [onCreateAnnotation, pendingPins, nextColorIndex],
+    [onCreateAnnotation, pendingPins, nextColorIndex, prependCreated],
   );
 
   const onMarkingToggle = useCallback(() => setMarking((m) => !m), []);
-
-  const onFullscreenToggle = useCallback(() => {
-    const el = appMainRef.current;
-    if (!el) return;
-    if (document.fullscreenElement) {
-      void document.exitFullscreen?.();
-    } else {
-      void el.requestFullscreen?.();
-    }
-  }, []);
-
-  useEffect(() => {
-    const onChange = () => setFullscreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
-  }, []);
-
   const onZoomChange = useCallback((next: number) => setZoom(next), []);
-
-  const onPostReplyForCard = useCallback(
-    async (annotationId: string, body: string) => {
-      const reply = await onPostReply?.(annotationId, body);
-      if (!reply) return;
-      setAnnotations((prev) =>
-        prev.map((a) =>
-          a.id === annotationId ? { ...a, replies: [reply, ...(a.replies ?? [])] } : a,
-        ),
-      );
-    },
-    [onPostReply],
-  );
-
-  const onCommentEditForCard = useCallback(
-    async (commentId: string, newBody: string) => {
-      const trimmed = newBody.trim();
-      if (!trimmed) return;
-      // Look up the comment's current body — skip the network call when
-      // nothing changed.
-      let current: string | null = null;
-      for (const a of annotations) {
-        if (a.primary.id === commentId) {
-          current = a.primary.body;
-          break;
-        }
-        const r = a.replies?.find((m) => m.id === commentId);
-        if (r) {
-          current = r.body;
-          break;
-        }
-      }
-      if (current === null || trimmed === current) return;
-      const ok = await onCommentEdit?.(commentId, trimmed);
-      if (!ok) return;
-      setAnnotations((prev) =>
-        prev.map((a) => {
-          if (a.primary.id === commentId) {
-            return { ...a, primary: { ...a.primary, body: trimmed } };
-          }
-          if (a.replies?.some((r) => r.id === commentId)) {
-            return {
-              ...a,
-              replies: a.replies.map((r) => (r.id === commentId ? { ...r, body: trimmed } : r)),
-            };
-          }
-          return a;
-        }),
-      );
-    },
-    [annotations, onCommentEdit],
-  );
-
-  const onCommentDeleteForCard = useCallback(
-    async (commentId: string) => {
-      const ok = await onCommentDelete?.(commentId);
-      if (!ok) return;
-      setAnnotations((prev) =>
-        prev.map((a) => {
-          if (a.replies?.some((r) => r.id === commentId)) {
-            return { ...a, replies: a.replies.filter((r) => r.id !== commentId) };
-          }
-          return a;
-        }),
-      );
-    },
-    [onCommentDelete],
-  );
-
-  const onCommentReact = useCallback(
-    (commentId: string, emoji: string) => {
-      // Optimistic toggle FIRST so the pill renders without waiting on the
-      // network. The POST is fire-and-forget — the wired handler already
-      // catches+swallows blips, and the next refresh reconciles state.
-      setAnnotations((prev) =>
-        prev.map((a) => {
-          const all = [a.primary, ...(a.replies ?? [])];
-          let touched = false;
-          const updated = all.map((c) => {
-            if (c.id !== commentId) return c;
-            touched = true;
-            const reactions = c.reactions ?? [];
-            const existing = reactions.find((r) => r.emoji === emoji);
-            if (!existing) {
-              return {
-                ...c,
-                reactions: [...reactions, { emoji, reactedBy: [currentUser] }],
-              };
-            }
-            const hasMe = existing.reactedBy.includes(currentUser);
-            const nextUsers = hasMe
-              ? existing.reactedBy.filter((u) => u !== currentUser)
-              : [...existing.reactedBy, currentUser];
-            const nextReactions = reactions
-              .map((r) => (r.emoji === emoji ? { ...r, reactedBy: nextUsers } : r))
-              .filter((r) => r.reactedBy.length > 0);
-            return { ...c, reactions: nextReactions };
-          });
-          if (!touched) return a;
-          return {
-            ...a,
-            primary: updated[0],
-            replies: updated.slice(1),
-          };
-        }),
-      );
-      void onReactionToggle?.(commentId, emoji);
-    },
-    [onReactionToggle, currentUser],
-  );
 
   // Stable identifier for the current "containing block" geometry —
   // bumped whenever fullscreen toggles change which element owns the
   // canvas bounds. Used to invalidate the pin layer's positioning
   // cache and to clear the rail/toolbar's dragged coordinates.
   const layoutKey = isFullscreen ? 'fs' : 'win';
+  const repositionKey = `${zoom}:${layoutKey}`;
+
+  const onAnnotationStatus = useCallback(
+    async (annotationId: string, status: AnnotationStatus) => {
+      await changeStatus(annotationId, status);
+    },
+    [changeStatus],
+  );
+
+  const onAnnotationDeleteRow = useCallback(
+    async (annotationId: string) => {
+      const ok = await deleteAnnotation(annotationId);
+      if (ok) {
+        setActiveId((cur) => (cur === annotationId ? null : cur));
+        setOpenThreadId((cur) => (cur === annotationId ? null : cur));
+      }
+    },
+    [deleteAnnotation],
+  );
 
   return (
     <AppMain variant="viewer" ariaLabel="Mockup viewer">
@@ -414,34 +274,16 @@ export function AppMainViewer({
           background: 'var(--bg-iframe)',
         }}
       >
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            overflow: 'auto',
-            cursor: marking ? 'crosshair' : 'default',
-          }}
-        >
-          <iframe
-            ref={iframeRef}
-            src={mockupSrc}
-            title="Mockup"
-            style={{
-              width: '100%',
-              height: '100%',
-              border: 0,
-              transform: `scale(${zoom})`,
-              transformOrigin: 'top left',
-            }}
-          />
-        </div>
-
-        <PinLayer
-          key={iframeGen}
+        <ViewerCanvas
+          mockupSrc={mockupSrc}
+          iframeRef={iframeRef}
           canvasRootRef={canvasRootRef}
+          iframeGen={iframeGen}
+          marking={marking}
+          zoom={zoom}
           pins={pins}
           onPinClick={onPinClick}
-          repositionKey={`${zoom}:${layoutKey}`}
+          repositionKey={repositionKey}
         />
 
         <AnnotationsRail
@@ -470,24 +312,12 @@ export function AppMainViewer({
               threadOpen={a.id === openThreadId}
               onThreadToggle={() => onThreadToggle(a.id)}
               onActivate={() => onActivate(a.id)}
-              onPostReply={(body) => onPostReplyForCard(a.id, body)}
-              onCommentEditSave={(commentId, newBody) => onCommentEditForCard(commentId, newBody)}
-              onCommentDelete={(commentId) => onCommentDeleteForCard(commentId)}
-              onCommentReact={(commentId, emoji) => onCommentReact(commentId, emoji)}
-              onAnnotationStatusChange={async (status) => {
-                const ok = await onAnnotationStatusChange?.(a.id, status);
-                if (ok) {
-                  setAnnotations((prev) => prev.map((p) => (p.id === a.id ? { ...p, status } : p)));
-                }
-              }}
-              onAnnotationDelete={async () => {
-                const ok = await onAnnotationDelete?.(a.id);
-                if (ok) {
-                  setAnnotations((prev) => prev.filter((p) => p.id !== a.id));
-                  setActiveId((cur) => (cur === a.id ? null : cur));
-                  setOpenThreadId((cur) => (cur === a.id ? null : cur));
-                }
-              }}
+              onPostReply={(body) => postReply(a.id, body)}
+              onCommentEditSave={(commentId, newBody) => editComment(commentId, newBody)}
+              onCommentDelete={(commentId) => deleteComment(commentId)}
+              onCommentReact={(commentId, emoji) => toggleReaction(commentId, emoji)}
+              onAnnotationStatusChange={(status) => onAnnotationStatus(a.id, status)}
+              onAnnotationDelete={() => onAnnotationDeleteRow(a.id)}
             />
           ))}
         </AnnotationsRail>
