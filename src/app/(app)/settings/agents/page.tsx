@@ -1,60 +1,72 @@
-import { cookies, headers } from 'next/headers';
-import { redirect } from 'next/navigation';
+'use client';
+
+import { useEffect, useState } from 'react';
 import { Topbar } from '@/components/Topbar/Topbar';
-import { identify } from '@/lib/auth/identify';
-import { isSetupCompleted } from '@/lib/auth/setup-state';
-import { prisma } from '@/lib/prisma';
+import { useRequireAuth } from '@/lib/hooks/use-require-auth';
 import { AgentsClient } from './AgentsClient';
 
-export default async function AgentsPage() {
-  if (!(await isSetupCompleted())) redirect('/setup');
-  const cs = await cookies();
-  const hs = await headers();
-  const fakeReq = {
-    cookies: {
-      get: (k: string) => {
-        const c = cs.get(k);
-        return c ? { value: c.value } : undefined;
-      },
-    },
-    headers: { get: (k: string) => hs.get(k) },
-  } as Parameters<typeof identify>[0];
-  const id = await identify(fakeReq);
-  if (!id || id.kind !== 'user') redirect('/login');
-  const tokens = await prisma.agentToken.findMany({
-    select: {
-      id: true,
-      name: true,
-      prefix: true,
-      lastFour: true,
-      createdAt: true,
-      lastUsedAt: true,
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-  const initial = tokens.map((t) => ({
-    id: t.id,
-    name: t.name,
-    prefix: t.prefix,
-    lastFour: t.lastFour,
-    createdAt: t.createdAt.toISOString(),
-    lastUsedAt: t.lastUsedAt ? t.lastUsedAt.toISOString() : null,
-  }));
-  const user = await prisma.user.findUnique({
-    where: { id: id.userId },
-    select: { name: true, email: true },
-  });
+interface AgentTokenRow {
+  id: string;
+  name: string;
+  prefix: string | null;
+  lastFour: string | null;
+  createdAt: string;
+  lastUsedAt: string | null;
+}
+
+interface AgentTokensResponse {
+  tokens: AgentTokenRow[];
+}
+
+export default function AgentsPage() {
+  const { identity, loading: authLoading } = useRequireAuth();
+  const [tokens, setTokens] = useState<AgentTokenRow[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (authLoading || !identity) return;
+    let cancelled = false;
+    fetch('/api/agent-tokens', { credentials: 'include' })
+      .then(async (res) => {
+        if (cancelled) return;
+        if (res.status === 401) {
+          window.location.replace('/login');
+          return;
+        }
+        if (res.status === 403) {
+          setError('forbidden');
+          return;
+        }
+        if (!res.ok) {
+          setError(`http_${res.status}`);
+          return;
+        }
+        const json: AgentTokensResponse = await res.json();
+        if (!cancelled) setTokens(json.tokens);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(String(e));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, identity]);
+
+  if (error) {
+    return (
+      <main style={{ padding: 24, color: 'var(--danger)' }}>
+        {error === 'forbidden' ? 'Admin-only page.' : `Failed to load tokens (${error}).`}
+      </main>
+    );
+  }
+  if (!tokens) {
+    return null;
+  }
 
   return (
     <>
-      <Topbar
-        breadcrumbs={[]}
-        userName={user?.name ?? undefined}
-        userEmail={user?.email ?? undefined}
-      />
-      <AgentsClient initialTokens={initial} />
+      <Topbar breadcrumbs={[]} userName={identity?.name} userEmail={identity?.email} />
+      <AgentsClient initialTokens={tokens} />
     </>
   );
 }
-
-export const dynamic = 'force-dynamic';

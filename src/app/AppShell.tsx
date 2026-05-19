@@ -1,111 +1,90 @@
-import { cookies, headers } from 'next/headers';
-import { redirect } from 'next/navigation';
+'use client';
+
 import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
-import type { TreeMockup } from '@/components/ProjectTree/ProjectTree';
-import { identify } from '@/lib/auth/identify';
-import { isSetupCompleted } from '@/lib/auth/setup-state';
-import { prisma } from '@/lib/prisma';
-import { mockupSlugHref } from '@/lib/project/routes';
-import { getProjectTree, listProjects } from '@/lib/project/service';
+import type { TreeMockup, TreeProject } from '@/components/ProjectTree/ProjectTree';
+import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
+import { useRequireAuth } from '@/lib/hooks/use-require-auth';
 import styles from './projects/layout.module.css';
 import { ProjectSidebar } from './projects/ProjectSidebar';
 
-export async function getAuthenticatedIdentity() {
-  if (!(await isSetupCompleted())) redirect('/setup');
-  const cs = await cookies();
-  const hs = await headers();
-  const fakeReq = {
-    cookies: {
-      get: (k: string) => {
-        const c = cs.get(k);
-        return c ? { value: c.value } : undefined;
-      },
-    },
-    headers: { get: (k: string) => hs.get(k) },
-  } as Parameters<typeof identify>[0];
-  const id = await identify(fakeReq);
-  if (!id) redirect('/login');
-  return id;
+interface ShellPayload {
+  identity: { kind: 'user' | 'agent'; name?: string; email?: string };
+  projects: TreeProject[];
+  orphanMockups: TreeMockup[];
+  mockupNames: Record<string, string>;
+  recentMockups: Record<string, RecentMockup>;
+  sidebarCollapsed: boolean;
 }
 
-export async function AppShell({ children }: { children: ReactNode }) {
-  await getAuthenticatedIdentity();
-  const cs = await cookies();
-  const sidebarCollapsed = cs.get('markup-sidebar-collapsed')?.value === 'true';
+/**
+ * Client shell — auth-gates via `useRequireAuth()` and fetches the
+ * sidebar payload from `GET /api/shell`. Children render only once the
+ * shell payload is available so the sidebar tree is consistent on the
+ * first interactive frame.
+ */
+export function AppShell({ children }: { children: ReactNode }) {
+  const { identity, loading: authLoading } = useRequireAuth();
+  const [shell, setShell] = useState<ShellPayload | null>(null);
+  const [shellError, setShellError] = useState<string | null>(null);
 
-  const projectList = await listProjects();
-  const allTrees = (await Promise.all(projectList.map((p) => getProjectTree(p.id)))).filter(
-    (t) => t !== null,
-  );
-
-  // Separate the synthetic "unsorted" pseudo-project from real projects.
-  // Its mockups become orphanMockups (rendered under "NO PROJECT").
-  const unsortedTree = allTrees.find((t) => t.slug === 'unsorted') ?? null;
-  const orphanMockups: TreeMockup[] = unsortedTree ? unsortedTree.mockups : [];
-  const treeProjects = allTrees.filter((t) => t.slug !== 'unsorted');
-
-  const allMockups = await prisma.mockup.findMany({
-    where: { status: { not: 'archived' } },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      updatedAt: true,
-      project: { select: { slug: true } },
-      folder: { select: { id: true, name: true } },
-    },
-  });
-  // One-shot lookup table so we can resolve each mockup's full folder
-  // ancestor chain without spamming Prisma per mockup.
-  const allFolders = await prisma.folder.findMany({
-    select: { id: true, name: true, parentId: true },
-  });
-  const folderById = new Map(allFolders.map((f) => [f.id, f]));
-  const buildFolderPath = (startId: string | undefined): string[] => {
-    if (!startId) return [];
-    const out: string[] = [];
-    const seen = new Set<string>();
-    let cur: string | undefined = startId;
-    while (cur) {
-      if (seen.has(cur)) break;
-      seen.add(cur);
-      const f = folderById.get(cur);
-      if (!f) break;
-      out.unshift(f.name);
-      cur = f.parentId ?? undefined;
-    }
-    return out;
-  };
-  const mockupNames: Record<string, string> = {};
-  const recentMockups: Record<
-    string,
-    { id: string; name: string; path?: string; updatedAt: string; href: string }
-  > = {};
-  for (const m of allMockups) {
-    mockupNames[m.id] = m.name;
-    const projectSlug = m.project?.slug ?? 'unsorted';
-    const folderPath = buildFolderPath(m.folder?.id);
-    recentMockups[m.id] = {
-      id: m.id,
-      name: m.name,
-      path: m.folder?.name,
-      updatedAt: m.updatedAt.toISOString(),
-      href: mockupSlugHref(projectSlug, folderPath, m.slug),
+  useEffect(() => {
+    let cancelled = false;
+    if (authLoading || !identity) return;
+    fetch('/api/shell', { credentials: 'include' })
+      .then(async (res) => {
+        if (cancelled) return;
+        if (res.status === 401) {
+          window.location.replace('/login');
+          return;
+        }
+        if (!res.ok) {
+          setShellError(`http_${res.status}`);
+          return;
+        }
+        const json: ShellPayload = await res.json();
+        if (!cancelled) setShell(json);
+      })
+      .catch((e) => {
+        if (!cancelled) setShellError(String(e));
+      });
+    return () => {
+      cancelled = true;
     };
+  }, [authLoading, identity]);
+
+  if (authLoading || !identity || !shell) {
+    return (
+      <div
+        className={styles.shell}
+        aria-busy="true"
+        style={{ display: 'grid', placeItems: 'center', minHeight: '100dvh' }}
+      >
+        <span
+          style={{
+            color: 'var(--text-muted)',
+            fontSize: 'var(--type-sm)',
+            fontFamily: 'var(--font-body)',
+          }}
+        >
+          {shellError ? `Failed to load (${shellError})` : 'Loading…'}
+        </span>
+      </div>
+    );
   }
 
   return (
     <div className={styles.shell}>
       <ProjectSidebar
-        projects={treeProjects}
-        orphanMockups={orphanMockups}
-        mockupNames={mockupNames}
-        recentMockups={recentMockups}
-        defaultCollapsed={sidebarCollapsed}
+        projects={shell.projects}
+        orphanMockups={shell.orphanMockups}
+        mockupNames={shell.mockupNames}
+        recentMockups={shell.recentMockups}
+        defaultCollapsed={shell.sidebarCollapsed}
       />
       <main className={styles.main}>{children}</main>
-      <CommandPalette projects={treeProjects} />
+      <CommandPalette projects={shell.projects} />
     </div>
   );
 }

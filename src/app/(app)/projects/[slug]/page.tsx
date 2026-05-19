@@ -1,60 +1,94 @@
-import { notFound } from 'next/navigation';
-import { getViewerProfile } from '@/lib/auth/viewer-profile';
-import { prisma } from '@/lib/prisma';
-import { projectDisplayName, projectHref } from '@/lib/project/routes';
-import { getAuthenticatedIdentity } from '../../../AppShell';
+'use client';
+
+import { notFound, useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
+import { useRequireAuth } from '@/lib/hooks/use-require-auth';
 import { ProjectContent } from '../../../projects/[slug]/ProjectContent';
 
-interface Props {
-  params: Promise<{ slug: string }>;
+interface FolderSummary {
+  id: string;
+  name: string;
+  childCount: number;
 }
 
-export default async function ProjectPage({ params }: Props) {
-  const identity = await getAuthenticatedIdentity();
-  const { slug } = await params;
-  const project = await prisma.project.findUnique({
-    where: { slug },
-    include: {
-      folders: {
-        where: { parentId: null },
-        orderBy: { position: 'asc' },
-        include: { _count: { select: { children: true, mockups: true } } },
-      },
-      mockups: {
-        where: { folderId: null, status: { not: 'archived' } },
-        orderBy: { position: 'asc' },
-        include: { _count: { select: { annotations: true } } },
-      },
-    },
-  });
-  if (!project) notFound();
+interface MockupSummary {
+  id: string;
+  name: string;
+  slug: string;
+  status: string;
+  updatedAt: string;
+  annotationCount: number;
+}
 
-  const { userName, userEmail } = await getViewerProfile(identity);
+interface ProjectViewPayload {
+  projectName: string;
+  projectSlug: string;
+  projectId: string;
+  projectIcon: string | null;
+  folders: FolderSummary[];
+  mockups: MockupSummary[];
+  breadcrumbs: BreadcrumbSegment[];
+}
+
+export default function ProjectPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const { identity, loading: authLoading } = useRequireAuth();
+  const [data, setData] = useState<ProjectViewPayload | null>(null);
+  const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
+
+  useEffect(() => {
+    if (!slug || authLoading || !identity) return;
+    let cancelled = false;
+    fetch(`/api/projects/by-slug/${encodeURIComponent(slug)}/view`, {
+      credentials: 'include',
+    })
+      .then(async (res) => {
+        if (cancelled) return;
+        if (res.status === 401) {
+          window.location.replace('/login');
+          return;
+        }
+        if (res.status === 404) {
+          setStatus('not_found');
+          return;
+        }
+        if (!res.ok) {
+          setStatus('error');
+          return;
+        }
+        const json: ProjectViewPayload = await res.json();
+        if (cancelled) return;
+        setData(json);
+        setStatus('ok');
+      })
+      .catch(() => {
+        if (!cancelled) setStatus('error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, authLoading, identity]);
+
+  if (status === 'not_found') notFound();
+  if (status === 'error') {
+    return <main style={{ padding: 24, color: 'var(--danger)' }}>Failed to load project.</main>;
+  }
+  if (status === 'loading' || !data) {
+    return null;
+  }
 
   return (
     <ProjectContent
-      projectName={projectDisplayName(project)}
-      projectSlug={project.slug}
-      projectId={project.id}
-      projectIcon={project.icon ?? null}
-      folders={project.folders.map((f) => ({
-        id: f.id,
-        name: f.name,
-        childCount: f._count.children + f._count.mockups,
-      }))}
-      mockups={project.mockups.map((m) => ({
-        id: m.id,
-        name: m.name,
-        slug: m.slug,
-        status: m.status,
-        updatedAt: m.updatedAt.toISOString(),
-        annotationCount: m._count.annotations,
-      }))}
-      breadcrumbs={[{ label: projectDisplayName(project), href: projectHref(project.slug) }]}
-      userName={userName}
-      userEmail={userEmail}
+      projectName={data.projectName}
+      projectSlug={data.projectSlug}
+      projectId={data.projectId}
+      projectIcon={data.projectIcon}
+      folders={data.folders}
+      mockups={data.mockups}
+      breadcrumbs={data.breadcrumbs}
+      userName={identity?.name}
+      userEmail={identity?.email}
     />
   );
 }
-
-export const dynamic = 'force-dynamic';

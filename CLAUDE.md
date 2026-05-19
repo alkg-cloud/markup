@@ -14,6 +14,21 @@ Documentation in `docs/` is the contract for behaviour, conventions, and archite
 
 Any change that adds, removes, or alters behaviour, a convention, or an architectural decision **must** update the relevant doc in the same change-set — ideally before writing code, so the doc edit defines the contract the code is then written against.
 
+## Client-side rendering rule (STRICT — non-negotiable)
+
+Markup renders **exclusively on the client**. Server-side rendering of UI is forbidden.
+
+Concretely:
+
+- **Every `page.tsx`, every `layout.tsx`, and every shell component is a client component** (`'use client'` at the top). No `async function Page()` server components, no `await prisma.…` inside a page or layout, no `next/headers` imports outside of API routes.
+- **All UI data-fetching happens in the client**, via `fetch('/api/…')` against the route handlers under `src/app/api/**`. Pages own loading + error states.
+- **API routes (`src/app/api/**`) remain server-side** — they are HTTP endpoints, not SSR. They keep `export const dynamic = 'force-dynamic'` where they read cookies/headers/DB. The `/m/[mockupId]/[...path]/route.ts` mockup-serve route also remains server-side.
+- **Auth gating** is the responsibility of (a) `src/middleware.ts` (cookie-presence redirect for unauthenticated traffic to `(app)` routes) and (b) a client-side `useRequireAuth()` hook that calls `/api/auth/me` and redirects to `/login` on 401. Pages and layouts must not call `identify()` — that helper is for API routes only.
+- **Root `src/app/layout.tsx`** stays server-rendered only to set up `<html>`, fonts, and metadata. It must not fetch data. The `<body>` mounts a client shell that handles every interactive concern.
+- **`next.config.mjs` does NOT switch to `output: 'export'`.** The project continues to run as a Next.js server (dev / standalone build) so API routes work; only the UI render is client-only.
+
+When in doubt: if it imports Prisma, reads cookies, or awaits DB rows, it belongs in an API route. The UI calls that API route via `fetch` and renders the result client-side.
+
 ## Snapshot-only docs
 
 Every doc under `docs/` is a **snapshot of what ships at HEAD**, not a journal. Forbidden in doc bodies:

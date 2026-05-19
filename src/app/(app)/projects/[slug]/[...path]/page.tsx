@@ -1,116 +1,125 @@
-import { notFound } from 'next/navigation';
+'use client';
+
+import { notFound, useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { MockupViewerPage } from '@/components/MockupViewer/MockupViewerPage';
-import { getViewerProfile } from '@/lib/auth/viewer-profile';
-import { prisma } from '@/lib/prisma';
-import { resolveProjectPath } from '@/lib/project/path-resolver';
-import { folderHref, mockupSlugHref, projectDisplayName, projectHref } from '@/lib/project/routes';
-import { getAuthenticatedIdentity } from '../../../../AppShell';
+import { useRequireAuth } from '@/lib/hooks/use-require-auth';
 import { ProjectContent } from '../../../../projects/[slug]/ProjectContent';
 
-interface Props {
-  params: Promise<{ slug: string; path: string[] }>;
+interface FolderSummary {
+  id: string;
+  name: string;
+  childCount: number;
 }
 
-/**
- * Catch-all route under `/projects/<slug>/…` — the segments resolve
- * either to a folder (renders the folder view) or to a mockup (renders
- * the mockup viewer here, in the same route). See
- * `lib/project/path-resolver.ts`.
- */
-export default async function ProjectPathPage({ params }: Props) {
-  const identity = await getAuthenticatedIdentity();
-  const { slug, path } = await params;
-  const project = await prisma.project.findUnique({ where: { slug } });
-  if (!project) notFound();
+interface MockupSummary {
+  id: string;
+  name: string;
+  slug: string;
+  status: string;
+  updatedAt: string;
+  annotationCount: number;
+}
 
-  const resolution = await resolveProjectPath(project.id, path);
-  if (!resolution) notFound();
+type ResolvePayload =
+  | { kind: 'mockup'; mockupId: string; breadcrumbs: BreadcrumbSegment[] }
+  | {
+      kind: 'folder';
+      projectName: string;
+      projectSlug: string;
+      projectId: string;
+      projectIcon: string | null;
+      folderName: string;
+      currentFolderId: string;
+      folderPathNames: string[];
+      folders: FolderSummary[];
+      mockups: MockupSummary[];
+      breadcrumbs: BreadcrumbSegment[];
+    };
+
+/**
+ * Catch-all client page under `/projects/<slug>/...`. Asks
+ * `GET /api/projects/by-slug/<slug>/resolve?path=…` to figure out
+ * whether the trailing segments name a folder or a mockup, then
+ * renders the matching surface.
+ */
+export default function ProjectPathPage() {
+  const params = useParams<{ slug: string; path: string[] }>();
+  const slug = params.slug;
+  const pathSegments = (params.path ?? []) as string[];
+  const pathQuery = pathSegments.map(encodeURIComponent).join('/');
+
+  const { identity, loading: authLoading } = useRequireAuth();
+  const [resolution, setResolution] = useState<ResolvePayload | null>(null);
+  const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
+
+  useEffect(() => {
+    if (!slug || pathQuery === '' || authLoading || !identity) return;
+    let cancelled = false;
+    fetch(`/api/projects/by-slug/${encodeURIComponent(slug)}/resolve?path=${pathQuery}`, {
+      credentials: 'include',
+    })
+      .then(async (res) => {
+        if (cancelled) return;
+        if (res.status === 401) {
+          window.location.replace('/login');
+          return;
+        }
+        if (res.status === 404) {
+          setStatus('not_found');
+          return;
+        }
+        if (!res.ok) {
+          setStatus('error');
+          return;
+        }
+        const json: ResolvePayload = await res.json();
+        if (cancelled) return;
+        setResolution(json);
+        setStatus('ok');
+      })
+      .catch(() => {
+        if (!cancelled) setStatus('error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, pathQuery, authLoading, identity]);
+
+  if (status === 'not_found') notFound();
+  if (status === 'error') {
+    return <main style={{ padding: 24, color: 'var(--danger)' }}>Failed to load page.</main>;
+  }
+  if (status === 'loading' || !resolution) {
+    return null;
+  }
 
   if (resolution.kind === 'mockup') {
-    // Mockup viewer is rendered inline here — the canonical URL for
-    // a mockup IS the path-based one.
-    const projectCrumb = { label: projectDisplayName(project), href: projectHref(project.slug) };
-    const ancestorCrumbs = resolution.folderPathNames.map((_, i) => {
-      const sub = resolution.folderPathNames.slice(0, i + 1);
-      return { label: sub[sub.length - 1], href: folderHref(project.slug, sub) };
-    });
-    const breadcrumbs = [
-      projectCrumb,
-      ...ancestorCrumbs,
-      {
-        label: resolution.mockupName,
-        href: mockupSlugHref(project.slug, resolution.folderPathNames, resolution.mockupSlug),
-      },
-    ];
     return (
       <MockupViewerPage
         mockupId={resolution.mockupId}
-        identity={identity}
-        breadcrumbs={breadcrumbs}
+        breadcrumbs={resolution.breadcrumbs}
+        userName={identity?.name}
+        userEmail={identity?.email}
       />
     );
   }
 
-  // Folder view — re-fetch with children + mockups for rendering.
-  const folder = await prisma.folder.findUnique({
-    where: { id: resolution.folderId },
-    include: {
-      children: {
-        orderBy: { position: 'asc' },
-        include: { _count: { select: { children: true, mockups: true } } },
-      },
-      mockups: {
-        where: { status: { not: 'archived' } },
-        orderBy: { position: 'asc' },
-        include: { _count: { select: { annotations: true } } },
-      },
-    },
-  });
-  if (!folder) notFound();
-
-  const { userName, userEmail } = await getViewerProfile(identity);
-
-  // Build breadcrumbs incrementally so each ancestor links to its own
-  // folder URL (cumulative path).
-  const ancestorBreadcrumbs = resolution.pathNames.slice(0, -1).map((_, i) => {
-    const subPath = resolution.pathNames.slice(0, i + 1);
-    return {
-      label: subPath[subPath.length - 1],
-      href: folderHref(project.slug, subPath),
-    };
-  });
-
   return (
     <ProjectContent
-      projectName={projectDisplayName(project)}
-      projectSlug={project.slug}
-      projectId={project.id}
-      projectIcon={project.icon ?? null}
-      folderName={folder.name}
-      currentFolderId={folder.id}
-      folderPathNames={resolution.pathNames}
-      folders={folder.children.map((f) => ({
-        id: f.id,
-        name: f.name,
-        childCount: f._count.children + f._count.mockups,
-      }))}
-      mockups={folder.mockups.map((m) => ({
-        id: m.id,
-        name: m.name,
-        slug: m.slug,
-        status: m.status,
-        updatedAt: m.updatedAt.toISOString(),
-        annotationCount: m._count.annotations,
-      }))}
-      breadcrumbs={[
-        { label: projectDisplayName(project), href: projectHref(project.slug) },
-        ...ancestorBreadcrumbs,
-        { label: folder.name, href: folderHref(project.slug, resolution.pathNames) },
-      ]}
-      userName={userName}
-      userEmail={userEmail}
+      projectName={resolution.projectName}
+      projectSlug={resolution.projectSlug}
+      projectId={resolution.projectId}
+      projectIcon={resolution.projectIcon}
+      folderName={resolution.folderName}
+      currentFolderId={resolution.currentFolderId}
+      folderPathNames={resolution.folderPathNames}
+      folders={resolution.folders}
+      mockups={resolution.mockups}
+      breadcrumbs={resolution.breadcrumbs}
+      userName={identity?.name}
+      userEmail={identity?.email}
     />
   );
 }
-
-export const dynamic = 'force-dynamic';
