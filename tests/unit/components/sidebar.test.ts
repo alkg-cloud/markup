@@ -47,9 +47,7 @@ describe('Sidebar', () => {
     // value as a prop.
     const secondRoot = createRoot(container);
     await act(async () => {
-      secondRoot.render(
-        createElement(Sidebar, { defaultCollapsed: true, children: 'Projects' }),
-      );
+      secondRoot.render(createElement(Sidebar, { defaultCollapsed: true, children: 'Projects' }));
     });
 
     expect(container.querySelector('button[aria-label="Expand sidebar"]')).not.toBeNull();

@@ -1,1 +1,1 @@
-export { useConfirm, type ConfirmOptions, type UseConfirmReturn } from './ConfirmDialog';
+export { type ConfirmOptions, type UseConfirmReturn, useConfirm } from './ConfirmDialog';

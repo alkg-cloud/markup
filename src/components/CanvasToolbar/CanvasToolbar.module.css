@@ -2,7 +2,7 @@
    Same glass aesthetic as the rail. See spec §5. */
 
 .toolbar {
-  composes: floatingSurface from '../../styles/glass.module.css';
+  composes: floatingSurface from "../../styles/glass.module.css";
   position: absolute;
   bottom: 24px;
   left: 50%;
