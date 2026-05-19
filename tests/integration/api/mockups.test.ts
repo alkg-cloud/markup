@@ -65,7 +65,7 @@ describe('POST /api/mockups', () => {
 
   it('creates a mockup from a valid zip with admin cookie', async () => {
     const cookie = await adminCookie();
-    const fd = await multipart(fixture('valid-simple.zip'), 'My Mockup');
+    const fd = await multipart(fixture('valid-simple.zip'), 'My-Mockup');
     const res = await createMockup(
       new Request('http://l/api/mockups', {
         method: 'POST',
@@ -122,7 +122,7 @@ describe('POST /api/mockups', () => {
     const folder = await prisma.folder.create({
       data: { name: 'Section', projectId: project.id },
     });
-    const fd = await multipart(fixture('valid-simple.zip'), 'With Folder', {
+    const fd = await multipart(fixture('valid-simple.zip'), 'With-Folder', {
       projectId: project.id,
       folderId: folder.id,
     });
@@ -141,7 +141,7 @@ describe('POST /api/mockups', () => {
 
   it('rejects invalid projectId with 400', async () => {
     const cookie = await adminCookie();
-    const fd = await multipart(fixture('valid-simple.zip'), 'Bad Project', {
+    const fd = await multipart(fixture('valid-simple.zip'), 'Bad-Project', {
       projectId: 'nonexistent-id',
     });
     const res = await createMockup(
@@ -158,7 +158,7 @@ describe('POST /api/mockups', () => {
 
   it('creates a mockup without projectId/folderId (backward compat)', async () => {
     const cookie = await adminCookie();
-    const fd = await multipart(fixture('valid-simple.zip'), 'No Project');
+    const fd = await multipart(fixture('valid-simple.zip'), 'No-Project');
     const res = await createMockup(
       new Request('http://l/api/mockups', {
         method: 'POST',
@@ -181,7 +181,7 @@ describe('Slug support', () => {
     await prisma.mockupVersion.deleteMany();
     await prisma.mockup.deleteMany();
     const cookie = await adminCookie();
-    const fd = await multipart(fixture('valid-simple.zip'), 'My Mockup', { slug });
+    const fd = await multipart(fixture('valid-simple.zip'), 'My-Mockup', { slug });
     const res = await createMockup(
       new Request('http://l/api/mockups', {
         method: 'POST',
