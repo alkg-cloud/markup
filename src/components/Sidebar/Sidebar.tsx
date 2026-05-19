@@ -1,6 +1,7 @@
 'use client';
 
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { VscLayoutSidebarLeft, VscLayoutSidebarLeftOff } from 'react-icons/vsc';
 import styles from './Sidebar.module.css';
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'markup.sidebar.collapsed';
@@ -15,8 +16,26 @@ function readStoredCollapsedState() {
   }
 }
 
+/**
+ * Resolve the initial collapsed state synchronously during the first
+ * render so SSR/CSR don't disagree. Order of precedence:
+ *
+ * 1. `cachedCollapsedState` (module-level cache populated by prior
+ *    mounts or by the inline boot script in `app/layout.tsx`).
+ * 2. `documentElement.dataset.sidebarCollapsed === '1'` (the inline
+ *    script's signal — runs before React boots so this attribute is
+ *    present on the very first paint).
+ * 3. localStorage as a last resort.
+ *
+ * Falls back to `false` (expanded) on the server / when nothing is set.
+ */
 function getInitialCollapsedState() {
-  return cachedCollapsedState ?? false;
+  if (cachedCollapsedState !== null) return cachedCollapsedState;
+  if (typeof document !== 'undefined') {
+    if (document.documentElement.dataset.sidebarCollapsed === '1') return true;
+    return readStoredCollapsedState();
+  }
+  return false;
 }
 
 interface SidebarProps {
@@ -98,33 +117,17 @@ export function Sidebar({ children, footer }: SidebarProps) {
             onClick={toggle}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            <span className={styles.iconCollapse}>
-              {/* panel-left icon — shown when expanded */}
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M2 1L1 2V14L2 15H14L15 14V2L14 1H2ZM14 14H7V2H14V14Z"
-                />
-              </svg>
+            {/* react-icons replaces the bespoke SVG paths — `VscLayoutSidebarLeft`
+                reads as "panel on the left" (so 'click to collapse' when the
+                sidebar is currently expanded), `VscLayoutSidebarLeftOff` as
+                "sidebar hidden" (so 'click to expand' when collapsed). The
+                spans below own visibility via CSS so the swap is purely
+                presentational. */}
+            <span className={styles.iconCollapse} aria-hidden="true">
+              <VscLayoutSidebarLeft />
             </span>
-            <span className={styles.iconExpand}>
-              {/* panel-left-open icon — shown when collapsed */}
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M2 1.00073L1 2.00073V14.0007L2 15.0007H14L15 14.0007V2.00073L14 1.00073H2ZM2 14.0007V2.00073H6V14.0007H2ZM7 14.0007V2.00073H14V14.0007H7Z" />
-              </svg>
+            <span className={styles.iconExpand} aria-hidden="true">
+              <VscLayoutSidebarLeftOff />
             </span>
           </button>
         </div>
