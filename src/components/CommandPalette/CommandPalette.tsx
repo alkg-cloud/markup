@@ -118,11 +118,72 @@ export function CommandPalette({ projects }: CommandPaletteProps) {
     const handleCustomOpen = () => {
       if (!open) openPalette();
     };
+
+    // Track which same-origin iframe documents we've already wired so we
+    // don't double-bind on rebinds (the mockup viewer iframe reloads
+    // between version switches and its `contentDocument` is recreated
+    // each time).
+    const wiredDocs = new WeakSet<Document>();
+    const wiredIframes = new WeakMap<HTMLIFrameElement, () => void>();
+
+    function wireIframe(iframe: HTMLIFrameElement) {
+      const attach = () => {
+        let doc: Document | null = null;
+        try {
+          doc = iframe.contentDocument;
+        } catch {
+          // Cross-origin iframe — nothing we can do; the user's host
+          // document already has the listener, and any cross-origin
+          // content blocks Ctrl+K via its own contract.
+          return;
+        }
+        if (!doc || wiredDocs.has(doc)) return;
+        wiredDocs.add(doc);
+        doc.addEventListener('keydown', handleKeyDown);
+      };
+      // Same-origin iframes reload between version switches; rewire each
+      // load so the listener follows the new contentDocument.
+      iframe.addEventListener('load', attach);
+      // If the iframe was already loaded when this effect runs, wire now.
+      attach();
+      wiredIframes.set(iframe, () => iframe.removeEventListener('load', attach));
+    }
+
+    function scanForIframes(root: ParentNode) {
+      const iframes = root.querySelectorAll<HTMLIFrameElement>('iframe');
+      iframes.forEach(wireIframe);
+    }
+
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('open-command-palette', handleCustomOpen);
+    scanForIframes(document);
+    // Watch for iframes added later (e.g. when navigating between
+    // mockups without a full route change).
+    const mo = new MutationObserver((records) => {
+      for (const rec of records) {
+        rec.addedNodes.forEach((n) => {
+          if (n instanceof HTMLIFrameElement) wireIframe(n);
+          else if (n instanceof Element) scanForIframes(n);
+        });
+      }
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
+
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('open-command-palette', handleCustomOpen);
+      mo.disconnect();
+      // Best-effort detach. WeakSets/Maps will GC the rest; we cannot
+      // enumerate them, so we re-scan the live iframes one last time.
+      document.querySelectorAll('iframe').forEach((iframe) => {
+        const teardown = wiredIframes.get(iframe);
+        if (teardown) teardown();
+        try {
+          iframe.contentDocument?.removeEventListener('keydown', handleKeyDown);
+        } catch {
+          // ignore cross-origin
+        }
+      });
     };
   }, [open, openPalette, closePalette]);
 
