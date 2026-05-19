@@ -12,11 +12,8 @@
 }
 
 .pill {
+  composes: floatingSurface from '../../styles/glass.module.css';
   pointer-events: auto;
-  background: var(--surface-glass-bg);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border: var(--surface-glass-border);
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-popover);
   padding: 8px 16px;

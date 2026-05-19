@@ -38,13 +38,11 @@
    `usePopover`. The default `inset: 0; margin: auto` is reset so the
    JS-written top/left win. */
 .picker {
+  composes: floatingSurface from '../../styles/glass.module.css';
   position: fixed;
   inset: auto;
   margin: 0;
   padding: 6px;
-  background: var(--surface-glass-bg);
-  backdrop-filter: blur(16px) saturate(140%);
-  border: var(--surface-glass-border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-popover);
   display: none;

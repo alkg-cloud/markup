@@ -2,6 +2,7 @@
    Same glass aesthetic as the rail. See spec §5. */
 
 .toolbar {
+  composes: floatingSurface from '../../styles/glass.module.css';
   position: absolute;
   bottom: 24px;
   left: 50%;
@@ -10,9 +11,6 @@
   align-items: center;
   gap: 4px;
   padding: 6px;
-  background: var(--surface-glass-bg);
-  backdrop-filter: blur(16px) saturate(140%);
-  border: var(--surface-glass-border);
   border-radius: 14px;
   box-shadow: var(--shadow-popover);
   z-index: 20;

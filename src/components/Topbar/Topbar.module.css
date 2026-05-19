@@ -79,6 +79,7 @@
 /* Native HTML popover — top-layer paint, fixed positioning written by
    `usePopover`. */
 .accountMenu {
+  composes: floatingSurface from '../../styles/glass.module.css';
   position: fixed;
   inset: auto;
   margin: 0;
@@ -86,9 +87,6 @@
   flex-direction: column;
   min-width: 220px;
   padding: 4px;
-  background: var(--surface-glass-bg);
-  backdrop-filter: blur(16px) saturate(140%);
-  border: var(--surface-glass-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-popover);
 }
