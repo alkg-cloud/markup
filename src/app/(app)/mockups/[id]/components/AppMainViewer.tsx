@@ -60,6 +60,13 @@ export interface AppMainViewerProps {
   onCommentEdit?: (commentId: string, newBody: string) => Promise<boolean>;
   /** Delete a comment. Returns true on success. */
   onCommentDelete?: (commentId: string) => Promise<boolean>;
+  /** Change an annotation's status. Returns true on success. */
+  onAnnotationStatusChange?: (
+    annotationId: string,
+    status: AnnotationStatus,
+  ) => Promise<boolean>;
+  /** Delete an annotation (cascades thread + messages + reactions). */
+  onAnnotationDelete?: (annotationId: string) => Promise<boolean>;
   onVersionSelect?: (versionId: string) => void;
   onVersionPromote?: (versionId: string) => void;
   onVersionDelete?: (versionId: string) => void;
@@ -77,6 +84,8 @@ export function AppMainViewer({
   onReactionToggle,
   onCommentEdit,
   onCommentDelete,
+  onAnnotationStatusChange,
+  onAnnotationDelete,
   onVersionSelect,
   onVersionPromote,
   onVersionDelete,
@@ -432,6 +441,7 @@ export function AppMainViewer({
           onBadgeClick={onActivate}
           onCreate={onCreate}
           count={annotations.length}
+          resetPositionKey={isFullscreen ? 'fs' : 'win'}
         >
           {annotations.map((a) => (
             <AnnotationCard
@@ -453,6 +463,22 @@ export function AppMainViewer({
               onCommentEditSave={(commentId, newBody) => onCommentEditForCard(commentId, newBody)}
               onCommentDelete={(commentId) => onCommentDeleteForCard(commentId)}
               onCommentReact={(commentId, emoji) => onCommentReact(commentId, emoji)}
+              onAnnotationStatusChange={async (status) => {
+                const ok = await onAnnotationStatusChange?.(a.id, status);
+                if (ok) {
+                  setAnnotations((prev) =>
+                    prev.map((p) => (p.id === a.id ? { ...p, status } : p)),
+                  );
+                }
+              }}
+              onAnnotationDelete={async () => {
+                const ok = await onAnnotationDelete?.(a.id);
+                if (ok) {
+                  setAnnotations((prev) => prev.filter((p) => p.id !== a.id));
+                  setActiveId((cur) => (cur === a.id ? null : cur));
+                  setOpenThreadId((cur) => (cur === a.id ? null : cur));
+                }
+              }}
             />
           ))}
         </AnnotationsRail>
@@ -462,6 +488,7 @@ export function AppMainViewer({
           onZoomChange={onZoomChange}
           onFullscreenToggle={onFullscreenToggle}
           isFullscreen={isFullscreen}
+          resetPositionKey={isFullscreen ? 'fs' : 'win'}
           versionChip={
             <VersionChip
               versions={versions}
