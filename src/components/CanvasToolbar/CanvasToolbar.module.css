@@ -104,6 +104,10 @@
   cursor: grab;
   color: var(--text-muted);
   border-radius: var(--radius-xs);
+  /* Suppress browser-native touch gestures (page pan/zoom) so the
+     pointer events that drive the drag handler are not pre-empted on
+     touchscreens. */
+  touch-action: none;
   transition:
     background var(--motion-fast),
     color var(--motion-fast);

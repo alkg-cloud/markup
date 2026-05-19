@@ -28,6 +28,13 @@ const TEST_EMAIL = 'qa@markup.dev';
 const TEST_PASSWORD = 'markup-dev-2026';
 const TEST_NAME = 'Alexandre Camillo';
 
+// Secondary user — gives the seeded thread a believable two-author
+// shape so the reactions UI can be exercised with both "react with my
+// own emoji" + "react with an emoji the other user already gave".
+const PEER_EMAIL = 'maria@markup.dev';
+const PEER_PASSWORD = 'markup-dev-2026';
+const PEER_NAME = 'Maria Santos';
+
 const fixture = (n: string) => path.resolve('tests/fixtures/mockups', n);
 
 interface AnchorRecord {
@@ -91,6 +98,18 @@ async function createUser() {
   return user;
 }
 
+async function createPeer() {
+  const passwordHash = await hashPassword(PEER_PASSWORD);
+  return prisma.user.create({
+    data: {
+      email: PEER_EMAIL,
+      name: PEER_NAME,
+      passwordHash,
+      role: 'editor',
+    },
+  });
+}
+
 async function createProjects() {
   const lumen = await prisma.project.create({
     data: { name: 'Lumen Coffee', slug: 'lumen-coffee', icon: 'coffee', position: 0 },
@@ -130,6 +149,14 @@ async function uploadMockup(opts: {
   return r;
 }
 
+interface ReplyInput {
+  body: string;
+  /** Author id; defaults to the annotation's primary author. Supplying
+   *  the peer's id makes the thread read as a real conversation between
+   *  two users. */
+  authorId?: string;
+}
+
 interface SeedAnnotationInput {
   mockupId: string;
   authorId: string;
@@ -138,8 +165,9 @@ interface SeedAnnotationInput {
   status: 'open' | 'needs review' | 'resolved';
   colorIndex: number;
   anchors: AnchorRecord[];
-  /** Reply bodies, oldest-first. The seeder posts them with the user as author. */
-  replies?: string[];
+  /** Reply bodies (oldest first). Strings inherit the annotation author;
+   *  objects can override authorId so threads include peer responses. */
+  replies?: Array<string | ReplyInput>;
   /** Map of emoji to authorIds that reacted to the primary message. */
   primaryReactions?: Record<string, string[]>;
   /** Reactions on the Nth reply (0-indexed). */
@@ -186,13 +214,14 @@ async function seedAnnotation(input: SeedAnnotationInput) {
   });
   // Stagger reply timestamps by 1 minute so the order in the UI is stable.
   let cursor = Date.now() + 60_000;
-  for (const body of input.replies ?? []) {
+  for (const raw of input.replies ?? []) {
+    const reply = typeof raw === 'string' ? { body: raw } : raw;
     await prisma.message.create({
       data: {
         threadId: thread.id,
         authorType: 'user',
-        authorId: input.authorId,
-        body,
+        authorId: reply.authorId ?? input.authorId,
+        body: reply.body,
         createdAt: new Date(cursor),
       },
     });
@@ -237,6 +266,10 @@ async function main() {
   console.log('  Creating admin user …');
   const user = await createUser();
   console.log(`     ${user.email} / ${TEST_PASSWORD} (role=${user.role})`);
+
+  console.log('  Creating peer user (for cross-author threads) …');
+  const peer = await createPeer();
+  console.log(`     ${peer.email} / ${PEER_PASSWORD} (role=${peer.role})`);
 
   console.log('  Creating projects + folders …');
   const { lumen, demos, lumenHero, lumenPricing, demosConsoles } = await createProjects();
@@ -284,7 +317,10 @@ async function main() {
   });
 
   console.log('  Seeding annotations …');
-  // Annotation 1: open + 3 replies + 2 reactions (primary)
+  // Annotation 1: open + 3 replies (mixed authors) + cross-user reactions
+  // including a pill that BOTH users picked (👍) so the QA flow exercises
+  // "toggle a reaction you already gave" and "react with an emoji
+  // someone else already gave".
   await seedAnnotation({
     mockupId: lumenCoffee.mockup.id,
     authorId: user.id,
@@ -294,22 +330,23 @@ async function main() {
     colorIndex: 0,
     anchors: [{ path: ':scope>body>main>section.lede>h1', offsetX: 0.42, offsetY: 0.58 }],
     replies: [
-      'I tested -0.02em on the desktop comp — feels right. Mobile still reads tight.',
+      { body: 'I tested -0.02em on the desktop comp — feels right. Mobile still reads tight.', authorId: peer.id },
       'Maybe -0.025em for the 96px variant only?',
-      'v3 lands the lifted leading. Closing as fixed.',
+      { body: 'v3 lands the lifted leading. Closing as fixed.', authorId: peer.id },
     ],
     primaryReactions: {
-      '👍': [user.id],
+      '👍': [user.id, peer.id],
       '🔥': [user.id],
+      '🎉': [peer.id],
     },
     replyReactions: {
       0: { '👀': [user.id] },
-      2: { '✅': [user.id], '🎉': [user.id] },
+      2: { '✅': [user.id, peer.id], '🚀': [user.id] },
     },
     versionId: v3.id,
   });
 
-  // Annotation 2: needs review + multi-pin (2 pins) + 1 reply
+  // Annotation 2: needs review + multi-pin + peer reply
   await seedAnnotation({
     mockupId: lumenCoffee.mockup.id,
     authorId: user.id,
@@ -321,11 +358,12 @@ async function main() {
       { path: ':scope>body>header.brand>nav.nav', offsetX: 0.85, offsetY: 0.5 },
       { path: ':scope>body>main>section.lede>h1', offsetX: 0.1, offsetY: 0.2 },
     ],
-    replies: ['Brand prefers "Reserve" over "Order". Pinged copy to update.'],
+    replies: [{ body: 'Brand prefers "Reserve" over "Order". Pinged copy to update.', authorId: peer.id }],
+    primaryReactions: { '💯': [peer.id] },
     versionId: v3.id,
   });
 
-  // Annotation 3: resolved + 1 reaction
+  // Annotation 3: resolved + cross-user reactions
   await seedAnnotation({
     mockupId: lumenCoffee.mockup.id,
     authorId: user.id,
@@ -334,11 +372,32 @@ async function main() {
     status: 'resolved',
     colorIndex: 2,
     anchors: [{ path: ':scope>body>main>aside.specimen', offsetX: 0.5, offsetY: 0.3 }],
-    replies: ['v3 nails it.', 'Closing.'],
-    primaryReactions: { '✅': [user.id] },
+    replies: [
+      { body: 'v3 nails it.', authorId: peer.id },
+      'Closing.',
+    ],
+    primaryReactions: { '✅': [user.id, peer.id] },
     replyReactions: {
       0: { '🚀': [user.id] },
     },
+    versionId: v3.id,
+  });
+
+  // Annotation 6: authored by peer so the QA user sees "someone else's"
+  // annotation (no edit pencil on the primary; reply kebab without
+  // edit/delete; reaction picker still works).
+  await seedAnnotation({
+    mockupId: lumenCoffee.mockup.id,
+    authorId: peer.id,
+    authorName: peer.name,
+    body: 'Drop cap “W” feels too pulled-in. Try a 4px optical inset on the descender so it reads aligned with the body.',
+    status: 'open',
+    colorIndex: 5,
+    anchors: [{ path: ':scope>body>main>section.lede>h1', offsetX: 0.5, offsetY: 0.92 }],
+    replies: [
+      { body: 'Agree — drop the descender, not the cap baseline.', authorId: user.id },
+    ],
+    primaryReactions: { '🤔': [user.id] },
     versionId: v3.id,
   });
 
@@ -402,7 +461,7 @@ async function main() {
   console.log(
     `  Mockups:    ${lumenCoffee.mockup.slug}, ${helio.mockup.slug}, ${drone.mockup.slug}`,
   );
-  console.log(`  Annotations on lumen-coffee-hero: 5  (open×3, needs review×1, resolved×1)`);
+  console.log(`  Annotations on lumen-coffee-hero: 6  (open×4, needs review×1, resolved×1; one by peer)`);
   console.log(`  Annotations on helio-pricing:    1`);
   console.log(`  Versions on lumen-coffee-hero:   3  (v3 is current)`);
   console.log('');

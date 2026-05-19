@@ -16,7 +16,10 @@
   border: 1px dashed var(--border-subtle);
   border-radius: 9999px;
   color: var(--text-muted);
-  opacity: 0;
+  /* Visible by default so users can discover the reaction affordance —
+     the spec calls for the dashed "+" pill to sit alongside any
+     existing reaction pills. Hover/open state amps the contrast. */
+  opacity: 1;
   cursor: pointer;
   transition:
     opacity var(--motion-fast),
@@ -26,18 +29,10 @@
 }
 .trigger:hover,
 .wrap.open .trigger {
-  opacity: 1;
   background: var(--surface-hover);
   color: var(--accent-bright);
   border-color: var(--accent-overlay-mid);
   border-style: solid;
-}
-/* Always reveal when the parent comment is hovered. The parent CSS owns
-   `:hover` on .fc-reactions; here we expose `data-comment-hover` so
-   styles can opt-in without coupling. */
-:global(.fc-reactions:hover) .trigger,
-:global([data-comment-hover="1"]) .trigger {
-  opacity: 1;
 }
 .trigger svg {
   width: 11px;

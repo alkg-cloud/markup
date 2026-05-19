@@ -233,6 +233,85 @@
   word-break: break-word;
 }
 
+/* Inline edit mode — textarea replaces the body div + save/cancel
+   actions sit just below. The textarea inherits the body's left-pad so
+   the editor reads as the same visual lane as the rendered body. */
+.editBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 26px;
+}
+.primary .editBody {
+  padding-left: 10px;
+}
+.editTextarea {
+  display: block;
+  width: 100%;
+  min-height: 60px;
+  padding: 8px 10px;
+  background: var(--bg-card-active);
+  color: var(--text-bright);
+  border: 1px solid var(--accent-overlay-mid);
+  border-radius: var(--radius-xs);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.45;
+  resize: vertical;
+  box-shadow:
+    inset 0 0 0 1px transparent,
+    0 0 0 3px transparent;
+  transition:
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
+}
+.editTextarea:focus,
+.editTextarea:focus-visible {
+  outline: none;
+  border-color: var(--accent-bright);
+  box-shadow:
+    inset 0 0 0 1px transparent,
+    0 0 0 3px var(--accent-soft);
+}
+.editActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.editCancel,
+.editSave {
+  height: 24px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast),
+    border-color var(--motion-fast);
+}
+.editCancel {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+}
+.editCancel:hover {
+  background: var(--surface-hover);
+  color: var(--text-bright);
+}
+.editSave {
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+  border: 1px solid var(--accent-overlay-mid);
+}
+.editSave:hover {
+  background: var(--accent-overlay-mid);
+  color: var(--text-bright);
+}
+
 .reactions {
   display: flex;
   align-items: center;
