@@ -206,11 +206,31 @@ function computeActivePathExpanded(
 ): Set<string> {
   const ids = new Set<string>();
 
-  const mockupMatch = pathname.match(/^\/mockups\/([^/]+)$/);
-  if (mockupMatch) {
-    for (const id of findMockupChain(projects, mockupMatch[1])) ids.add(id);
+  // Path-based routes: /projects/<slug>/<segment>/<segment>/.../<segment>
+  // Walk the tree by name; each segment can be either a folder or the
+  // trailing mockup slug. We expand every folder ancestor we visit.
+  const pathMatch = pathname.match(/^\/projects\/([^/]+)(?:\/(.+))?$/);
+  if (pathMatch) {
+    const slug = decodeURIComponent(pathMatch[1]);
+    const project = projects.find((p) => p.slug === slug);
+    if (project) {
+      ids.add(project.id);
+      if (pathMatch[2]) {
+        const segments = pathMatch[2].split('/').map(decodeURIComponent).filter(Boolean);
+        let folders = project.folders;
+        for (let i = 0; i < segments.length; i++) {
+          const seg = segments[i];
+          const folder = folders.find((f) => f.name === seg);
+          if (!folder) break; // trailing segment was the mockup slug
+          ids.add(folder.id);
+          folders = folder.children;
+        }
+      }
+    }
   }
 
+  // Legacy query-string fallback — still useful for any leftover links
+  // that pre-date the path-based routes.
   const projectSlug = searchParams?.get('project') ?? null;
   const folderId = searchParams?.get('folder') ?? null;
   if (projectSlug) {
@@ -221,10 +241,6 @@ function computeActivePathExpanded(
         for (const id of findFolderAncestorIds(project, folderId)) ids.add(id);
       }
     }
-  }
-
-  for (const p of projects) {
-    if (pathname.startsWith(`/projects/${p.slug}`)) ids.add(p.id);
   }
 
   return ids;
@@ -424,22 +440,30 @@ export function ProjectTree({
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  // Initial render uses ONLY URL-derived expansion so SSR + first
+  // client paint agree. localStorage-restored expansion is merged in a
+  // post-mount effect (see below) — accepting a brief post-hydration
+  // pop of additional ancestors over the alternative (a hard hydration
+  // mismatch that re-renders the whole tree client-only).
   const [expanded, setExpanded] = useState<Set<string>>(() => {
     const fromUrl = computeActivePathExpanded(projects, pathname, searchParams);
-    if (typeof window === 'undefined') {
-      if (fromUrl.size === 0 && projects.length > 0) fromUrl.add(projects[0].id);
-      return fromUrl;
-    }
+    if (fromUrl.size === 0 && projects.length > 0) fromUrl.add(projects[0].id);
+    return fromUrl;
+  });
+  useEffect(() => {
     try {
       const stored: string[] = JSON.parse(localStorage.getItem(EXPANDED_STORAGE_KEY) ?? '[]');
-      const merged = new Set([...stored, ...fromUrl]);
-      if (merged.size === 0 && projects.length > 0) merged.add(projects[0].id);
-      return merged;
+      if (stored.length === 0) return;
+      setExpanded((prev) => {
+        const merged = new Set(prev);
+        for (const id of stored) merged.add(id);
+        return merged;
+      });
     } catch {
-      if (fromUrl.size === 0 && projects.length > 0) fromUrl.add(projects[0].id);
-      return fromUrl;
+      // localStorage unavailable; URL-derived state is the floor.
     }
-  });
+    // Run once on mount; later writes happen via the persist effect.
+  }, []);
   const [focusIndex, setFocusIndex] = useState(0);
   const [creatingIn, setCreatingIn] = useState<{
     projectId: string;
