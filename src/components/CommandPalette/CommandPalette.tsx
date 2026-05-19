@@ -71,8 +71,18 @@ export function CommandPalette({ projects }: CommandPaletteProps) {
     setQuery('');
     setDebouncedQuery('');
     setSelectedIndex(0);
-    requestAnimationFrame(() => inputRef.current?.focus());
+    // Focus is wired via the `useEffect` below — running `focus()` here
+    // (even inside `requestAnimationFrame`) raced React 19's render
+    // commit and frequently missed because the `<input>` was still
+    // unmounted when the RAF callback fired.
   }, []);
+
+  // Focus the search input every time the palette transitions to open.
+  // The effect runs after the commit, so `inputRef.current` is always
+  // pointing at the freshly mounted `<input>`.
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
 
   const closePalette = useCallback(() => {
     setOpen(false);

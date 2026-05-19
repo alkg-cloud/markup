@@ -3,12 +3,16 @@
    toolbar, composer, and every popover — see `tokens.css § Glass
    surface` + `docs/feature-catalog.md § glass-surface-standard`. */
 
+/* Scrim carries the **standard glass blur** so the page content
+ * visibly blurs behind the dialog — same effect the rail/toolbar
+ * produce over the mockup canvas. Tint is kept low so the blur reads
+ * as the dominant treatment. See `tokens.css § Glass surface`. */
 .scrim {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.32);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
   z-index: 800;
   display: flex;
   align-items: center;
