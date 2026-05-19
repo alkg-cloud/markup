@@ -1,0 +1,249 @@
+/* ThreadTimeline ──────────────────────────────────────────────
+ *
+ * Threaded annotation pane: header pill, message timeline (avatar +
+ * body + agent quote bar), reply textarea, action row. Composed by
+ * MockupViewer when the user opens an annotation thread.
+ */
+
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-height: 400px;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.headerLabel {
+  font-size: var(--type-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--type-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+}
+
+.statusPillOpen {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.statusPillResolved {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.statusDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Message list ───────────────────────────────────────────── */
+
+.messageList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-md);
+  flex: 1;
+  overflow-y: auto;
+}
+
+.messageRow {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: var(--space-sm);
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.avatarUser {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.avatarAgent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.messageBody {
+  display: grid;
+  gap: 4px;
+}
+
+.authorRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+.authorName {
+  font-size: var(--type-xs);
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+.timestamp {
+  font-size: var(--type-2xs);
+  color: var(--text-muted);
+}
+
+.kindChip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+  background: var(--bg-chip);
+  color: var(--text-dim);
+}
+
+.messageText {
+  font-size: var(--type-sm);
+  color: var(--text);
+  line-height: var(--leading-snug);
+  white-space: pre-wrap;
+}
+
+.messageTextAgent {
+  padding-left: var(--space-sm);
+  border-left: 2px solid var(--accent-overlay-mid);
+}
+
+/* ── Reply form ─────────────────────────────────────────────── */
+
+.form {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.textarea {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--surface-input);
+  color: var(--text-bright);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--type-base);
+  min-height: 64px;
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: 9px 16px;
+  background: transparent;
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-xs);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-instant) var(--ease-standard);
+}
+
+.btnGhost:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+  color: var(--text-bright);
+}
+
+.btnGhost:active:not(:disabled) {
+  background: var(--surface-active);
+  transform: translateY(1px);
+}
+
+.btnGhost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: 9px 16px;
+  background: var(--btn-bg);
+  color: var(--accent);
+  border: 0;
+  border-radius: var(--radius-pill);
+  font-size: var(--type-xs);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    transform var(--motion-instant) var(--ease-standard),
+    opacity var(--motion-fast) var(--ease-standard);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--btn-bg-hover);
+}
+
+.btnPrimary:active:not(:disabled) {
+  background: var(--btn-bg-active);
+  transform: translateY(1px);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

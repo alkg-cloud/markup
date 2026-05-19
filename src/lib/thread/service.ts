@@ -1,6 +1,9 @@
 import 'server-only';
 
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
+
+const log = logger.child({ name: 'thread-service' });
 
 interface AppendInput {
   threadId: string;
@@ -10,7 +13,7 @@ interface AppendInput {
 }
 
 export async function appendMessage(input: AppendInput) {
-  return prisma.message.create({
+  const message = await prisma.message.create({
     data: {
       threadId: input.threadId,
       authorType: input.authorType,
@@ -18,6 +21,15 @@ export async function appendMessage(input: AppendInput) {
       body: input.body,
     },
   });
+  log.info(
+    {
+      messageId: message.id,
+      threadId: input.threadId,
+      authorType: input.authorType,
+    },
+    'thread_message_appended',
+  );
+  return message;
 }
 
 export async function setThreadStatus(
@@ -37,6 +49,7 @@ export async function setThreadStatus(
       body: `${actor.kind} ${actor.id} marked thread ${status}`,
     },
   });
+  log.info({ threadId, status, actorKind: actor.kind }, 'thread_status_changed');
   return updated;
 }
 

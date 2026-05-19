@@ -58,12 +58,12 @@ export default function ProjectPathPage() {
 
   useEffect(() => {
     if (!slug || pathQuery === '') return;
-    let cancelled = false;
+    const controller = new AbortController();
     fetch(`/api/projects/by-slug/${encodeURIComponent(slug)}/resolve?path=${pathQuery}`, {
       credentials: 'include',
+      signal: controller.signal,
     })
       .then(async (res) => {
-        if (cancelled) return;
         if (res.status === 401) {
           window.location.replace('/login');
           return;
@@ -77,16 +77,14 @@ export default function ProjectPathPage() {
           return;
         }
         const json: ResolvePayload = await res.json();
-        if (cancelled) return;
         setResolution(json);
         setStatus('ok');
       })
-      .catch(() => {
-        if (!cancelled) setStatus('error');
+      .catch((e) => {
+        if (e?.name === 'AbortError') return;
+        setStatus('error');
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [slug, pathQuery]);
 
   if (status === 'not_found') notFound();

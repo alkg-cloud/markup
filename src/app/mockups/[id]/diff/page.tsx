@@ -25,16 +25,15 @@ export default function DiffPage() {
 
   useEffect(() => {
     if (!mockupId) return;
-    let cancelled = false;
+    const controller = new AbortController();
     const url = new URL(
       `/api/mockups/${encodeURIComponent(mockupId)}/diff-versions`,
       window.location.origin,
     );
     if (from) url.searchParams.set('from', from);
     if (to) url.searchParams.set('to', to);
-    fetch(url.toString(), { credentials: 'include' })
+    fetch(url.toString(), { credentials: 'include', signal: controller.signal })
       .then(async (res) => {
-        if (cancelled) return;
         if (res.status === 401) {
           window.location.replace('/login');
           return;
@@ -48,16 +47,14 @@ export default function DiffPage() {
           return;
         }
         const json: DiffPayload = await res.json();
-        if (cancelled) return;
         setPayload(json);
         setStatus('ok');
       })
-      .catch(() => {
-        if (!cancelled) setStatus('error');
+      .catch((e) => {
+        if (e?.name === 'AbortError') return;
+        setStatus('error');
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [mockupId, from, to]);
 
   if (status === 'not_found') notFound();

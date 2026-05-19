@@ -20,7 +20,7 @@
   padding: var(--space-xs) 0;
 }
 
-/* ── Section labels (e.g. "Recentes") ───────────────────────────────── */
+/* ── Section labels (e.g. "Recents") ───────────────────────────────── */
 
 .sectionLabel {
   font-family: var(--font-body);

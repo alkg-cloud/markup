@@ -43,7 +43,7 @@ export function flattenProjects(
       nodes.push({
         id: `recents-${p.id}`,
         type: 'recents-header',
-        label: 'Recentes',
+        label: 'Recents',
         level: 2,
         expandable: false,
         expanded: false,
