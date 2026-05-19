@@ -16,13 +16,16 @@
   border: 1px dashed var(--border-subtle);
   border-radius: 9999px;
   color: var(--text-muted);
-  /* Visible by default so users can discover the reaction affordance —
-     the spec calls for the dashed "+" pill to sit alongside any
-     existing reaction pills. Hover/open state amps the contrast. */
-  opacity: 1;
+  /* Hidden until the parent comment is hovered (or the picker is open)
+     so the "+" doesn't clutter the reactions row at rest. The Comment
+     module owns the `:hover` selector that flips `--reaction-add-opacity`
+     to 1; the trigger reads it as its opacity. The fade uses motion-base
+     so it eases in/out alongside the comment's other hover affordances. */
+  opacity: var(--reaction-add-opacity, 0);
+  pointer-events: var(--reaction-add-pointer, none);
   cursor: pointer;
   transition:
-    opacity var(--motion-fast),
+    opacity var(--motion-base) var(--ease-standard),
     background var(--motion-fast),
     color var(--motion-fast),
     border-color var(--motion-fast);
@@ -33,6 +36,13 @@
   color: var(--accent-bright);
   border-color: var(--accent-overlay-mid);
   border-style: solid;
+}
+/* When the picker is open, keep the trigger visible regardless of the
+   parent's hover state — otherwise mouse-out closes the popover by
+   removing the trigger from the document flow. */
+.wrap.open .trigger {
+  opacity: 1;
+  pointer-events: auto;
 }
 .trigger svg {
   width: 11px;

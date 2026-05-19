@@ -15,8 +15,11 @@ export interface PinProps {
   /** Visual state. `active` adds the pulsing glow; `pending` renders the
    *  dashed-outline composer-placement variant. */
   status?: PinStatus;
-  /** Custom tooltip — replaces native `title` per the spec's tooltip rule.
-   *  Falls back to "Annotation #001" aria-label when omitted. */
+  /** Optional human-friendly label used for `aria-label`. Defaults to
+   *  `Annotation #001`. Pins intentionally do NOT render a hover tooltip
+   *  — the rotated -45° transform on the pin frame made tooltip
+   *  positioning flaky and the label adds no usability the rail card
+   *  doesn't already cover. */
   tooltip?: string;
   /** Click handler. Receives the synthetic event so callers can stop
    *  propagation if needed. */
@@ -52,7 +55,6 @@ export const Pin = forwardRef<HTMLButtonElement, PinProps>(function Pin(
       className={cls}
       data-annotation-id={annotationId}
       data-color={colorIndex}
-      data-tooltip={tooltip}
       aria-label={tooltip ?? `Annotation #${String(label).padStart(3, '0')}`}
       onClick={onClick}
     >
