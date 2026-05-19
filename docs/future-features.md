@@ -322,3 +322,15 @@ specs. Spec: `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md`.
 **Why park it:** the API is wired (`PATCH /api/messages/[id]`), Edit reaches the backend and persists — the only gap is the input affordance. v1.1 polish.
 
 **Size:** ~2 hours including styling matching the reply textarea.
+
+### 30. Legacy DS mockup overhaul to glass-surface standard
+
+**Where:** `docs/design/design-system/01-sidebar.html`, `02-breadcrumb.html`, `03-finder-pill.html`, `04-finder-overlay.html`, `05-project-card.html`, `06-icon-picker.html`, `08-dropdown-chevron.html`, `09-avatar-menu.html`, `10-agent-tokens.html`, `11-mockup-view.html`, `12-project-folder-view.html`, `13-buttons.html`, and `docs/design/full-prototype.html`.
+
+**Today:** these mockups predate the `glass-surface-standard` introduced in `src/styles/glass.module.css`. They use inline legacy values: `background: rgba(14,12,16,0.92); backdrop-filter: blur(16px)`. The shipped components now resolve to `background: var(--surface-glass-bg) /* rgb(7 12 15 / 80%) */; backdrop-filter: blur(16px) saturate(140%); border: 1px solid var(--border)`. The two are visually close but not pixel-perfect.
+
+The Tarefa 5 ultrareview ("Tarefa 5 aceitou outros mockups considerados alinhados sem verificação detalhada") flagged the gap; Tarefa 11 audited it, parked it as a separate effort, and synced prod (`markup.alego.cloud > Markup dev > Design System`) with the current HEAD HTML — so prod reflects truth, the truth just isn't pixel-perfect yet.
+
+**Fix:** rewrite each mockup's glass treatment to use the new `--surface-glass-bg` / `--surface-glass-blur` / `--surface-glass-border` tokens and the saturate-140% filter. Replace any token-divergent values with the up-to-date `tokens.css` definitions. Re-test visually against the live component, then upload new versions to prod (`POST /api/mockups/{id}/version`). The 7 new mockups (14-20) shipped in Tarefa 5 already use the new standard and are aligned.
+
+**Size:** ~3 hours per group; budget half a day for the 12 component mockups + half a day for `full-prototype.html` (~2500 lines). Lower priority: divergence is < 5% of pixel-perfect (saturation + tint), no functional regression.
