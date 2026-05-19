@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { identify, requireAdmin } from '@/lib/auth/identify';
-import { getMockup, setMockupStatus } from '@/lib/mockup/service';
+import { getMockup, renameMockup, setMockupStatus } from '@/lib/mockup/service';
 import { URL_SAFE_NAME_PATTERN } from '@/lib/validation/url-safe-name';
 
 interface ErrorWithStatus extends Error {
@@ -41,8 +41,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     await setMockupStatus(mockupId, parsed.data.status);
   }
   if (parsed.data.name) {
-    const { prisma } = await import('@/lib/prisma');
-    await prisma.mockup.update({ where: { id: mockupId }, data: { name: parsed.data.name } });
+    await renameMockup(mockupId, parsed.data.name);
   }
   const updated = await getMockup(mockupId);
   if (!updated) return NextResponse.json({ error: 'not_found' }, { status: 404 });

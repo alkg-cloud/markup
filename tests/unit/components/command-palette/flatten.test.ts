@@ -25,7 +25,7 @@ describe('flattenProjectTree', () => {
         name: 'Alpha',
         path: '',
         type: 'project',
-        href: '/?project=alpha',
+        href: '/projects/alpha',
         projectSlug: 'alpha',
       },
     ]);
@@ -58,7 +58,7 @@ describe('flattenProjectTree', () => {
       name: 'Homepage',
       path: 'Alpha',
       type: 'mockup',
-      href: '/mockups/m1',
+      href: '/projects/alpha/homepage',
       projectSlug: 'alpha',
     });
   });
@@ -104,16 +104,16 @@ describe('flattenProjectTree', () => {
     const folder1 = result.find((r) => r.id === 'f1')!;
     expect(folder1.path).toBe('Alpha');
     expect(folder1.type).toBe('folder');
-    expect(folder1.href).toBe('/?project=alpha&folder=f1');
+    expect(folder1.href).toBe('/projects/alpha/Design');
 
     const folder2 = result.find((r) => r.id === 'f2')!;
     expect(folder2.path).toBe('Alpha / Design');
-    expect(folder2.href).toBe('/?project=alpha&folder=f2');
+    expect(folder2.href).toBe('/projects/alpha/Design/Icons');
 
     const mockup = result.find((r) => r.id === 'm2')!;
     expect(mockup.path).toBe('Alpha / Design');
     expect(mockup.type).toBe('mockup');
-    expect(mockup.href).toBe('/mockups/m2');
+    expect(mockup.href).toBe('/projects/alpha/Design/cards');
   });
 
   it('handles multiple projects', () => {

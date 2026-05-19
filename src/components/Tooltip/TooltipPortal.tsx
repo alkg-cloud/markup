@@ -147,8 +147,6 @@ export function TooltipPortal() {
       ref={ref}
       id={TOOLTIP_ID}
       role="tooltip"
-      // @ts-expect-error — React 19+ allows `popover` natively; older
-      // @types/react may not have the prop yet.
       popover="hint"
       className="markup-tooltip"
     />

@@ -115,11 +115,14 @@ async function createProjects() {
   // `src/components/IconPicker/icons.ts`). The previous `'coffee'` and
   // `'sparkle'` strings were not in the picker — opening the project
   // settings rendered an empty icon slot.
+  // Names are URL-path segments now (per `URL_SAFE_NAME_PATTERN`), so
+  // they can only contain `[A-Za-z0-9_-]`. The display value is the
+  // raw name; hyphens read fine as word separators.
   const lumen = await prisma.project.create({
-    data: { name: 'Lumen Coffee', slug: 'lumen-coffee', icon: 'emoji:🔥', position: 0 },
+    data: { name: 'Lumen-Coffee', slug: 'lumen-coffee', icon: 'emoji:🔥', position: 0 },
   });
   const demos = await prisma.project.create({
-    data: { name: 'Design Demos', slug: 'design-demos', icon: 'emoji:🎨', position: 1 },
+    data: { name: 'Design-Demos', slug: 'design-demos', icon: 'emoji:🎨', position: 1 },
   });
   const lumenHero = await prisma.folder.create({
     data: { projectId: lumen.id, name: 'Hero', position: 0 },
@@ -280,7 +283,7 @@ async function main() {
 
   console.log('  Uploading mockups …');
   const lumenCoffee = await uploadMockup({
-    name: 'Lumen Coffee — Hero',
+    name: 'Lumen-Coffee-Hero',
     slug: 'lumen-coffee-hero',
     zipName: 'lumen-coffee.zip',
     projectId: lumen.id,
@@ -288,7 +291,7 @@ async function main() {
     authorId: user.id,
   });
   const helio = await uploadMockup({
-    name: 'Helio Pricing',
+    name: 'Helio-Pricing',
     slug: 'helio-pricing',
     zipName: 'helio-pricing.zip',
     projectId: lumen.id,
@@ -296,7 +299,7 @@ async function main() {
     authorId: user.id,
   });
   const drone = await uploadMockup({
-    name: 'Drone Console',
+    name: 'Drone-Console',
     slug: 'drone-console',
     zipName: 'drone-console.zip',
     projectId: demos.id,

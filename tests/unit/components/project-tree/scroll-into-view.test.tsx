@@ -60,8 +60,8 @@ describe('active node scrollIntoView', () => {
 
     spy.mockClear();
 
-    // Navigate to the mockup URL.
-    mockPathname = '/mockups/m1';
+    // Navigate to the path-based mockup URL.
+    mockPathname = '/projects/alpha/m1';
     await act(async () => {
       root.render(createElement(ProjectTree, { projects: [project], orphanMockups: [] }));
     });
@@ -72,7 +72,7 @@ describe('active node scrollIntoView', () => {
   });
 
   it('calls scrollIntoView on mount when a mockup URL is active from the start', async () => {
-    mockPathname = '/mockups/m1';
+    mockPathname = '/projects/alpha/m1';
     const { ProjectTree } = await import('@/components/ProjectTree/ProjectTree');
 
     await act(async () => {

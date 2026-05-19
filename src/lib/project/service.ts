@@ -65,11 +65,17 @@ export async function getProject(id: string) {
 export async function updateProject(id: string, input: { name?: string; icon?: string | null }) {
   const existing = await prisma.project.findUnique({ where: { id } });
   if (!existing) return null;
+  // When the name changes, regenerate the slug so the canonical
+  // path-based URL (`/projects/<slug>`) keeps reading the latest name.
+  // Slug stays stable if only the icon is changing.
+  const renamed = input.name != null && input.name !== existing.name;
+  const slug = renamed ? await ensureUniqueProjectSlug(input.name as string) : undefined;
   return prisma.project.update({
     where: { id },
     data: {
       name: input.name,
       icon: input.icon,
+      ...(slug ? { slug } : {}),
     },
   });
 }

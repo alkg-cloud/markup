@@ -82,7 +82,7 @@ ARIA tree widget for project/folder navigation (`ProjectTree.tsx`).
 | `sidebar-tree-persist-on-nav` | Expand/collapse state of every project and folder node survives navigation between in-shell pages (`/`, `/projects`, `/projects/<slug>`, `/projects/<slug>/<...folders>/<mockup-slug>`, `/annotations/[id]`, `/settings/agents`) because the shell mounts once in the `(app)` route-group layout | preserved on client-side navigation |
 | `sidebar-tree-persist-expansion` | Tree expansion (which projects/folders are open) is persisted in `localStorage.markup.sidebar.expanded` (JSON array of node IDs). Survives reload and tab close. Auto-expand of the active node's path on mount remains additive. | persisted across reloads |
 | `sidebar-tree-active-scroll` | When the URL changes (soft-nav), the active tree node is scrolled into view via `scrollIntoView({block:'nearest', behavior:'smooth'})`. | triggered on every soft-navigation |
-| `sidebar-tree-cursor-grab` | Draggable mockup leaves show `cursor: grab` on hover and `cursor: grabbing` on mousedown. The drag affordance is a 14 × 14 `GoGrabber` (from `react-icons/go`) revealed on row hover via opacity — same canonical glyph as `mockup-viewer-rail-drag` and `mockup-viewer-toolbar-drag` so every grabbable surface across the product reads identically. | hover, mousedown |
+| `sidebar-tree-cursor-grab` | Draggable mockup leaves show `cursor: grab` on hover and `cursor: grabbing` on mousedown. The drag affordance is a 16 × 16 `GoGrabber` (from `react-icons/go`) revealed on row hover via opacity. Same canonical glyph as `mockup-viewer-rail-drag` and `mockup-viewer-toolbar-drag`; row-scoped grabs scale down to fit the ~24 px row height — the canonical 25 × 25 size applies to standalone overlay surfaces. | hover, mousedown |
 | `sidebar-tree-active-path` | On mount and on every navigation, the chain of ancestors leading to the currently visible surface is auto-expanded so the active node is in view: the project + every parent folder for `/projects/<slug>/<...folders>/<mockup-slug>` (walks folder names from the path) and `/annotations/[id]`, the project + the parent folders for `/projects/<slug>/<...folders>`, the project for `/projects/<slug>`. Already-expanded nodes are never collapsed by this behaviour | active mockup, active folder, active project |
 
 ## sidebar-tree-dnd
@@ -235,11 +235,9 @@ Empty state component for projects and folders (`EmptyState.tsx`).
 | `empty-state-cta-secondary` | "Create folder" / "Create subfolder" secondary button (`btn-secondary`) | default, hover (`--btn-bg-hover` + `--border-strong`), focus-visible, active |
 | `empty-state-sidebar-inline` | Inline "Empty folder" text in sidebar when expanded folder has no children | shown below empty expanded folder |
 
-## mockup-viewer (AppMain redesign — 2026-05)
+## mockup-viewer
 
-Mockup viewer at `/projects/<slug>/<...folders>/<mockup-slug>` (`MockupViewerPage.tsx` server component → `AppMainViewer.tsx` client). The single-segment route `/mockups/[id]` has been removed — canonical viewer URLs are path-based and human-readable; orphan mockups resolve under the synthetic project slug `unsorted`. The 2026-05 redesign
-replaces the in-canvas toolbar + side panel with **floating, draggable chrome**
-(rail + toolbar + composer + marking-bar) directly above the canvas.
+Mockup viewer at `/projects/<slug>/<...folders>/<mockup-slug>` (`MockupViewerPage.tsx` server component → `AppMainViewer.tsx` client). Canonical viewer URLs are path-based and human-readable; orphan mockups resolve under the synthetic project slug `unsorted`. The viewer composes **floating, draggable chrome** (rail + toolbar + composer + marking-bar) directly above the canvas — no in-canvas toolbar, no side panel.
 
 **Layout in normal mode:** the viewer inhabits the in-shell area to the right
 of the project sidebar and below the topbar, exactly like every other `(app)`
@@ -254,12 +252,8 @@ or the `f` shortcut): uses the Fullscreen API on the AppMain element — the
 inside AppMain survives the transition because it lives inside the fullscreen
 element. Exiting fullscreen (Esc or `f` again) restores the in-shell layout.
 
-Specs:
-- `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md`
-- `docs/superpowers/specs/2026-05-18-pin-anchoring-strategy.md`
-
-Drawing (tldraw), inline diff modal, and edit-mode toggle are PARKED —
-see `docs/future-features.md` #23/24/25.
+Drawing (tldraw), inline diff modal, and edit-mode toggle are parked — see
+`docs/future-features.md`.
 
 ### mockup-viewer-app-main
 

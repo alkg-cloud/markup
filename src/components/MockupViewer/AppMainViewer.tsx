@@ -120,8 +120,10 @@ export function AppMainViewer({
   // Bumped each time the user clicks a canvas pin so the rail pins
   // itself open. Decoupling the trigger from `activeId` lets the rail
   // stay collapsed when the active annotation changes from the rail
-  // itself (e.g. accordion thread toggle).
-  const [railExpandSignal, setRailExpandSignal] = useState(0);
+  // itself (e.g. accordion thread toggle). Starts `undefined` so the
+  // rail's expand-signal effect skips the initial commit and the rail
+  // only pins after a real pin-click.
+  const [railExpandSignal, setRailExpandSignal] = useState<number | undefined>(undefined);
   // Bumped on iframe load to force PinLayer to remount and re-bind to
   // the new contentDocument's elements after a version switch.
   const [iframeGen, setIframeGen] = useState(0);
@@ -239,7 +241,7 @@ export function AppMainViewer({
     setActiveId(annotationId);
     // Pin clicks signal intent to interact — expand the rail so the
     // matching card is visible without an extra hover gesture.
-    setRailExpandSignal((n) => n + 1);
+    setRailExpandSignal((n) => (n ?? 0) + 1);
   }, []);
 
   const onCreate = useCallback(() => {

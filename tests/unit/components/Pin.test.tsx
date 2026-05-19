@@ -21,12 +21,15 @@ describe('Pin', () => {
     expect(html).toContain('aria-label="Annotation #001"');
   });
 
-  it('uses tooltip prop for aria-label + data-tooltip', () => {
+  it('uses the tooltip prop for the pin aria-label', () => {
+    // Pins intentionally do NOT render a hover tooltip — the rotated
+    // -45° transform made tooltip placement fight the layout, so the
+    // pin only exposes `aria-label` for screen readers.
     const html = renderToStaticMarkup(
       <Pin annotationId="a1" colorIndex={0} label={1} tooltip="Custom tip" />,
     );
     expect(html).toContain('aria-label="Custom tip"');
-    expect(html).toContain('data-tooltip="Custom tip"');
+    expect(html).not.toContain('data-tooltip');
   });
 
   it('applies the active class for status="active"', () => {
