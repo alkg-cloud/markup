@@ -297,8 +297,8 @@ Left-side floating panel. See spec §4.
 | `mockup-viewer-rail-hover-expanded` | Transient 300px width on body mouseenter (NOT on drag handle). Same `max-height` cap as collapsed. | width transition via `--motion-base` |
 | `mockup-viewer-rail-pinned` | Sticky 300px width via Lock-open toggle | persists past mouseleave, button shows pressed state |
 | `mockup-viewer-rail-drag` | Drag handle (3×2 dot grid) lets user reposition the rail anywhere inside `mockup-viewer-app-main` (8 px margin clamping). Drag handle DOES NOT trigger hover-expand — only the rail body does. Has `touch-action: none` so pointer drag works on touchscreens. Dragged position is cleared when fullscreen toggles so the rail returns to its spec-default coordinates instead of being stranded off-screen. | grab/grabbing cursor |
-| `mockup-viewer-rail-lock-open` | Lock-open button (Vsc pin icon) — "Keep expanded" / "Unlock" tooltip. Pressed state only changes `background` + `color` (no rotation) — the icon stays upright. | aria-pressed reflects state |
-| `mockup-viewer-rail-add-button` | "+ New annotation" button at foot. Morphs round → pill with label + ⌘⇧N (Ctrl+⇧+N on Windows/Linux) | collapsed/expanded width transition |
+| `mockup-viewer-rail-lock-open` | Lock-open button rendered with `react-icons/vsc` `VscPinned` — "Keep expanded" / "Unlock" tooltip. Pressed state only changes `background` + `color` (no rotation) — the icon stays upright. | aria-pressed reflects state |
+| `mockup-viewer-rail-add-button` | "+ New annotation" button at foot. Morphs round → pill with label + ⌘⇧N (Ctrl+⇧+N on Windows/Linux). Pinned via `flex-shrink: 0` to the spec-default 32 × 32 pill so the inner 30 × 30 icon sits dead-centre even though the collapsed foot inner is narrower than the button's declared width. | collapsed/expanded width transition |
 
 ### mockup-viewer-toolbar
 
@@ -398,7 +398,7 @@ Promise-based replacement for `window.confirm`/`window.alert`/`window.prompt`. N
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `tooltip` | Custom CSS-pseudo tooltip — replaces native `title=` per spec §12 | hidden, visible (hover or focus-visible) |
+| `tooltip` | The single tooltip primitive in the product. CanvasToolbar's zoom/fullscreen tooltips are the reference; the rail, kebab, comment kebab, emoji-picker `Add reaction`, lock toggle, drag handles, reaction pills, etc. all share this same `[data-tooltip="text"]::after` declaration. z-index 10000 so it always paints above every floating surface (rail z-30, composer z-80, marking-bar z-95, confirm-dialog z-1001). See `docs/code-style.md § Tooltips: one primitive, no exceptions`. | hidden, visible (hover or focus-visible) |
 | `tooltip-align-left` | Default alignment | left-anchored above trigger |
 | `tooltip-align-center` | Centered above trigger | for symmetric layouts |
 | `tooltip-align-right` | Right-aligned above trigger | for triggers near right edge |
