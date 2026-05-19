@@ -38,24 +38,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   const fontVars = `${manrope.variable} ${jetBrainsMono.variable}`;
   return (
     <html lang="en" className={fontVars} suppressHydrationWarning>
-      {/* Synchronous boot script — runs BEFORE React hydrates and
-          BEFORE the first paint. Reads the persisted sidebar-collapsed
-          flag from localStorage and writes it as a data attribute on
-          `documentElement` so the Sidebar component can initialise its
-          state from the same value. Without this, SSR rendered the
-          sidebar expanded, the client hydrated expanded, then a
-          useEffect read localStorage and re-rendered collapsed — that
-          one-frame flash was the "sidebar pill bugando depois de
-          navegar" bug. */}
-      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: the string
-          is a literal compile-time constant. */}
-      <script
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{
-          __html:
-            "try{if(localStorage.getItem('markup.sidebar.collapsed')==='true'){document.documentElement.dataset.sidebarCollapsed='1';}}catch(_){}",
-        }}
-      />
       <body
         style={{
           fontFamily: 'var(--font-manrope), Manrope, system-ui, sans-serif',

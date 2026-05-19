@@ -17,6 +17,9 @@ interface ProjectSidebarProps {
   orphanMockups?: TreeMockup[];
   mockupNames: Record<string, string>;
   recentMockups: Record<string, RecentMockup>;
+  /** Read from the cookie on the server so SSR matches the user's
+   *  persisted choice on first paint. */
+  defaultCollapsed?: boolean;
 }
 
 export function ProjectSidebar({
@@ -24,6 +27,7 @@ export function ProjectSidebar({
   orphanMockups = [],
   mockupNames,
   recentMockups,
+  defaultCollapsed = false,
 }: ProjectSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [newProjectOpen, setNewProjectOpen] = useState(false);
@@ -168,7 +172,9 @@ export function ProjectSidebar({
           project={projects.find((project) => project.id === editingProjectId)}
         />
         {/* Desktop: pill-morph sidebar */}
-        <Sidebar footer={footerContent}>{treeContent}</Sidebar>
+        <Sidebar footer={footerContent} defaultCollapsed={defaultCollapsed}>
+          {treeContent}
+        </Sidebar>
 
         {/* Mobile hamburger */}
         <button
