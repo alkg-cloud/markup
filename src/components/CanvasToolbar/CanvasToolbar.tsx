@@ -15,6 +15,10 @@ export interface CanvasToolbarProps {
   isFullscreen?: boolean;
   /** Slot for the version chip (rendered after the zoom group). */
   versionChip?: ReactNode;
+  /** Token whose change clears the toolbar's dragged position so it
+   *  returns to the spec-default centered-bottom coordinates. See
+   *  AnnotationsRail's identical prop. */
+  resetPositionKey?: string | number;
 }
 
 /**
@@ -34,11 +38,17 @@ export function CanvasToolbar({
   onFullscreenToggle,
   isFullscreen,
   versionChip,
+  resetPositionKey,
 }: CanvasToolbarProps) {
   const toolbarRef = useRef<HTMLDivElement | null>(null);
   const [zoomIndex, setZoomIndex] = useState(ZOOM_DEFAULT_INDEX);
   const [drag, setDrag] = useState(false);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  // Reset the dragged position when the parent bumps the key — see
+  // AnnotationsRail's matching effect.
+  useEffect(() => {
+    setPos(null);
+  }, [resetPositionKey]);
 
   const changeZoom = useCallback(
     (direction: 1 | -1) => {

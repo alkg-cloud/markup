@@ -1,5 +1,6 @@
 'use client';
 import { type KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { VscReply } from 'react-icons/vsc';
 import { EmojiPicker } from '@/components/EmojiPicker/EmojiPicker';
 import { formatReactorList, ReactionPill } from '@/components/ReactionPill/ReactionPill';
 import { initialsForName } from '@/lib/avatar';
@@ -172,9 +173,7 @@ export function Comment({
                       onReply?.();
                     }}
                   >
-                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                      <path d="M6 3.5v3H3.5l-.5.5v2L3 9.5l4 4 .708-.707L4.207 9.5H9v-2H4.207l3.5-3.5L7 3.293 5.5 4.793 6 3.5z" />
-                    </svg>
+                    <VscReply aria-hidden="true" />
                     Reply
                   </button>
                   <button
@@ -215,9 +214,7 @@ export function Comment({
                 aria-label={`Reply to ${author}`}
                 onClick={onReply}
               >
-                <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <path d="M6 3.5v3H3.5l-.5.5v2L3 9.5l4 4 .708-.707L4.207 9.5H9v-2H4.207l3.5-3.5L7 3.293 5.5 4.793 6 3.5z" />
-                </svg>
+                <VscReply aria-hidden="true" />
               </button>
             )}
           </div>

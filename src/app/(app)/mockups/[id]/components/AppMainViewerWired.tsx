@@ -7,7 +7,8 @@
  */
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
-import type { ThreadComment } from '@/components/AnnotationCard';
+import type { AnnotationStatus, ThreadComment } from '@/components/AnnotationCard';
+import { useConfirm } from '@/components/ConfirmDialog';
 import type { VersionRow } from '@/components/VersionChip';
 import type { Anchor } from '@/lib/anchoring';
 import { type AppMainAnnotation, AppMainViewer } from './AppMainViewer';
@@ -24,6 +25,10 @@ export interface AppMainViewerWiredProps {
 
 export function AppMainViewerWired(props: AppMainViewerWiredProps) {
   const router = useRouter();
+  // Replaces every `window.confirm`/`window.alert`/`window.prompt`
+  // call in this surface. See `docs/code-style.md` "Never use native
+  // browser dialogs".
+  const { confirm, dialog: confirmDialog } = useConfirm();
 
   const onCreateAnnotation = useCallback(
     async (input: {
@@ -140,20 +145,62 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
 
   const onCommentDelete = useCallback(
     async (commentId: string): Promise<boolean> => {
-      if (!window.confirm('Delete this comment? This cannot be undone.')) return false;
+      const ok = await confirm({
+        title: 'Delete comment',
+        description: 'This cannot be undone.',
+        confirmLabel: 'Delete',
+        danger: true,
+      });
+      if (!ok) return false;
       const res = await fetch(`/api/messages/${commentId}`, { method: 'DELETE' });
       if (!res.ok) {
         const detail = await res
           .json()
           .then((j) => j?.detail ?? j?.error ?? 'Delete failed.')
           .catch(() => 'Delete failed.');
-        window.alert(detail);
+        await confirm({
+          title: 'Could not delete',
+          description: detail,
+          confirmLabel: 'OK',
+          cancelLabel: 'Dismiss',
+        });
         return false;
       }
       router.refresh();
       return true;
     },
+    [router, confirm],
+  );
+
+  const onAnnotationStatusChange = useCallback(
+    async (annotationId: string, status: AnnotationStatus): Promise<boolean> => {
+      const res = await fetch(`/api/annotations/${annotationId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) return false;
+      router.refresh();
+      return true;
+    },
     [router],
+  );
+
+  const onAnnotationDelete = useCallback(
+    async (annotationId: string): Promise<boolean> => {
+      const ok = await confirm({
+        title: 'Delete annotation',
+        description: 'This will remove the annotation, its thread, replies, and reactions. This cannot be undone.',
+        confirmLabel: 'Delete',
+        danger: true,
+      });
+      if (!ok) return false;
+      const res = await fetch(`/api/annotations/${annotationId}`, { method: 'DELETE' });
+      if (!res.ok) return false;
+      router.refresh();
+      return true;
+    },
+    [router, confirm],
   );
 
   const onVersionSelect = useCallback((versionId: string) => {
@@ -182,21 +229,26 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
   );
 
   return (
-    <AppMainViewer
-      mockupId={props.mockupId}
-      mockupName={props.mockupName}
-      mockupSrc={props.mockupSrc}
-      currentUser={props.currentUser}
-      versions={props.versions}
-      initialAnnotations={props.initialAnnotations}
-      onCreateAnnotation={onCreateAnnotation}
-      onPostReply={onPostReply}
-      onReactionToggle={onReactionToggle}
-      onCommentEdit={onCommentEdit}
-      onCommentDelete={onCommentDelete}
-      onVersionSelect={onVersionSelect}
-      onVersionPromote={onVersionPromote}
-      onVersionDelete={onVersionDelete}
-    />
+    <>
+      <AppMainViewer
+        mockupId={props.mockupId}
+        mockupName={props.mockupName}
+        mockupSrc={props.mockupSrc}
+        currentUser={props.currentUser}
+        versions={props.versions}
+        initialAnnotations={props.initialAnnotations}
+        onCreateAnnotation={onCreateAnnotation}
+        onPostReply={onPostReply}
+        onReactionToggle={onReactionToggle}
+        onCommentEdit={onCommentEdit}
+        onCommentDelete={onCommentDelete}
+        onAnnotationStatusChange={onAnnotationStatusChange}
+        onAnnotationDelete={onAnnotationDelete}
+        onVersionSelect={onVersionSelect}
+        onVersionPromote={onVersionPromote}
+        onVersionDelete={onVersionDelete}
+      />
+      {confirmDialog}
+    </>
   );
 }
