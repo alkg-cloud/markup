@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 /**
  * Names that appear as URL path segments (projects, folders, mockups)
  * must be URL-safe and human-readable: latin letters, digits, hyphens,
@@ -34,4 +36,18 @@ export function validateUrlSafeName(value: string): UrlSafeNameError | null {
     offendingChar,
     message: `"${offendingChar}" is not allowed. ${URL_SAFE_NAME_HINT}`,
   };
+}
+
+/**
+ * Zod schema factory for any API route accepting a URL-safe name.
+ * Centralizes the `min/max/regex` chain so the four name-validating
+ * routes (project create/update, folder create/update, mockup
+ * create/update) share one source of truth.
+ */
+export function urlSafeNameSchema(maxLength: number) {
+  return z
+    .string()
+    .min(1)
+    .max(maxLength)
+    .regex(URL_SAFE_NAME_PATTERN, 'name_not_url_safe');
 }

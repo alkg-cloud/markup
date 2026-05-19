@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { MockupViewerPage } from '@/components/MockupViewer/MockupViewerPage';
+import { getViewerProfile } from '@/lib/auth/viewer-profile';
 import { prisma } from '@/lib/prisma';
 import { resolveProjectPath } from '@/lib/project/path-resolver';
 import { folderHref, mockupSlugHref, projectDisplayName, projectHref } from '@/lib/project/routes';
@@ -33,15 +34,11 @@ export default async function ProjectPathPage({ params }: Props) {
       const sub = resolution.folderPathNames.slice(0, i + 1);
       return { label: sub[sub.length - 1], href: folderHref(project.slug, sub) };
     });
-    const mockup = await prisma.mockup.findUnique({
-      where: { id: resolution.mockupId },
-      select: { name: true },
-    });
     const breadcrumbs = [
       projectCrumb,
       ...ancestorCrumbs,
       {
-        label: mockup?.name ?? resolution.mockupSlug,
+        label: resolution.mockupName,
         href: mockupSlugHref(project.slug, resolution.folderPathNames, resolution.mockupSlug),
       },
     ];
@@ -71,16 +68,7 @@ export default async function ProjectPathPage({ params }: Props) {
   });
   if (!folder) notFound();
 
-  let userName: string | undefined;
-  let userEmail: string | undefined;
-  if (identity.kind === 'user') {
-    const user = await prisma.user.findUnique({
-      where: { id: identity.userId },
-      select: { name: true, email: true },
-    });
-    userName = user?.name ?? undefined;
-    userEmail = user?.email ?? undefined;
-  }
+  const { userName, userEmail } = await getViewerProfile(identity);
 
   // Build breadcrumbs incrementally so each ancestor links to its own
   // folder URL (cumulative path).

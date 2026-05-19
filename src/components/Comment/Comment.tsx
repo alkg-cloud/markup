@@ -5,6 +5,7 @@ import { EmojiPicker } from '@/components/EmojiPicker/EmojiPicker';
 import { formatReactorList, ReactionPill } from '@/components/ReactionPill/ReactionPill';
 import { initialsForName } from '@/lib/avatar';
 import { usePopover } from '@/lib/popover/usePopover';
+import { isMod } from '@/lib/shortcuts/platform';
 import styles from './Comment.module.css';
 
 export interface CommentReaction {
@@ -108,7 +109,7 @@ export function Comment({
     if (e.key === 'Escape') {
       e.preventDefault();
       onEditCancel?.();
-    } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    } else if (e.key === 'Enter' && isMod(e)) {
       e.preventDefault();
       commitEdit();
     }

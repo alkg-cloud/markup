@@ -7,10 +7,11 @@ import {
   VscReply,
 } from 'react-icons/vsc';
 import { Comment, type CommentReaction } from '@/components/Comment/Comment';
+import type { AnnotationStatus } from '@/lib/annotation/status';
 import { usePopover } from '@/lib/popover/usePopover';
 import styles from './AnnotationCard.module.css';
 
-export type AnnotationStatus = 'open' | 'needs review' | 'resolved';
+export type { AnnotationStatus } from '@/lib/annotation/status';
 
 export interface ThreadComment {
   id: string;

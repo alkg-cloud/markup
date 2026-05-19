@@ -12,6 +12,7 @@ export interface MockupResolution {
   kind: 'mockup';
   mockupId: string;
   mockupSlug: string;
+  mockupName: string;
   folderId: string | null;
   /** Ancestor folder names up to and including the parent of the mockup. */
   folderPathNames: string[];
@@ -60,13 +61,14 @@ export async function resolveProjectPath(
     if (isLast) {
       const mockup = await prisma.mockup.findFirst({
         where: { projectId, folderId: parentId, slug: segment },
-        select: { id: true, slug: true, folderId: true },
+        select: { id: true, slug: true, name: true, folderId: true },
       });
       if (mockup) {
         return {
           kind: 'mockup',
           mockupId: mockup.id,
           mockupSlug: mockup.slug,
+          mockupName: mockup.name,
           folderId: mockup.folderId,
           folderPathNames: pathNames,
         };

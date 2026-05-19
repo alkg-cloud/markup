@@ -40,8 +40,6 @@ export interface AppMainAnnotation {
 }
 
 export interface AppMainViewerProps {
-  mockupId: string;
-  mockupName: string;
   mockupSrc: string;
   currentUser: string;
   versions: VersionRow[];
@@ -403,6 +401,12 @@ export function AppMainViewer({
     [onReactionToggle, currentUser],
   );
 
+  // Stable identifier for the current "containing block" geometry —
+  // bumped whenever fullscreen toggles change which element owns the
+  // canvas bounds. Used to invalidate the pin layer's positioning
+  // cache and to clear the rail/toolbar's dragged coordinates.
+  const layoutKey = isFullscreen ? 'fs' : 'win';
+
   return (
     <AppMain variant="viewer" ariaLabel="Mockup viewer">
       <div
@@ -410,7 +414,7 @@ export function AppMainViewer({
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'var(--bg-iframe, #f4ede0)',
+          background: 'var(--bg-iframe)',
         }}
       >
         <div
@@ -431,7 +435,6 @@ export function AppMainViewer({
               border: 0,
               transform: `scale(${zoom})`,
               transformOrigin: 'top left',
-              pointerEvents: marking ? 'auto' : 'auto',
             }}
           />
         </div>
@@ -441,7 +444,7 @@ export function AppMainViewer({
           canvasRootRef={canvasRootRef}
           pins={pins}
           onPinClick={onPinClick}
-          repositionKey={`${zoom}:${isFullscreen ? 'fs' : 'win'}`}
+          repositionKey={`${zoom}:${layoutKey}`}
         />
 
         <AnnotationsRail
@@ -451,7 +454,7 @@ export function AppMainViewer({
           onBadgeClick={onActivate}
           onCreate={onCreate}
           count={annotations.length}
-          resetPositionKey={isFullscreen ? 'fs' : 'win'}
+          resetPositionKey={layoutKey}
           expandSignal={railExpandSignal}
         >
           {annotations.map((a) => (
@@ -499,7 +502,7 @@ export function AppMainViewer({
           onZoomChange={onZoomChange}
           onFullscreenToggle={onFullscreenToggle}
           isFullscreen={isFullscreen}
-          resetPositionKey={isFullscreen ? 'fs' : 'win'}
+          resetPositionKey={layoutKey}
           versionChip={
             <VersionChip
               versions={versions}

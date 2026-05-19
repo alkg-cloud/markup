@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { type IntentType, isIntentType } from '@/lib/annotation/intent';
 import { parsePinCoords } from '@/lib/annotation/pin-coords';
+import { ANNOTATION_STATUSES } from '@/lib/annotation/status';
 import {
   type AnchorRecord,
   createAnnotation,
@@ -29,7 +30,7 @@ const CommentPayloadSchema = z.object({
   body: z.string().min(1).max(10_000),
   anchors: z.array(AnchorSchema).max(20),
   colorIndex: z.number().int().min(0).max(15),
-  status: z.enum(['open', 'needs review', 'resolved']).optional(),
+  status: z.enum(ANNOTATION_STATUSES).optional(),
 });
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
