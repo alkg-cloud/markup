@@ -283,7 +283,7 @@ every layout change. See spec §6.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `mockup-viewer-pin` | 30×30 teardrop pin rotated -45°. Glass bg, per-annotation accent border + number, opacity 0.55 default. | idle (0.55 opacity), hover (scale 1.12, opacity 1), active (pulsing glow ring), pending (dashed, transparent, no glass) |
+| `mockup-viewer-pin` | 30×30 teardrop pin rotated -45°. Glass bg, per-annotation accent border + number, opacity 0.55 default. The tooltip pseudo-element counter-rotates 45° so the label reads horizontally above the rotated shape. | idle (0.55 opacity), hover (opacity 1, accent border brightens — no scale), active (accent border + 2px soft glow ring — no animation), pending (same glass tag as idle + dashed accent border + 1.6s soft pulse) |
 | `mockup-viewer-pin-anchor-text` | Text-anchor variant — stores `{path, textOffset, subX, subY}` so the pin tip lands on a specific character sub-position | resilient to reflow / wrap / font changes |
 | `mockup-viewer-pin-anchor-element` | Element-anchor variant — stores `{path, offsetX, offsetY}` for clicks outside text | fractional bbox offset |
 
@@ -296,8 +296,8 @@ Left-side floating panel. See spec §4.
 | `mockup-viewer-rail-collapsed` | 60px-wide column of colored pin badges + drag handle (top) + "+ New annotation" button (bottom morphs round) | default state |
 | `mockup-viewer-rail-hover-expanded` | Transient 300px width on body mouseenter (NOT on drag handle) | width transition via `--motion-base` |
 | `mockup-viewer-rail-pinned` | Sticky 300px width via Lock-open toggle | persists past mouseleave, button shows pressed state |
-| `mockup-viewer-rail-drag` | Drag handle (3×2 dot grid) lets user reposition the rail anywhere inside `mockup-viewer-app-main` (8 px margin clamping). Drag handle DOES NOT trigger hover-expand — only the rail body does. | grab/grabbing cursor |
-| `mockup-viewer-rail-lock-open` | Lock-open button (Vsc pin icon) — "Keep expanded" / "Unlock" tooltip | aria-pressed reflects state |
+| `mockup-viewer-rail-drag` | Drag handle (3×2 dot grid) lets user reposition the rail anywhere inside `mockup-viewer-app-main` (8 px margin clamping). Drag handle DOES NOT trigger hover-expand — only the rail body does. Has `touch-action: none` so pointer drag works on touchscreens. | grab/grabbing cursor |
+| `mockup-viewer-rail-lock-open` | Lock-open button (Vsc pin icon) — "Keep expanded" / "Unlock" tooltip. Pressed state only changes `background` + `color` (no rotation) — the icon stays upright. | aria-pressed reflects state |
 | `mockup-viewer-rail-add-button` | "+ New annotation" button at foot. Morphs round → pill with label + ⌘⇧N (Ctrl+⇧+N on Windows/Linux) | collapsed/expanded width transition |
 
 ### mockup-viewer-toolbar
@@ -311,7 +311,7 @@ Center-bottom floating dock. See spec §5.
 | `mockup-viewer-toolbar-zoom-label` | Clickable % label — resets to 100% | hover, reset |
 | `mockup-viewer-toolbar-zoom-in` | Zoom-in button (`⌘+`) | enabled, disabled at 400% max |
 | `mockup-viewer-toolbar-fullscreen` | Fullscreen toggle (F) | inactive, active (pressed) |
-| `mockup-viewer-toolbar-drag` | Drag handle on right edge (2×3 dot grid). Drag clamps to `mockup-viewer-app-main` bounds (8 px margin), NOT viewport. | grab/grabbing cursor |
+| `mockup-viewer-toolbar-drag` | Drag handle on right edge (2×3 dot grid). Drag clamps to `mockup-viewer-app-main` bounds (8 px margin), NOT viewport. Has `touch-action: none` so pointer drag works on touchscreens (without this, the browser's native page-pan claims the gesture). | grab/grabbing cursor |
 
 ### mockup-viewer-version-chip
 
@@ -353,10 +353,10 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 | `annotation-card-badge` | Colored circular badge with annotation number | per-color palette 0..15 |
 | `annotation-card-author` | Author name in meta row | static |
 | `annotation-card-status-pill` | open / needs review / resolved | open (info), needs review (warning), resolved (success) |
-| `annotation-card-edit-primary` | Pencil icon button in the meta row, visible only when the primary comment is the current user's. Opens the same edit prompt as `comment-kebab` → Edit. Primary comments are not deletable (the API returns 400 on `DELETE /api/messages/[primaryId]`). | hidden (not own), visible (own); hover (surface-hover bg) |
+| `annotation-card-edit-primary` | Pencil icon button in the meta row, visible only when the primary comment is the current user's. Flips the primary comment into `comment-edit-inline` mode (no prompt). Primary comments are not deletable (the API returns 400 on `DELETE /api/messages/[primaryId]`). | hidden (not own), visible (own); hover (surface-hover bg) |
 | `annotation-card-primary` | Primary comment rendered without head row (author in meta) | renders body + reactions only |
 | `annotation-card-foot-date` | Date + time | static |
-| `annotation-card-thread-toggle` | Chevron button — "No replies" / "1 reply" / "N replies" | closed, open (chev rotated 180°) |
+| `annotation-card-thread-toggle` | Chevron button — "No replies" / "1 reply" / "N replies". Behaves as an accordion: opening one card's thread auto-collapses any other expanded thread. | closed, open (chev rotated 180°) |
 | `annotation-card-thread` | Hidden section with reply form + replies | closed, open |
 | `annotation-card-reply-form` | Textarea + Reply button | empty (button disabled), filled |
 
@@ -367,7 +367,8 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 | `comment` | Avatar + name + time + body + reactions + actions | default, hover (actions revealed) |
 | `comment-avatar` | 20×20 circular gradient avatar with initials (first letter of first + last word) | per-author color palette 0..15 |
 | `comment-action-reply` | Reply icon for non-own comments | default, hover, focus-visible |
-| `comment-kebab` | Kebab menu for own comments. Reply opens the always-visible reply form below; Edit prompts for a new body and PATCHes `/api/messages/[id]`; Delete confirms then DELETEs `/api/messages/[id]`. The primary message (annotation body) cannot be deleted — the API returns 400 and surfaces "Delete the annotation instead". | opens Reply / Edit / Delete |
+| `comment-kebab` | Kebab menu for own comments. Reply opens the always-visible reply form below; Edit flips the comment into `comment-edit-inline` mode (no native prompt); Delete confirms then DELETEs `/api/messages/[id]`. The primary message (annotation body) cannot be deleted — the API returns 400 and surfaces "Delete the annotation instead". | opens Reply / Edit / Delete |
+| `comment-edit-inline` | Inline edit affordance — replaces the comment body with a glass-styled textarea pre-filled with the current body, focused on mount. **Save** persists (PATCH `/api/messages/[id]`) and dismisses; **Cancel** discards. Blur commits (acts like Save). Esc cancels; Cmd/Ctrl+Enter commits. Save and Cancel buttons fire on `mousedown` so they run before the textarea's blur handler. | editing, saving (post-blur, awaiting API), error (left in edit mode) |
 
 ### reactions (Slack-style)
 
@@ -375,7 +376,7 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 |---|---|---|
 | `reaction-pill` | Pill with emoji + optional count (count shown when >1) | idle, reacted (current user in list, accent bg) |
 | `reaction-pill-tooltip` | Custom hover tooltip — "X and Y reacted with 👍" | glass bg matching `--surface-glass-*` |
-| `reaction-add` | Dashed "+" trigger button | hidden, comment-hover (revealed), open |
+| `reaction-add` | Dashed "+" trigger button, always visible next to the existing pills | idle, hover (accent border + bg), open (popover anchored above) |
 | `emoji-picker` | 4×4 grid popover with 16 reaction emojis | closed, open; closes on outside click |
 | `emoji-picker-pick` | Individual emoji button | default, hover (scale 1.2) |
 
