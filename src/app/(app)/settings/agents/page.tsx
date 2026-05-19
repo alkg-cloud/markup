@@ -26,10 +26,9 @@ export default function AgentsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-    fetch('/api/agent-tokens', { credentials: 'include' })
+    const controller = new AbortController();
+    fetch('/api/agent-tokens', { credentials: 'include', signal: controller.signal })
       .then(async (res) => {
-        if (cancelled) return;
         if (res.status === 401) {
           window.location.replace('/login');
           return;
@@ -43,14 +42,13 @@ export default function AgentsPage() {
           return;
         }
         const json: AgentTokensResponse = await res.json();
-        if (!cancelled) setTokens(json.tokens);
+        setTokens(json.tokens);
       })
       .catch((e) => {
-        if (!cancelled) setError(String(e));
+        if (e?.name === 'AbortError') return;
+        setError(String(e));
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, []);
 
   if (error) {

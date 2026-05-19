@@ -41,12 +41,12 @@ export default function ProjectPage() {
 
   useEffect(() => {
     if (!slug) return;
-    let cancelled = false;
+    const controller = new AbortController();
     fetch(`/api/projects/by-slug/${encodeURIComponent(slug)}/view`, {
       credentials: 'include',
+      signal: controller.signal,
     })
       .then(async (res) => {
-        if (cancelled) return;
         if (res.status === 401) {
           window.location.replace('/login');
           return;
@@ -60,16 +60,14 @@ export default function ProjectPage() {
           return;
         }
         const json: ProjectViewPayload = await res.json();
-        if (cancelled) return;
         setData(json);
         setStatus('ok');
       })
-      .catch(() => {
-        if (!cancelled) setStatus('error');
+      .catch((e) => {
+        if (e?.name === 'AbortError') return;
+        setStatus('error');
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [slug]);
 
   if (status === 'not_found') notFound();

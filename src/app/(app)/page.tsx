@@ -21,11 +21,10 @@ export default function Root() {
   const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
-    let cancelled = false;
     setError(null);
-    fetch('/api/projects', { credentials: 'include' })
+    const controller = new AbortController();
+    fetch('/api/projects', { credentials: 'include', signal: controller.signal })
       .then(async (res) => {
-        if (cancelled) return;
         if (res.status === 401) {
           window.location.replace('/login');
           return;
@@ -35,14 +34,13 @@ export default function Root() {
           return;
         }
         const json: ProjectsListResponse = await res.json();
-        if (!cancelled) setProjects(json.projects);
+        setProjects(json.projects);
       })
       .catch((e) => {
-        if (!cancelled) setError(String(e));
+        if (e?.name === 'AbortError') return;
+        setError(String(e));
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [reloadToken]);
 
   const reload = useCallback(() => setReloadToken((n) => n + 1), []);

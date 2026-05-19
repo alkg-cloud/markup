@@ -44,12 +44,12 @@ export default function AnnotationDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    let cancelled = false;
+    const controller = new AbortController();
     fetch(`/api/annotations/${encodeURIComponent(id)}/detail`, {
       credentials: 'include',
+      signal: controller.signal,
     })
       .then(async (res) => {
-        if (cancelled) return;
         if (res.status === 401) {
           window.location.replace('/login');
           return;
@@ -63,16 +63,14 @@ export default function AnnotationDetailPage() {
           return;
         }
         const json: DetailPayload = await res.json();
-        if (cancelled) return;
         setData(json);
         setStatus('ok');
       })
-      .catch(() => {
-        if (!cancelled) setStatus('error');
+      .catch((e) => {
+        if (e?.name === 'AbortError') return;
+        setStatus('error');
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [id]);
 
   if (status === 'not_found') {

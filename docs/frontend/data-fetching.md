@@ -21,20 +21,25 @@ export default function MockupPage() {
 
   useEffect(() => {
     if (!id) return;
-    let cancelled = false;
-    fetch(`/api/mockups/${id}/viewer`, { credentials: 'include' })
+    const controller = new AbortController();
+    fetch(`/api/mockups/${id}/viewer`, { credentials: 'include', signal: controller.signal })
       .then(async (res) => {
-        if (cancelled) return;
         if (res.status === 401) {
           window.location.replace('/login');
           return;
         }
         if (!res.ok) throw new Error(`http_${res.status}`);
         const json: ViewerPayload = await res.json();
-        if (!cancelled) setData(json);
+        setData(json);
       })
-      .catch((e) => { if (!cancelled) setError(String(e)); });
-    return () => { cancelled = true; };
+      .catch((e) => {
+        // AbortError is the normal teardown path — ignore it so the
+        // unmounted (or about-to-re-fetch) component doesn't flip into
+        // an error state.
+        if (e?.name === 'AbortError') return;
+        setError(String(e));
+      });
+    return () => controller.abort();
   }, [id]);
 
   if (error) return <ErrorState error={error} />;
@@ -46,7 +51,7 @@ export default function MockupPage() {
 Four invariants:
 
 1. **`'use client'`** at the top.
-2. **`cancelled` flag** in the `useEffect` cleanup. React Strict Mode runs effects twice in dev; without the flag the first run can write to a dead component when the second run finishes first.
+2. **`AbortController` in the cleanup**. The effect creates a fresh controller per run and aborts it in the cleanup. This (a) prevents writes to a dead component after fast unmount and (b) actually cancels the in-flight request when a parameter changes — quick slug-to-slug navigation no longer wastes a server response. `AbortError` is the normal teardown path; the `.catch` swallows it silently. Older code under `src/` used a `cancelled = false` flag instead — both flavours achieve invariant (a), but the controller is preferred for new code because it also achieves (b).
 3. **`credentials: 'include'`** — fetch is same-origin so the cookie rides along automatically, but stating it documents intent (the Bearer-auth path is for non-browser agents).
 4. **401 → redirect to `/login`** — the server's source of truth for auth is `/api/auth/me`. Any data endpoint that returns 401 means the cookie is gone or expired; the only sane response is to send the user to `/login`.
 
@@ -91,10 +96,9 @@ export function useRequireAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
-    fetch('/api/auth/me', { credentials: 'include' })
+    const controller = new AbortController();
+    fetch('/api/auth/me', { credentials: 'include', signal: controller.signal })
       .then(async (res) => {
-        if (cancelled) return;
         if (res.status === 401) {
           router.replace('/login');
           return;
@@ -104,13 +108,14 @@ export function useRequireAuth() {
           return;
         }
         const json: AuthMe = await res.json();
-        if (!cancelled) {
-          setIdentity(json);
-          setLoading(false);
-        }
+        setIdentity(json);
+        setLoading(false);
       })
-      .catch(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .catch((e) => {
+        if (e?.name === 'AbortError') return;
+        setLoading(false);
+      });
+    return () => controller.abort();
   }, [router]);
 
   return { identity, loading };
