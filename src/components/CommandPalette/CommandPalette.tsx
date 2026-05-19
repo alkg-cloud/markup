@@ -127,6 +127,10 @@ export function CommandPalette({ projects }: CommandPaletteProps) {
     const wiredIframes = new WeakMap<HTMLIFrameElement, () => void>();
 
     function wireIframe(iframe: HTMLIFrameElement) {
+      // Both the initial scan and the MutationObserver can land on the
+      // same iframe — bail out if we've already attached its `load`
+      // hook so we don't stack duplicate listeners.
+      if (wiredIframes.has(iframe)) return;
       const attach = () => {
         let doc: Document | null = null;
         try {
