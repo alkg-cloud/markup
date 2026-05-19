@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>18 — Annotations Rail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --info:oklch(74% 0.13 200);--info-soft:oklch(26% 0.06 200);
+  --warning:oklch(80% 0.15 80);--warning-soft:oklch(30% 0.07 80);
+  --success:oklch(76% 0.16 152);--success-soft:oklch(28% 0.07 152);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --rail-width-collapsed:60px;--rail-width-expanded:300px;
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
+.page{padding:48px 32px 96px;max-width:1320px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;align-items:start}
+.stage{
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  min-height:560px;padding:24px;position:relative;
+}
+.stage-label{position:absolute;top:8px;left:12px;font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted)}
+
+/* ─── Rail (AnnotationsRail.module.css verbatim) ─── */
+.rail{
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  width:var(--rail-width-collapsed);
+  max-height:480px;
+  border-radius:14px;
+  box-shadow:var(--shadow-popover);
+  display:flex;flex-direction:column;overflow:visible;
+}
+.rail.expanded{width:var(--rail-width-expanded)}
+.rail.pinned{
+  width:var(--rail-width-expanded);
+  border-color:var(--accent-overlay-mid);
+  box-shadow:var(--shadow-popover),0 0 0 1px var(--accent-overlay-soft);
+}
+
+/* Drag */
+.grab{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;height:28px;flex-shrink:0;color:var(--text-muted);cursor:grab;
+}
+.grab-icon{width:25px;height:25px;transform:rotate(90deg);color:var(--text-muted)}
+
+/* Collapsed badges */
+.collapsed{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0;overflow-y:auto}
+.rail.expanded .collapsed,
+.rail.pinned .collapsed{display:none}
+.badge{
+  --pin-h:165;--pin-c:0.18;
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:oklch(30% calc(var(--pin-c) * 0.7) var(--pin-h) / 0.32);
+  border:1px solid oklch(60% var(--pin-c) var(--pin-h) / 0.45);
+  color:oklch(85% var(--pin-c) var(--pin-h));
+  font-size:12px;font-weight:700;font-family:var(--font-mono);cursor:pointer;
+}
+.badge.active{
+  background:oklch(45% var(--pin-c) var(--pin-h) / 0.55);
+  color:oklch(95% calc(var(--pin-c) * 0.6) var(--pin-h));
+  box-shadow:0 0 0 2px var(--bg),0 0 0 4px oklch(74% var(--pin-c) var(--pin-h)),0 0 14px oklch(74% var(--pin-c) var(--pin-h) / 0.55);
+}
+.badge[data-color="0"]{--pin-h:165;--pin-c:0.18}
+.badge[data-color="1"]{--pin-h:195;--pin-c:0.15}
+.badge[data-color="2"]{--pin-h:220;--pin-c:0.14}
+.badge[data-color="3"]{--pin-h:325;--pin-c:0.12}
+.badge[data-color="4"]{--pin-h:50;--pin-c:0.14}
+.badge[data-color="5"]{--pin-h:120;--pin-c:0.15}
+
+/* Expanded view */
+.expanded-body{display:none;flex-direction:column;flex:1;min-height:0}
+.rail.expanded .expanded-body,
+.rail.pinned .expanded-body{display:flex}
+.head{display:flex;align-items:center;justify-content:space-between;padding:6px 12px 6px 14px;border-bottom:1px solid var(--border-subtle)}
+.head-title{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim)}
+.count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;background:var(--bg-card-active);border-radius:9999px;font-family:var(--font-mono);font-size:10px;font-weight:800;color:var(--text-bright)}
+.lock{width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);border-radius:var(--radius-xs)}
+.lock.pressed{background:var(--accent-soft);color:var(--accent-bright)}
+
+/* Cards list */
+.list{list-style:none;padding:6px 8px 8px;overflow-y:auto;flex:1;min-height:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.card{
+  background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  padding:10px;display:flex;flex-direction:column;gap:6px;cursor:pointer;position:relative;
+}
+.card.active{background:oklch(45% 0.13 165 / 0.18);border-color:var(--accent-overlay-mid)}
+.card.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:2px;background:var(--accent);border-radius:0 2px 2px 0}
+.card .meta{display:flex;align-items:center;gap:8px}
+.dot-badge{
+  width:18px;height:18px;border-radius:50%;font-family:var(--font-mono);font-size:9px;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:oklch(30% 0.12 165 / 0.32);border:1px solid oklch(60% 0.16 165 / 0.45);color:oklch(85% 0.16 165);
+}
+.dot-badge[data-color="1"]{background:oklch(30% 0.10 195 / 0.32);border-color:oklch(60% 0.14 195 / 0.45);color:oklch(85% 0.14 195)}
+.dot-badge[data-color="2"]{background:oklch(30% 0.09 220 / 0.32);border-color:oklch(60% 0.13 220 / 0.45);color:oklch(85% 0.13 220)}
+.dot-badge[data-color="3"]{background:oklch(30% 0.08 325 / 0.32);border-color:oklch(60% 0.11 325 / 0.45);color:oklch(85% 0.11 325)}
+.author{font-size:11px;font-weight:600;color:var(--text-bright)}
+.status{margin-left:auto;padding:1px 7px;border-radius:9999px;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase}
+.status.open{background:var(--info-soft);color:var(--info)}
+.status.review{background:var(--warning-soft);color:var(--warning)}
+.status.resolved{background:var(--success-soft);color:var(--success)}
+.body{font-size:12px;color:var(--text);line-height:1.45}
+.foot{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:9px;color:var(--text-muted)}
+.replies{margin-left:auto;display:inline-flex;align-items:center;gap:4px}
+
+/* Foot add button */
+.foot-area{
+  position:sticky;bottom:0;display:flex;justify-content:flex-start;padding:8px 14px;
+  background:linear-gradient(to bottom,transparent,var(--surface-glass-bg) 40%);flex-shrink:0;
+  border-bottom-left-radius:14px;border-bottom-right-radius:14px;
+}
+.add{
+  display:flex;align-items:center;height:32px;width:32px;padding:0;
+  background:var(--accent-soft);color:var(--accent-bright);
+  border:1px solid var(--accent-overlay-mid);border-radius:9999px;overflow:hidden;flex-shrink:0;
+}
+.add-icon{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px}
+.add-label{display:none;align-items:center;justify-content:space-between;gap:8px;flex:1;padding:0 14px 0 4px;font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap}
+.rail.expanded .add,
+.rail.pinned .add{width:100%}
+.rail.expanded .add-label,
+.rail.pinned .add-label{display:flex}
+.shortcut{padding:2px 5px;background:var(--bg-card-active);border-radius:var(--radius-xs);font-family:var(--font-mono);font-size:9px;font-weight:600;color:var(--text-dim);letter-spacing:0.02em;text-transform:none}
+
+/* Tokens */
+.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
+.tokens dt{color:var(--text-dim)}.tokens dt::before{content:'--'}.tokens dd{color:var(--text-bright)}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1 class="h1">18 — Annotations Rail</h1>
+  <p class="lede">Left-side floating panel inside the mockup viewer (<code>src/components/AnnotationsRail</code>). Three states: collapsed (60 px badge column), hover-expanded (300 px transient), pinned-expanded (300 px sticky via lock-open). Glass surface composes <code>floatingSurface</code>. Drag handle (top) uses <code>GoGrabber</code> rotated 90°. Add button morphs from 32 px circle to full-width pill. Capped at 70 vh / 80 vh on mobile.</p>
+
+  <section class="section">
+    <div class="section-title">A — Collapsed (default state)</div>
+    <div class="grid">
+      <div class="stage">
+        <span class="stage-label">60 px collapsed column</span>
+        <div class="rail">
+          <div class="grab">
+            <svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+          </div>
+          <div class="collapsed">
+            <div class="badge active" data-color="0">1</div>
+            <div class="badge" data-color="1">2</div>
+            <div class="badge" data-color="2">3</div>
+            <div class="badge" data-color="3">4</div>
+            <div class="badge" data-color="4">5</div>
+            <div class="badge" data-color="5">6</div>
+          </div>
+          <div class="foot-area">
+            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New<span class="shortcut">Ctrl+⇧+N</span></span></button>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <span class="stage-label">Hover-expanded (transient)</span>
+        <div class="rail expanded">
+          <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+          <div class="expanded-body">
+            <div class="head">
+              <span class="head-title">Annotations <span class="count">6</span></span>
+              <button class="lock" data-tooltip="Keep expanded">📌</button>
+            </div>
+            <ul class="list">
+              <li class="card active">
+                <div class="meta">
+                  <span class="dot-badge" data-color="0">1</span>
+                  <span class="author">Alex</span>
+                  <span class="status open">Open</span>
+                </div>
+                <div class="body">Hero heading misaligned by ~6 px on desktop.</div>
+                <div class="foot">2h ago <span class="replies">↩ 2</span></div>
+              </li>
+              <li class="card">
+                <div class="meta">
+                  <span class="dot-badge" data-color="1">2</span>
+                  <span class="author">Jordan</span>
+                  <span class="status review">Needs review</span>
+                </div>
+                <div class="body">CTA copy should match the spec — "Start free" not "Get started".</div>
+                <div class="foot">5h ago <span class="replies">↩ 1</span></div>
+              </li>
+              <li class="card">
+                <div class="meta">
+                  <span class="dot-badge" data-color="2">3</span>
+                  <span class="author">Sam</span>
+                  <span class="status resolved">Resolved</span>
+                </div>
+                <div class="body">Pricing card shadow too soft at 1× zoom.</div>
+                <div class="foot">1d ago</div>
+              </li>
+            </ul>
+            <div class="foot-area">
+              <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="shortcut">Ctrl+⇧+N</span></span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">B — Pinned (lock-open active)</div>
+    <div class="stage" style="max-width:560px;margin:0 auto">
+      <span class="stage-label">Sticky 300 px width — accent ring</span>
+      <div class="rail pinned">
+        <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+        <div class="expanded-body">
+          <div class="head">
+            <span class="head-title">Annotations <span class="count">3</span></span>
+            <button class="lock pressed" data-tooltip="Unlock">📌</button>
+          </div>
+          <ul class="list">
+            <li class="card">
+              <div class="meta">
+                <span class="dot-badge" data-color="0">1</span>
+                <span class="author">Alex</span>
+                <span class="status open">Open</span>
+              </div>
+              <div class="body">Hero heading misaligned.</div>
+              <div class="foot">2h ago</div>
+            </li>
+            <li class="card">
+              <div class="meta">
+                <span class="dot-badge" data-color="3">2</span>
+                <span class="author">Riley</span>
+                <span class="status review">Needs review</span>
+              </div>
+              <div class="body">Footer should use --text-dim, not --text-muted.</div>
+              <div class="foot">3h ago <span class="replies">↩ 4</span></div>
+            </li>
+          </ul>
+          <div class="foot-area">
+            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="shortcut">Ctrl+⇧+N</span></span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">C — Empty state</div>
+    <div class="stage" style="max-width:380px;margin:0 auto;min-height:420px">
+      <div class="rail expanded">
+        <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+        <div class="expanded-body">
+          <div class="head">
+            <span class="head-title">Annotations <span class="count">0</span></span>
+            <button class="lock">📌</button>
+          </div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px 16px;text-align:center;color:var(--text-muted);font-size:11px">
+            No annotations yet. Use <strong style="color:var(--text-dim)">Ctrl+⇧+N</strong> or the button below to add the first.
+          </div>
+          <div class="foot-area">
+            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="shortcut">Ctrl+⇧+N</span></span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>rail-width-collapsed<dd>60 px
+      <dt>rail-width-expanded<dd>300 px
+      <dt>max-height<dd>70 vh desktop / 80 vh mobile
+      <dt>border-radius<dd>14 px
+      <dt>position<dd>absolute (inside AppMain); top calc(50% - 200px); left 24 px
+      <dt>drag handle<dd>GoGrabber 25 × 25 rotated 90°
+      <dt>add button<dd>32 px circle → full-width pill morph
+      <dt>add icon<dd>30 × 30 container, SVG 14 × 14
+      <dt>badge<dd>32 × 32, 50% radius, 16-color palette
+      <dt>list gap<dd>6 px
+      <dt>card<dd>--bg-card, --border-subtle, --radius-sm
+      <dt>card active<dd>--accent-overlay-mid border + 2 px accent left bar
+      <dt>status pill<dd>9 px / 700 mono, --info / --warning / --success
+      <dt>transition<dd>width --motion-base / --ease-spring
+    </dl>
+  </section>
+</div>
+
+</body>
+</html>

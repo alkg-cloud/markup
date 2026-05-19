@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>17 — Toast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);
+  --motion-fast:160ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
+.page{padding:48px 32px 96px}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  min-height:200px;padding:24px;display:flex;align-items:flex-end;justify-content:center;position:relative;
+}
+.stage.tall{min-height:300px}
+.stage-label{position:absolute;top:8px;left:12px;font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted)}
+
+/* Toast pill (Toast.module.css verbatim) */
+.toast{
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  border-radius:var(--radius-pill);
+  box-shadow:var(--shadow-popover);
+  padding:8px 16px;
+  font-size:13px;font-weight:500;
+  color:var(--text-bright);
+  white-space:nowrap;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.toast .ico{display:inline-flex;align-items:center;color:var(--accent-bright)}
+.toast.danger .ico{color:oklch(70% 0.2 25)}
+.toast.success .ico{color:oklch(76% 0.16 152)}
+
+/* Stack — fixed bottom-center container */
+.stack{display:flex;flex-direction:column-reverse;align-items:center;gap:8px;width:100%}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:18px}
+
+/* Animation demo: render a sequence of phases */
+.phases{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px}
+.phase{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);padding:14px 14px 20px;text-align:center}
+.phase-label{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:14px}
+.phase .toast{transform-origin:center bottom}
+.phase.p1 .toast{opacity:0;transform:translateY(8px) scale(0.95)}
+.phase.p2 .toast{opacity:1;transform:translateY(0) scale(1)}
+.phase.p3 .toast{opacity:1}
+.phase.p4 .toast{opacity:0}
+
+/* Tokens */
+.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
+.tokens dt{color:var(--text-dim)}.tokens dt::before{content:'--'}.tokens dd{color:var(--text-bright)}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1 class="h1">17 — Toast</h1>
+  <p class="lede">Toast notification system (<code>src/components/Toast/Toast.tsx</code>, <code>useToast.ts</code>). Bottom-center fixed container holds a stack of glass pills. Slide-in from below with spring easing; auto-dismiss after a default duration; out-fade on remove. Pills use the glass-surface standard — same recipe as the rail, toolbar, dialog scrim, and every other floating overlay.</p>
+
+  <section class="section">
+    <div class="section-title">A — Default pill (neutral message)</div>
+    <div class="stage">
+      <div class="stack">
+        <div class="toast">
+          <span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14.431 3.323l-8.47 10-.79-.036-3.35-4.77.818-.574 2.978 4.24 8.051-9.506.764.646z"/></svg></span>
+          Copied to clipboard
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">B — Stacked toasts (newest on top)</div>
+    <div class="stage tall">
+      <div class="stack">
+        <div class="toast"><span class="ico">✓</span> Mockup moved to "Landing"</div>
+        <div class="toast"><span class="ico">✓</span> Annotation marked as resolved</div>
+        <div class="toast"><span class="ico">✓</span> Copied to clipboard</div>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:14px">Toasts stack vertically with 8 px gap. Newest pill enters from below — older pills shift up. The container's <code>flex-direction: column-reverse</code> keeps the most recent at the bottom-front while older ones fade away with a stagger.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-title">C — Variants by intent</div>
+    <div class="grid">
+      <div class="stage">
+        <span class="stage-label">Neutral (default)</span>
+        <div class="stack">
+          <div class="toast"><span class="ico">ⓘ</span> Sidebar collapsed</div>
+        </div>
+      </div>
+      <div class="stage">
+        <span class="stage-label">Success</span>
+        <div class="stack">
+          <div class="toast success"><span class="ico">✓</span> Token created</div>
+        </div>
+      </div>
+      <div class="stage">
+        <span class="stage-label">Danger</span>
+        <div class="stack">
+          <div class="toast danger"><span class="ico">⚠</span> Token revoked — clients will get 401</div>
+        </div>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:14px">Shipped product only uses the neutral pill today; success / danger pills here illustrate the intent palette via the icon colour. The glass surface stays neutral — colour lives only in the icon, never in the background.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-title">D — Animation lifecycle (anim-toast-in / anim-toast-out)</div>
+    <div class="phases">
+      <div class="phase p1">
+        <div class="phase-label">1. Mount</div>
+        <div class="toast"><span class="ico">✓</span> Saved</div>
+      </div>
+      <div class="phase p2">
+        <div class="phase-label">2. Visible (in)</div>
+        <div class="toast"><span class="ico">✓</span> Saved</div>
+      </div>
+      <div class="phase p3">
+        <div class="phase-label">3. Hold</div>
+        <div class="toast"><span class="ico">✓</span> Saved</div>
+      </div>
+      <div class="phase p4">
+        <div class="phase-label">4. Out</div>
+        <div class="toast"><span class="ico">✓</span> Saved</div>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:14px">Slide-in: opacity 0 → 1, translateY 8 px → 0, scale 0.95 → 1 over <code>--motion-fast</code> (160 ms) with <code>--ease-spring</code>. Hold: ~3 s default. Out: opacity 1 → 0 over 250 ms with <code>--ease-exit</code>. <code>prefers-reduced-motion: reduce</code> zeroes both animations — toasts pop in / out instantly.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>container<dd>position fixed; bottom 24 px; left 50%; translateX(-50%)
+      <dt>z-index<dd>2000
+      <dt>pointer-events<dd>none (container) / auto (pill)
+      <dt>pill bg<dd>--surface-glass-bg
+      <dt>pill backdrop-filter<dd>blur(16px) saturate(140%)
+      <dt>pill border<dd>1 px solid --border
+      <dt>pill radius<dd>--radius-pill (9999 px)
+      <dt>pill padding<dd>8 px 16 px
+      <dt>pill font<dd>13 px / 500, --text-bright
+      <dt>pill shadow<dd>--shadow-popover
+      <dt>gap<dd>8 px between pills
+      <dt>anim in<dd>opacity 0 → 1, translateY 8 → 0, scale 0.95 → 1 — --motion-fast / --ease-spring
+      <dt>anim out<dd>opacity 1 → 0 — 250 ms / --ease-exit
+      <dt>reduced-motion<dd>animation: none on .pill / .pillOut
+    </dl>
+  </section>
+</div>
+
+</body>
+</html>
