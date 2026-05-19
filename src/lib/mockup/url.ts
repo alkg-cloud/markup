@@ -22,7 +22,7 @@ export async function pathForMockup(mockupId: string): Promise<string | null> {
       project: { select: { slug: true } },
     },
   });
-  if (!mockup || !mockup.project) return null;
+  if (!mockup?.project) return null;
   const folderPath = mockup.folderId ? await buildFolderNamePath(mockup.folderId) : [];
   return mockupSlugHref(mockup.project.slug, folderPath, mockup.slug);
 }

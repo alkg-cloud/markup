@@ -1,7 +1,7 @@
 import 'server-only';
 
-import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { verifyAgentToken } from './agent-token';
 import { getSession, SESSION_COOKIE } from './session';
