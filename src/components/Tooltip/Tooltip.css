@@ -1,7 +1,23 @@
-/* Tooltip — replacement for native `title` attribute. Glass-bg pill
-   anchored above its trigger via pseudo-element. The trigger must have
-   `position: relative` (or be already-positioned). Trigger gets the
-   `data-tooltip="text"` attribute; this stylesheet does the rest. */
+/* Tooltip — the canonical tooltip primitive for the whole product.
+   Every interactive surface that needs a hover/focus tooltip MUST use
+   the `[data-tooltip="text"]` attribute on the trigger — no JSX
+   custom tooltips, no `title=`, no `aria-describedby` + visual element
+   pair. The CanvasToolbar's zoom/fullscreen tooltips are the reference
+   implementation; all other tooltips share this single declaration.
+
+   See `docs/code-style.md § Tooltips` for the rule.
+
+   Layout:
+   - Trigger must establish a positioning context. Use `position:
+     relative` (or `absolute`/`fixed`). All buttons in the project
+     already do.
+   - z-index 10000 keeps the tooltip above EVERY floating surface
+     (rail z-30, composer z-80, marking-bar z-95, confirm-dialog
+     z-1001) so it never gets occluded.
+   - Default alignment anchors the pseudo's left edge to the trigger's
+     left edge so the bubble extends right. Use
+     `data-tooltip-align="right"` for triggers near a right edge so
+     the bubble extends left and stays inside the viewport. */
 
 [data-tooltip] {
   position: relative;
@@ -31,7 +47,7 @@
   transition:
     opacity var(--motion-fast),
     transform var(--motion-fast) var(--ease-spring);
-  z-index: 100;
+  z-index: 10000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 

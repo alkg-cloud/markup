@@ -111,11 +111,15 @@ async function createPeer() {
 }
 
 async function createProjects() {
+  // Project icons MUST be valid `IconPicker` tokens (see
+  // `src/components/IconPicker/icons.ts`). The previous `'coffee'` and
+  // `'sparkle'` strings were not in the picker — opening the project
+  // settings rendered an empty icon slot.
   const lumen = await prisma.project.create({
-    data: { name: 'Lumen Coffee', slug: 'lumen-coffee', icon: 'coffee', position: 0 },
+    data: { name: 'Lumen Coffee', slug: 'lumen-coffee', icon: 'emoji:🔥', position: 0 },
   });
   const demos = await prisma.project.create({
-    data: { name: 'Design Demos', slug: 'design-demos', icon: 'sparkle', position: 1 },
+    data: { name: 'Design Demos', slug: 'design-demos', icon: 'emoji:🎨', position: 1 },
   });
   const lumenHero = await prisma.folder.create({
     data: { projectId: lumen.id, name: 'Hero', position: 0 },
