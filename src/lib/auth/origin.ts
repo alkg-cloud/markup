@@ -24,17 +24,9 @@ import { env } from '@/lib/env';
  * forged request, which always carries an Origin.
  */
 export function isSameOrigin(req: Request): boolean {
-  const origin = req.headers.get('origin');
-  if (!origin) return true; // no Origin → not a forgeable cross-site request
-  const appUrl = env().APP_URL;
-  if (matchesOrigin(origin, appUrl)) return true;
-  const extra = process.env.MARKUP_ALLOWED_ORIGINS;
-  if (!extra) return false;
-  return extra
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .some((o) => matchesOrigin(origin, o));
+  const presented = req.headers.get('origin');
+  if (!presented) return true; // no Origin → not a forgeable cross-site request
+  return getAllowedOrigins().has(canonicalOrigin(presented) ?? '');
 }
 
 /**
@@ -52,12 +44,37 @@ export function assertSameOrigin(req: Request): NextResponse | null {
   return NextResponse.json({ error: 'forbidden_origin' }, { status: 403 });
 }
 
-function matchesOrigin(presented: string, allowed: string): boolean {
+function canonicalOrigin(s: string): string | null {
   try {
-    const a = new URL(presented);
-    const b = new URL(allowed);
-    return a.origin === b.origin;
+    return new URL(s).origin;
   } catch {
-    return false;
+    return null;
   }
+}
+
+let cachedAllowed: Set<string> | null = null;
+let cachedAppUrl: string | undefined;
+let cachedExtra: string | undefined;
+
+function getAllowedOrigins(): Set<string> {
+  const appUrl = env().APP_URL;
+  const extra = process.env.MARKUP_ALLOWED_ORIGINS;
+  if (cachedAllowed && cachedAppUrl === appUrl && cachedExtra === extra) {
+    return cachedAllowed;
+  }
+  const set = new Set<string>();
+  const app = canonicalOrigin(appUrl);
+  if (app) set.add(app);
+  if (extra) {
+    for (const raw of extra.split(',')) {
+      const trimmed = raw.trim();
+      if (!trimmed) continue;
+      const o = canonicalOrigin(trimmed);
+      if (o) set.add(o);
+    }
+  }
+  cachedAllowed = set;
+  cachedAppUrl = appUrl;
+  cachedExtra = extra;
+  return set;
 }
