@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GoGrabber } from 'react-icons/go';
-import { PICKER_ICONS } from '@/components/IconPicker/icons';
+import { resolveIconToken } from '@/components/IconPicker/icons';
 import { usePopover } from '@/lib/popover/usePopover';
 import { MAX_FOLDER_DEPTH } from '@/lib/project/constants';
 import { folderHref, mockupSlugHref, projectHref } from '@/lib/project/routes';
@@ -133,18 +133,6 @@ function KebabIcon() {
       <circle cx="12" cy="8" r="1.2" />
     </svg>
   );
-}
-
-function resolveIconToken(token: string): { type: 'svg' | 'emoji'; content: string } | null {
-  if (token.startsWith('emoji:')) {
-    return { type: 'emoji', content: token.slice(6) };
-  }
-  for (const group of Object.values(PICKER_ICONS)) {
-    const entry = group.find((e) => e.token === token);
-    if (entry?.svg) return { type: 'svg', content: entry.svg };
-    if (entry?.label) return { type: 'emoji', content: entry.label };
-  }
-  return null;
 }
 
 function ProjectIconResolved({ token }: { token: string }) {
@@ -293,8 +281,8 @@ function flattenProjects(
         // RecentsSection handles the visible recents instead. When this
         // path is wired up, the caller will need to supply the canonical
         // path-based href (project slug + folder names + mockup slug);
-        // we leave a placeholder pointing at /projects so a stray click
-        // doesn't 404 if the dead path ever wakes up.
+        // we leave a placeholder pointing at `/` so a stray click doesn't
+        // 404 if the dead path ever wakes up.
         nodes.push({
           id: `recent-${p.id}-${recentMockupIds[ri]}`,
           type: 'recents-item',
@@ -303,7 +291,7 @@ function flattenProjects(
           expandable: false,
           expanded: false,
           parentId: `recents-${p.id}`,
-          href: '/projects',
+          href: '/',
           setSize: recentMockupIds.length,
           posInSet: ri + 1,
           projectSlug: p.slug,

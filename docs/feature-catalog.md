@@ -44,7 +44,7 @@ Global 52 px top bar (`Topbar.tsx`). Present on all authenticated pages. Margin-
 
 ## sidebar
 
-Collapsible sidebar shell (`Sidebar.tsx`). Present on authenticated workspace routes (`/`, `/settings/agents`, mockup viewer, annotation detail). The sidebar morphs into a floating pill when collapsed.
+Collapsible sidebar shell (`Sidebar.tsx`). Present on every authenticated workspace route — the `all-projects` grid at `/`, `/projects/<slug>` (and nested folders / mockups), `/annotations/[id]`, and `/settings/agents`. The sidebar morphs into a floating pill when collapsed.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
@@ -189,6 +189,32 @@ Tabbed icon picker popover (`IconPicker.tsx`). Reusable in "New Project" dialog 
 | `icon-picker-grid` | 8-column SVG icon grid | populated, empty (no matches for search) |
 | `icon-picker-cell` | Individual icon cell | default, hover (surface-hover), selected (accent border + accent-overlay-soft bg) |
 | `icon-picker-footer` | Mono-font preview of selected icon token string (e.g. `vsc:VscFile`) | shows current selection |
+
+## all-projects
+
+Workspace landing surface at `/` (`AllProjectsPage` under `src/app/(app)/page.tsx`). The legacy `/projects` route redirects here client-side. Lists every project the current identity can see as a card grid, with a primary "New project" CTA and per-card kebab actions.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `all-projects-page` | Page container under the in-shell layout. Renders `Topbar` (breadcrumbs empty) above an `AppMain` scroll variant that hosts a header strip + card grid | loading (skeleton placeholders), error (`http_*` banner), empty (centered `empty-state` clone), populated |
+| `all-projects-header` | Page header with `<h1>` "Projects", item count (`{N} projects` / `1 project`), and trailing accent "New project" button | item count uses tabular numerics; CTA opens `new-project-dialog` |
+| `all-projects-grid` | Responsive CSS grid of `project-card` tiles in stable `position` order. Min cell width 240 px, max columns fill available width | populated, loading (3 skeleton cards), empty (CTA-centered) |
+| `all-projects-new-cta` | Primary `+ New project` button in the header. Opens `new-project-dialog`; on save navigates to the new project's `/projects/<slug>` | default, hover (`--accent-bright`), focus-visible, active |
+| `all-projects-empty-cta` | Centered "Create your first project" CTA inside the empty state | only visible when zero projects |
+| `all-projects-redirect` | `/projects` page is now a client-side redirect to `/` (no fetch, no UI surface) | redirect on mount via `router.replace('/')` |
+
+## project-card
+
+Card tile for a single project on the `all-projects` grid (`ProjectCard.tsx`).
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `project-card` | Card with resolved project icon, name, mockup count, folder count. Border-radius: `--radius-card`. Whole card is a `<Link>` to `/projects/<slug>`; kebab button absolutely positioned top-right. | default, hover (border → `--border-strong`, bg → `--bg-card-active`, translateY(-1px)), focus-visible, active (translateY(1px)) |
+| `project-card-icon` | Resolved icon from `Project.icon` token (same resolver as `sidebar-tree-project-item`). Falls back to a default project glyph when icon is null/unknown | static, `--text-bright` color |
+| `project-card-name` | Project name as `<h2>`. Truncated with `text-overflow: ellipsis` | full name in `title` tooltip |
+| `project-card-meta` | Mockup count + folder count line in mono font (`{M} mockups · {F} folders`). Singular/plural handled. | `--text-dim`, tabular numerics |
+| `project-card-kebab` | Three-dot kebab anchored top-right. Hidden by default, fades in on row hover/focus. Uses `usePopover('right')` for top-layer paint. Items: **Open** (navigates), **Edit** (opens `edit-project-dialog`), **Delete** (`confirm-dialog`, danger). | hidden (default), visible (hover/focus), open (popover paint) |
+| `project-card-kebab-menu` | Native HTML popover (`popover="auto"`) with the three actions above. Light-dismiss + ESC handled by the browser. The Delete item fires `confirm-dialog` and on accept calls `DELETE /api/projects/[id]`, then refreshes the page list. | open, closed |
 
 ## project-content
 
@@ -505,7 +531,7 @@ Cross-cutting visual and interaction surfaces defined in `globals.css` and `toke
 | `global-reduced-motion` | `prefers-reduced-motion: reduce` safety net: all `animation-duration`, `animation-iteration-count`, `transition-duration`, `scroll-behavior` zeroed via `!important` | global override in `globals.css` |
 | `global-typography-manrope` | Manrope font family (body + display), weights 400-800. Display: 700 weight, tracking -0.02em. Body: 400/500/600, 13-14 px. Labels: 600, 10 px, uppercase, tracking 0.12em | via `next/font/google` |
 | `global-typography-jetbrains` | JetBrains Mono (code/tabular), 400/500, 10-12 px | tabular-nums for timestamps, token strings |
-| `global-routing-path-based` | All in-shell URLs are human-readable path segments resolved by the `GET /api/projects/by-slug/[slug]/resolve?path=…` aggregator. `/` redirects to `/projects`. `/projects` = projects index (redirects to first project). `/projects/<slug>` = project view (calls `/view`). `/projects/<slug>/<...folders>/<mockup-slug>` = mockup viewer (`[...path]` resolved by `resolveProjectPath` to either a folder or a mockup; mockups render `MockupViewerPage` after fetching `/api/mockups/[id]/viewer`, folders render the folder view). `/projects/unsorted/<mockup-slug>` covers orphan mockups. `/annotations/[id]` and `/settings/agents` retain stable single-segment routes. The legacy `/mockups/[id]` viewer route redirects to `/projects`; `/api/mockups/[id]/*` API endpoints continue to use the mockup id. | path resolution server-side via the API aggregator; canonical paths produced client-side by `routes.ts` helpers (`projectsHref`, `projectHref`, `folderHref`, `mockupSlugHref`) |
+| `global-routing-path-based` | All in-shell URLs are human-readable path segments resolved by the `GET /api/projects/by-slug/[slug]/resolve?path=…` aggregator. `/` = `all-projects` landing (card grid of every project the identity can see). The legacy `/projects` route is a thin client-side redirect to `/` so external bookmarks still work. `/projects/<slug>` = project view (calls `/view`). `/projects/<slug>/<...folders>/<mockup-slug>` = mockup viewer (`[...path]` resolved by `resolveProjectPath` to either a folder or a mockup; mockups render `MockupViewerPage` after fetching `/api/mockups/[id]/viewer`, folders render the folder view). `/projects/unsorted/<mockup-slug>` covers orphan mockups. `/annotations/[id]` and `/settings/agents` retain stable single-segment routes. The legacy `/mockups/[id]` viewer route redirects to `/`; `/api/mockups/[id]/*` API endpoints continue to use the mockup id. | path resolution server-side via the API aggregator; canonical paths produced client-side by `routes.ts` helpers (`projectsHref` returns `/`, `projectHref`, `folderHref`, `mockupSlugHref`) |
 | `global-sidebar-collapse-persisted` | Sidebar collapse state survives reload. The shell reads `markup-sidebar-collapsed` from the `GET /api/shell` payload (which inspects the cookie) and passes `defaultCollapsed` to `Sidebar`. The client persists subsequent changes to the cookie + `localStorage` in the same write. Because the page is client-rendered, a short loading state precedes the first paint of the sidebar; the collapsed/expanded resolution is correct on first render after that. | cookie-driven default + client persistence — no flicker between renders |
 | `global-favicon` | App favicon at `src/app/icon.svg` — Next.js 16 auto-serves it at `/icon.svg` and `<link rel="icon">` is injected at build time. The SVG is a 256 × 256 dark rounded square with a white serif **M** and an accent-green square as the period (matches `sidebar-logo`'s "Markup." typography). | rendered in all browsers; no separate raster ico shipped |
 | `global-name-validation` | Single source of truth for URL-safe names: `src/lib/validation/url-safe-name.ts`. Pattern `/^[A-Za-z0-9_-]+$/` is exported as `URL_SAFE_NAME_PATTERN`; `validateUrlSafeName(value)` returns `{ offendingChar, message }` or `null`. Used client-side by `new-project-dialog`, `edit-project-dialog`, `sidebar-inline-folder-create`, and the tree rename input — same `URL_SAFE_NAME_HINT` copy everywhere. Used server-side by `POST /api/projects`, `PATCH /api/projects/[id]`, `POST /api/projects/[id]/folders`, `PATCH /api/folders/[id]`, `POST /api/mockups`, and `PATCH /api/mockups/[id]` — invalid names return `400 name_not_url_safe`. | client error: inline danger message below input; server error: `400 name_not_url_safe` |

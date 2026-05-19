@@ -96,6 +96,9 @@ src/components/
   FolderCard/
     FolderCard.tsx          # 'use client' — folder card with CSS Modules (Link + SVG icon)
     FolderCard.module.css   # card, icon, info, name, meta styles
+  ProjectCard/
+    ProjectCard.tsx         # 'use client' — project tile for the all-projects grid (Link + resolved icon + kebab popover)
+    ProjectCard.module.css  # card, icon, info, name, meta, kebab, popover styles
   EmptyState/
     EmptyState.tsx          # 'use client' — project/folder empty states
     EmptyState.module.css   # container, icon, title, desc, actions, btn-accent, btn-secondary styles
@@ -132,7 +135,10 @@ src/app/
   AppShell.tsx               # 'use client' — auth guard + API fetch of tree → sidebar/topbar shell
   (app)/
     layout.tsx               # 'use client' — wraps every in-shell child in <AppShell>
-    page.tsx                 # 'use client' — redirect to /projects on mount
+    page.tsx                 # 'use client' — `all-projects` landing: fetches /api/projects, renders the project-card grid + "New project" CTA
+    AllProjectsPage.tsx      # 'use client' — page-scoped component owning grid, kebab handlers, dialogs (page.tsx is the data-fetch shell)
+    projects/
+      page.tsx               # 'use client' — thin redirect to `/` (kept so external bookmarks to `/projects` still resolve)
     mockups/
       [id]/
         page.tsx             # 'use client' — fetches /api/mockups/[id]/viewer
@@ -147,13 +153,12 @@ src/app/
         page.tsx             # 'use client' — fetches /api/agent-tokens
         AgentsClient.tsx     # 'use client' — list + create + revoke UI
   mockups/
-    page.tsx                 # 'use client' — redirects /mockups to /projects
+    page.tsx                 # 'use client' — redirects /mockups to `/`
     [id]/
       diff/
         page.tsx             # 'use client' — fetches /api/mockups/[id]/diff-versions
         DiffViewer.tsx       # 'use client' — side-by-side iframes
   projects/
-    page.tsx                 # 'use client' — redirects /projects to first project on mount
     ProjectSidebar.tsx       # 'use client' — sidebar wrapper used by AppShell
     ProjectSidebar.module.css
     layout.module.css        # responsive grid: sidebar + main on desktop, single column on mobile <768px

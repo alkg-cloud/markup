@@ -20,7 +20,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   if (resolved.kind === 'not_found') {
     return NextResponse.json({ error: 'not_found' }, { status: 404 });
   }
-  const viewerHref = (await pathForMockup(mockupId)) ?? '/projects';
+  const viewerHref = (await pathForMockup(mockupId)) ?? '/';
   if (resolved.kind === 'invalid') {
     return NextResponse.json({ kind: 'invalid', viewerHref });
   }

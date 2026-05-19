@@ -24,7 +24,7 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/api/projects` | List all projects ordered by position |
+| `GET` | `/api/projects` | List all projects ordered by `position`. Each entry includes `id`, `name`, `slug`, `icon`, `position`, `mockupCount`, `folderCount`, `createdAt`, `updatedAt` — used by the `all-projects` landing grid |
 | `POST` | `/api/projects` | Create project (`name`) |
 | `GET` | `/api/projects/[id]` | Single project metadata |
 | `PATCH` | `/api/projects/[id]` | Update project (`name`) |
