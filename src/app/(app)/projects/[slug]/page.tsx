@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { getViewerProfile } from '@/lib/auth/viewer-profile';
 import { prisma } from '@/lib/prisma';
 import { projectDisplayName, projectHref } from '@/lib/project/routes';
 import { getAuthenticatedIdentity } from '../../../AppShell';
@@ -28,16 +29,7 @@ export default async function ProjectPage({ params }: Props) {
   });
   if (!project) notFound();
 
-  let userName: string | undefined;
-  let userEmail: string | undefined;
-  if (identity.kind === 'user') {
-    const user = await prisma.user.findUnique({
-      where: { id: identity.userId },
-      select: { name: true, email: true },
-    });
-    userName = user?.name ?? undefined;
-    userEmail = user?.email ?? undefined;
-  }
+  const { userName, userEmail } = await getViewerProfile(identity);
 
   return (
     <ProjectContent

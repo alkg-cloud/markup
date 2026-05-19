@@ -4,13 +4,13 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { parsePinCoords } from '@/lib/annotation/pin-coords';
 import { getAnnotation } from '@/lib/annotation/service';
+import { ANNOTATION_STATUSES } from '@/lib/annotation/status';
 import { identify } from '@/lib/auth/identify';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
 
-const STATUSES = ['open', 'needs review', 'resolved'] as const;
 const PatchSchema = z.object({
-  status: z.enum(STATUSES).optional(),
+  status: z.enum(ANNOTATION_STATUSES).optional(),
 });
 
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {

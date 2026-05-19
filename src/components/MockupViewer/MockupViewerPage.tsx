@@ -4,7 +4,9 @@ import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { AppMainViewerWired } from '@/components/MockupViewer/AppMainViewerWired';
 import { Topbar } from '@/components/Topbar/Topbar';
 import type { Anchor } from '@/lib/anchoring';
+import type { Identity } from '@/lib/auth/identify';
 import { resolveDisplayNames } from '@/lib/auth/resolve-display-name';
+import { getViewerProfile } from '@/lib/auth/viewer-profile';
 import { prisma } from '@/lib/prisma';
 import type { AppMainAnnotation } from './AppMainViewer';
 
@@ -44,7 +46,7 @@ export interface MockupViewerPageProps {
   /** Database id of the mockup. Resolved upstream from the URL path. */
   mockupId: string;
   /** Logged-in user identity (used for `isOwn`, avatar). */
-  identity: { kind: 'user'; userId: string } | { kind: 'agent'; tokenId: string };
+  identity: Identity;
   /** Pre-built breadcrumbs (caller routes know the path-based URLs). */
   breadcrumbs: BreadcrumbSegment[];
 }
@@ -85,16 +87,7 @@ export async function MockupViewerPage({
     return <main style={{ padding: 24 }}>Mockup not found.</main>;
   }
 
-  let userName: string | undefined;
-  let userEmail: string | undefined;
-  if (identity.kind === 'user') {
-    const u = await prisma.user.findUnique({
-      where: { id: identity.userId },
-      select: { name: true, email: true },
-    });
-    userName = u?.name ?? undefined;
-    userEmail = u?.email ?? undefined;
-  }
+  const { userName, userEmail } = await getViewerProfile(identity);
 
   // Resolve every author referenced by the page (annotation authors,
   // message authors, version authors, reaction users) in one batch.

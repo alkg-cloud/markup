@@ -51,7 +51,7 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
         id: string;
         threadId: string;
         colorIndex: number;
-        status: 'open' | 'needs review' | 'resolved';
+        status: AnnotationStatus;
       };
       // Refresh the server component on next navigation so all derived
       // data (counts, breadcrumbs, etc.) stays consistent.
@@ -241,8 +241,6 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
   return (
     <>
       <AppMainViewer
-        mockupId={props.mockupId}
-        mockupName={props.mockupName}
         mockupSrc={props.mockupSrc}
         currentUser={props.currentUser}
         versions={props.versions}
