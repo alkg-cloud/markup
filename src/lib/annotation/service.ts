@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import cuid from 'cuid';
 import { type PinCoords, serializePinCoords } from '@/lib/annotation/pin-coords';
+import type { AnnotationStatus } from '@/lib/annotation/status';
 import { env } from '@/lib/env';
 import { deleteIntentCache } from '@/lib/intent/cache';
 import { annotationDir } from '@/lib/mockup/storage';
@@ -123,7 +124,7 @@ interface CreateCommentAnnotationInput {
   body: string;
   anchors: AnchorRecord[];
   colorIndex: number;
-  status?: 'open' | 'needs review' | 'resolved';
+  status?: AnnotationStatus;
   authorId: string;
   authorType: 'user' | 'agent';
   createdOnVersionId?: string | null;
