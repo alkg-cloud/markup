@@ -180,13 +180,16 @@
 }
 
 /* Sticky add button at the bottom — morphs from circle (collapsed)
-   to a full-width pill with label (expanded). */
+   to a full-width pill with label (expanded). Horizontal padding
+   matches the icon offset in BOTH states so the icon stays at a
+   stable viewport x during the morph — physical clicks landing
+   mid-transition keep hitting the button. */
 .foot {
   position: sticky;
   bottom: 0;
   display: flex;
-  justify-content: center;
-  padding: 8px;
+  justify-content: flex-start;
+  padding: 8px 14px;
   background: linear-gradient(to bottom, transparent, var(--surface-glass-bg) 40%);
   flex-shrink: 0;
 }
@@ -214,7 +217,7 @@
 .rail.hoverExpanded .add,
 .rail.pinned .add {
   width: 100%;
-  padding: 0 14px;
+  padding: 0;
   justify-content: flex-start;
 }
 .addIcon {
