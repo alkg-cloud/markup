@@ -53,21 +53,6 @@
     0 0 0 2px oklch(82% var(--pin-c) var(--pin-h) / 0.45);
 }
 
-/* The pin's wrapper carries `transform: rotate(-45deg)` so the drop-point
-   sits at the bottom-left. The shared `[data-tooltip]::after` rule would
-   inherit that rotation; counter-rotate it here so the tooltip text reads
-   horizontally. The offset compensates for the rotated coordinate system
-   so the tooltip floats above the pin's visual centre. */
-.pin[data-tooltip]::after {
-  transform: rotate(45deg) translate(14px, -12px);
-  bottom: auto;
-  top: -8px;
-  left: 50%;
-}
-.pin[data-tooltip]:hover::after,
-.pin[data-tooltip]:focus-visible::after {
-  transform: rotate(45deg) translate(14px, -16px);
-}
 
 /* Pending pin (during the composer's marking mode) — same glass tag as
    a regular pin so the draft reads as a placed marker rather than a

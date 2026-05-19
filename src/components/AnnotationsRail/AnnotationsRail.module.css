@@ -10,7 +10,9 @@
   left: 24px;
   z-index: 30;
   width: var(--rail-width-collapsed);
-  max-height: calc(100vh - 32px);
+  /* Cap rail height at 70vh on desktop / 80vh on mobile so a long
+     annotation list never pushes the rail past the canvas bounds. */
+  max-height: 70vh;
   background: var(--surface-glass-bg);
   backdrop-filter: blur(16px) saturate(140%);
   border: var(--surface-glass-border);
@@ -18,15 +20,19 @@
   box-shadow: var(--shadow-popover);
   display: flex;
   flex-direction: column;
-  /* `clip` (not `hidden`) prevents tooltips/emoji-picker popovers from
-     being painted on top of the rail surface during morph, while still
-     letting them escape the rail's bounding box horizontally so they're
-     visible above the canvas. */
+  /* Tooltips/emoji-picker popovers must escape the rail's bounding box
+     horizontally so they don't crop at the right edge. */
   overflow: visible;
   transition:
     width var(--motion-base) var(--ease-spring),
     border-color var(--motion-fast) var(--ease-standard),
     box-shadow var(--motion-fast) var(--ease-standard);
+}
+
+@media (max-width: 768px) {
+  .rail {
+    max-height: 80vh;
+  }
 }
 
 .rail.hoverExpanded,
@@ -174,10 +180,13 @@
 .list {
   list-style: none;
   padding: 6px 0 8px;
-  /* Vertical scroll only; tooltips/popovers escape horizontally past
-     the rail edge so they're not clipped at 300px wide. */
+  /* Vertical scroll, horizontal clipped — `overflow-x: visible` next to
+     a scroll axis produces an unwanted horizontal scrollbar in Chromium
+     (the visible axis silently promotes the other to scroll). Triggers
+     that would otherwise overflow horizontally use
+     `data-tooltip-align="right"` so the pseudo extends leftwards and
+     stays inside the rail. */
   overflow-y: auto;
-  overflow-x: visible;
   flex: 1;
   min-height: 0;
   margin: 0;
@@ -202,6 +211,10 @@
   justify-content: flex-start;
   padding: 8px 14px;
   background: linear-gradient(to bottom, transparent, var(--surface-glass-bg) 40%);
+  /* Match the rail's outer radius so the gradient bg doesn't paint over
+     the rounded bottom corners. */
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
   flex-shrink: 0;
 }
 .add {
@@ -246,8 +259,15 @@
 .addLabel {
   display: flex;
   align-items: center;
-  gap: 6px;
+  /* `space-between` keeps the label flush-left and the shortcut chip
+     flush-right, with `gap: 8px` as a minimum keep-away. Survives any
+     rail width without re-tuning a margin. */
+  justify-content: space-between;
+  gap: 8px;
   flex: 1;
+  /* Pad the right edge so the shortcut chip never collides with the
+     pill's rounded border. */
+  padding: 0 14px 0 4px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -266,7 +286,6 @@
   transform: translateX(0);
 }
 .shortcut {
-  margin-left: auto;
   padding: 2px 5px;
   background: var(--bg-card-active);
   border-radius: var(--radius-xs);

@@ -8,6 +8,14 @@
   gap: 5px;
   position: relative;
 }
+/* CSS variable contract with EmojiPicker.trigger — switches the
+   reaction-add "+" pill between hidden (rest) and visible (comment
+   hover or focus-within). The fade is owned by the trigger. */
+.comment:hover,
+.comment:focus-within {
+  --reaction-add-opacity: 1;
+  --reaction-add-pointer: auto;
+}
 .comment + .comment {
   padding-top: 8px;
   border-top: 1px dashed var(--border-subtle);
