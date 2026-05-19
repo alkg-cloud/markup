@@ -2,63 +2,829 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>11-mockup-view</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>11 — Mockup View</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--sidebar-collapsed-width:52px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0%,0,0/0.45);--shadow-md:0 6px 16px oklch(0%,0,0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0%,0,0/0.6),0 6px 12px oklch(0%,0,0/0.45),inset 0 1px 0 oklch(100%,0,0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
-@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
+/* ─── Tokens (verbatim from src/styles/tokens.css) ──────────────────── */
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --info:oklch(74% 0.13 200);--info-soft:oklch(26% 0.06 200);
+  --warning:oklch(80% 0.15 80);--warning-soft:oklch(30% 0.07 80);
+  --success:oklch(76% 0.16 152);--success-soft:oklch(28% 0.07 152);
+  --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --bg-iframe:oklch(10% 0.02 165 / 0.5);
+  --rail-width-collapsed:60px;--rail-width-expanded:300px;
+  --topbar-height:52px;--sidebar-collapsed-width:52px;
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;
+  --shadow-sm:0 2px 6px oklch(0% 0 0/0.45);
+  --shadow-md:0 6px 16px oklch(0% 0 0/0.5);
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --shadow-pin:0 4px 12px oklch(0% 0 0 / 0.55), inset 0 1px 0 oklch(100% 0 0 / 0.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
 a{color:inherit;text-decoration:none}
-:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:9999px}
+
+.page{padding:48px 32px 96px;max-width:1480px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:740px;line-height:1.55}
+.section{margin-bottom:56px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.section-lede{font-size:12px;color:var(--text-dim);margin-bottom:16px;max-width:680px;line-height:1.55}
+
+/* ─── App shell stage (faithful to AppShell + AppMain + Sidebar) ─────── */
+.stage{
+  position:relative;
+  background:var(--bg);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-md);
+  overflow:hidden;
+  box-shadow:var(--shadow-md);
+}
+.stage.tall{height:760px}
+.stage-label{position:absolute;top:8px;left:12px;font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);z-index:200;pointer-events:none}
+
+/* Sidebar slim (collapsed pill rail, 52px). Matches Sidebar.module.css's
+   collapsed track. */
+.sidebar{
+  position:absolute;top:0;left:0;bottom:0;width:var(--sidebar-collapsed-width);
+  background:var(--bg-elevated);border-right:1px solid var(--border-subtle);
+  display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:6px;z-index:80;
+}
+.sidebar-logo{
+  width:32px;height:32px;border-radius:var(--radius-sm);
+  background:linear-gradient(135deg, var(--accent), var(--accent-bright));
+  display:flex;align-items:center;justify-content:center;
+  color:oklch(15% 0.005 165);font-family:var(--font-mono);font-weight:800;font-size:13px;margin-bottom:8px;
+}
+.sidebar-icon{
+  width:36px;height:36px;border-radius:var(--radius-xs);
+  display:flex;align-items:center;justify-content:center;color:var(--text-muted);
+  transition:background var(--motion-fast),color var(--motion-fast);
+}
+.sidebar-icon:hover{background:var(--surface-hover);color:var(--text-bright)}
+.sidebar-icon.active{background:var(--accent-soft);color:var(--accent-bright)}
+.sidebar-icon svg{width:16px;height:16px}
+
+/* Topbar — 52px, bg-elevated, search pill centered, avatar right. */
+.topbar{
+  position:absolute;top:0;left:var(--sidebar-collapsed-width);right:0;height:var(--topbar-height);
+  background:var(--bg-elevated);border-bottom:1px solid var(--border-subtle);
+  display:flex;align-items:center;padding:0 16px;gap:8px;z-index:90;
+}
+.crumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-dim);min-width:0}
+.crumb a{color:var(--text-dim);transition:color var(--motion-fast)}
+.crumb a:hover{color:var(--text-bright)}
+.crumb .sep{color:var(--text-muted);font-size:11px}
+.crumb .here{color:var(--text-bright);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.search-pill{
+  position:absolute;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:10px;height:36px;padding:0 14px 0 12px;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-pill);
+  color:var(--text-dim);font-weight:500;font-size:13px;cursor:pointer;
+  min-width:280px;max-width:340px;
+  transition:background var(--motion-fast),border-color var(--motion-fast),box-shadow var(--motion-fast),color var(--motion-fast);
+}
+.search-pill:hover{background:var(--bg-card-active);border-color:var(--border-strong);color:var(--text);box-shadow:var(--shadow-sm)}
+.search-pill svg{flex-shrink:0;color:var(--text-muted);width:14px;height:14px}
+.search-pill .kbd{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-xs);padding:2px 6px;flex-shrink:0}
+.topbar-right{display:flex;align-items:center;gap:6px;margin-left:auto}
+.topbar-icon{
+  width:32px;height:32px;border-radius:var(--radius-xs);
+  display:flex;align-items:center;justify-content:center;color:var(--text-muted);
+  transition:background var(--motion-fast),color var(--motion-fast);
+}
+.topbar-icon:hover{background:var(--surface-hover);color:var(--text-bright)}
+.avatar{
+  width:32px;height:32px;border-radius:var(--radius-pill);
+  background:var(--accent-soft);border:1.5px solid var(--accent-overlay-mid);
+  color:var(--accent);display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:12px;cursor:pointer;
+}
+
+/* AppMain canvas — the iframe wrapper. Full-bleed, no chrome, behind the
+   floating rail + dock. The actual surface uses --bg-iframe so the mockup
+   sits on the tinted glass canvas. */
+.canvas{
+  position:absolute;top:var(--topbar-height);left:var(--sidebar-collapsed-width);right:0;bottom:0;
+  background:var(--bg-iframe);overflow:hidden;
+}
+.iframe-mock{
+  position:absolute;inset:0;background:#fafafa;color:#1a1a1a;font-family:var(--font-body);
+  display:flex;flex-direction:column;overflow:auto;
+}
+.iframe-mock .top{
+  height:64px;background:#fff;border-bottom:1px solid rgba(0,0,0,0.06);
+  display:flex;align-items:center;padding:0 40px;gap:24px;
+}
+.iframe-mock .top .brand{font-weight:800;font-size:18px;letter-spacing:-0.02em;color:#0a0a0a}
+.iframe-mock .top .nav{display:flex;gap:18px;font-size:13px;color:#525252;margin-left:24px}
+.iframe-mock .top .nav span{cursor:pointer}
+.iframe-mock .top .cta{margin-left:auto;display:flex;align-items:center;gap:10px}
+.iframe-mock .top .cta .ghost{font-size:12px;color:#3f3f46;font-weight:600}
+.iframe-mock .top .cta .solid{padding:7px 14px;background:#0a0a0a;color:#fff;border-radius:9999px;font-size:12px;font-weight:600}
+.iframe-mock .hero{padding:64px 80px 56px;display:grid;grid-template-columns:1.2fr 0.8fr;gap:48px;align-items:center}
+.iframe-mock .eyebrow{font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#737373;margin-bottom:14px}
+.iframe-mock .h1{font-size:54px;line-height:1.04;letter-spacing:-0.025em;font-weight:800;color:#0a0a0a;margin-bottom:18px}
+.iframe-mock .h1 em{font-style:normal;color:#16a34a}
+.iframe-mock .sub{font-size:15px;line-height:1.55;color:#52525b;margin-bottom:24px;max-width:520px}
+.iframe-mock .btn-row{display:flex;gap:10px}
+.iframe-mock .btn-primary{padding:11px 18px;background:#0a0a0a;color:#fff;border-radius:9999px;font-weight:600;font-size:13px}
+.iframe-mock .btn-secondary{padding:11px 18px;background:transparent;color:#0a0a0a;border:1px solid #e4e4e7;border-radius:9999px;font-weight:600;font-size:13px}
+.iframe-mock .hero-card{aspect-ratio:4/3;background:linear-gradient(135deg,#fde68a 0%,#fb923c 60%,#7c2d12 100%);border-radius:16px;box-shadow:0 24px 48px rgba(0,0,0,0.15)}
+.iframe-mock .feat{padding:40px 80px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.iframe-mock .feat .card{background:#fff;border:1px solid #e4e4e7;border-radius:12px;padding:24px}
+.iframe-mock .feat .card-h{font-size:15px;font-weight:700;color:#0a0a0a;margin-bottom:6px}
+.iframe-mock .feat .card-b{font-size:12px;color:#52525b;line-height:1.5}
+
+/* ─── Pin layer ─────────────────────────────────────────────────────── */
+.pinlayer{position:absolute;inset:0;pointer-events:none;z-index:10}
+.pin{
+  --pin-h:165;--pin-c:0.18;
+  position:absolute;width:30px;height:30px;
+  border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  background:rgb(7 12 15 / 70%);backdrop-filter:blur(6px) saturate(140%);
+  border:1.5px solid oklch(78% var(--pin-c) var(--pin-h));
+  box-shadow:0 3px 8px rgba(0,0,0,0.25);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0.55;
+  pointer-events:auto;
+}
+.pin > span{transform:rotate(45deg);color:oklch(82% var(--pin-c) var(--pin-h));font-weight:800;font-size:12px;font-family:var(--font-mono);line-height:1}
+.pin:hover{opacity:1;border-color:oklch(88% var(--pin-c) var(--pin-h))}
+.pin.active{
+  opacity:1;border-color:oklch(88% var(--pin-c) var(--pin-h));
+  box-shadow:0 4px 12px rgba(0,0,0,0.4),0 0 0 2px oklch(82% var(--pin-c) var(--pin-h) / 0.45);
+}
+.pin.pending{
+  opacity:0.95;background:rgb(7 12 15 / 70%);border:2px dashed oklch(82% var(--pin-c) var(--pin-h));
+  animation:pendingPulse 1.6s ease-in-out infinite;
+}
+.pin.pending > span{color:oklch(90% var(--pin-c) var(--pin-h));font-weight:900}
+@keyframes pendingPulse{0%,100%{box-shadow:0 0 0 0 oklch(74% var(--pin-c) var(--pin-h) / 0.45)}50%{box-shadow:0 0 0 6px transparent}}
+/* 16-color palette — same hues as Pin/AnnotationsRail */
+.pin[data-color="0"],.badge[data-color="0"],.dot-badge[data-color="0"]{--pin-h:165;--pin-c:0.18}
+.pin[data-color="1"],.badge[data-color="1"],.dot-badge[data-color="1"]{--pin-h:195;--pin-c:0.15}
+.pin[data-color="2"],.badge[data-color="2"],.dot-badge[data-color="2"]{--pin-h:220;--pin-c:0.14}
+.pin[data-color="3"],.badge[data-color="3"],.dot-badge[data-color="3"]{--pin-h:245;--pin-c:0.13}
+.pin[data-color="4"],.badge[data-color="4"],.dot-badge[data-color="4"]{--pin-h:265;--pin-c:0.13}
+.pin[data-color="5"],.badge[data-color="5"],.dot-badge[data-color="5"]{--pin-h:285;--pin-c:0.13}
+.pin[data-color="6"],.badge[data-color="6"],.dot-badge[data-color="6"]{--pin-h:305;--pin-c:0.12}
+.pin[data-color="7"],.badge[data-color="7"],.dot-badge[data-color="7"]{--pin-h:325;--pin-c:0.12}
+.pin[data-color="8"],.badge[data-color="8"],.dot-badge[data-color="8"]{--pin-h:25;--pin-c:0.13}
+.pin[data-color="9"],.badge[data-color="9"],.dot-badge[data-color="9"]{--pin-h:50;--pin-c:0.14}
+.pin[data-color="10"],.badge[data-color="10"],.dot-badge[data-color="10"]{--pin-h:75;--pin-c:0.14}
+.pin[data-color="11"],.badge[data-color="11"],.dot-badge[data-color="11"]{--pin-h:95;--pin-c:0.15}
+.pin[data-color="12"],.badge[data-color="12"],.dot-badge[data-color="12"]{--pin-h:120;--pin-c:0.15}
+.pin[data-color="13"],.badge[data-color="13"],.dot-badge[data-color="13"]{--pin-h:140;--pin-c:0.16}
+.pin[data-color="14"],.badge[data-color="14"],.dot-badge[data-color="14"]{--pin-h:200;--pin-c:0.16}
+.pin[data-color="15"],.badge[data-color="15"],.dot-badge[data-color="15"]{--pin-h:150;--pin-c:0.17}
+
+/* ─── AnnotationsRail (verbatim from AnnotationsRail.module.css) ────── */
+.rail{
+  position:absolute;top:calc(50% - 200px);left:24px;z-index:30;
+  width:var(--rail-width-collapsed);max-height:70vh;
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  border-radius:14px;box-shadow:var(--shadow-popover);
+  display:flex;flex-direction:column;overflow:visible;
+}
+.rail.expanded{width:var(--rail-width-expanded)}
+.rail.pinned{width:var(--rail-width-expanded);border-color:var(--accent-overlay-mid);box-shadow:var(--shadow-popover),0 0 0 1px var(--accent-overlay-soft)}
+.grab{display:flex;align-items:center;justify-content:center;width:100%;height:28px;flex-shrink:0;cursor:grab;color:var(--text-muted)}
+.grab-icon{width:25px;height:25px;transform:rotate(90deg);color:var(--text-muted)}
+.collapsed{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0;overflow-y:auto}
+.rail.expanded .collapsed,.rail.pinned .collapsed{display:none}
+.badge{
+  --pin-h:165;--pin-c:0.18;
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:oklch(30% calc(var(--pin-c) * 0.7) var(--pin-h) / 0.32);
+  border:1px solid oklch(60% var(--pin-c) var(--pin-h) / 0.45);
+  color:oklch(85% var(--pin-c) var(--pin-h));
+  font-size:12px;font-weight:700;font-family:var(--font-mono);cursor:pointer;
+}
+.badge.active{
+  background:oklch(45% var(--pin-c) var(--pin-h) / 0.55);
+  color:oklch(95% calc(var(--pin-c) * 0.6) var(--pin-h));
+  box-shadow:0 0 0 2px var(--bg),0 0 0 4px oklch(74% var(--pin-c) var(--pin-h)),0 0 14px oklch(74% var(--pin-c) var(--pin-h) / 0.55);
+}
+.expanded-body{display:none;flex-direction:column;flex:1;min-height:0}
+.rail.expanded .expanded-body,.rail.pinned .expanded-body{display:flex}
+.head{display:flex;align-items:center;justify-content:space-between;padding:6px 12px 6px 14px;border-bottom:1px solid var(--border-subtle)}
+.head-title{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim)}
+.count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;background:var(--bg-card-active);border-radius:9999px;font-family:var(--font-mono);font-size:10px;font-weight:800;color:var(--text-bright)}
+.lock{width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);border-radius:var(--radius-xs)}
+.lock.pressed{background:var(--accent-soft);color:var(--accent-bright)}
+.lock svg{width:14px;height:14px}
+
+/* Annotation card (AnnotationCard.module.css verbatim) */
+.list{list-style:none;padding:6px 0 8px;overflow-y:auto;flex:1;min-height:0;margin:0}
+.item{padding:10px 14px;border-bottom:1px solid var(--border-subtle);display:grid;gap:5px;cursor:pointer;position:relative;list-style:none;transition:background var(--motion-fast) var(--ease-standard)}
+.item:hover{background:var(--surface-hover)}
+.item:last-child{border-bottom:0}
+.item.active{background:oklch(28% 0.08 165 / 0.3);box-shadow:inset 3px 0 0 var(--accent)}
+.item .meta{display:flex;align-items:center;gap:8px}
+.dot-badge{
+  width:18px;height:18px;border-radius:50%;font-family:var(--font-mono);font-size:9px;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:linear-gradient(135deg, oklch(78% var(--pin-c) var(--pin-h)), oklch(60% var(--pin-c) var(--pin-h)));
+  color:oklch(15% 0.04 var(--pin-h));box-shadow:0 0 0 1px oklch(35% var(--pin-c) var(--pin-h) / 0.4);
+  --pin-h:165;--pin-c:0.18;
+}
+.author{font-size:11px;font-weight:700;color:var(--text-bright);letter-spacing:0.01em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{padding:2px 8px;border-radius:9999px;font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;flex-shrink:0}
+.pill.open{background:var(--info-soft);color:var(--info)}
+.pill.review{background:var(--warning-soft);color:var(--warning)}
+.pill.resolved{background:var(--success-soft);color:var(--success)}
+.kebab{width:22px;height:22px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);border-radius:var(--radius-xs);flex-shrink:0}
+.kebab:hover{background:var(--surface-hover);color:var(--text-bright)}
+.kebab svg{width:12px;height:12px}
+.body-text{font-size:12px;color:var(--text);line-height:1.45}
+.body-text .intent{display:inline-block;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:0.04em;background:var(--accent-soft);color:var(--accent-bright);border-radius:var(--radius-xs);padding:1px 5px;margin-right:5px;text-transform:uppercase}
+.foot-row{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--text-dim);font-family:var(--font-mono);letter-spacing:0.02em}
+.toggle{display:flex;align-items:center;gap:6px;padding:2px 6px;border-radius:var(--radius-xs);font-family:var(--font-mono);font-size:10px;color:var(--text-dim);background:transparent;cursor:pointer}
+.toggle:hover{background:var(--surface-hover);color:var(--text-bright)}
+.toggle.open{color:var(--accent-bright)}
+.toggle .chev{width:9px;height:9px;transition:transform var(--motion-base) var(--ease-spring)}
+.toggle.open .chev{transform:rotate(180deg)}
+
+/* Rail foot — add button morph 32 → pill */
+.foot-area{position:sticky;bottom:0;display:flex;justify-content:flex-start;padding:8px 14px;background:linear-gradient(to bottom,transparent,var(--surface-glass-bg) 40%);flex-shrink:0;border-bottom-left-radius:14px;border-bottom-right-radius:14px}
+.add{display:flex;align-items:center;height:32px;width:32px;padding:0;background:var(--accent-soft);color:var(--accent-bright);border:1px solid var(--accent-overlay-mid);border-radius:9999px;overflow:hidden;flex-shrink:0}
+.add:hover{background:var(--accent-overlay-mid)}
+.rail.expanded .add,.rail.pinned .add{width:100%}
+.add-icon{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px}
+.add-icon svg{width:14px;height:14px}
+.add-label{display:none;align-items:center;justify-content:space-between;gap:8px;flex:1;padding:0 14px 0 4px;font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap}
+.rail.expanded .add-label,.rail.pinned .add-label{display:flex}
+.shortcut{padding:2px 5px;background:var(--bg-card-active);border-radius:var(--radius-xs);font-family:var(--font-mono);font-size:9px;font-weight:600;color:var(--text-dim);letter-spacing:0.02em;text-transform:none}
+
+/* ─── CanvasToolbar (CanvasToolbar.module.css verbatim) ────────────── */
+.toolbar{
+  position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:4px;padding:6px;
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  border-radius:14px;box-shadow:var(--shadow-popover);z-index:20;
+}
+.tb-group{display:inline-flex;align-items:center;gap:2px;padding:0 8px;border-right:1px solid var(--border-subtle);height:32px}
+.tb-group:last-of-type{border-right:0;padding-right:4px}
+.tb-group:first-of-type{padding-left:4px}
+.tb-btn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius-xs);color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast)}
+.tb-btn:hover{background:var(--surface-hover);color:var(--text-bright)}
+.tb-btn.active{background:var(--accent-soft);color:var(--accent-bright);box-shadow:inset 0 0 0 1px var(--accent-overlay-mid)}
+.tb-btn:disabled{opacity:0.4;cursor:not-allowed}
+.tb-btn svg{width:16px;height:16px}
+.zoom-label{font-family:var(--font-mono);font-size:12px;color:var(--text-bright);min-width:48px;height:32px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;letter-spacing:-0.01em;font-weight:500;background:transparent;border:0;border-radius:var(--radius-sm)}
+.zoom-label:hover{background:var(--surface-hover)}
+.tb-grab{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:25px;height:32px;margin-left:2px;cursor:grab;color:var(--text-muted);border-radius:var(--radius-xs)}
+.tb-grab svg{width:25px;height:25px}
+
+/* Version chip */
+.vchip{
+  display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px 0 10px;
+  background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);border-radius:9999px;
+  color:var(--accent-bright);font-size:12px;font-weight:700;font-family:var(--font-mono);
+  letter-spacing:-0.01em;cursor:pointer;
+}
+.vchip:hover{background:var(--accent-overlay-mid)}
+.vchip .clock{width:13px;height:13px;color:var(--accent);opacity:0.85}
+.vchip .chev{width:11px;height:11px;color:var(--accent)}
+
+/* Version popover (Top-layer paint demo) */
+.vpop{
+  position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
+  min-width:280px;max-width:320px;
+  background:var(--surface-glass-bg);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-popover);
+  display:flex;flex-direction:column;z-index:60;
+}
+.vpop-head{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border-subtle)}
+.vpop-title{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim)}
+.vpop-list{list-style:none;margin:0;padding:6px;max-height:280px;overflow-y:auto}
+.vpop-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-xs);cursor:pointer;position:relative}
+.vpop-item:hover{background:var(--surface-hover)}
+.vpop-item.current{background:var(--accent-soft)}
+.vpop-dot{width:8px;height:8px;border-radius:50%;background:var(--text-muted);flex-shrink:0}
+.vpop-item.current .vpop-dot{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.vpop-meta{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+.vpop-name{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text-bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vpop-sub{font-size:10px;color:var(--text-dim)}
+
+/* MarkingBar (visible during marking mode) */
+.marking-bar{
+  position:absolute;top:74px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:12px;height:34px;padding:0 14px;
+  background:var(--surface-glass-bg);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--accent-overlay-mid);border-radius:9999px;box-shadow:var(--shadow-popover);z-index:25;
+  font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-bright);letter-spacing:0.04em;text-transform:uppercase;
+}
+.marking-bar .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.marking-bar .count{font-family:var(--font-mono);font-size:10px;background:var(--accent-soft);color:var(--accent-bright);padding:2px 8px;border-radius:9999px;border:1px solid var(--accent-overlay-mid)}
+.marking-bar .done{font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--accent-bright);padding:2px 10px;border-radius:9999px;background:var(--accent-overlay-soft);border:1px solid var(--accent-overlay-mid);cursor:pointer}
+
+/* AnnotationComposer (open + marking) */
+.composer{
+  position:absolute;bottom:80px;right:24px;width:340px;
+  background:var(--surface-glass-bg);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-popover);
+  padding:12px;display:flex;flex-direction:column;gap:10px;z-index:40;
+}
+.composer .composer-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.composer .composer-head .lbl{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-bright)}
+.composer .composer-head .pin-count{font-family:var(--font-mono);font-size:10px;color:var(--text-dim);padding:2px 7px;background:var(--bg-card-active);border:1px solid var(--border-subtle);border-radius:9999px}
+.composer textarea{width:100%;min-height:78px;padding:10px;background:rgb(0 0 0 / 30%);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--text-bright);font-size:12px;font-family:inherit;line-height:1.45;resize:vertical;outline:none}
+.composer textarea:focus{border-color:var(--accent)}
+.composer textarea::placeholder{color:var(--text-muted)}
+.composer .composer-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.composer .composer-hint{font-family:var(--font-mono);font-size:10px;color:var(--text-dim)}
+.composer .composer-actions{display:flex;gap:6px}
+.composer .btn-cancel{padding:6px 12px;background:transparent;color:var(--text-dim);font-size:10px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;border-radius:var(--radius-xs)}
+.composer .btn-cancel:hover{color:var(--text-bright);background:var(--surface-hover)}
+.composer .btn-post{padding:6px 14px;background:var(--accent);color:oklch(15% 0.04 165);font-size:10px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;border-radius:var(--radius-xs)}
+.composer .btn-post:hover{background:var(--accent-bright)}
+
+/* ─── Anatomy table ─────────────────────────────────────────────────── */
+.anatomy{display:grid;grid-template-columns:240px 1fr;gap:6px 24px;font-family:var(--font-mono);font-size:11px;align-items:start}
+.anatomy dt{color:var(--text-dim);white-space:nowrap}
+.anatomy dt::before{content:'– '}
+.anatomy dd{color:var(--text-bright);line-height:1.6}
+.anatomy dd code{color:var(--accent-bright);background:var(--bg-card);padding:1px 5px;border-radius:3px;font-size:10.5px}
+
+/* Variants grid */
+.variants{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:20px}
+.variant-stage{
+  position:relative;height:380px;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);overflow:hidden;
+}
+
+/* Demo label corner */
 .demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
-.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px}
-
-.mockup-toolbar{display:flex;align-items:center;gap:4px;padding:6px 12px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);margin-bottom:16px}
-.toolbar-group{display:flex;align-items:center;gap:2px}
-.toolbar-btn{width:30px;height:30px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast)}
-.toolbar-btn:hover{background:var(--surface-hover);color:var(--text)}
-.toolbar-btn.active{background:var(--accent-overlay-soft);color:var(--accent-bright)}
-.toolbar-sep{width:1px;height:20px;background:var(--border-subtle);margin:0 4px}
-.toolbar-zoom,.toolbar-version{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);padding:0 6px;min-width:36px;text-align:center}
-.mockup-canvas{aspect-ratio:16/10;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center}
-.canvas-placeholder{color:var(--text-muted);font-size:13px}
-
 </style>
 </head>
 <body>
 
-<div class="demo" style="padding:32px;max-width:700px">
-  <div class="title">Mockup View</div>
-  <div class="subtitle">Mockup detail with toolbar controls for zoom, versions, and annotations.</div>
+<div class="page">
+  <h1 class="h1">11 — Mockup View</h1>
+  <p class="lede">
+    The full mockup viewer surface: the floating-cockpit composition that wraps the iframe with a topbar, slim sidebar, <a href="18-annotations-rail.html" style="color:var(--accent-bright);text-decoration:underline">AnnotationsRail</a> on the left, <a href="19-toolbar.html" style="color:var(--accent-bright);text-decoration:underline">CanvasToolbar</a> on the bottom, and <a href="20-pins.html" style="color:var(--accent-bright);text-decoration:underline">Pins</a> + PinLayer over the canvas. The iframe is full-bleed under the topbar — every chrome overlay is glass (<code>--surface-glass-bg</code> with <code>blur(16px) saturate(140%)</code>) and floats above the mockup. Implemented by <code>src/components/MockupViewer/AppMainViewer.tsx</code> with the <code>ViewerCanvas</code>, <code>AnnotationsRail</code>, <code>CanvasToolbar</code>, <code>AnnotationComposer</code>, and <code>MarkingBar</code> sub-components.
+  </p>
 
-  <div class="mockup-toolbar">
-    <div class="toolbar-group">
-      <button class="toolbar-btn active" title="Select"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.23 1h-1.46L3.52 9.25l-.16.22L1 13.59 2.41 15l4.12-2.36.22-.16L15 4.23V2.77L13.23 1zM2.41 13.59l1.51-3 1.45 1.45-2.96 1.55zm3.83-2.06L4.47 9.76l8-8 1.77 1.77-8 8z"/></svg></button>
-      <button class="toolbar-btn" title="Comment"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 2h-13l-.5.5v9l.5.5H4v2.5l.854.354L7.707 12H14.5l.5-.5v-9l-.5-.5zm-.5 9H7.5l-.354.146L5 13.293V11.5l-.5-.5H2V3h12v8z"/></svg></button>
-    </div>
-    <div class="toolbar-sep"></div>
-    <div class="toolbar-group">
-      <button class="toolbar-btn" title="Zoom Out"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.027 6.149a5.52 5.52 0 0 1-1.27 3.908l4.26 4.26-.7.71-4.26-4.27a5.52 5.52 0 1 1 1.97-4.608zm-5.45 4.888a4.51 4.51 0 0 0 3.18-1.32l-.04.02a4.51 4.51 0 0 0 1.36-3.2 4.5 4.5 0 1 0-4.5 4.5zm-2.54-4.98h5v1h-5v-1z"/></svg></button>
-      <span class="toolbar-zoom">100%</span>
-      <button class="toolbar-btn" title="Zoom In"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.027 6.149a5.52 5.52 0 0 1-1.27 3.908l4.26 4.26-.7.71-4.26-4.27a5.52 5.52 0 1 1 1.97-4.608zm-5.45 4.888a4.51 4.51 0 0 0 3.18-1.32l-.04.02a4.51 4.51 0 0 0 1.36-3.2 4.5 4.5 0 1 0-4.5 4.5zm2.44-4v-1h-2v-2h-1v2h-2v1h2v2h1v-2h2z"/></svg></button>
-      <button class="toolbar-btn" title="Fit to Screen"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 2H6V3H3V6H2V2.5L2.5 2ZM3 10H2V13.5L2.5 14H6V13H3V10ZM13 13H10V14H13.5L14 13.5V10H13V13ZM13.5 2H10V3H13V6H14V2.5L13.5 2Z"/></svg></button>
-    </div>
-    <div class="toolbar-sep"></div>
-    <div class="toolbar-group">
-      <button class="toolbar-btn" title="History"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M13.507 12.324a7 7 0 0 0 .065-8.56A7 7 0 0 0 2 4.393V2H1v3.5l.5.5H5V5H2.811a6.008 6.008 0 1 1-.135 5.77l-.887.462a7 7 0 0 0 11.718 1.092zm-3.361-.97l.708-.707L8 7.792V4H7v4l.146.354 3 3z"/></svg></button>
-      <span class="toolbar-version">v3</span>
-      <button class="toolbar-btn" title="Versions"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 3L7 4v8l1 1h6l1-1V4l-1-1H8zm6 9H8V4h6v8zM5 9V5h1V4H4.5l-.5.5v7l.5.5H6v-1H5V9zM2 8V6h1V5H1.5l-.5.5v5l.5.5H3v-1H2V8z"/></svg></button>
-    </div>
-  </div>
+  <!-- ─── A — Default state ────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">A — Default state (rail collapsed, no active annotation)</div>
+    <div class="section-lede">Slim sidebar at the left edge (52 px), topbar above (52 px) with breadcrumb + search pill + avatar. Rail floats at <code>left: 24px; top: calc(50% - 200px)</code> as a 60 px column of color-coded badges. Toolbar centers at <code>bottom: 24px</code>. Pins sit at 55% opacity until hovered.</div>
+    <div class="stage tall">
+      <span class="stage-label">A — Default · 100% zoom · 7 annotations</span>
 
-  <div class="mockup-canvas">
-    <div class="canvas-placeholder">Mockup Preview Area</div>
-  </div>
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">M</div>
+        <button class="sidebar-icon active" title="Files"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h7l2 2h9v11H3z"/></svg></button>
+        <button class="sidebar-icon" title="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16" y2="16"/></svg></button>
+        <button class="sidebar-icon" title="Activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></button>
+        <button class="sidebar-icon" title="Agents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="8" cy="16" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/><path d="M12 7v4"/><circle cx="12" cy="5" r="2"/></svg></button>
+      </aside>
+
+      <!-- Topbar -->
+      <header class="topbar">
+        <nav class="crumb">
+          <a>Markup dev</a><span class="sep">/</span>
+          <a>Lumen Coffee</a><span class="sep">/</span>
+          <a>Hero</a><span class="sep">/</span>
+          <span class="here">lumen-coffee-hero</span>
+        </nav>
+        <button class="search-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16" y2="16"/></svg>
+          <span style="flex:1">Search mockups, projects, folders…</span>
+          <span class="kbd">⌘K</span>
+        </button>
+        <div class="topbar-right">
+          <button class="topbar-icon" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+          <button class="topbar-icon" title="Inbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></button>
+          <div class="avatar">AC</div>
+        </div>
+      </header>
+
+      <!-- Canvas + iframe placeholder -->
+      <div class="canvas">
+        <div class="iframe-mock">
+          <div class="top">
+            <span class="brand">Lumen Coffee</span>
+            <div class="nav"><span>Story</span><span>Beans</span><span>Café</span><span>Wholesale</span></div>
+            <div class="cta"><span class="ghost">Sign in</span><span class="solid">Visit Café</span></div>
+          </div>
+          <div class="hero">
+            <div>
+              <div class="eyebrow">Single-origin · Slow-batch · Brooklyn</div>
+              <h1 class="h1">A morning that tastes like <em>somewhere</em>.</h1>
+              <p class="sub">Lumen sources micro-lots from small farms across Ethiopia and Colombia, roasts in tiny batches, and ships every Tuesday — never a day older than ten.</p>
+              <div class="btn-row">
+                <button class="btn-primary">Shop subscriptions</button>
+                <button class="btn-secondary">Read the journal</button>
+              </div>
+            </div>
+            <div class="hero-card"></div>
+          </div>
+          <div class="feat">
+            <div class="card"><div class="card-h">Roasted Tuesdays</div><div class="card-b">Beans ship the same day they leave the roaster — peak in 72 hours.</div></div>
+            <div class="card"><div class="card-h">No subscriptions trap</div><div class="card-b">Pause, swap, cancel from a single link — no email back-and-forth.</div></div>
+            <div class="card"><div class="card-h">Café in-residence</div><div class="card-b">Park Slope, every weekend. New origin every two weeks.</div></div>
+          </div>
+        </div>
+
+        <!-- Pin layer -->
+        <div class="pinlayer">
+          <div class="pin" data-color="0" style="top:128px;left:152px" data-tooltip="Annotation #001"><span>1</span></div>
+          <div class="pin" data-color="1" style="top:226px;left:362px"><span>2</span></div>
+          <div class="pin" data-color="2" style="top:188px;left:608px"><span>3</span></div>
+          <div class="pin" data-color="3" style="top:310px;left:286px"><span>4</span></div>
+          <div class="pin" data-color="4" style="top:436px;left:476px"><span>5</span></div>
+          <div class="pin" data-color="5" style="top:482px;left:740px"><span>6</span></div>
+          <div class="pin" data-color="6" style="top:312px;left:920px"><span>7</span></div>
+        </div>
+
+        <!-- Rail collapsed -->
+        <aside class="rail">
+          <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+          <div class="collapsed">
+            <button class="badge" data-color="0">1</button>
+            <button class="badge" data-color="1">2</button>
+            <button class="badge" data-color="2">3</button>
+            <button class="badge" data-color="3">4</button>
+            <button class="badge" data-color="4">5</button>
+            <button class="badge" data-color="5">6</button>
+            <button class="badge" data-color="6">7</button>
+          </div>
+          <div class="foot-area">
+            <button class="add" title="New annotation">
+              <span class="add-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span>
+              <span class="add-label"><span>New annotation</span><span class="shortcut">⌘⇧N</span></span>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Canvas toolbar -->
+        <div class="toolbar" role="toolbar" aria-label="Mockup actions">
+          <div class="tb-group">
+            <button class="tb-btn" title="Zoom out"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 7h8v2H4z"/></svg></button>
+            <button class="zoom-label">100%</button>
+            <button class="tb-btn" title="Zoom in"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M9 4H7v3H4v2h3v3h2V9h3V7H9z"/></svg></button>
+            <button class="tb-btn" title="Fullscreen (F)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 12h2v1H2v-3h1v2zm10-2h-2v1h1v1h-1v1h2v-3zm-3-7v1h2v2h1V3h-3zm-7 3V4h2V3H2v3h1z"/></svg></button>
+          </div>
+          <div class="tb-group">
+            <button class="vchip">
+              <svg class="clock" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 7 7 7 7 0 0 0-7-7zm0 13a6 6 0 1 1 6-6 6 6 0 0 1-6 6zm3-6H8V5h1v2h2z"/></svg>
+              <span>v3</span>
+              <svg class="chev" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4z"/></svg>
+            </button>
+          </div>
+          <button class="tb-grab" title="Drag toolbar"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── B — Active annotation (rail pinned, pin active, thread open) ── -->
+  <section class="section">
+    <div class="section-title">B — Active annotation (rail pinned open + thread visible)</div>
+    <div class="section-lede">Clicking a pin pins the rail open at 300 px (accent ring on the rail border). The matching badge inside the collapsed view would receive <code>.active</code>; the canvas pin glows; the matching rail card receives <code>.active</code> with a 3 px accent left bar.</div>
+    <div class="stage tall">
+      <span class="stage-label">B — Active · annotation #002 selected · rail pinned</span>
+
+      <aside class="sidebar">
+        <div class="sidebar-logo">M</div>
+        <button class="sidebar-icon active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h7l2 2h9v11H3z"/></svg></button>
+        <button class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16" y2="16"/></svg></button>
+        <button class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></button>
+      </aside>
+
+      <header class="topbar">
+        <nav class="crumb">
+          <a>Markup dev</a><span class="sep">/</span><a>Lumen Coffee</a><span class="sep">/</span><a>Hero</a><span class="sep">/</span><span class="here">lumen-coffee-hero</span>
+        </nav>
+        <button class="search-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16" y2="16"/></svg>
+          <span style="flex:1">Search mockups, projects, folders…</span>
+          <span class="kbd">⌘K</span>
+        </button>
+        <div class="topbar-right">
+          <button class="topbar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+          <div class="avatar">AC</div>
+        </div>
+      </header>
+
+      <div class="canvas">
+        <div class="iframe-mock">
+          <div class="top"><span class="brand">Lumen Coffee</span><div class="nav"><span>Story</span><span>Beans</span><span>Café</span></div><div class="cta"><span class="solid">Visit Café</span></div></div>
+          <div class="hero">
+            <div>
+              <div class="eyebrow">Single-origin · Slow-batch · Brooklyn</div>
+              <h1 class="h1">A morning that tastes like <em>somewhere</em>.</h1>
+              <p class="sub">Lumen sources micro-lots from small farms across Ethiopia and Colombia, roasts in tiny batches, and ships every Tuesday — never a day older than ten.</p>
+              <div class="btn-row"><button class="btn-primary">Shop subscriptions</button><button class="btn-secondary">Read the journal</button></div>
+            </div>
+            <div class="hero-card"></div>
+          </div>
+        </div>
+
+        <div class="pinlayer">
+          <div class="pin" data-color="0" style="top:128px;left:152px"><span>1</span></div>
+          <div class="pin active" data-color="1" style="top:226px;left:362px"><span>2</span></div>
+          <div class="pin" data-color="2" style="top:188px;left:608px"><span>3</span></div>
+          <div class="pin" data-color="3" style="top:310px;left:286px"><span>4</span></div>
+        </div>
+
+        <!-- Pinned rail with cards -->
+        <aside class="rail pinned">
+          <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+          <div class="expanded-body">
+            <header class="head">
+              <div class="head-title"><span>Annotations</span><span class="count">4</span></div>
+              <button class="lock pressed" aria-pressed="true" title="Unlock"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L8 7v3H6v10h12V10h-2V7l-4-5zm0 2.7L14.5 8H9.5L12 4.7zM8 12h8v6H8v-6z"/></svg></button>
+            </header>
+            <ul class="list">
+              <li class="item">
+                <div class="meta">
+                  <span class="dot-badge" data-color="0">1</span>
+                  <span class="author">Alex Camillo</span>
+                  <span class="pill open">Open</span>
+                  <button class="kebab"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="13" cy="8" r="1.5"/></svg></button>
+                </div>
+                <div class="body-text"><span class="intent">fix</span>Hero heading misaligned by ~6&nbsp;px on desktop — drops below the eyebrow's baseline at viewport ≥1280 px.</div>
+                <div class="foot-row"><span>2h ago</span><button class="toggle"><svg class="chev" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4z"/></svg>2 replies</button></div>
+              </li>
+              <li class="item active">
+                <div class="meta">
+                  <span class="dot-badge" data-color="1">2</span>
+                  <span class="author">Jordan Lee</span>
+                  <span class="pill review">Review</span>
+                  <button class="kebab"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="13" cy="8" r="1.5"/></svg></button>
+                </div>
+                <div class="body-text"><span class="intent">change</span>CTA copy should match the spec — "Shop subscriptions" reads transactional. Spec says "Start a subscription".</div>
+                <div class="foot-row"><span>5h ago</span><button class="toggle open"><svg class="chev" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4z"/></svg>1 reply</button></div>
+              </li>
+              <li class="item">
+                <div class="meta">
+                  <span class="dot-badge" data-color="2">3</span>
+                  <span class="author">Sam Park</span>
+                  <span class="pill resolved">Done</span>
+                  <button class="kebab"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="13" cy="8" r="1.5"/></svg></button>
+                </div>
+                <div class="body-text"><span class="intent">add</span>Add a secondary action link below the CTA. Text: "Read the journal" — light style.</div>
+                <div class="foot-row"><span>1d ago</span></div>
+              </li>
+              <li class="item">
+                <div class="meta">
+                  <span class="dot-badge" data-color="3">4</span>
+                  <span class="author">Riley North</span>
+                  <span class="pill open">Open</span>
+                </div>
+                <div class="body-text">Card row needs more breathing room at 1280 px — currently bumps into the hero CTA.</div>
+                <div class="foot-row"><span>2d ago</span></div>
+              </li>
+            </ul>
+            <div class="foot-area">
+              <button class="add">
+                <span class="add-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span>
+                <span class="add-label"><span>New annotation</span><span class="shortcut">⌘⇧N</span></span>
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Toolbar with open version popover -->
+        <div class="vpop">
+          <div class="vpop-head"><span class="vpop-title">Versions</span></div>
+          <ul class="vpop-list">
+            <li class="vpop-item current">
+              <span class="vpop-dot"></span>
+              <div class="vpop-meta"><span class="vpop-name">v3 · current</span><span class="vpop-sub">2h ago · Alex Camillo</span></div>
+            </li>
+            <li class="vpop-item">
+              <span class="vpop-dot"></span>
+              <div class="vpop-meta"><span class="vpop-name">v2</span><span class="vpop-sub">yesterday · Jordan Lee</span></div>
+            </li>
+            <li class="vpop-item">
+              <span class="vpop-dot"></span>
+              <div class="vpop-meta"><span class="vpop-name">v1 · initial</span><span class="vpop-sub">3 days ago · Sam Park</span></div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="toolbar" role="toolbar">
+          <div class="tb-group">
+            <button class="tb-btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 7h8v2H4z"/></svg></button>
+            <button class="zoom-label">125%</button>
+            <button class="tb-btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M9 4H7v3H4v2h3v3h2V9h3V7H9z"/></svg></button>
+            <button class="tb-btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 12h2v1H2v-3h1v2zm10-2h-2v1h1v1h-1v1h2v-3zm-3-7v1h2v2h1V3h-3zm-7 3V4h2V3H2v3h1z"/></svg></button>
+          </div>
+          <div class="tb-group">
+            <button class="vchip">
+              <svg class="clock" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 7 7 7 7 0 0 0-7-7zm0 13a6 6 0 1 1 6-6 6 6 0 0 1-6 6zm3-6H8V5h1v2h2z"/></svg>
+              <span>v3</span>
+              <svg class="chev" viewBox="0 0 16 16" fill="currentColor" style="transform:rotate(180deg)"><path d="M4 6l4 4 4-4z"/></svg>
+            </button>
+          </div>
+          <button class="tb-grab"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── C — Marking mode (composer + pending pin + marking bar) ────── -->
+  <section class="section">
+    <div class="section-title">C — Marking mode (composer + pending pin + marking bar)</div>
+    <div class="section-lede">When the user opens the composer and enters marking mode, the canvas cursor switches to crosshair. Each click drops a <em>pending</em> pin (dashed border + soft pulse). The MarkingBar at the top announces the state with a live pin count; the composer dock at the bottom-right holds the body text and "Post" CTA. Cancel clears every pending pin.</div>
+    <div class="stage tall">
+      <span class="stage-label">C — Marking · 2 pending pins · composer open</span>
+
+      <aside class="sidebar">
+        <div class="sidebar-logo">M</div>
+        <button class="sidebar-icon active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h7l2 2h9v11H3z"/></svg></button>
+        <button class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16" y2="16"/></svg></button>
+      </aside>
+
+      <header class="topbar">
+        <nav class="crumb">
+          <a>Markup dev</a><span class="sep">/</span><a>Lumen Coffee</a><span class="sep">/</span><span class="here">lumen-coffee-hero</span>
+        </nav>
+        <button class="search-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16" y2="16"/></svg>
+          <span style="flex:1">Search mockups, projects, folders…</span>
+          <span class="kbd">⌘K</span>
+        </button>
+        <div class="topbar-right"><div class="avatar">AC</div></div>
+      </header>
+
+      <div class="canvas" style="cursor:crosshair">
+        <div class="iframe-mock">
+          <div class="top"><span class="brand">Lumen Coffee</span><div class="nav"><span>Story</span><span>Beans</span><span>Café</span></div><div class="cta"><span class="solid">Visit Café</span></div></div>
+          <div class="hero">
+            <div>
+              <div class="eyebrow">Single-origin · Slow-batch · Brooklyn</div>
+              <h1 class="h1">A morning that tastes like <em>somewhere</em>.</h1>
+              <p class="sub">Lumen sources micro-lots from small farms across Ethiopia and Colombia, roasts in tiny batches, and ships every Tuesday — never a day older than ten.</p>
+              <div class="btn-row"><button class="btn-primary">Shop subscriptions</button></div>
+            </div>
+            <div class="hero-card"></div>
+          </div>
+        </div>
+
+        <!-- Pending pins -->
+        <div class="pinlayer">
+          <div class="pin pending" data-color="7" style="top:160px;left:320px"><span>1</span></div>
+          <div class="pin pending" data-color="7" style="top:320px;left:560px"><span>2</span></div>
+        </div>
+
+        <!-- Marking bar -->
+        <div class="marking-bar">
+          <span class="dot"></span>
+          <span>Marking mode — click the canvas to drop pins</span>
+          <span class="count">2 pins</span>
+          <button class="done">Done</button>
+        </div>
+
+        <!-- Rail (hovered, still showing badges) -->
+        <aside class="rail">
+          <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+          <div class="collapsed">
+            <button class="badge" data-color="0">1</button>
+            <button class="badge" data-color="1">2</button>
+            <button class="badge" data-color="2">3</button>
+          </div>
+          <div class="foot-area"><button class="add"><span class="add-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span></button></div>
+        </aside>
+
+        <!-- Composer -->
+        <div class="composer">
+          <div class="composer-head">
+            <span class="lbl">New annotation</span>
+            <span class="pin-count">2 pins placed</span>
+          </div>
+          <textarea placeholder="Describe what should change… e.g. &quot;fix the heading alignment on desktop&quot;.">fix the eyebrow + headline baseline alignment at 1280 px — they should share a vertical stem.</textarea>
+          <div class="composer-foot">
+            <span class="composer-hint">⌘↵ to post</span>
+            <div class="composer-actions">
+              <button class="btn-cancel">Cancel</button>
+              <button class="btn-post">Post</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar" role="toolbar">
+          <div class="tb-group">
+            <button class="tb-btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 7h8v2H4z"/></svg></button>
+            <button class="zoom-label">100%</button>
+            <button class="tb-btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M9 4H7v3H4v2h3v3h2V9h3V7H9z"/></svg></button>
+            <button class="tb-btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 12h2v1H2v-3h1v2zm10-2h-2v1h1v1h-1v1h2v-3zm-3-7v1h2v2h1V3h-3zm-7 3V4h2V3H2v3h1z"/></svg></button>
+          </div>
+          <div class="tb-group">
+            <button class="vchip">
+              <svg class="clock" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 7 7 7 7 0 0 0-7-7zm0 13a6 6 0 1 1 6-6 6 6 0 0 1-6 6zm3-6H8V5h1v2h2z"/></svg>
+              <span>v3</span>
+              <svg class="chev" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4z"/></svg>
+            </button>
+          </div>
+          <button class="tb-grab"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── D — Pin states ─────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">D — Pin states (idle · hover · active · pending)</div>
+    <div class="section-lede">Pins are <code>position: absolute</code> inside the PinLayer; 30 × 30 teardrop, <code>rotate(-45deg)</code>, glass tag (<code>rgb(7 12 15 / 70%)</code> + <code>blur(6px) saturate(140%)</code>). 16-color palette propagates via <code>data-color</code>.</div>
+    <div class="variants">
+      <div class="variant-stage" style="height:180px">
+        <span class="stage-label">Idle (55% opacity)</span>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:32px">
+          <div class="pin" data-color="0" style="position:relative;top:0;left:0"><span>1</span></div>
+          <div class="pin" data-color="3" style="position:relative;top:0;left:0"><span>2</span></div>
+          <div class="pin" data-color="6" style="position:relative;top:0;left:0"><span>3</span></div>
+        </div>
+      </div>
+      <div class="variant-stage" style="height:180px">
+        <span class="stage-label">Hover (100% opacity, brighter border)</span>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:32px">
+          <div class="pin" data-color="0" style="position:relative;top:0;left:0;opacity:1;border-color:oklch(88% 0.18 165)"><span>1</span></div>
+          <div class="pin" data-color="3" style="position:relative;top:0;left:0;opacity:1;border-color:oklch(88% 0.13 245)"><span>2</span></div>
+          <div class="pin" data-color="6" style="position:relative;top:0;left:0;opacity:1;border-color:oklch(88% 0.12 305)"><span>3</span></div>
+        </div>
+      </div>
+      <div class="variant-stage" style="height:180px">
+        <span class="stage-label">Active (accent ring halo)</span>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:32px">
+          <div class="pin active" data-color="0" style="position:relative;top:0;left:0"><span>1</span></div>
+          <div class="pin active" data-color="3" style="position:relative;top:0;left:0"><span>2</span></div>
+          <div class="pin active" data-color="6" style="position:relative;top:0;left:0"><span>3</span></div>
+        </div>
+      </div>
+      <div class="variant-stage" style="height:180px">
+        <span class="stage-label">Pending (dashed + pulse)</span>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:32px">
+          <div class="pin pending" data-color="7" style="position:relative;top:0;left:0"><span>1</span></div>
+          <div class="pin pending" data-color="7" style="position:relative;top:0;left:0"><span>2</span></div>
+          <div class="pin pending" data-color="7" style="position:relative;top:0;left:0"><span>3</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Anatomy ─────────────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">Anatomy & tokens</div>
+    <dl class="anatomy">
+      <dt>shell composition<dd><code>AppShell &gt; Sidebar (52 px) + (Topbar 52 px stack with AppMain)</code> — full-bleed iframe under <code>Topbar</code></dd>
+      <dt>iframe surface<dd><code>position: absolute; inset: 0; background: var(--bg-iframe)</code> · cross-origin sandbox + same-origin postMessage bridge for pin anchoring</dd>
+      <dt>topbar height<dd><code>--topbar-height: 52px</code> · <code>background: var(--bg-elevated)</code> · 1 px <code>--border-subtle</code> bottom · z-index 90</dd>
+      <dt>search pill<dd>36 px tall, <code>--bg-card</code>, <code>--border</code>, <code>--radius-pill</code>, 280–340 px clamp, <code>⌘K</code> kbd chip</dd>
+      <dt>sidebar (slim)<dd><code>--sidebar-collapsed-width: 52px</code> · <code>--bg-elevated</code> · 36 × 36 icon slots · pill-morph on hover (see <code>01-sidebar</code>)</dd>
+      <dt>glass surfaces<dd>One source of truth: <code>--surface-glass-bg: rgb(7 12 15 / 80%)</code> + <code>backdrop-filter: blur(16px) saturate(140%)</code> + <code>1px solid var(--border)</code>. Used by rail, toolbar, composer, marking bar, version popover.</dd>
+      <dt>rail position<dd><code>top: calc(50% - 200px); left: 24px; z-index: 30</code></dd>
+      <dt>rail widths<dd>collapsed <code>--rail-width-collapsed: 60px</code> · hover/pinned <code>--rail-width-expanded: 300px</code> · transition <code>width var(--motion-base) var(--ease-spring)</code></dd>
+      <dt>rail pinned ring<dd><code>border-color: var(--accent-overlay-mid)</code> + <code>0 0 0 1px var(--accent-overlay-soft)</code></dd>
+      <dt>annotation card active<dd><code>background: oklch(28% 0.08 165 / 0.3)</code> + <code>inset 3px 0 0 var(--accent)</code></dd>
+      <dt>toolbar position<dd><code>bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 20</code></dd>
+      <dt>toolbar dimensions<dd>~305 × 46 (3 groups + grab) · gap 4 · padding 6 · 1 px group separators</dd>
+      <dt>version chip<dd>32 px pill · <code>--accent-soft</code> bg · <code>--accent-overlay-mid</code> border · mono 12/700</dd>
+      <dt>pin teardrop<dd>30 × 30, <code>border-radius: 50% 50% 50% 0</code>, <code>transform: rotate(-45deg)</code>, glass tag (7,12,15,0.7) + blur(6px) saturate(140%), 1.5 px color-coded border</dd>
+      <dt>color palette<dd>16 hues at curated chroma (165° accent, 195°, 220°, 245°, 265°, 285°, 305°, 325°, 25°, 50°, 75°, 95°, 120°, 140°, 200°, 150°) — propagates via <code>data-color="0..15"</code> to pin, badge, dot-badge, card accent</dd>
+      <dt>composer dock<dd><code>position: absolute; bottom: 80px; right: 24px; width: 340px</code> · glass surface · <code>⌘↵</code> to post</dd>
+      <dt>marking bar<dd><code>top: 74px; left: 50%</code> pill · pulsing accent dot · live pin counter chip · "Done" exits marking mode</dd>
+      <dt>motion<dd><code>--motion-fast 160ms · --motion-base 220ms · --ease-spring cubic-bezier(0.5,1.4,0.6,1)</code> — rail width morph, pin scale, add-button morph</dd>
+      <dt>drag affordances<dd>Both rail (top grab, 25 px) and toolbar (right grab, 25 px) use <code>react-icons/go GoGrabber</code>. Rail rotates the glyph 90° to read horizontally; toolbar keeps default vertical orientation</dd>
+      <dt>z-index stack<dd>topbar 90 · composer 40 · rail 30 · marking bar 25 · toolbar 20 · pins 10 · iframe 1</dd>
+    </dl>
+  </section>
 </div>
 
-<div class="demo-label">11 &mdash; Mockup View</div>
+<div class="demo-label">11 — Mockup View</div>
 </body>
 </html>
