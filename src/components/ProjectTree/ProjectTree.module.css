@@ -228,18 +228,24 @@
 
 /* ── Kebab dropdown menu ───────────────────────────────────────────── */
 
+/* Native HTML popover — top-layer paint, fixed positioning written by
+   `usePopover`. */
 .kebabMenu {
-  position: absolute;
-  top: calc(100% + 2px);
-  right: 0;
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  display: none;
+  flex-direction: column;
   min-width: 160px;
-  background: var(--bg-elevated);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border-strong);
+  padding: 4px;
+  background: var(--surface-glass-bg);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: var(--surface-glass-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-glow), var(--shadow-popover);
-  padding: 4px;
-  z-index: 200;
+}
+.kebabMenu:popover-open {
+  display: flex;
 }
 
 .kebabMenuItem {

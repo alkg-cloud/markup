@@ -200,6 +200,63 @@ if (!ok) return;
 
 For one-off messages (e.g. surfacing an API error), call `confirm()` with a single button + a cancel label of "Dismiss" — same component, no extra primitive. For multi-step flows or forms, build on top of `@radix-ui/react-dialog` and host the new component under `src/components/<Name>Dialog/`.
 
+## Popovers: usePopover, no exceptions
+
+Every popover (kebab menu, version chip, emoji picker, account menu, anchored option list, anything that floats next to a trigger) MUST use the `usePopover` hook from `src/lib/popover/usePopover.ts`. The hook wraps the native HTML popover API (`popover="auto"` + `popovertarget`) and pairs it with the project's position calculator (`src/lib/popover/position.ts`). The popover paints in the browser's top-layer — the same guarantee `TooltipPortal` uses — so it escapes every overflow ancestor and stacking context. The browser owns light-dismiss, ESC-to-close, and the single-active invariant.
+
+The reference implementations are `Comment.tsx` (kebab), `AnnotationCard.tsx` (primary kebab + status group), `VersionChip.tsx` (nested popover for the per-row Promote/Delete menu), `EmojiPicker.tsx`, `Topbar.tsx` (account menu), and `ProjectTree.tsx`'s `TreeNodeKebab` subcomponent.
+
+Forbidden:
+- `useState(menuOpen)` + `document.addEventListener('mousedown', …)` outside-click effects. The browser already does this for `popover="auto"`.
+- Generic `<Dropdown>` / `<Menu>` JSX wrappers. The hook is the primitive — there's no extra layer.
+- `position: absolute` on the popover element. The popover must `position: fixed` so the JS-written `top`/`left` win over the browser default `inset: 0; margin: auto`.
+
+Required pattern:
+```tsx
+const menu = usePopover<HTMLButtonElement, HTMLDivElement>('right');
+return (
+  <>
+    <button
+      ref={menu.triggerRef}
+      type="button"
+      data-tooltip="Open menu"
+      aria-haspopup="menu"
+      {...menu.triggerProps}
+    >
+      ⋮
+    </button>
+    <div {...menu.popoverProps} className={styles.menu} role="menu">
+      <button
+        role="menuitem"
+        onClick={() => {
+          menu.close();
+          doAction();
+        }}
+      >
+        Action
+      </button>
+    </div>
+  </>
+);
+```
+
+Required CSS:
+```css
+.menu {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  display: none;
+  flex-direction: column;
+  /* …glass styling… */
+}
+.menu:popover-open {
+  display: flex;
+}
+```
+
+Nested popovers stack natively: opening one popover from inside another keeps the parent open via the HTML popover spec's ancestor relationship (`VersionChip`'s per-row kebab demonstrates this). Each row that needs its own popover gets its own `usePopover` call — extract a subcomponent so the hook isn't called inside a loop. Browser support: Chrome 114+, Safari 17+, Firefox 125+ (same baseline as `data-tooltip`).
+
 ## Prefer pure helpers over service methods on classes
 
 Services are functions that take input and return output. Avoid classes with state — they hide control flow and break tree-shaking. The `DiffApplyError` class is an exception because it composes with `instanceof`.
