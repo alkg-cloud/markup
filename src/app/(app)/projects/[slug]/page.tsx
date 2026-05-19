@@ -3,7 +3,7 @@
 import { notFound, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
-import { useRequireAuth } from '@/lib/hooks/use-require-auth';
+import { useIdentity } from '@/lib/hooks/use-require-auth';
 import { ProjectContent } from '../../../projects/[slug]/ProjectContent';
 
 interface FolderSummary {
@@ -33,12 +33,12 @@ interface ProjectViewPayload {
 
 export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { identity, loading: authLoading } = useRequireAuth();
+  const identity = useIdentity();
   const [data, setData] = useState<ProjectViewPayload | null>(null);
   const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
 
   useEffect(() => {
-    if (!slug || authLoading || !identity) return;
+    if (!slug) return;
     let cancelled = false;
     fetch(`/api/projects/by-slug/${encodeURIComponent(slug)}/view`, {
       credentials: 'include',
@@ -68,7 +68,7 @@ export default function ProjectPage() {
     return () => {
       cancelled = true;
     };
-  }, [slug, authLoading, identity]);
+  }, [slug]);
 
   if (status === 'not_found') notFound();
   if (status === 'error') {

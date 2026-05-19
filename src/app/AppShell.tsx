@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
 import type { TreeMockup, TreeProject } from '@/components/ProjectTree/ProjectTree';
 import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
-import { useRequireAuth } from '@/lib/hooks/use-require-auth';
+import { type AuthMe, IdentityContext, useRequireAuth } from '@/lib/hooks/use-require-auth';
 import styles from './projects/layout.module.css';
 import { ProjectSidebar } from './projects/ProjectSidebar';
 
@@ -22,7 +22,8 @@ interface ShellPayload {
  * Client shell — auth-gates via `useRequireAuth()` and fetches the
  * sidebar payload from `GET /api/shell`. Children render only once the
  * shell payload is available so the sidebar tree is consistent on the
- * first interactive frame.
+ * first interactive frame. The shell publishes the resolved identity
+ * through `IdentityContext` so descendants don't re-call `/api/auth/me`.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const { identity, loading: authLoading } = useRequireAuth();
@@ -74,17 +75,28 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
+  // Prefer the shell payload's name/email (it falls back to the user
+  // row), but keep the identity `kind` and `id` from the auth check.
+  const shellIdentity: AuthMe = {
+    kind: shell.identity.kind,
+    id: identity.id,
+    name: shell.identity.name ?? identity.name,
+    email: shell.identity.email ?? identity.email,
+  };
+
   return (
-    <div className={styles.shell}>
-      <ProjectSidebar
-        projects={shell.projects}
-        orphanMockups={shell.orphanMockups}
-        mockupNames={shell.mockupNames}
-        recentMockups={shell.recentMockups}
-        defaultCollapsed={shell.sidebarCollapsed}
-      />
-      <main className={styles.main}>{children}</main>
-      <CommandPalette projects={shell.projects} />
-    </div>
+    <IdentityContext.Provider value={shellIdentity}>
+      <div className={styles.shell}>
+        <ProjectSidebar
+          projects={shell.projects}
+          orphanMockups={shell.orphanMockups}
+          mockupNames={shell.mockupNames}
+          recentMockups={shell.recentMockups}
+          defaultCollapsed={shell.sidebarCollapsed}
+        />
+        <main className={styles.main}>{children}</main>
+        <CommandPalette projects={shell.projects} />
+      </div>
+    </IdentityContext.Provider>
   );
 }
