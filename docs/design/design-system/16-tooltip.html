@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>16 — Tooltip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
+.page{padding:48px 32px 96px}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+.stage{
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  padding:60px 16px 30px;min-height:140px;display:flex;align-items:center;justify-content:center;position:relative;
+}
+.stage-label{position:absolute;top:8px;left:12px;font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted)}
+.trigger{
+  width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-xs);color:var(--text-muted);
+  background:var(--surface-hover);position:relative;
+}
+.trigger.flat{background:transparent}
+
+/* Tooltip — Tooltip.css verbatim values */
+.tip{
+  position:absolute;
+  width:max-content;max-width:220px;
+  padding:5px 9px;
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  border-radius:var(--radius-xs);
+  font-size:10px;font-weight:600;
+  color:var(--text-bright);
+  letter-spacing:0.02em;line-height:1.4;
+  white-space:normal;pointer-events:none;
+  box-shadow:0 4px 12px rgba(0,0,0,0.4);
+  opacity:1;
+}
+.tip.above{bottom:calc(100% + 6px);left:0}
+.tip.above-center{bottom:calc(100% + 6px);left:50%;transform:translateX(-50%)}
+.tip.above-right{bottom:calc(100% + 6px);right:0}
+.tip.below{top:calc(100% + 6px);left:0}
+
+/* Status table for shipped triggers */
+.triggers{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;
+  background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);padding:14px;
+}
+.trig-row{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:var(--radius-xs)}
+.trig-icon{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-muted);background:var(--bg-card-active);border-radius:var(--radius-xs)}
+.trig-text{font-family:var(--font-mono);font-size:10px;color:var(--text-dim)}
+
+/* Tokens */
+.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
+.tokens dt{color:var(--text-dim)}.tokens dt::before{content:'--'}.tokens dd{color:var(--text-bright)}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1 class="h1">16 — Tooltip</h1>
+  <p class="lede">The single tooltip primitive (<code>src/components/Tooltip/TooltipPortal.tsx</code>). A <code>&lt;div popover="hint" id="markup-tooltip"&gt;</code> rendered once at root layout; a capture-phase document listener watches <code>mouseenter</code> / <code>focusin</code> on every <code>[data-tooltip]</code> trigger, copies the text, positions against the trigger's <code>getBoundingClientRect</code>, and calls <code>showPopover()</code>. Top-layer paint escapes every overflow ancestor and stacking context. ~150 ms dwell before show; instant hide on leave/scroll.</p>
+
+  <section class="section">
+    <div class="section-title">A — Alignment variants</div>
+    <div class="grid">
+      <div class="stage">
+        <span class="stage-label">align="left" (default)</span>
+        <div class="trigger">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+          <span class="tip above">New annotation</span>
+        </div>
+      </div>
+      <div class="stage">
+        <span class="stage-label">align="center"</span>
+        <div class="trigger">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M9.1 4.4L8.6 2H7.4l-.5 2.4-.7.3-2-1.3-.9.8 1.3 2-.2.7-2.4.5v1.2l2.4.5.3.8-1.3 2 .8.8 2-1.3.8.3.4 2.3h1.2l.5-2.4.8-.3 2 1.3.8-.8-1.3-2 .3-.8 2.3-.4V7.4l-2.4-.5-.3-.8 1.3-2-.8-.8-2 1.3-.7-.2z"/></svg>
+          <span class="tip above-center">Settings</span>
+        </div>
+      </div>
+      <div class="stage">
+        <span class="stage-label">align="right"</span>
+        <div class="trigger">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 2H6V3H3V6H2V2.5L2.5 2ZM3 10H2V13.5L2.5 14H6V13H3V10ZM13 13H10V14H13.5L14 13.5V10H13V13ZM13.5 2H10V3H13V6H14V2.5L13.5 2Z"/></svg>
+          <span class="tip above-right">Toggle fullscreen — F</span>
+        </div>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:14px">When the trigger is near the right edge, alignment flips to <code>right</code> so the tooltip extends leftwards instead of clipping. Inside the rail's scrollable list, all triggers use <code>data-tooltip-align="right"</code>.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-title">B — Position flip (no room above → below)</div>
+    <div class="stage" style="padding:8px 16px 50px">
+      <div class="trigger">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+        <span class="tip below">Flipped to below trigger</span>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:14px">Default placement is above the trigger; the portal flips below when there's no room (top &lt; 4 px). Horizontal anchor still respects the <code>align</code> attribute. Clamped to the viewport with a 4 px gutter.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-title">C — Multiline content (max-width: 220 px)</div>
+    <div class="stage" style="padding:80px 16px 30px">
+      <div class="trigger">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8.568 1.031A6.8 6.8 0 0 1 12.76 3.05a7.06 7.06 0 0 1 .46 9.39 6.85 6.85 0 0 1-8.58 1.74 7 7 0 0 1-3.12-3.5 7.12 7.12 0 0 1-.23-4.71 7 7 0 0 1 2.77-3.79 6.8 6.8 0 0 1 4.508-1.149zM7.375 6h1.25V5h-1.25v1zm1.25 1v4h-1.25V7h1.25z"/></svg>
+        <span class="tip above" style="white-space:normal">Toggle fullscreen — exits when you press <strong>F</strong> or <strong>Esc</strong>. The viewer uses the Fullscreen API on AppMain so floating chrome survives.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">D — Triggers in the shipped product</div>
+    <div class="triggers">
+      <div class="trig-row"><span class="trig-icon">−</span><span class="trig-text">CanvasToolbar zoom-out</span></div>
+      <div class="trig-row"><span class="trig-icon">+</span><span class="trig-text">CanvasToolbar zoom-in</span></div>
+      <div class="trig-row"><span class="trig-icon">⤢</span><span class="trig-text">CanvasToolbar fullscreen</span></div>
+      <div class="trig-row"><span class="trig-icon">⋯</span><span class="trig-text">ProjectTree kebab</span></div>
+      <div class="trig-row"><span class="trig-icon">⋯</span><span class="trig-text">AnnotationCard kebab</span></div>
+      <div class="trig-row"><span class="trig-icon">⋯</span><span class="trig-text">Comment kebab</span></div>
+      <div class="trig-row"><span class="trig-icon">📌</span><span class="trig-text">Rail lock-open toggle</span></div>
+      <div class="trig-row"><span class="trig-icon">⠿</span><span class="trig-text">Rail drag handle</span></div>
+      <div class="trig-row"><span class="trig-icon">⠿</span><span class="trig-text">Toolbar drag handle</span></div>
+      <div class="trig-row"><span class="trig-icon">😊</span><span class="trig-text">Reaction add (Add reaction)</span></div>
+      <div class="trig-row"><span class="trig-icon">🕐</span><span class="trig-text">VersionChip clock</span></div>
+      <div class="trig-row"><span class="trig-icon">M</span><span class="trig-text">Sidebar logo (Go home)</span></div>
+      <div class="trig-row"><span class="trig-icon">◧</span><span class="trig-text">Sidebar collapse</span></div>
+      <div class="trig-row"><span class="trig-icon">AC</span><span class="trig-text">Topbar avatar</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>id<dd>markup-tooltip
+      <dt>role<dd>tooltip
+      <dt>popover<dd>hint
+      <dt>position<dd>fixed; inset auto; margin 0 (JS writes top + left)
+      <dt>max-width<dd>220 px
+      <dt>padding<dd>5 px 9 px
+      <dt>background<dd>--surface-glass-bg
+      <dt>backdrop-filter<dd>blur(16px) saturate(140%)
+      <dt>border<dd>1 px solid --border
+      <dt>radius<dd>--radius-xs (4 px)
+      <dt>font<dd>10 px / 600 / 0.02em, --text-bright
+      <dt>shadow<dd>0 4 px 12 px rgba(0 0 0 0.4)
+      <dt>show-delay<dd>~150 ms dwell on mouseenter / focusin
+      <dt>hide<dd>instant on mouseleave / focusout / scroll / resize
+      <dt>animation<dd>opacity 0 → 1, translateY 2 px → 0 over --motion-fast / --ease-spring
+    </dl>
+  </section>
+</div>
+
+</body>
+</html>

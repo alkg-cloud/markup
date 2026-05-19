@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>20 — Pins</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);
+  --info:oklch(74% 0.13 200);--warning:oklch(80% 0.15 80);--success:oklch(76% 0.16 152);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
+  background-attachment:fixed;
+}
+.page{padding:48px 32px 96px;max-width:1200px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:720px;line-height:1.55}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.stage{
+  background:
+    linear-gradient(135deg,oklch(98% 0 0) 0%,oklch(95% 0.005 165) 100%);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  min-height:200px;padding:60px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+  position:relative;overflow:hidden;
+}
+.stage::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,oklch(0% 0 0 / 0.05));pointer-events:none}
+.stage.dark{background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px)}
+.stage-label{position:absolute;top:8px;left:12px;font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);z-index:2}
+.stage.dark .stage-label{color:var(--text-muted)}
+
+/* ─── Pin (Pin.module.css verbatim) ─── */
+.pin{
+  --pin-h:165;--pin-c:0.18;
+  position:relative;
+  width:30px;height:30px;box-sizing:border-box;
+  border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);
+  background:rgb(7 12 15 / 70%);
+  backdrop-filter:blur(6px) saturate(140%);
+  -webkit-backdrop-filter:blur(6px) saturate(140%);
+  border:1.5px solid oklch(78% var(--pin-c) var(--pin-h));
+  box-shadow:0 3px 8px rgba(0,0,0,0.25);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;opacity:0.55;
+  padding:0;
+}
+.pin > span{
+  transform:rotate(45deg);
+  color:oklch(82% var(--pin-c) var(--pin-h));
+  font-weight:800;font-size:12px;font-family:var(--font-mono);line-height:1;
+}
+.pin:hover{opacity:1;border-color:oklch(88% var(--pin-c) var(--pin-h))}
+.pin.active{
+  opacity:1;z-index:11;
+  border-color:oklch(88% var(--pin-c) var(--pin-h));
+  box-shadow:0 4px 12px rgba(0,0,0,0.4),0 0 0 2px oklch(82% var(--pin-c) var(--pin-h) / 0.45);
+}
+.pin.pending{
+  border:2px dashed oklch(82% var(--pin-c) var(--pin-h));
+  box-shadow:0 3px 8px rgba(0,0,0,0.25);
+  opacity:0.95;
+  animation:pendingPulse 1.6s ease-in-out infinite;
+}
+.pin.pending > span{color:oklch(90% var(--pin-c) var(--pin-h));font-weight:900}
+@keyframes pendingPulse{
+  0%,100%{box-shadow:0 0 0 0 oklch(74% var(--pin-c) var(--pin-h) / 0.45)}
+  50%{box-shadow:0 0 0 6px transparent}
+}
+
+/* 16-color palette */
+.pin[data-color="0"]{--pin-h:165;--pin-c:0.18}
+.pin[data-color="1"]{--pin-h:195;--pin-c:0.15}
+.pin[data-color="2"]{--pin-h:220;--pin-c:0.14}
+.pin[data-color="3"]{--pin-h:245;--pin-c:0.13}
+.pin[data-color="4"]{--pin-h:265;--pin-c:0.13}
+.pin[data-color="5"]{--pin-h:285;--pin-c:0.13}
+.pin[data-color="6"]{--pin-h:305;--pin-c:0.12}
+.pin[data-color="7"]{--pin-h:325;--pin-c:0.12}
+.pin[data-color="8"]{--pin-h:25;--pin-c:0.13}
+.pin[data-color="9"]{--pin-h:50;--pin-c:0.14}
+.pin[data-color="10"]{--pin-h:75;--pin-c:0.14}
+.pin[data-color="11"]{--pin-h:95;--pin-c:0.15}
+.pin[data-color="12"]{--pin-h:120;--pin-c:0.15}
+.pin[data-color="13"]{--pin-h:140;--pin-c:0.16}
+.pin[data-color="14"]{--pin-h:200;--pin-c:0.16}
+.pin[data-color="15"]{--pin-h:150;--pin-c:0.17}
+
+.state-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin:24px 0}
+.state-cell{display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px 12px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm)}
+.state-name{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted)}
+.state-desc{font-size:11px;color:var(--text-dim);text-align:center;line-height:1.4}
+.pin-host{height:42px;display:flex;align-items:center;justify-content:center}
+
+/* Palette grid */
+.palette{display:grid;grid-template-columns:repeat(8,1fr);gap:12px}
+.palette-cell{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm)}
+.palette-cell .pin-host{height:36px}
+.palette-cell .num{font-family:var(--font-mono);font-size:9px;color:var(--text-muted)}
+
+/* In-context faux mockup */
+.faux-card{
+  background:oklch(100% 0 0);border:1px solid oklch(85% 0 0);border-radius:8px;
+  width:300px;padding:20px;color:oklch(20% 0 0);position:relative;
+}
+.faux-h{font-size:18px;font-weight:700;color:oklch(15% 0 0);margin-bottom:8px}
+.faux-p{font-size:12px;color:oklch(35% 0 0);line-height:1.5}
+.faux-btn{display:inline-block;margin-top:12px;padding:6px 14px;background:oklch(20% 0 0);color:oklch(100% 0 0);border-radius:9999px;font-size:11px;font-weight:600}
+
+/* Tokens */
+.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
+.tokens dt{color:var(--text-dim)}.tokens dt::before{content:'--'}.tokens dd{color:var(--text-bright)}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1 class="h1">20 — Pins</h1>
+  <p class="lede">Annotation pins are 30 × 30 teardrop tags rotated -45° (<code>border-radius: 50% 50% 50% 0</code>) so the tip lands on the anchor point. Glass tag aesthetic: dark translucent bg, accent border tied to the annotation's <code>colorIndex</code> (0-15 palette), inner numeric label counter-rotated 45° to read horizontally. <code>opacity: 0.55</code> at rest so the underlying mockup reads through; full opacity on hover / active. 16-colour palette shared between pins, rail badges, and avatars.</p>
+
+  <section class="section">
+    <div class="section-title">A — Pin states</div>
+    <div class="state-grid">
+      <div class="state-cell">
+        <span class="state-name">idle</span>
+        <div class="pin-host"><div class="pin" data-color="0"><span>1</span></div></div>
+        <span class="state-desc">opacity 0.55 — accent border, dark glass body, mono numeric label</span>
+      </div>
+      <div class="state-cell">
+        <span class="state-name">hover</span>
+        <div class="pin-host"><div class="pin" data-color="0" style="opacity:1;border-color:oklch(88% 0.18 165)"><span>1</span></div></div>
+        <span class="state-desc">opacity 1, border-color brightens — no scale transform</span>
+      </div>
+      <div class="state-cell">
+        <span class="state-name">active</span>
+        <div class="pin-host"><div class="pin active" data-color="0"><span>1</span></div></div>
+        <span class="state-desc">opacity 1, 2 px accent glow ring (no animation)</span>
+      </div>
+      <div class="state-cell">
+        <span class="state-name">pending</span>
+        <div class="pin-host"><div class="pin pending" data-color="0"><span>1</span></div></div>
+        <span class="state-desc">dashed border + 1.6 s soft pulse — used during composer marking</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">B — 16-colour palette (cycled by annotation colorIndex)</div>
+    <div class="palette">
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="0"><span>0</span></div></div><span class="num">165° / 0.18</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="1"><span>1</span></div></div><span class="num">195°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="2"><span>2</span></div></div><span class="num">220°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="3"><span>3</span></div></div><span class="num">245°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="4"><span>4</span></div></div><span class="num">265°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="5"><span>5</span></div></div><span class="num">285°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="6"><span>6</span></div></div><span class="num">305°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="7"><span>7</span></div></div><span class="num">325°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="8"><span>8</span></div></div><span class="num">25°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="9"><span>9</span></div></div><span class="num">50°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="10"><span>10</span></div></div><span class="num">75°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="11"><span>11</span></div></div><span class="num">95°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="12"><span>12</span></div></div><span class="num">120°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="13"><span>13</span></div></div><span class="num">140°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="14"><span>14</span></div></div><span class="num">200°</span></div>
+      <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="15"><span>15</span></div></div><span class="num">150°</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">C — Pins in context (faux mockup)</div>
+    <div class="grid">
+      <div class="stage">
+        <span class="stage-label">Multi-pin annotation — colorIndex 3</span>
+        <div class="faux-card" style="position:relative">
+          <h3 class="faux-h">Save up to 40% on annual plans</h3>
+          <p class="faux-p">Switch to annual billing and unlock unlimited mockups, version history, and SSO.</p>
+          <button class="faux-btn">Get started</button>
+          <!-- pins: anchor over heading + cta -->
+          <div class="pin" data-color="3" style="position:absolute;left:-12px;top:14px"><span>2</span></div>
+          <div class="pin active" data-color="3" style="position:absolute;left:84px;top:118px"><span>2</span></div>
+        </div>
+      </div>
+      <div class="stage">
+        <span class="stage-label">Resolved annotation — colorIndex 12 (green)</span>
+        <div class="faux-card" style="position:relative">
+          <h3 class="faux-h">Welcome back, Alex</h3>
+          <p class="faux-p">You have 3 mockups awaiting review and 2 new comments since yesterday.</p>
+          <button class="faux-btn">Open inbox</button>
+          <div class="pin" data-color="12" style="position:absolute;left:-12px;top:14px;opacity:0.4"><span>3</span></div>
+        </div>
+      </div>
+      <div class="stage dark">
+        <span class="stage-label">Pending pin during composer marking</span>
+        <div style="position:relative;width:260px;height:140px;background:oklch(20% 0.02 165);border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:11px">
+          dark surface
+          <div class="pin pending" data-color="0" style="position:absolute;left:40px;top:32px"><span>+</span></div>
+          <div class="pin pending" data-color="0" style="position:absolute;right:30px;top:80px"><span>+</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">D — Anchor variants</div>
+    <p class="lede" style="margin-bottom:16px">Pins are anchored DOM-side and reposition on every layout change (resize, scroll, zoom, fullscreen). Two anchor shapes:</p>
+    <div class="grid">
+      <div class="stage">
+        <span class="stage-label">Element anchor</span>
+        <div style="text-align:center;color:oklch(20% 0 0);font-size:12px;line-height:1.4">
+          <p><code>{path, offsetX, offsetY}</code></p>
+          <p style="color:oklch(35% 0 0)">For clicks outside text — fractional bbox offset</p>
+        </div>
+        <div class="pin active" data-color="6"><span>1</span></div>
+      </div>
+      <div class="stage">
+        <span class="stage-label">Text anchor</span>
+        <div style="text-align:center;color:oklch(20% 0 0);font-size:12px;line-height:1.4">
+          <p><code>{path, textOffset, subX, subY}</code></p>
+          <p style="color:oklch(35% 0 0)">Pin tip lands on a specific character sub-position — resilient to reflow / wrap / font change</p>
+        </div>
+        <div class="pin active" data-color="9"><span>2</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>size<dd>30 × 30 px
+      <dt>shape<dd>border-radius 50% 50% 50% 0; transform rotate(-45deg)
+      <dt>background<dd>rgb(7 12 15 / 70%)
+      <dt>backdrop-filter<dd>blur(6px) saturate(140%)
+      <dt>border<dd>1.5 px solid oklch(78% c h) — colorIndex tinted
+      <dt>shadow<dd>0 3 px 8 px rgba(0 0 0 0.25)
+      <dt>opacity (idle)<dd>0.55
+      <dt>opacity (hover/active)<dd>1
+      <dt>active ring<dd>0 0 0 2 px oklch(82% c h / 0.45) (no animation)
+      <dt>numeric label<dd>12 px / 800 mono, rotated 45° counter, oklch(82% c h)
+      <dt>pending border<dd>2 px dashed
+      <dt>pending pulse<dd>1.6 s ease-in-out infinite (anim-pin-pulse)
+      <dt>palette<dd>16 hues; colorIndex cycled by annotation id
+      <dt>z-index<dd>10 idle / 11 active
+      <dt>transition<dd>opacity, transform, box-shadow, border-color over --motion-fast
+    </dl>
+  </section>
+</div>
+
+</body>
+</html>

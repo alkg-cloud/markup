@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>14 — Dialog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --scrim-glass-bg:oklch(0% 0 0/0.2);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+input,textarea{font-family:inherit;color:inherit}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+
+/* Page chrome */
+.page{padding:48px 32px 96px}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:600px}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  min-height:340px;padding:48px;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.stage + .stage{margin-top:24px}
+.caption{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em}
+
+/* ─── Glass surface utilities (verbatim from glass.module.css) ─── */
+.floating{
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+}
+.scrim{
+  position:absolute;inset:0;
+  background:var(--scrim-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ─── Dialog — Dialog.module.css verbatim ─── */
+.dialog{
+  width:min(440px,calc(100vw - 32px));
+  padding:18px 18px 14px;
+  border-radius:14px;
+  box-shadow:var(--shadow-popover);
+  display:flex;flex-direction:column;gap:8px;
+  animation:dialogIn var(--motion-base) var(--ease-spring);
+}
+@keyframes dialogIn{
+  from{opacity:0;transform:scale(0.96) translateY(8px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+.dialog .title{font-size:13px;font-weight:700;letter-spacing:0.01em;color:var(--text-bright);margin:0}
+.field{display:block}
+.label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;display:block}
+.input{
+  width:100%;height:34px;padding:0 12px;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xs);
+  font-family:var(--font-body);font-size:13px;color:var(--text-bright);outline:none;
+  transition:border-color var(--motion-fast),box-shadow var(--motion-fast);
+}
+.input::placeholder{color:var(--text-muted)}
+.input.focused{border-color:var(--accent-bright);box-shadow:0 0 0 3px var(--accent-soft)}
+.input.error{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-soft)}
+.hint{display:block;margin-top:6px;font-size:11px;line-height:1.4;color:var(--text-muted)}
+.error-msg{display:block;margin-top:6px;font-size:11px;line-height:1.4;color:var(--danger)}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+
+/* Dialog button variants (Dialog.module.css verbatim) */
+.btn{
+  height:30px;padding:0 14px;
+  font-size:12px;font-weight:700;letter-spacing:0.02em;
+  border-radius:var(--radius-xs);border:1px solid transparent;
+  background:transparent;color:var(--text-muted);
+  transition:background var(--motion-fast),color var(--motion-fast),border-color var(--motion-fast);
+}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.btn-secondary:hover{background:var(--surface-hover);color:var(--text-bright)}
+.btn-accent{background:var(--accent-soft);color:var(--accent-bright);border-color:var(--accent-overlay-mid)}
+.btn-accent:hover{background:var(--accent-overlay-mid);color:var(--text-bright)}
+.btn-danger{background:var(--danger-soft);color:var(--danger);border-color:var(--danger)}
+.btn-danger:hover{background:var(--danger);color:var(--text-bright)}
+/* Show focus-visible ring statefully */
+.btn.focused{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+/* Tokens table */
+.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
+.tokens dt{color:var(--text-dim)}
+.tokens dd{color:var(--text-bright)}
+.tokens dt::before{content:'--'}
+
+/* States grid */
+.states{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:16px}
+.state{padding:18px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm)}
+.state-label{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:12px}
+.state-row{display:flex;align-items:center;gap:8px;justify-content:center;min-height:48px}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1 class="h1">14 — Dialog</h1>
+  <p class="lede">Reusable modal dialog (<code>src/components/Dialog/Dialog.tsx</code>). Shares the glass-surface standard with <code>confirm-dialog</code>, rail, toolbar, composer, and every popover — same <code>--surface-glass-bg</code>, blur 16 px / saturate 140%, glass border, 14 px radius, <code>--shadow-popover</code>.</p>
+
+  <section class="section">
+    <div class="section-title">A — Create variant (accent primary action)</div>
+    <div class="stage">
+      <div class="scrim">
+        <div class="dialog floating">
+          <h3 class="title">New project</h3>
+          <div class="field">
+            <span class="label">Project name</span>
+            <input class="input focused" type="text" value="My-Project" />
+            <span class="hint">Use letters, digits, hyphens, or underscores.</span>
+          </div>
+          <div class="actions">
+            <button class="btn btn-secondary">Cancel</button>
+            <button class="btn btn-accent">Create project</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Scrim composes <code>floatingScrim</code> (blur 16 px, --scrim-glass-bg). Dialog composes <code>floatingSurface</code>. Both animate in (scale 0.96 → 1, translateY 8 → 0) over <code>--motion-base</code> with <code>--ease-spring</code>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">B — Edit variant (existing values prefilled)</div>
+    <div class="stage">
+      <div class="scrim">
+        <div class="dialog floating">
+          <h3 class="title">Edit project</h3>
+          <div class="field">
+            <span class="label">Project name</span>
+            <input class="input" type="text" value="lumen-coffee" />
+          </div>
+          <div class="actions">
+            <button class="btn btn-secondary">Cancel</button>
+            <button class="btn btn-accent">Update project</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">C — Validation error state</div>
+    <div class="stage">
+      <div class="scrim">
+        <div class="dialog floating">
+          <h3 class="title">New project</h3>
+          <div class="field">
+            <span class="label">Project name</span>
+            <input class="input error" type="text" value="My Project" />
+            <span class="error-msg">" " is not allowed. Use only letters (a–z, A–Z), digits, hyphens (-), or underscores (_).</span>
+          </div>
+          <div class="actions">
+            <button class="btn btn-secondary">Cancel</button>
+            <button class="btn btn-accent" disabled>Create project</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">URL-safe validation. Primary action disabled while error stands. Input border + ring use <code>--danger</code> / <code>--danger-soft</code>; hint is replaced by error message at 11 px <code>--danger</code>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">D — Danger variant (delete confirmation)</div>
+    <div class="stage">
+      <div class="scrim">
+        <div class="dialog floating">
+          <h3 class="title">Delete project "lumen-coffee"?</h3>
+          <p style="font-size:12px;color:var(--text-dim);line-height:1.55">This permanently removes the project, every folder under it, and every mockup. Annotations on those mockups are deleted with their threads. This cannot be undone.</p>
+          <div class="actions">
+            <button class="btn btn-secondary">Cancel</button>
+            <button class="btn btn-danger">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Used by the <code>confirm-dialog</code> primitive (Radix <code>AlertDialog</code>). Same glass recipe. Primary button uses the <code>danger</code> variant.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Button variants — every state</div>
+    <div class="states">
+      <div class="state">
+        <div class="state-label">Secondary</div>
+        <div class="state-row"><button class="btn btn-secondary">Idle</button></div>
+        <div class="state-row"><button class="btn btn-secondary" style="background:var(--surface-hover);color:var(--text-bright)">Hover</button></div>
+        <div class="state-row"><button class="btn btn-secondary focused">Focused</button></div>
+        <div class="state-row"><button class="btn btn-secondary" disabled>Disabled</button></div>
+      </div>
+      <div class="state">
+        <div class="state-label">Accent (primary)</div>
+        <div class="state-row"><button class="btn btn-accent">Idle</button></div>
+        <div class="state-row"><button class="btn btn-accent" style="background:var(--accent-overlay-mid);color:var(--text-bright)">Hover</button></div>
+        <div class="state-row"><button class="btn btn-accent focused">Focused</button></div>
+        <div class="state-row"><button class="btn btn-accent" disabled>Disabled</button></div>
+      </div>
+      <div class="state">
+        <div class="state-label">Danger</div>
+        <div class="state-row"><button class="btn btn-danger">Idle</button></div>
+        <div class="state-row"><button class="btn btn-danger" style="background:var(--danger);color:var(--text-bright)">Hover</button></div>
+        <div class="state-row"><button class="btn btn-danger focused">Focused</button></div>
+        <div class="state-row"><button class="btn btn-danger" disabled>Disabled</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>surface-glass-bg<dd>rgb(7 12 15 / 80%)
+      <dt>surface-glass-blur<dd>blur(16px) saturate(140%)
+      <dt>scrim-glass-bg<dd>oklch(0% 0 0 / 0.2)
+      <dt>radius<dd>14px
+      <dt>padding<dd>18px 18px 14px
+      <dt>gap<dd>8px between rows
+      <dt>width<dd>min(440px, calc(100vw - 32px))
+      <dt>title<dd>13px / 700 / 0.01em, --text-bright
+      <dt>label<dd>10px / 700 / 0.08em uppercase, --text-dim
+      <dt>input<dd>34px tall, --bg-card bg, --border border, --radius-xs
+      <dt>input focus<dd>border --accent-bright + 3px --accent-soft ring
+      <dt>button<dd>30px tall, 12px / 700 / 0.02em, --radius-xs
+      <dt>animation<dd>scale 0.96 → 1, translateY 8 → 0 over --motion-base / --ease-spring
+    </dl>
+  </section>
+</div>
+
+</body>
+</html>
