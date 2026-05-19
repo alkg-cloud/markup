@@ -430,30 +430,25 @@ export function ProjectTree({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Initial render uses ONLY URL-derived expansion so SSR + first
-  // client paint agree. localStorage-restored expansion is merged in a
-  // post-mount effect (see below) — accepting a brief post-hydration
-  // pop of additional ancestors over the alternative (a hard hydration
-  // mismatch that re-renders the whole tree client-only).
+  // Initial render merges URL-derived expansion + persisted expansion
+  // from localStorage in a single lazy initializer. Pages are CSR-only,
+  // so `localStorage` is always reachable during the first render and
+  // we don't need a post-mount effect to splice the persisted state in.
   const [expanded, setExpanded] = useState<Set<string>>(() => {
-    const fromUrl = computeActivePathExpanded(projects, pathname, searchParams);
-    if (fromUrl.size === 0 && projects.length > 0) fromUrl.add(projects[0].id);
-    return fromUrl;
-  });
-  useEffect(() => {
-    try {
-      const stored: string[] = JSON.parse(localStorage.getItem(EXPANDED_STORAGE_KEY) ?? '[]');
-      if (stored.length === 0) return;
-      setExpanded((prev) => {
-        const merged = new Set(prev);
-        for (const id of stored) merged.add(id);
-        return merged;
-      });
-    } catch {
-      // localStorage unavailable; URL-derived state is the floor.
+    const seed = computeActivePathExpanded(projects, pathname, searchParams);
+    if (seed.size === 0 && projects.length > 0) seed.add(projects[0].id);
+    if (typeof window !== 'undefined') {
+      try {
+        const stored: string[] = JSON.parse(
+          window.localStorage.getItem(EXPANDED_STORAGE_KEY) ?? '[]',
+        );
+        for (const id of stored) seed.add(id);
+      } catch {
+        // localStorage unavailable; URL-derived state is the floor.
+      }
     }
-    // Run once on mount; later writes happen via the persist effect.
-  }, []);
+    return seed;
+  });
   const [focusIndex, setFocusIndex] = useState(0);
   const [creatingIn, setCreatingIn] = useState<{
     projectId: string;

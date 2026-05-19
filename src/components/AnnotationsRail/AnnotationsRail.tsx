@@ -66,9 +66,10 @@ export function AnnotationsRail({
   const [pinned, setPinned] = useState(false);
   const [drag, setDrag] = useState(false);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
-  // Reset the dragged position when the parent bumps the key (e.g. on
-  // fullscreen toggle). This avoids the rail being stranded off-screen
-  // when the containing block's bounds change underneath it.
+  // Reset only the dragged-position state when the parent bumps the key
+  // (e.g. on fullscreen toggle). A `key`-based remount would also reset
+  // `pinned` / `hover`, which the rail should preserve across layout
+  // changes.
   useEffect(() => {
     setPos(null);
   }, [resetPositionKey]);
@@ -178,14 +179,10 @@ export function AnnotationsRail({
     : undefined;
 
   const visibleCount = count ?? badges.length;
-  // Deferred to a client-only effect so the SSR pass renders the
-  // generic "Ctrl" symbol and hydration updates it to the OS-correct
-  // glyph without a mismatch warning.
-  const [shortcutMod, setShortcutMod] = useState('Ctrl');
-  useEffect(() => {
-    setShortcutMod(modSymbol());
-  }, []);
-  const newAnnotationShortcut = `${shortcutMod}⇧N`;
+  // CSR-only — `modSymbol()` reads `navigator` which is always defined
+  // during render, so we can compute the OS-aware label inline without
+  // a state-fed effect.
+  const newAnnotationShortcut = `${modSymbol()}⇧N`;
 
   return (
     <aside
