@@ -18,7 +18,11 @@
   box-shadow: var(--shadow-popover);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  /* `clip` (not `hidden`) prevents tooltips/emoji-picker popovers from
+     being painted on top of the rail surface during morph, while still
+     letting them escape the rail's bounding box horizontally so they're
+     visible above the canvas. */
+  overflow: visible;
   transition:
     width var(--motion-base) var(--ease-spring),
     border-color var(--motion-fast) var(--ease-standard),
@@ -52,6 +56,10 @@
   flex-shrink: 0;
   cursor: grab;
   color: var(--text-muted);
+  /* Prevent the browser from interpreting touch as a page pan/scroll
+     while the user grabs the rail — without this, touch drag fights
+     the page scroll and the rail never moves. */
+  touch-action: none;
   transition:
     background var(--motion-fast),
     color var(--motion-fast);
@@ -166,7 +174,10 @@
 .list {
   list-style: none;
   padding: 6px 0 8px;
+  /* Vertical scroll only; tooltips/popovers escape horizontally past
+     the rail edge so they're not clipped at 300px wide. */
   overflow-y: auto;
+  overflow-x: visible;
   flex: 1;
   min-height: 0;
   margin: 0;
