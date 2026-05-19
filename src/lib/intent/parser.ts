@@ -1,3 +1,5 @@
+import 'server-only';
+
 export type Drawing =
   | { kind: 'arrow'; from: [number, number]; to: [number, number] }
   | {

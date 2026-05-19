@@ -70,6 +70,9 @@ importers:
       react-icons:
         specifier: ^5.6.0
         version: 5.6.0(react@19.2.6)
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
@@ -3137,6 +3140,9 @@ packages:
 
   seq-queue@0.0.5:
     resolution: {integrity: sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q==}
+
+  server-only@0.0.1:
+    resolution: {integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==}
 
   setimmediate@1.0.5:
     resolution: {integrity: sha512-MATJdZp8sLqDl/68LfQmbP8zKPLQNV6BIZoIgrscFDQ+RsvK/BxeDQOgyxKKoh0y/8h3BqVFnCqQ/gd+reiIXA==}
@@ -6575,6 +6581,8 @@ snapshots:
   semver@7.7.4: {}
 
   seq-queue@0.0.5: {}
+
+  server-only@0.0.1: {}
 
   setimmediate@1.0.5: {}
 

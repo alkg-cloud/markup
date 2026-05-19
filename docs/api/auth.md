@@ -38,6 +38,12 @@ The same routes are consumed by:
 
 Splitting the surface by auth mode would force automation clients to use a different endpoint than the UI, which doubles the maintenance burden. The single-surface design means **a feature shipped to the UI is automatically available to agents**, and vice versa.
 
+## The mockup-serve route
+
+`GET /m/[mockupId]/[[...path]]` serves the extracted HTML/CSS/JS bundle of a mockup version. It runs the same `identify(req)` check as every API route and returns 401 if absent. The proxy in `src/proxy.ts` lists `/m/` as a public path prefix only because the edge-runtime proxy can't run Prisma — the per-request auth check happens inside the route handler.
+
+The browser iframe sends the session cookie automatically (same origin); agents authenticate via `Authorization: Bearer mk_<hex>`.
+
 ## When to require admin
 
 The `User.role` field is always `'admin'` today (single-tenant first-run setup). If a future deployment introduces non-admin users, gate the admin-only routes via:
@@ -66,6 +72,24 @@ authorType: ident.kind,
 Sessions live 30 days, refreshed on every request that succeeds in cookie auth. The JWT carries `sessionId`, `userId`, `iat`, `exp`. The corresponding `Session` row has `expiresAt`; expired sessions are rejected during JWT verification (the JWT `exp` is set from `Session.expiresAt` at issue time).
 
 To force a logout, delete the `Session` row — the JWT will still verify until expiry but `identify()` checks the row exists.
+
+## CSRF guard
+
+Every state-changing route (POST/PUT/PATCH/DELETE) calls `assertSameOrigin(req)` at the top of the handler:
+
+```ts
+import { assertSameOrigin } from '@/lib/auth/origin';
+
+export async function POST(req: Request) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
+  // … identify, validate, mutate
+}
+```
+
+The helper validates the `Origin` header against `env.APP_URL` plus a comma-separated `MARKUP_ALLOWED_ORIGINS` allow-list. Cross-origin requests get `{ error: 'forbidden_origin' }` with status 403. Requests **without** `Origin` (curl, automation tools, Bearer-authed agents) pass through — the CSRF threat model targets cookie-authed browser requests, which always carry an Origin.
+
+`SameSite=Lax` on the session cookie blocks most cross-site cookie sends; the Origin check is the second lock for redirect/legacy paths that leak. The auth/login, auth/setup, and auth/logout endpoints also run the guard (a CSRF could otherwise log a victim into an attacker-controlled account or wipe their session).
 
 ## Agent token lifecycle
 

@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { hashAgentSecret } from './agent-token';

@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { z } from 'zod';
 
 const tokenNameRe = /^[A-Za-z0-9_-]+$/;

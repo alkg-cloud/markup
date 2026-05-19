@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { createTwoFilesPatch } from 'diff';
 
 export function renderUnifiedDiff(a: string, aLabel: string, b: string, bLabel: string): string {

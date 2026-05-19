@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { identify } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { appendMessage } from '@/lib/thread/service';
 
 const bodySchema = z.object({ body: z.string().min(1).max(10000) });
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   const ident = await identify(req);
   if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id: threadId } = await ctx.params;
