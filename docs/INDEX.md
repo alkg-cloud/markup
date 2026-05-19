@@ -34,7 +34,8 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 ## Frontend
 
 - [Frontend INDEX](frontend/INDEX.md) — entry point
-- [Components](frontend/components.md) — server vs client, state ownership, file layout
+- [Components](frontend/components.md) — CSR-only convention, file layout, composition rules
+- [Data fetching](frontend/data-fetching.md) — `useRequireAuth`, fetch + useEffect pattern, aggregator endpoints
 - [Styling](frontend/styling.md) — `tokens.css`, OKLCH palette, `:focus-visible` global rule, `prefers-reduced-motion` policy
 - [Tldraw integration](frontend/tldraw.md) — snapshot model, base64 strip, StrictMode dedup, edit-mode toggle
 

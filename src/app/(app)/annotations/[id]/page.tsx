@@ -1,70 +1,98 @@
-import fs from 'node:fs';
-import path from 'node:path';
+'use client';
+
 import type { TLEditorSnapshot } from '@tldraw/tldraw';
-import { cookies, headers } from 'next/headers';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { ThreadTimeline } from '@/components/ThreadTimeline/ThreadTimeline';
 import { Topbar } from '@/components/Topbar/Topbar';
-import { INTENT_PILL_COLORS, isIntentType } from '@/lib/annotation/intent';
-import { getAnnotation } from '@/lib/annotation/service';
-import { identify } from '@/lib/auth/identify';
-import { resolveDisplayName, resolveDisplayNames } from '@/lib/auth/resolve-display-name';
-import { isSetupCompleted } from '@/lib/auth/setup-state';
-import { env } from '@/lib/env';
-import { pathForMockup } from '@/lib/mockup/url';
-import { prisma } from '@/lib/prisma';
-import { rehydrateScreenshotBase64 } from '@/lib/tldraw/snapshot-screenshot';
+import { INTENT_PILL_COLORS, type IntentType } from '@/lib/annotation/intent';
+import { useRequireAuth } from '@/lib/hooks/use-require-auth';
 import { ReadOnlyAnnotation } from './ReadOnlyAnnotation';
 
-export default async function AnnotationDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  if (!(await isSetupCompleted())) redirect('/setup');
-  const cs = await cookies();
-  const hs = await headers();
-  const fakeReq = {
-    cookies: {
-      get: (k: string) => {
-        const c = cs.get(k);
-        return c ? { value: c.value } : undefined;
-      },
-    },
-    headers: { get: (k: string) => hs.get(k) },
-  } as Parameters<typeof identify>[0];
-  const id = await identify(fakeReq);
-  if (!id) redirect('/login');
+interface DetailPayload {
+  annotation: {
+    id: string;
+    createdAt: string;
+    createdBy: string;
+    createdByType: 'user' | 'agent';
+    intentType: IntentType;
+  };
+  author: { name: string; kind: 'user' | 'agent' };
+  thread: {
+    id: string | null;
+    status: 'open' | 'resolved' | string;
+    messages: {
+      id: string;
+      authorType: 'user' | 'agent';
+      authorId: string;
+      body: string;
+      createdAt: string;
+    }[];
+  };
+  authorNamesById: Record<string, string>;
+  mockup: { name: string; viewerHref: string };
+  screenshot: { url: string; width: number; height: number };
+  tldraw: TLEditorSnapshot | null;
+}
 
-  const { id: annotationId } = await params;
-  const annotation = await getAnnotation(annotationId);
-  if (!annotation) {
+export default function AnnotationDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const { identity, loading: authLoading } = useRequireAuth();
+  const [data, setData] = useState<DetailPayload | null>(null);
+  const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
+
+  useEffect(() => {
+    if (!id || authLoading || !identity) return;
+    let cancelled = false;
+    fetch(`/api/annotations/${encodeURIComponent(id)}/detail`, {
+      credentials: 'include',
+    })
+      .then(async (res) => {
+        if (cancelled) return;
+        if (res.status === 401) {
+          window.location.replace('/login');
+          return;
+        }
+        if (res.status === 404) {
+          setStatus('not_found');
+          return;
+        }
+        if (!res.ok) {
+          setStatus('error');
+          return;
+        }
+        const json: DetailPayload = await res.json();
+        if (cancelled) return;
+        setData(json);
+        setStatus('ok');
+      })
+      .catch(() => {
+        if (!cancelled) setStatus('error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, authLoading, identity]);
+
+  if (status === 'not_found') {
     return <main style={{ padding: 24 }}>Annotation not found.</main>;
   }
-
-  const messages = annotation.thread?.messages ?? [];
-  const [authorInfo, mockup, authorNamesMap] = await Promise.all([
-    resolveDisplayName(annotation.createdBy, annotation.createdByType),
-    prisma.mockup.findUnique({ where: { id: annotation.mockupId }, select: { name: true } }),
-    resolveDisplayNames(
-      messages.map((m) => ({ createdBy: m.authorId, createdByType: m.authorType })),
-    ),
-  ]);
-
-  const authorNamesById: Record<string, string> = {};
-  for (const [authorId, dn] of authorNamesMap.entries()) {
-    authorNamesById[authorId] = dn.name;
+  if (status === 'error') {
+    return <main style={{ padding: 24, color: 'var(--danger)' }}>Failed to load annotation.</main>;
+  }
+  if (status === 'loading' || !data) {
+    return null;
   }
 
-  const mockupName = mockup?.name ?? annotation.mockupId;
-  const viewerHref = (await pathForMockup(annotation.mockupId)) ?? '/projects';
+  const { annotation, author, thread, authorNamesById, mockup, screenshot, tldraw } = data;
+  const intentColors = INTENT_PILL_COLORS[annotation.intentType];
 
   return (
     <>
       <Topbar
         breadcrumbs={[
-          { label: mockupName, href: viewerHref },
+          { label: mockup.name, href: mockup.viewerHref },
           { label: 'Annotation', href: `/annotations/${annotation.id}` },
         ]}
       />
@@ -72,7 +100,7 @@ export default async function AnnotationDetailPage({
         {/* Header */}
         <header style={{ marginBottom: 'var(--space-xl)' }}>
           <Link
-            href={viewerHref}
+            href={mockup.viewerHref}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -85,10 +113,10 @@ export default async function AnnotationDetailPage({
             }}
             className="back-link-annotation"
           >
-            ← Back to {mockupName}
+            ← Back to {mockup.name}
           </Link>
 
-          {/* Baseline row: h2 "Annotation" + by author + pill + timestamp */}
+          {/* Baseline row: h2 + by author + pill + timestamp */}
           <div
             style={{
               display: 'flex',
@@ -111,17 +139,10 @@ export default async function AnnotationDetailPage({
               Annotation
             </h2>
 
-            <span
-              style={{
-                fontSize: 'var(--type-sm)',
-                color: 'var(--text-dim)',
-              }}
-            >
-              by{' '}
-              <strong style={{ color: 'var(--text)', fontWeight: 400 }}>{authorInfo.name}</strong>
+            <span style={{ fontSize: 'var(--type-sm)', color: 'var(--text-dim)' }}>
+              by <strong style={{ color: 'var(--text)', fontWeight: 400 }}>{author.name}</strong>
             </span>
 
-            {/* Author kind pill */}
             <span
               style={{
                 display: 'inline-flex',
@@ -133,41 +154,33 @@ export default async function AnnotationDetailPage({
                 padding: '4px 10px',
                 borderRadius: 'var(--radius-pill)',
                 textTransform: 'uppercase',
-                background: authorInfo.kind === 'user' ? 'var(--info-soft)' : 'var(--warning-soft)',
-                color: authorInfo.kind === 'user' ? 'var(--info)' : 'var(--warning)',
+                background: author.kind === 'user' ? 'var(--info-soft)' : 'var(--warning-soft)',
+                color: author.kind === 'user' ? 'var(--info)' : 'var(--warning)',
               }}
             >
-              {authorInfo.kind}
+              {author.kind}
             </span>
 
-            {/* Intent type pill */}
-            {(() => {
-              const intent = isIntentType(annotation.intentType) ? annotation.intentType : 'other';
-              const c = INTENT_PILL_COLORS[intent];
-              return (
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    fontSize: 'var(--type-2xs)',
-                    fontWeight: 700,
-                    letterSpacing: 'var(--tracking-wide)',
-                    padding: '4px 10px',
-                    borderRadius: 'var(--radius-pill)',
-                    textTransform: 'uppercase',
-                    background: c.bg,
-                    color: c.fg,
-                  }}
-                >
-                  {intent}
-                </span>
-              );
-            })()}
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                fontSize: 'var(--type-2xs)',
+                fontWeight: 700,
+                letterSpacing: 'var(--tracking-wide)',
+                padding: '4px 10px',
+                borderRadius: 'var(--radius-pill)',
+                textTransform: 'uppercase',
+                background: intentColors.bg,
+                color: intentColors.fg,
+              }}
+            >
+              {annotation.intentType}
+            </span>
 
-            {/* Timestamp pushed to the right */}
             <time
-              dateTime={annotation.createdAt.toISOString()}
+              dateTime={annotation.createdAt}
               className="tnum"
               style={{
                 marginLeft: 'auto',
@@ -182,11 +195,7 @@ export default async function AnnotationDetailPage({
 
         {/* Two-column body */}
         <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 400px',
-            gap: 0,
-          }}
+          style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 0 }}
           className="annotation-detail-grid"
         >
           {/* Left: canvas pane */}
@@ -196,85 +205,63 @@ export default async function AnnotationDetailPage({
               borderRight: '1px solid var(--border)',
             }}
           >
-            {(() => {
-              const tldrawAbs = path.join(env().DATA_DIR, annotation.tldrawPath);
-              const screenshotAbs = path.join(env().DATA_DIR, annotation.screenshotPath);
-              let tldraw: TLEditorSnapshot | null = null;
-              try {
-                const raw = JSON.parse(fs.readFileSync(tldrawAbs, 'utf8'));
-                tldraw = rehydrateScreenshotBase64(
-                  raw,
-                  `/api/annotations/${annotation.id}/screenshot`,
-                ) as TLEditorSnapshot;
-              } catch {}
-              const buf = fs.readFileSync(screenshotAbs);
-              const width = buf.readUInt32BE(16);
-              const height = buf.readUInt32BE(20);
-              return (
-                <div
-                  style={{
-                    border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius-md)',
-                    overflow: 'hidden',
-                    background: 'var(--bg-card)',
-                    aspectRatio: `${width} / ${height}`,
-                    width: '100%',
-                  }}
-                >
-                  <ReadOnlyAnnotation
-                    annotationId={annotation.id}
-                    screenshotUrl={`/api/annotations/${annotation.id}/screenshot`}
-                    width={width}
-                    height={height}
-                    tldraw={tldraw}
-                  />
-                </div>
-              );
-            })()}
+            <div
+              style={{
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)',
+                overflow: 'hidden',
+                background: 'var(--bg-card)',
+                aspectRatio:
+                  screenshot.width && screenshot.height
+                    ? `${screenshot.width} / ${screenshot.height}`
+                    : 'auto',
+                width: '100%',
+              }}
+            >
+              <ReadOnlyAnnotation
+                annotationId={annotation.id}
+                screenshotUrl={screenshot.url}
+                width={screenshot.width}
+                height={screenshot.height}
+                tldraw={tldraw}
+              />
+            </div>
           </div>
 
           {/* Right: thread pane */}
           <div style={{ padding: 'var(--space-2xl)' }}>
             <ThreadTimeline
               annotationId={annotation.id}
-              threadId={annotation.thread?.id ?? null}
-              status={annotation.thread?.status ?? 'open'}
-              messages={(annotation.thread?.messages ?? []).map((m) => ({
-                id: m.id,
-                authorType: m.authorType,
-                authorId: m.authorId,
-                body: m.body,
-                createdAt: m.createdAt.toISOString(),
-              }))}
+              threadId={thread.id}
+              status={thread.status as 'open' | 'resolved'}
+              messages={thread.messages}
               authorNamesById={authorNamesById}
             />
           </div>
         </div>
 
         <style>{`
-        .back-link-annotation {
-          transition: color var(--motion-fast) var(--ease-standard), transform var(--motion-instant) var(--ease-standard);
-        }
-        .back-link-annotation:hover {
-          color: var(--text-bright);
-        }
-        .back-link-annotation:active {
-          color: var(--text-bright);
-          transform: translateY(1px);
-        }
-        @media (max-width: 1023px) {
-          .annotation-detail-grid {
-            grid-template-columns: 1fr !important;
+          .back-link-annotation {
+            transition: color var(--motion-fast) var(--ease-standard), transform var(--motion-instant) var(--ease-standard);
           }
-          .annotation-detail-grid > div:first-child {
-            border-right: none !important;
-            border-bottom: 1px solid var(--border);
+          .back-link-annotation:hover {
+            color: var(--text-bright);
           }
-        }
-      `}</style>
+          .back-link-annotation:active {
+            color: var(--text-bright);
+            transform: translateY(1px);
+          }
+          @media (max-width: 1023px) {
+            .annotation-detail-grid {
+              grid-template-columns: 1fr !important;
+            }
+            .annotation-detail-grid > div:first-child {
+              border-right: none !important;
+              border-bottom: 1px solid var(--border);
+            }
+          }
+        `}</style>
       </main>
     </>
   );
 }
-
-export const dynamic = 'force-dynamic';

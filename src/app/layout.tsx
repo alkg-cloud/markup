@@ -1,7 +1,6 @@
 import { JetBrains_Mono, Manrope } from 'next/font/google';
 import type { ReactNode } from 'react';
-import { ToastProvider } from '@/components/Toast/Toast';
-import { TooltipPortal } from '@/components/Tooltip/TooltipPortal';
+import { ClientRoot } from './ClientRoot';
 import './globals.css';
 
 /*
@@ -34,6 +33,12 @@ export const metadata = {
   description: 'A focused review surface for HTML mockups.',
 };
 
+/**
+ * Root layout. This is the only file in the project that stays as a
+ * server component — its only job is to render the HTML shell, load
+ * fonts, and mount `ClientRoot` (which owns providers + the page tree).
+ * It MUST NOT fetch data. See `CLAUDE.md` → Client-side rendering rule.
+ */
 export default function RootLayout({ children }: { children: ReactNode }) {
   const fontVars = `${manrope.variable} ${jetBrainsMono.variable}`;
   return (
@@ -50,11 +55,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             --font-mono: var(--font-mono-loaded), "JetBrains Mono", ui-monospace, monospace;
           }
         `}</style>
-        <ToastProvider>{children}</ToastProvider>
-        {/* Single global tooltip popover — every `[data-tooltip]` trigger
-            in the app routes through this element. See
-            `src/components/Tooltip/TooltipPortal.tsx`. */}
-        <TooltipPortal />
+        <ClientRoot>{children}</ClientRoot>
       </body>
     </html>
   );
