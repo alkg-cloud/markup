@@ -4,13 +4,24 @@ import { useEffect, useRef, useState } from 'react';
 
 interface Props {
   mockupId: string;
+  /** Canonical viewer URL for the back-link — computed server-side
+   *  because the path includes the project slug + folder ancestors
+   *  which require a DB walk. */
+  viewerHref: string;
   fromVid: string;
   toVid: string;
   fromCreatedAt: string;
   toCreatedAt: string;
 }
 
-export function DiffViewer({ mockupId, fromVid, toVid, fromCreatedAt, toCreatedAt }: Props) {
+export function DiffViewer({
+  mockupId,
+  viewerHref,
+  fromVid,
+  toVid,
+  fromCreatedAt,
+  toCreatedAt,
+}: Props) {
   const leftRef = useRef<HTMLIFrameElement>(null);
   const rightRef = useRef<HTMLIFrameElement>(null);
   const [overlay, setOverlay] = useState(false);
@@ -67,7 +78,7 @@ export function DiffViewer({ mockupId, fromVid, toVid, fromCreatedAt, toCreatedA
       >
         {/* Left: back link */}
         <Link
-          href={`/mockups/${mockupId}`}
+          href={viewerHref}
           style={{
             color: 'var(--text-dim)',
             fontSize: 'var(--type-sm)',

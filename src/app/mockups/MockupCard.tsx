@@ -37,9 +37,13 @@ interface MockupCardProps {
   slug: string;
   status: string;
   updatedAt: string;
+  /** Pre-computed canonical URL — parent builds this from the project
+   *  slug + folder path + mockup slug so the card doesn't need to walk
+   *  the tree itself. */
+  href: string;
 }
 
-export default function MockupCard({ id, name, slug, status, updatedAt }: MockupCardProps) {
+export default function MockupCard({ id, name, slug, status, updatedAt, href }: MockupCardProps) {
   const [imgError, setImgError] = useState(false);
 
   const hue = hueForSlug(slug);
@@ -48,7 +52,7 @@ export default function MockupCard({ id, name, slug, status, updatedAt }: Mockup
   const thumbBg = `radial-gradient(ellipse at 25% 35%, oklch(38% 0.16 ${hue} / 0.55), transparent 65%), var(--bg-card-active)`;
 
   return (
-    <Link href={`/mockups/${id}`} className={styles.card}>
+    <Link href={href} className={styles.card}>
       <div className={styles.thumb}>
         <div className={styles.monogram} aria-hidden="true" style={{ background: thumbBg }}>
           {monogram}

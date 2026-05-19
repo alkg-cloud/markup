@@ -44,6 +44,9 @@ export interface RecentMockup {
   name: string;
   path?: string;
   updatedAt: string;
+  /** Canonical path-based URL — pre-computed server-side because the
+   *  client can't async-walk the folder chain. */
+  href: string;
 }
 
 interface RecentsSectionProps {
@@ -70,7 +73,7 @@ export function RecentsSection({ projectSlug, mockups }: RecentsSectionProps) {
         {visibleIds.map((id) => {
           const m = mockups[id];
           return (
-            <a key={id} href={`/mockups/${id}`} className={listStyles.item}>
+            <a key={id} href={m.href} className={listStyles.item}>
               <span className={listStyles.itemIcon} aria-hidden="true">
                 📄
               </span>

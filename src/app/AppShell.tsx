@@ -1,4 +1,5 @@
 import { cookies, headers } from 'next/headers';
+import { mockupSlugHref } from '@/lib/project/routes';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
@@ -46,20 +47,51 @@ export async function AppShell({ children }: { children: ReactNode }) {
 
   const allMockups = await prisma.mockup.findMany({
     where: { status: { not: 'archived' } },
-    select: { id: true, name: true, updatedAt: true, folder: { select: { name: true } } },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      updatedAt: true,
+      project: { select: { slug: true } },
+      folder: { select: { id: true, name: true } },
+    },
   });
+  // One-shot lookup table so we can resolve each mockup's full folder
+  // ancestor chain without spamming Prisma per mockup.
+  const allFolders = await prisma.folder.findMany({
+    select: { id: true, name: true, parentId: true },
+  });
+  const folderById = new Map(allFolders.map((f) => [f.id, f]));
+  const buildFolderPath = (startId: string | undefined): string[] => {
+    if (!startId) return [];
+    const out: string[] = [];
+    const seen = new Set<string>();
+    let cur: string | undefined = startId;
+    while (cur) {
+      if (seen.has(cur)) break;
+      seen.add(cur);
+      const f = folderById.get(cur);
+      if (!f) break;
+      out.unshift(f.name);
+      cur = f.parentId ?? undefined;
+    }
+    return out;
+  };
   const mockupNames: Record<string, string> = {};
   const recentMockups: Record<
     string,
-    { id: string; name: string; path?: string; updatedAt: string }
+    { id: string; name: string; path?: string; updatedAt: string; href: string }
   > = {};
   for (const m of allMockups) {
     mockupNames[m.id] = m.name;
+    const projectSlug = m.project?.slug ?? 'unsorted';
+    const folderPath = buildFolderPath(m.folder?.id);
     recentMockups[m.id] = {
       id: m.id,
       name: m.name,
       path: m.folder?.name,
       updatedAt: m.updatedAt.toISOString(),
+      href: mockupSlugHref(projectSlug, folderPath, m.slug),
     };
   }
 

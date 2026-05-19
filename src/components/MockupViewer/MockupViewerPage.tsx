@@ -1,15 +1,11 @@
-import { cookies, headers } from 'next/headers';
-import { redirect } from 'next/navigation';
 import type { ThreadComment } from '@/components/AnnotationCard';
+import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
+import { AppMainViewerWired } from '@/components/MockupViewer/AppMainViewerWired';
 import { Topbar } from '@/components/Topbar/Topbar';
 import type { Anchor } from '@/lib/anchoring';
-import { identify } from '@/lib/auth/identify';
 import { resolveDisplayNames } from '@/lib/auth/resolve-display-name';
-import { isSetupCompleted } from '@/lib/auth/setup-state';
 import { prisma } from '@/lib/prisma';
-import { folderHref, projectDisplayName, projectHref } from '@/lib/project/routes';
-import type { AppMainAnnotation } from './components/AppMainViewer';
-import { AppMainViewerWired } from './components/AppMainViewerWired';
+import type { AppMainAnnotation } from './AppMainViewer';
 
 const COLOR_PALETTE_SIZE = 16;
 
@@ -28,8 +24,6 @@ function asStatus(s: string): AppMainAnnotation['status'] {
 
 function formatTimestamp(d: Date): string {
   // Match the AppMain ideias mockup format: `DD/MM/YYYY · HH:MM`.
-  // The native locale formatter inserts a comma separator we can't
-  // configure, so we manually assemble the parts.
   const pad = (n: number) => String(n).padStart(2, '0');
   const day = pad(d.getDate());
   const month = pad(d.getMonth() + 1);
@@ -40,39 +34,36 @@ function formatTimestamp(d: Date): string {
 }
 
 function colorForUser(id: string): number {
-  // Cheap deterministic hash → palette slot. Same author always gets
-  // the same color across comments + avatars.
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
   return Math.abs(h) % COLOR_PALETTE_SIZE;
 }
 
-export default async function MockupViewerPage({ params }: { params: Promise<{ id: string }> }) {
-  if (!(await isSetupCompleted())) redirect('/setup');
-  const cs = await cookies();
-  const hs = await headers();
-  const fakeReq = {
-    cookies: {
-      get: (k: string) => {
-        const c = cs.get(k);
-        return c ? { value: c.value } : undefined;
-      },
-    },
-    headers: { get: (k: string) => hs.get(k) },
-  } as Parameters<typeof identify>[0];
-  const id = await identify(fakeReq);
-  if (!id) redirect('/login');
+export interface MockupViewerPageProps {
+  /** Database id of the mockup. Resolved upstream from the URL path. */
+  mockupId: string;
+  /** Logged-in user identity (used for `isOwn`, avatar). */
+  identity: { kind: 'user'; userId: string } | { kind: 'agent'; tokenId: string };
+  /** Pre-built breadcrumbs (caller routes know the path-based URLs). */
+  breadcrumbs: BreadcrumbSegment[];
+}
 
-  const { id: mockupIdOrSlug } = await params;
-  const mockup = await prisma.mockup.findFirst({
-    where: /^c[a-z0-9]{24}$/.test(mockupIdOrSlug)
-      ? { id: mockupIdOrSlug }
-      : { slug: mockupIdOrSlug },
+/**
+ * Renders the mockup viewer (Topbar + AppMainViewerWired) given a
+ * mockup id + caller-supplied breadcrumbs. Server component — does
+ * the full data fetch + display-name resolution. Used by the path-
+ * based route `/projects/[slug]/[...path]/page.tsx` when the trailing
+ * segment resolves to a mockup.
+ */
+export async function MockupViewerPage({
+  mockupId,
+  identity,
+  breadcrumbs,
+}: MockupViewerPageProps): Promise<JSX.Element> {
+  const mockup = await prisma.mockup.findUnique({
+    where: { id: mockupId },
     include: {
       versions: { orderBy: { createdAt: 'desc' } },
-      folder: {
-        select: { id: true, name: true, parentId: true, projectId: true },
-      },
       annotations: {
         orderBy: { createdAt: 'desc' },
         take: 100,
@@ -93,64 +84,19 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
     return <main style={{ padding: 24 }}>Mockup not found.</main>;
   }
 
-  // Resolve the logged-in user's name/email for the Topbar avatar.
   let userName: string | undefined;
   let userEmail: string | undefined;
-  if (id.kind === 'user') {
+  if (identity.kind === 'user') {
     const u = await prisma.user.findUnique({
-      where: { id: id.userId },
+      where: { id: identity.userId },
       select: { name: true, email: true },
     });
     userName = u?.name ?? undefined;
     userEmail = u?.email ?? undefined;
   }
 
-  // Walk folder.parent chain → project so the Topbar shows
-  // [Project] / [Folder] / … / [Mockup].
-  const breadcrumbs: { label: string; href: string }[] = [];
-  if (mockup.folder) {
-    const project = await prisma.project.findUnique({
-      where: { id: mockup.folder.projectId },
-      select: { slug: true, name: true },
-    });
-    if (project) {
-      breadcrumbs.push({
-        label: projectDisplayName(project),
-        href: projectHref(project.slug),
-      });
-      // Build the folder ancestor chain top-down.
-      const ancestors: { id: string; name: string }[] = [];
-      let cur: string | null = mockup.folder.parentId;
-      const seen = new Set<string>();
-      while (cur && !seen.has(cur)) {
-        seen.add(cur);
-        const parent: { id: string; name: string; parentId: string | null } | null =
-          await prisma.folder.findUnique({
-            where: { id: cur },
-            select: { id: true, name: true, parentId: true },
-          });
-        if (!parent) break;
-        ancestors.unshift({ id: parent.id, name: parent.name });
-        cur = parent.parentId;
-      }
-      // Path-based crumbs walk the same name list incrementally — each
-      // ancestor links to its own cumulative folder URL.
-      const pathSoFar: string[] = [];
-      for (const a of ancestors) {
-        pathSoFar.push(a.name);
-        breadcrumbs.push({ label: a.name, href: folderHref(project.slug, [...pathSoFar]) });
-      }
-      pathSoFar.push(mockup.folder.name);
-      breadcrumbs.push({
-        label: mockup.folder.name,
-        href: folderHref(project.slug, [...pathSoFar]),
-      });
-    }
-  }
-  breadcrumbs.push({ label: mockup.name, href: `/mockups/${mockup.id}` });
-
-  // Resolve all author names in one batch (annotation authors, message
-  // authors, version authors, reaction users).
+  // Resolve every author referenced by the page (annotation authors,
+  // message authors, version authors, reaction users) in one batch.
   const authorRefs = new Map<string, 'user' | 'agent'>();
   for (const v of mockup.versions) authorRefs.set(v.createdBy, v.createdByType as 'user' | 'agent');
   for (const a of mockup.annotations) {
@@ -168,13 +114,10 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
   );
   const resolvedName = (uid: string): string => nameMap.get(uid)?.name ?? `user ${uid.slice(-6)}`;
 
-  // The logged-in user's id for `isOwn` checks.
-  const currentUserId = id.kind === 'user' ? id.userId : id.tokenId;
+  const currentUserId = identity.kind === 'user' ? identity.userId : identity.tokenId;
   const currentUser = resolvedName(currentUserId);
   const currentUserColorIndex = colorForUser(currentUserId);
 
-  // Build the thread-comment list for each annotation. Newest-first
-  // replies; primary is the first message.
   const annotations: AppMainAnnotation[] = mockup.annotations
     .filter((a) => a.thread && a.thread.messages.length > 0)
     .map((a, idx) => {
@@ -205,9 +148,6 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
         id: a.id,
         threadId: a.thread!.id,
         colorIndex: a.colorIndex,
-        // Reverse-chronological list — newest annotation gets the highest
-        // number. Earlier annotations bear lower numbers (more stable
-        // across new creations).
         label: mockup.annotations.length - idx,
         status: asStatus(a.status),
         author: resolvedName(a.createdBy),
@@ -245,5 +185,3 @@ export default async function MockupViewerPage({ params }: { params: Promise<{ i
     </>
   );
 }
-
-export const dynamic = 'force-dynamic';

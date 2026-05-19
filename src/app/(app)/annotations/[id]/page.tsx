@@ -8,6 +8,7 @@ import { ThreadTimeline } from '@/components/ThreadTimeline/ThreadTimeline';
 import { Topbar } from '@/components/Topbar/Topbar';
 import { INTENT_PILL_COLORS, isIntentType } from '@/lib/annotation/intent';
 import { getAnnotation } from '@/lib/annotation/service';
+import { pathForMockup } from '@/lib/mockup/url';
 import { identify } from '@/lib/auth/identify';
 import { resolveDisplayName, resolveDisplayNames } from '@/lib/auth/resolve-display-name';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
@@ -57,12 +58,13 @@ export default async function AnnotationDetailPage({
   }
 
   const mockupName = mockup?.name ?? annotation.mockupId;
+  const viewerHref = (await pathForMockup(annotation.mockupId)) ?? '/projects';
 
   return (
     <>
       <Topbar
         breadcrumbs={[
-          { label: mockupName, href: `/mockups/${annotation.mockupId}` },
+          { label: mockupName, href: viewerHref },
           { label: 'Annotation', href: `/annotations/${annotation.id}` },
         ]}
       />
@@ -70,7 +72,7 @@ export default async function AnnotationDetailPage({
         {/* Header */}
         <header style={{ marginBottom: 'var(--space-xl)' }}>
           <Link
-            href={`/mockups/${annotation.mockupId}`}
+            href={viewerHref}
             style={{
               display: 'inline-flex',
               alignItems: 'center',

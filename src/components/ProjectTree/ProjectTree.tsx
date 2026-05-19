@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PICKER_ICONS } from '@/components/IconPicker/icons';
 import { MAX_FOLDER_DEPTH } from '@/lib/project/constants';
-import { folderHref, projectHref } from '@/lib/project/routes';
+import { folderHref, mockupSlugHref, projectHref } from '@/lib/project/routes';
 import { InlineFolderCreate } from './InlineFolderCreate';
 import styles from './ProjectTree.module.css';
 import type { DnDNode } from './useTreeDnD';
@@ -282,6 +282,13 @@ function flattenProjects(
         projectId: p.id,
       });
       for (let ri = 0; ri < recentMockupIds.length; ri++) {
+        // NOTE: dead code at the moment — `ProjectSidebar` doesn't pass
+        // `recents` to ProjectTree so this branch never produces nodes.
+        // RecentsSection handles the visible recents instead. When this
+        // path is wired up, the caller will need to supply the canonical
+        // path-based href (project slug + folder names + mockup slug);
+        // we leave a placeholder pointing at /projects so a stray click
+        // doesn't 404 if the dead path ever wakes up.
         nodes.push({
           id: `recent-${p.id}-${recentMockupIds[ri]}`,
           type: 'recents-item',
@@ -290,7 +297,7 @@ function flattenProjects(
           expandable: false,
           expanded: false,
           parentId: `recents-${p.id}`,
-          href: `/mockups/${recentMockupIds[ri]}`,
+          href: '/projects',
           setSize: recentMockupIds.length,
           posInSet: ri + 1,
           projectSlug: p.slug,
@@ -372,7 +379,7 @@ function flattenChildren(
       expandable: false,
       expanded: false,
       parentId,
-      href: `/mockups/${m.id}`,
+      href: mockupSlugHref(projectSlug, parentPath, m.slug),
       setSize: totalSiblings,
       posInSet: posCounter++,
       projectSlug,
@@ -1078,7 +1085,9 @@ export function ProjectTree({
               NO PROJECT
             </div>
             {orphanMockups.map((m) => {
-              const href = `/mockups/${m.id}`;
+              // Orphans live under the synthetic `unsorted` project so
+              // they still get a canonical path-based URL.
+              const href = mockupSlugHref('unsorted', [], m.slug);
               const active = pathname === href;
               return (
                 <li key={m.id} role="none" className={styles.item}>
