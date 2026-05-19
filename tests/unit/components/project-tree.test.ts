@@ -84,8 +84,8 @@ describe('ProjectTree active-path auto-expand', () => {
     document.body.innerHTML = '';
   });
 
-  it('expands every ancestor when pathname is /mockups/<id> deep in folders', async () => {
-    mockPathname = '/mockups/m-deep';
+  it('expands every ancestor when pathname is /projects/<slug>/<...folders>/<mockup-slug>', async () => {
+    mockPathname = '/projects/alpha/Outer/Inner/deep-mockup';
     const { ProjectTree } = await import('@/components/ProjectTree/ProjectTree');
     const container = document.createElement('div');
     document.body.append(container);
@@ -104,8 +104,8 @@ describe('ProjectTree active-path auto-expand', () => {
     });
   });
 
-  it('resolves mockups by slug as well as id in the pathname', async () => {
-    mockPathname = '/mockups/deep-mockup';
+  it('expands every ancestor for a folder URL (no trailing mockup segment)', async () => {
+    mockPathname = '/projects/alpha/Outer/Inner';
     const { ProjectTree } = await import('@/components/ProjectTree/ProjectTree');
     const container = document.createElement('div');
     document.body.append(container);
@@ -124,7 +124,7 @@ describe('ProjectTree active-path auto-expand', () => {
   });
 
   it('expands only the project when the active mockup lives at project root', async () => {
-    mockPathname = '/mockups/m-root';
+    mockPathname = '/projects/alpha/root-mockup';
     const { ProjectTree } = await import('@/components/ProjectTree/ProjectTree');
     const container = document.createElement('div');
     document.body.append(container);

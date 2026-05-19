@@ -42,18 +42,6 @@ export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarP
     [],
   );
 
-  // Keep React state aligned with the cookie if it changes elsewhere
-  // (e.g. another tab toggles via `storage` event). Cookie itself is
-  // the source of truth.
-  useEffect(() => {
-    const onStorage = () => {
-      const cookieMatch = document.cookie.match(new RegExp(`${SIDEBAR_COOKIE_KEY}=(true|false)`));
-      if (cookieMatch) setCollapsed(cookieMatch[1] === 'true');
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
-
   useEffect(() => {
     const root = document.documentElement;
     if (collapsed) {

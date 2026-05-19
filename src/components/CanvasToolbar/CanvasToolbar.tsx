@@ -70,7 +70,7 @@ export function CanvasToolbar({
   // pointermove updates clamped to bounds with 8px margin, pointerup
   // releases.
   const dragState = useRef<{ ox: number; oy: number; sx: number; sy: number } | null>(null);
-  const onGrabPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  const onGrabPointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
     const tb = toolbarRef.current;
     if (!tb) return;
     e.preventDefault();
@@ -183,14 +183,15 @@ export function CanvasToolbar({
 
       {versionChip ? <div className={styles.group}>{versionChip}</div> : null}
 
-      <div
+      <button
+        type="button"
         className={styles.grab}
         onPointerDown={onGrabPointerDown}
         data-tooltip="Drag toolbar"
-        role="presentation"
+        aria-label="Drag toolbar"
       >
         <GoGrabber className={styles.grabIcon} aria-hidden="true" />
-      </div>
+      </button>
     </div>
   );
 }

@@ -285,8 +285,8 @@
 /* ── Drag handle ────────────────────────────────────────────────────── */
 
 .dragHandle {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -299,9 +299,14 @@
   padding: 0;
   transition: opacity var(--motion-fast) var(--ease-standard);
 }
+/* The tree-row grab is intentionally smaller than the rail / toolbar
+ * 25 px handles because the row itself is only ~24 px tall — a 25 px
+ * icon would consume the entire row and crowd the icon + label. The
+ * canonical 25 px applies to standalone overlay surfaces; row-scoped
+ * grabs scale down to fit the row. */
 .dragHandle > svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 .treeItem:hover .dragHandle {
