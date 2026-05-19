@@ -10,7 +10,7 @@
  * pattern. Z-index sits above the rail (30) + composer (80) so it's
  * never occluded mid-marking. */
 .bar {
-  composes: floatingSurface from '../../styles/glass.module.css';
+  composes: floatingSurface from "../../styles/glass.module.css";
   position: fixed;
   top: 76px; /* 52px topbar + 24px gap */
   left: 50%;

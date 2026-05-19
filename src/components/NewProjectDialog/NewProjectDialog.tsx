@@ -1,12 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Dialog,
-  DialogButton,
-  DialogField,
-  DialogInput,
-} from '@/components/Dialog/Dialog';
+import { Dialog, DialogButton, DialogField, DialogInput } from '@/components/Dialog/Dialog';
 import { IconPicker } from '@/components/IconPicker/IconPicker';
 import { useToast } from '@/components/Toast/useToast';
 import { validateUrlSafeName } from '@/lib/validation/url-safe-name';
@@ -71,11 +66,7 @@ export function NewProjectDialog({ open, onClose, onSaved, project }: NewProject
       actions={
         <>
           <DialogButton onClick={handleClose}>Cancel</DialogButton>
-          <DialogButton
-            variant="accent"
-            disabled={!canSubmit || loading}
-            onClick={handleSubmit}
-          >
+          <DialogButton variant="accent" disabled={!canSubmit || loading} onClick={handleSubmit}>
             {isEdit ? 'Update' : 'Create'}
           </DialogButton>
         </>

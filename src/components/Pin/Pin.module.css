@@ -53,7 +53,6 @@
     0 0 0 2px oklch(82% var(--pin-c) var(--pin-h) / 0.45);
 }
 
-
 /* Pending pin (during the composer's marking mode) — same glass tag as
    a regular pin so the draft reads as a placed marker rather than a
    ghost outline. The dashed border + soft pulse distinguish it from

@@ -50,9 +50,10 @@ interface UsePopoverReturn<T extends HTMLElement, P extends HTMLElement> {
  *
  * See `docs/code-style.md § Popovers` for the rule.
  */
-export function usePopover<T extends HTMLElement = HTMLElement, P extends HTMLElement = HTMLElement>(
-  align: PopoverAlign = 'left',
-): UsePopoverReturn<T, P> {
+export function usePopover<
+  T extends HTMLElement = HTMLElement,
+  P extends HTMLElement = HTMLElement,
+>(align: PopoverAlign = 'left'): UsePopoverReturn<T, P> {
   const id = useId();
   const triggerRef = useRef<T | null>(null);
   const popoverRef = useRef<P | null>(null);

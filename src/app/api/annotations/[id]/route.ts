@@ -58,7 +58,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const body = await req.json().catch(() => null);
   const parsed = PatchSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: 'invalid_body', detail: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json(
+      { error: 'invalid_body', detail: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
   const existing = await prisma.annotation.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: 'not_found' }, { status: 404 });
