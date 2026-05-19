@@ -1,5 +1,5 @@
 import type { TreeProject } from '@/components/ProjectTree/ProjectTree';
-import { projectHref } from '@/lib/project/routes';
+import { folderHref, projectHref } from '@/lib/project/routes';
 
 export interface FlatSearchItem {
   id: string;
@@ -23,7 +23,7 @@ export function flattenProjectTree(projects: TreeProject[]): FlatSearchItem[] {
       projectSlug: project.slug,
     });
 
-    walkFolders(project.folders, project.name, project.slug, items);
+    walkFolders(project.folders, project.name, [], project.slug, items);
 
     for (const mockup of project.mockups) {
       items.push({
@@ -43,16 +43,18 @@ export function flattenProjectTree(projects: TreeProject[]): FlatSearchItem[] {
 function walkFolders(
   folders: TreeProject['folders'],
   path: string,
+  parentNames: ReadonlyArray<string>,
   projectSlug: string,
   items: FlatSearchItem[],
 ): void {
   for (const folder of folders) {
+    const folderPath = [...parentNames, folder.name];
     items.push({
       id: folder.id,
       name: folder.name,
       path,
       type: 'folder',
-      href: projectHref(projectSlug, folder.id),
+      href: folderHref(projectSlug, folderPath),
       projectSlug,
     });
 
@@ -69,6 +71,6 @@ function walkFolders(
       });
     }
 
-    walkFolders(folder.children, childPath, projectSlug, items);
+    walkFolders(folder.children, childPath, folderPath, projectSlug, items);
   }
 }

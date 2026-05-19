@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { projectHref } from '@/lib/project/routes';
+import { folderHref } from '@/lib/project/routes';
 import styles from './FolderCard.module.css';
 
 interface FolderCardProps {
@@ -9,11 +9,14 @@ interface FolderCardProps {
     childCount: number;
   };
   projectSlug: string;
+  /** Ancestor folder names + this folder's name — used to build the
+   *  path-based folder URL. */
+  folderPath: ReadonlyArray<string>;
 }
 
-export function FolderCard({ folder, projectSlug }: FolderCardProps) {
+export function FolderCard({ folder, projectSlug, folderPath }: FolderCardProps) {
   return (
-    <Link href={projectHref(projectSlug, folder.id)} className={styles.card}>
+    <Link href={folderHref(projectSlug, folderPath)} className={styles.card}>
       <svg
         width="20"
         height="20"

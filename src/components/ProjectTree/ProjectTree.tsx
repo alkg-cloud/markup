@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PICKER_ICONS } from '@/components/IconPicker/icons';
 import { MAX_FOLDER_DEPTH } from '@/lib/project/constants';
-import { projectHref } from '@/lib/project/routes';
+import { folderHref, projectHref } from '@/lib/project/routes';
 import { InlineFolderCreate } from './InlineFolderCreate';
 import styles from './ProjectTree.module.css';
 import type { DnDNode } from './useTreeDnD';
@@ -326,10 +326,12 @@ function flattenChildren(
   projectId: string,
   expandedSet: Set<string>,
   totalSiblings: number,
+  parentPath: ReadonlyArray<string> = [],
 ) {
   let posCounter = 1;
   for (const f of folders) {
     const fExpanded = expandedSet.has(f.id);
+    const folderPath = [...parentPath, f.name];
     nodes.push({
       id: f.id,
       type: 'folder',
@@ -338,7 +340,7 @@ function flattenChildren(
       expandable: true,
       expanded: fExpanded,
       parentId,
-      href: projectHref(projectSlug, f.id),
+      href: folderHref(projectSlug, folderPath),
       setSize: totalSiblings,
       posInSet: posCounter++,
       projectSlug,
@@ -357,6 +359,7 @@ function flattenChildren(
         projectId,
         expandedSet,
         childTotal,
+        folderPath,
       );
     }
   }
