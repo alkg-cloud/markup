@@ -1,9 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { type BreadcrumbSegment, Breadcrumbs } from '@/components/Breadcrumbs/Breadcrumbs';
 import { usePopover } from '@/lib/popover/usePopover';
+import { formatShortcut } from '@/lib/shortcuts/platform';
 import styles from './Topbar.module.css';
 
 interface TopbarProps {
@@ -15,13 +16,8 @@ interface TopbarProps {
 
 export function Topbar({ breadcrumbs, userName, userEmail, onSearchClick }: TopbarProps) {
   const initial = userName ? userName.charAt(0).toUpperCase() : 'U';
-  const [isMac, setIsMac] = useState(false);
   const accountMenu = usePopover<HTMLButtonElement, HTMLDivElement>('right');
   const router = useRouter();
-
-  useEffect(() => {
-    setIsMac(/Mac|iPhone|iPad|iPod/.test(navigator.platform));
-  }, []);
 
   // The command palette uses the same top-layer treatment; close the
   // account menu if the palette opens so two overlays never stack.
@@ -45,7 +41,10 @@ export function Topbar({ breadcrumbs, userName, userEmail, onSearchClick }: Topb
     router.push('/login');
   }, [accountMenu.close, router]);
 
-  const kbdLabel = isMac ? '⌘K' : 'Ctrl+K';
+  // Pages are CSR-only — `navigator` is always defined during render, so
+  // we can derive the OS-aware label inline via the shared shortcut
+  // formatter instead of round-tripping through state + effect.
+  const kbdLabel = formatShortcut(['k']);
 
   return (
     <header className={styles.topbar}>
