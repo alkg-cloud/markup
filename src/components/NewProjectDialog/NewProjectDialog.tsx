@@ -1,11 +1,15 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Dialog, DialogField, DialogInput } from '@/components/Dialog/Dialog';
+import {
+  Dialog,
+  DialogButton,
+  DialogField,
+  DialogInput,
+} from '@/components/Dialog/Dialog';
 import { IconPicker } from '@/components/IconPicker/IconPicker';
 import { useToast } from '@/components/Toast/useToast';
 import { validateUrlSafeName } from '@/lib/validation/url-safe-name';
-import styles from './NewProjectDialog.module.css';
 
 interface NewProjectDialogProps {
   open: boolean;
@@ -66,23 +70,20 @@ export function NewProjectDialog({ open, onClose, onSaved, project }: NewProject
       title={isEdit ? 'Edit Project' : 'New Project'}
       actions={
         <>
-          <button type="button" className={styles.btnSecondary} onClick={handleClose}>
-            Cancel
-          </button>
-          <button
-            type="button"
-            className={styles.btnAccent}
+          <DialogButton onClick={handleClose}>Cancel</DialogButton>
+          <DialogButton
+            variant="accent"
             disabled={!canSubmit || loading}
             onClick={handleSubmit}
           >
-            {isEdit ? 'Update Project' : 'Create Project'}
-          </button>
+            {isEdit ? 'Update' : 'Create'}
+          </DialogButton>
         </>
       }
     >
       <DialogField
-        label="PROJECT NAME"
-        hint="Use letters, digits, hyphens, or underscores."
+        label="Project name"
+        hint="Letters, digits, hyphens, or underscores."
         error={nameError?.message ?? null}
       >
         <DialogInput
@@ -95,7 +96,7 @@ export function NewProjectDialog({ open, onClose, onSaved, project }: NewProject
           }}
         />
       </DialogField>
-      <DialogField label="ICON">
+      <DialogField label="Icon">
         <IconPicker value={icon} onSelect={setIcon} />
       </DialogField>
     </Dialog>

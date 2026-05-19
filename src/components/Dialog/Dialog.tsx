@@ -1,6 +1,13 @@
 'use client';
 
-import { type InputHTMLAttributes, type ReactNode, useCallback, useEffect, useRef } from 'react';
+import {
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
 import styles from './Dialog.module.css';
 
 interface DialogProps {
@@ -80,4 +87,38 @@ export function DialogField({ label, children, hint, error }: DialogFieldProps) 
 
 export function DialogInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={styles.input} />;
+}
+
+interface DialogButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Defaults to `secondary`. `accent` is the primary action,
+   *  `danger` is the destructive variant. Matches `confirm-dialog`'s
+   *  cancel / confirm / danger treatment. */
+  variant?: 'secondary' | 'accent' | 'danger';
+}
+
+/**
+ * `DialogButton` — shared button primitive for every Dialog action row.
+ * Pulls from the same styling pool as `confirm-dialog` so a generic
+ * Dialog (project create/edit) and an AlertDialog (delete confirms)
+ * read as one design system.
+ */
+export function DialogButton({
+  variant = 'secondary',
+  className,
+  type = 'button',
+  ...rest
+}: DialogButtonProps) {
+  const variantClass =
+    variant === 'accent'
+      ? styles.btnAccent
+      : variant === 'danger'
+        ? styles.btnDanger
+        : styles.btnSecondary;
+  return (
+    <button
+      type={type}
+      className={[styles.btn, variantClass, className].filter(Boolean).join(' ')}
+      {...rest}
+    />
+  );
 }
