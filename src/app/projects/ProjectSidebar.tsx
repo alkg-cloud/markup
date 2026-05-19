@@ -49,7 +49,7 @@ export function ProjectSidebar({
         for (const f of folders) {
           idx.set(f.id, { name: f.name, type: 'folder' });
           for (const m of f.mockups) idx.set(m.id, { name: m.name, type: 'mockup' });
-          walk(f.folders);
+          walk(f.children);
         }
       };
       walk(p.folders);
