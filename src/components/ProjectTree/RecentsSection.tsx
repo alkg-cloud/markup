@@ -8,18 +8,23 @@ import headerStyles from './RecentsSection.module.css';
 const MAX_RECENTS = 5;
 const STORAGE_PREFIX = 'markup_recents_';
 
+function readStoredRecents(key: string): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? (JSON.parse(stored) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function useRecents(projectSlug: string): [string[], (mockupId: string) => void] {
   const key = `${STORAGE_PREFIX}${projectSlug}`;
-  const [ids, setIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored) setIds(JSON.parse(stored));
-    } catch {
-      /* empty */
-    }
-  }, [key]);
+  // Lazy initializer reads from localStorage during render of the FIRST
+  // mount only — avoids the "set state in useEffect to mirror storage"
+  // double-render. Pages are CSR-only, so the `typeof window` guard is
+  // belt-and-braces against pre-rendering edge cases.
+  const [ids, setIds] = useState<string[]>(() => readStoredRecents(key));
 
   const recordAccess = useCallback(
     (mockupId: string) => {
