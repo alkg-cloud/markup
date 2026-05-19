@@ -146,6 +146,32 @@ const tldrawAbs = path.join(env().DATA_DIR, annotation.tldrawPath); // build abs
 deleteIntentCache(annDir);
 ```
 
+## Tooltips: one primitive, no exceptions
+
+The `[data-tooltip]::after` rule in `src/components/Tooltip/Tooltip.css` is the **only** tooltip implementation in the product. Every interactive surface that needs a hover/focus hint MUST use it. The CanvasToolbar's `Zoom in` / `Zoom out` / `Fullscreen` buttons are the reference; rail tooltips, kebab tooltips, comment kebab tooltips, the emoji-picker `Add reaction` tooltip — all share the same declaration.
+
+Forbidden:
+- `title="…"` attributes on buttons or links (use `data-tooltip` instead; keep `aria-label` for accessibility).
+- JSX tooltip components (no `<Tooltip>…</Tooltip>` wrappers, no portal-based one-off implementations).
+- `aria-describedby` paired with a visually-hidden element used as a tooltip.
+
+Required:
+```tsx
+<button
+  type="button"
+  data-tooltip="Keep expanded"
+  // For triggers near the right edge of the viewport / a container,
+  // anchor the bubble to the trigger's right edge so it extends left
+  // and never gets clipped.
+  data-tooltip-align="right"
+  aria-label="Keep expanded"
+>
+  …
+</button>
+```
+
+The trigger must establish a positioning context (every `<button>` does). The bubble's z-index is `10000`, so it wins over every floating surface in the app — never wrap a trigger in something that creates a new stacking context above this number.
+
 ## Never use native browser dialogs
 
 `window.alert()`, `window.confirm()`, and `window.prompt()` are **banned** in the codebase. They:
