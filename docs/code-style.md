@@ -146,6 +146,32 @@ const tldrawAbs = path.join(env().DATA_DIR, annotation.tldrawPath); // build abs
 deleteIntentCache(annDir);
 ```
 
+## Never use native browser dialogs
+
+`window.alert()`, `window.confirm()`, and `window.prompt()` are **banned** in the codebase. They:
+
+- Ignore every design token (background, typography, spacing, motion); the user sees a chrome of the OS instead of the product.
+- Block the renderer on a synchronous event loop, which collides with automation (QA agents, Playwright) and assistive tech.
+- Hijack focus on touchscreens, often firing twice or behind the page chrome.
+
+Always use the project's `useConfirm()` hook from `@/components/ConfirmDialog` for yes/no flows. The hook returns a promise — same imperative ergonomics as `confirm()`, styled like the rest of the floating chrome.
+
+```ts
+// Avoid
+if (!window.confirm('Delete this comment?')) return;
+
+// Prefer
+const ok = await confirm({
+  title: 'Delete comment',
+  description: 'This cannot be undone.',
+  confirmLabel: 'Delete',
+  danger: true,
+});
+if (!ok) return;
+```
+
+For one-off messages (e.g. surfacing an API error), call `confirm()` with a single button + a cancel label of "Dismiss" — same component, no extra primitive. For multi-step flows or forms, build on top of `@radix-ui/react-dialog` and host the new component under `src/components/<Name>Dialog/`.
+
 ## Prefer pure helpers over service methods on classes
 
 Services are functions that take input and return output. Avoid classes with state — they hide control flow and break tree-shaking. The `DiffApplyError` class is an exception because it composes with `instanceof`.
