@@ -246,13 +246,6 @@ export function AppMainViewer({
   const layoutKey = isFullscreen ? 'fs' : 'win';
   const repositionKey = `${zoom}:${layoutKey}`;
 
-  const onAnnotationStatus = useCallback(
-    async (annotationId: string, status: AnnotationStatus) => {
-      await changeStatus(annotationId, status);
-    },
-    [changeStatus],
-  );
-
   const onAnnotationDeleteRow = useCallback(
     async (annotationId: string) => {
       const ok = await deleteAnnotation(annotationId);
@@ -316,7 +309,9 @@ export function AppMainViewer({
               onCommentEditSave={(commentId, newBody) => editComment(commentId, newBody)}
               onCommentDelete={(commentId) => deleteComment(commentId)}
               onCommentReact={(commentId, emoji) => toggleReaction(commentId, emoji)}
-              onAnnotationStatusChange={(status) => onAnnotationStatus(a.id, status)}
+              onAnnotationStatusChange={async (status) => {
+                await changeStatus(a.id, status);
+              }}
               onAnnotationDelete={() => onAnnotationDeleteRow(a.id)}
             />
           ))}
