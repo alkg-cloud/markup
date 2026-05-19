@@ -1,6 +1,7 @@
 import { JetBrains_Mono, Manrope } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { ToastProvider } from '@/components/Toast/Toast';
+import { TooltipPortal } from '@/components/Tooltip/TooltipPortal';
 import './globals.css';
 
 /*
@@ -50,6 +51,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }
         `}</style>
         <ToastProvider>{children}</ToastProvider>
+        {/* Single global tooltip popover — every `[data-tooltip]` trigger
+            in the app routes through this element. See
+            `src/components/Tooltip/TooltipPortal.tsx`. */}
+        <TooltipPortal />
       </body>
     </html>
   );
