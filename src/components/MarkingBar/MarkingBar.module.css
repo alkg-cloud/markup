@@ -1,14 +1,17 @@
 /* Top-center mode indicator that surfaces during composer marking mode.
    Glass bg matching the rest of the floating chrome. See spec §7. */
 
-/* Scoped to the AppMain inner container (absolute, not fixed) so the
- * bar sits 24 px below the AppMain top edge — not the viewport top —
- * which keeps it from clipping into the global topbar in normal mode.
- * In fullscreen the AppMain takes the whole viewport, so 24 px from
- * top is also correct there. */
+/* Pinned to the visible canvas area via `position: fixed` so an
+ * expanded sidebar (which shifts the AppMain origin but doesn't move
+ * the appMainRef containing block) never carries the bar off-centre
+ * — `left: 50%` resolves against the viewport, and the bar reads as
+ * a top-of-canvas affordance independent of layout state. The
+ * AnnotationsRail / CanvasToolbar use the same fixed-positioning
+ * pattern. Z-index sits above the rail (30) + composer (80) so it's
+ * never occluded mid-marking. */
 .bar {
-  position: absolute;
-  top: 24px;
+  position: fixed;
+  top: 76px; /* 52px topbar + 24px gap */
   left: 50%;
   transform: translateX(-50%) translateY(-4px);
   display: none;
@@ -20,11 +23,15 @@
   border: var(--surface-glass-border);
   border-radius: 9999px;
   box-shadow: var(--shadow-popover);
-  z-index: 90;
+  z-index: 95;
   opacity: 0;
   transition:
     opacity var(--motion-fast),
     transform var(--motion-base) var(--ease-spring);
+}
+.bar:fullscreen .bar,
+:fullscreen .bar {
+  top: 24px;
 }
 .bar.open {
   display: flex;
