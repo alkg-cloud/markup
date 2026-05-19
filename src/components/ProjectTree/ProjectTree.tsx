@@ -1099,12 +1099,10 @@ function TreeNodeKebab({
 }: TreeNodeKebabProps) {
   const kebab = usePopover<HTMLButtonElement, HTMLDivElement>('right');
   const nodeType = node.type as 'project' | 'folder' | 'mockup';
-  const deleteLabel =
-    nodeType === 'project'
-      ? 'Delete project'
-      : nodeType === 'folder'
-        ? 'Delete folder'
-        : 'Delete mockup';
+  // Menu trigger is already scoped to a specific row, so the noun adds
+  // visual noise without information. `aria-label` keeps the assistive-
+  // technology announcement specific (e.g. "Delete project Lumen Coffee").
+  const deleteAriaLabel = `Delete ${nodeType} ${displayLabel}`;
 
   return (
     <>
@@ -1198,13 +1196,14 @@ function TreeNodeKebab({
           type="button"
           role="menuitem"
           className={styles.kebabMenuItemDanger}
+          aria-label={deleteAriaLabel}
           onClick={(e) => {
             e.stopPropagation();
             kebab.close();
             onDelete?.(node.id, nodeType);
           }}
         >
-          {deleteLabel}
+          Delete
         </button>
       </div>
     </>

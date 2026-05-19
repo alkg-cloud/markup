@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { type IntentType, isIntentType } from '@/lib/annotation/intent';
 import { parsePinCoords } from '@/lib/annotation/pin-coords';
-import { ANNOTATION_STATUSES } from '@/lib/annotation/status';
 import {
   type AnchorRecord,
   createAnnotation,
   createCommentAnnotation,
   listAnnotations,
 } from '@/lib/annotation/service';
+import { ANNOTATION_STATUSES } from '@/lib/annotation/status';
 import { identify } from '@/lib/auth/identify';
 import { prisma } from '@/lib/prisma';
 

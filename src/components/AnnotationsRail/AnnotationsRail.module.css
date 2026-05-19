@@ -5,7 +5,7 @@
    See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §4. */
 
 .rail {
-  composes: floatingSurface from '../../styles/glass.module.css';
+  composes: floatingSurface from "../../styles/glass.module.css";
   position: absolute;
   top: calc(50% - 200px);
   left: 24px;

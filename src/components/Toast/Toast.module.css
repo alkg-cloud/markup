@@ -12,7 +12,7 @@
 }
 
 .pill {
-  composes: floatingSurface from '../../styles/glass.module.css';
+  composes: floatingSurface from "../../styles/glass.module.css";
   pointer-events: auto;
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-popover);

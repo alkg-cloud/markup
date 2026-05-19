@@ -1,7 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { flattenProjectTree } from '@/components/CommandPalette/flatten';
+import { useConfirm } from '@/components/ConfirmDialog';
 import { NewProjectDialog } from '@/components/NewProjectDialog/NewProjectDialog';
 import type { TreeMockup, TreeProject } from '@/components/ProjectTree/ProjectTree';
 import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
@@ -35,6 +37,18 @@ export function ProjectSidebar({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
+  const { confirm, dialog: confirmDialog } = useConfirm();
+
+  // Flat id → name lookup so the delete confirm dialog can quote the
+  // target row's display name. Reuses `flattenProjectTree` (the same
+  // walker the command palette uses) so we don't ship a second tree
+  // traversal that can drift out of sync.
+  const nodeNameById = useMemo(() => {
+    const idx = new Map<string, string>();
+    for (const item of flattenProjectTree(projects)) idx.set(item.id, item.name);
+    for (const m of orphanMockups) idx.set(m.id, m.name);
+    return idx;
+  }, [projects, orphanMockups]);
 
   const handleProjectSaved = useCallback(
     (project: { id: string; slug: string }) => {
@@ -107,6 +121,53 @@ export function ProjectSidebar({
     [router],
   );
 
+  // Per-noun copy is centralised so the danger dialog stays consistent
+  // across project / folder / mockup. The dialog itself comes from
+  // `useConfirm` (styled Radix alert) — never `window.confirm`.
+  const handleDelete = useCallback(
+    async (nodeId: string, nodeType: 'project' | 'folder' | 'mockup') => {
+      const name = nodeNameById.get(nodeId) ?? 'this item';
+      const DELETE_COPY = {
+        project: {
+          api: `/api/projects/${nodeId}`,
+          description: `"${name}" will be removed along with all its folders, mockups, versions, and annotations. This cannot be undone.`,
+        },
+        folder: {
+          api: `/api/folders/${nodeId}`,
+          description: `"${name}" and every mockup it contains (including their versions and annotations) will be removed. This cannot be undone.`,
+        },
+        mockup: {
+          api: `/api/mockups/${nodeId}`,
+          description: `"${name}" will be removed along with every version and annotation it owns. This cannot be undone.`,
+        },
+      } as const;
+      const copy = DELETE_COPY[nodeType];
+      const ok = await confirm({
+        title: `Delete ${nodeType}`,
+        description: copy.description,
+        confirmLabel: 'Delete',
+        danger: true,
+      });
+      if (!ok) return;
+      const res = await fetch(copy.api, { method: 'DELETE' });
+      if (!res.ok) {
+        const detail = await res
+          .json()
+          .then((j) => j?.detail ?? j?.error ?? 'Delete failed.')
+          .catch(() => 'Delete failed.');
+        await confirm({
+          title: 'Could not delete',
+          description: detail,
+          confirmLabel: 'OK',
+          cancelLabel: 'Dismiss',
+        });
+        return;
+      }
+      router.refresh();
+    },
+    [confirm, nodeNameById, router],
+  );
+
   useEffect(() => {
     if (mobileOpen && dialogRef.current && !dialogRef.current.open) {
       dialogRef.current.showModal();
@@ -136,6 +197,7 @@ export function ProjectSidebar({
         onMove={handleMove}
         onRename={handleRename}
         onEditProject={setEditingProjectId}
+        onDelete={handleDelete}
       />
       {projects.length > 0 && (
         <RecentsSection projectSlug={projects[0].slug} mockups={recentMockups} />
@@ -160,6 +222,7 @@ export function ProjectSidebar({
   return (
     <div>
       <ToastProvider>
+        {confirmDialog}
         <NewProjectDialog
           open={newProjectOpen}
           onClose={() => setNewProjectOpen(false)}

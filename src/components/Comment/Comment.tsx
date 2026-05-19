@@ -115,11 +115,7 @@ export function Comment({
     }
   };
 
-  const cls = [
-    styles.comment,
-    variant === 'primary' && styles.primary,
-    isEditing && styles.editing,
-  ]
+  const cls = [styles.comment, variant === 'primary' && styles.primary, isEditing && styles.editing]
     .filter(Boolean)
     .join(' ');
 
@@ -252,10 +248,7 @@ export function Comment({
         <div className={styles.body}>{body}</div>
       )}
 
-      <footer
-        className={styles.reactions}
-        data-empty={reactions.length === 0 ? 'true' : undefined}
-      >
+      <footer className={styles.reactions} data-empty={reactions.length === 0 ? 'true' : undefined}>
         {reactions.map((r) => (
           <ReactionPill
             key={r.emoji}

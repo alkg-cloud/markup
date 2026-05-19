@@ -1,11 +1,6 @@
 'use client';
 import { type FormEvent, useState } from 'react';
-import {
-  VscCircleLarge,
-  VscCommentUnresolved,
-  VscPass,
-  VscReply,
-} from 'react-icons/vsc';
+import { VscCircleLarge, VscCommentUnresolved, VscPass, VscReply } from 'react-icons/vsc';
 import { Comment, type CommentReaction } from '@/components/Comment/Comment';
 import type { AnnotationStatus } from '@/lib/annotation/status';
 import { usePopover } from '@/lib/popover/usePopover';
