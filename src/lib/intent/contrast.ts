@@ -1,3 +1,5 @@
+import 'server-only';
+
 export function parseRgb(s: string): [number, number, number] | null {
   const t = s.trim();
   const rgb = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(t);

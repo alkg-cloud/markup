@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { identify, requireAdmin } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { deleteFolder, getFolder, updateFolder } from '@/lib/project/service';
 import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
 
@@ -22,6 +23,8 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
 }
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   try {
     requireAdmin(await identify(req));
   } catch (e) {
@@ -40,6 +43,8 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 }
 
 export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   try {
     requireAdmin(await identify(req));
   } catch (e) {

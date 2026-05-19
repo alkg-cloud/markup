@@ -1,3 +1,5 @@
+import 'server-only';
+
 export interface PinCoords {
   scrollX: number;
   scrollY: number;

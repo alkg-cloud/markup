@@ -1,3 +1,5 @@
+import 'server-only';
+
 import puppeteer, { type Browser, type Page } from 'puppeteer';
 
 let browserPromise: Promise<Browser> | null = null;

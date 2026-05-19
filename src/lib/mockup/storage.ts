@@ -1,3 +1,5 @@
+import 'server-only';
+
 import path from 'node:path';
 
 export const MOCKUPS_REL = 'mockups';

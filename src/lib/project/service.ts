@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { MAX_ANCESTOR_ITERATIONS, MAX_FOLDER_DEPTH } from './constants';

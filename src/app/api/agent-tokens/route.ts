@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { generateAgentToken } from '@/lib/auth/agent-token';
 import { identify, requireAdmin } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { prisma } from '@/lib/prisma';
 
 interface ErrorWithStatus extends Error {
@@ -33,6 +34,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   try {
     requireAdmin(await identify(req));
   } catch (e) {

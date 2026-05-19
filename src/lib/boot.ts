@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { seedAgentTokens } from './auth/seed-agent-tokens';
 import { env } from './env';
 import { logger } from './logger';

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { identify, requireAdmin } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { prisma } from '@/lib/prisma';
 
 interface ErrorWithStatus extends Error {
@@ -7,6 +8,8 @@ interface ErrorWithStatus extends Error {
 }
 
 export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   try {
     requireAdmin(await identify(req));
   } catch (e) {

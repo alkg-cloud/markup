@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import { updateAnnotationTldraw } from '@/lib/annotation/service';
 import { identify } from '@/lib/auth/identify';
 
+import { assertSameOrigin } from '@/lib/auth/origin';
 export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   const ident = await identify(req);
   if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id } = await ctx.params;

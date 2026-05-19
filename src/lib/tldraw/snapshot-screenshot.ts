@@ -1,3 +1,5 @@
+import 'server-only';
+
 /* tldraw snapshots are deeply nested + untyped at this layer. Narrowing each
  * record statically would mean re-deriving the entire tldraw schema. The
  * helpers here treat the snapshot as opaque and only touch image-asset
