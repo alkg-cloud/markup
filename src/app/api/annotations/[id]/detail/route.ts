@@ -44,7 +44,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   }
 
   const mockupName = mockup?.name ?? annotation.mockupId;
-  const viewerHref = (await pathForMockup(annotation.mockupId)) ?? '/projects';
+  const viewerHref = (await pathForMockup(annotation.mockupId)) ?? '/';
 
   // Tldraw + screenshot dimensions come straight from disk — the client
   // can't read DATA_DIR. Empty / corrupt files fall back to a null

@@ -31,18 +31,28 @@ async function ensureUniqueProjectSlug(name: string): Promise<string> {
 // ---------------------------------------------------------------------------
 
 export async function listProjects() {
-  return prisma.project.findMany({
+  const rows = await prisma.project.findMany({
     orderBy: { position: 'asc' },
     select: {
       id: true,
       name: true,
       slug: true,
+      icon: true,
       position: true,
       createdAt: true,
       updatedAt: true,
       _count: { select: { mockups: true, folders: true } },
     },
   });
+  // Flatten Prisma's `_count` into a stable shape the `all-projects`
+  // grid (and any other client) can consume directly. Keeping the raw
+  // `_count` in the payload would leak the ORM convention into the API
+  // contract.
+  return rows.map(({ _count, ...rest }) => ({
+    ...rest,
+    mockupCount: _count.mockups,
+    folderCount: _count.folders,
+  }));
 }
 
 export async function createProject(input: { name: string; icon?: string }) {
