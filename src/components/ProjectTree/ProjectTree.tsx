@@ -286,6 +286,7 @@ export function ProjectTree({
             <TreeNode
               key={node.id}
               node={node}
+              dndNode={dndNodes[index]}
               index={index}
               focusIndex={focusIndex}
               isEmptyFolder={isEmptyFolder}
