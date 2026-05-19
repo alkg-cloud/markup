@@ -180,11 +180,13 @@
   height: 11px;
 }
 
+/* Native HTML popover — top-layer paint, fixed positioning written by
+   `usePopover`. */
 .menu {
+  position: fixed;
+  inset: auto;
+  margin: 0;
   display: none;
-  position: absolute;
-  top: 24px;
-  right: 0;
   flex-direction: column;
   min-width: 130px;
   padding: 4px;
@@ -193,9 +195,8 @@
   border: var(--surface-glass-border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-popover);
-  z-index: 50;
 }
-.menu.open {
+.menu:popover-open {
   display: flex;
 }
 .menuItem {

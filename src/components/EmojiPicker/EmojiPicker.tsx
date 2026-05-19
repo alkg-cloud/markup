@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { usePopover } from '@/lib/popover/usePopover';
 import styles from './EmojiPicker.module.css';
 
 export const REACTION_EMOJIS: ReadonlyArray<string> = [
@@ -29,43 +29,35 @@ export interface EmojiPickerProps {
 }
 
 /**
- * Emoji picker — 4×4 grid popover. The trigger button is the dashed
- * "+" pill; clicking it opens the picker, clicking outside closes it.
+ * Emoji picker — 4×4 grid popover. Built on the native HTML popover
+ * API (`popover="auto"`) so it paints in the top-layer (escapes every
+ * overflow ancestor + stacking context — no JS portal needed). The
+ * browser handles outside-click + ESC + single-popover-active.
  *
- * See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §10.
+ * See `docs/code-style.md § Popovers` for the canonical pattern.
  */
 export function EmojiPicker({ onPick, emojis = REACTION_EMOJIS }: EmojiPickerProps) {
-  const wrapRef = useRef<HTMLDivElement | null>(null);
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('click', onDoc);
-    return () => document.removeEventListener('click', onDoc);
-  }, [open]);
+  const { triggerRef, popoverRef, triggerProps, popoverProps, close } = usePopover<
+    HTMLButtonElement,
+    HTMLDivElement
+  >('left');
 
   return (
-    <div ref={wrapRef} className={[styles.wrap, open && styles.open].filter(Boolean).join(' ')}>
+    <>
       <button
+        ref={triggerRef}
         type="button"
         className={styles.trigger}
         data-tooltip="Add reaction"
         aria-label="Add reaction"
         aria-haspopup="menu"
-        aria-expanded={open ? 'true' : 'false'}
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((o) => !o);
-        }}
+        {...triggerProps}
       >
         <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
           <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
         </svg>
       </button>
-      <div className={styles.picker} role="menu" aria-label="Reactions">
+      <div {...popoverProps} ref={popoverRef} className={styles.picker} role="menu" aria-label="Reactions">
         {emojis.map((emoji) => (
           <button
             key={emoji}
@@ -73,9 +65,8 @@ export function EmojiPicker({ onPick, emojis = REACTION_EMOJIS }: EmojiPickerPro
             className={styles.pick}
             data-emoji={emoji}
             aria-label={`React with ${emoji}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpen(false);
+            onClick={() => {
+              close();
               onPick(emoji);
             }}
           >
@@ -83,6 +74,6 @@ export function EmojiPicker({ onPick, emojis = REACTION_EMOJIS }: EmojiPickerPro
           </button>
         ))}
       </div>
-    </div>
+    </>
   );
 }
