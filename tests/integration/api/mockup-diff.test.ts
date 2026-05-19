@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { POST as setup } from '@/app/api/auth/setup/route';
 import { POST as createVersion } from '@/app/api/mockups/[id]/version/route';
 import { POST as createMockup } from '@/app/api/mockups/route';
-import { resolveDiffParams } from '@/app/mockups/[id]/diff/resolve';
+import { resolveDiffParams } from '@/lib/mockup/diff-resolve';
 import { prisma } from '@/lib/prisma';
 
 const fixture = (n: string) => path.resolve('tests/fixtures/mockups', n);

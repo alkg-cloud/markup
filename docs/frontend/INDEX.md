@@ -1,28 +1,36 @@
 # Frontend
 
-The UI is a Next.js App Router app rendered as a mix of server components (default) and client components (when interactivity is needed). There is no separate frontend app — pages, server logic, and API routes share the same `src/` tree.
+The UI is a Next.js App Router app rendered **exclusively on the client**. Every page, layout, and shell is a client component (`'use client'`). Server-side rendering is forbidden — see [CLAUDE.md → Client-side rendering rule](../../CLAUDE.md#client-side-rendering-rule-strict--non-negotiable).
+
+The HTML response Next serves for any page route is a minimal shell that boots the React app; pages own their own data via `fetch('/api/…')` against the server-side route handlers in `src/app/api/**`.
 
 ## Read first
 
-- [Components](components.md) — server vs client, file layout, composition rules
+- [Components](components.md) — server vs client split (root `layout.tsx` only), file layout, composition rules
+- [Data fetching](data-fetching.md) — `useApi`, `useRequireAuth`, loading + error patterns
 - [Styling](styling.md) — `tokens.css`, OKLCH palette, `:focus-visible` global rule, `prefers-reduced-motion`
 - [Tldraw integration](tldraw.md) — snapshot model, base64 strip, StrictMode dedup, edit mode
 
 ## Pages
 
-| Path | Server / Client | Purpose |
+Every page is a client component that fetches its data via `fetch('/api/…')`. The naming is `page.tsx` for the route, with co-located sub-components (`*Client.tsx`, `*Form.tsx`, `*Viewer.tsx`) when the page splits into pieces.
+
+| Path | Aggregator API | Purpose |
 |---|---|---|
-| `/` | server | Authenticated project/folder workspace with sidebar + topbar |
-| `/setup` | server + `Form.tsx` client | First-run admin creation |
-| `/login` | server + `Form.tsx` client | Email + password auth |
-| `/mockups/[id]` | server + `MockupViewer.tsx` client | Iframe + annotation pin overlay + sidebar |
-| `/mockups/[id]/diff` | server + `DiffViewer.tsx` client | Side-by-side / overlay version compare |
-| `/annotations/[id]` | server + `ReadOnlyAnnotation.tsx` client | Drawing canvas + thread |
-| `/settings/agents` | server + `AgentsClient.tsx` client | List + create + revoke agent tokens inside the standard sidebar + topbar shell |
+| `/` | redirect to `/projects` | Root redirect |
+| `/setup` | `GET /api/auth/setup-status` + `POST /api/auth/setup` | First-run admin creation |
+| `/login` | `GET /api/auth/setup-status` + `POST /api/auth/login` | Email + password auth |
+| `/projects` | `GET /api/projects` | Redirect to first project (placeholder home) |
+| `/projects/[slug]` | `GET /api/projects/[slug]/view` | Project root workspace |
+| `/projects/[slug]/[...path]` | `GET /api/projects/[slug]/resolve?path=…` | Folder or mockup viewer (resolved server-side) |
+| `/mockups/[id]` (legacy) | redirect to `/projects` | Backwards-compat redirect |
+| `/mockups/[id]/diff` | `GET /api/mockups/[id]/diff-versions?from=&to=` | Side-by-side / overlay version compare |
+| `/annotations/[id]` | `GET /api/annotations/[id]/detail` | Drawing canvas + thread |
+| `/settings/agents` | `GET /api/agent-tokens` | List + create + revoke agent tokens inside the standard sidebar + topbar shell |
 
-The naming convention is **`page.tsx` is a server component**, **`*Client.tsx` or `<Surface>Form.tsx` is the client island**. The server component fetches data and renders the static skeleton; the client component handles state and DOM interaction.
+The route group `(app)` mounts `AppShell` once (via `(app)/layout.tsx`) so the sidebar tree and other client state inside it survive in-shell navigations. Full-page surfaces (`/login`, `/setup`, `/mockups/[id]/diff`) render outside `(app)`.
 
-Authenticated, in-shell pages (`/`, `/mockups/[id]`, `/annotations/[id]`, `/settings/agents`) live under the `src/app/(app)/` route group and inherit `AppShell` from `src/app/(app)/layout.tsx` — the shell is mounted once, so the sidebar tree and other client state inside it persist across in-shell navigations. Full-page surfaces (`/login`, `/setup`, `/mockups/[id]/diff`) live outside `(app)` and render bare.
+`AppShell` itself fetches `GET /api/shell` on mount — a single aggregator that returns the viewer's identity (name/email), the sidebar tree, the recents map, and the persisted sidebar-collapsed flag.
 
 ## Shared components
 
@@ -43,6 +51,6 @@ Authenticated, in-shell pages (`/`, `/mockups/[id]`, `/annotations/[id]`, `/sett
 
 ## State ownership
 
-- **Server components** read from Prisma directly (e.g. `prisma.mockup.findUnique`) — no fetch loopback
-- **Client components** receive serialised data as props from the server component, plus an `annotationId` / `mockupId` for callbacks
-- **Mutations** go through `fetch('/api/...', { method: 'POST', body: ... })`. There is no client-side router cache invalidation library; pages re-render on `router.refresh()` or full navigation
+- **Pages** own a `useState` for the fetched payload + a `useState` for the error code. The fetch runs in `useEffect` with a `cancelled` flag for unmount safety.
+- **Mutations** go through `fetch('/api/...', { method: 'POST', body: ... })`. After a mutation, the page re-fetches its aggregator (or calls a hook that owns the cache). There is no client-side router cache invalidation library; `router.refresh()` is a no-op for client-rendered pages — pages manage their own staleness.
+- **Auth gating** is a combination of middleware (cookie-presence redirect at the edge) and `useRequireAuth()` (401 → `router.replace('/login')`). See [data fetching](data-fetching.md).

@@ -1,21 +1,61 @@
 # Components
 
-## Server / client split
+## Client-side rendering only
 
-Next.js App Router treats every component as a server component by default. Add `'use client'` at the top of a file ONLY when one of these is needed:
+Markup renders **exclusively on the client**. Every `page.tsx`, every `layout.tsx`, and every shell component starts with `'use client'`. Server components are forbidden for UI — see [CLAUDE.md → Client-side rendering rule](../../CLAUDE.md#client-side-rendering-rule-strict--non-negotiable).
 
-- React state (`useState`, `useReducer`)
-- Effects (`useEffect`, `useLayoutEffect`)
-- Event handlers attached to JSX (`onClick`, `onChange`)
-- Browser-only APIs (`window`, `document`, `localStorage`)
-- Third-party React libraries that themselves need a client environment (e.g. tldraw)
+The split is:
 
-Server components fetch data and pass it as serialisable props to the client island. Client components don't fetch directly — they receive data from the server tree.
+- **Pages + layouts + shell**: client components. They own loading + error states and fetch their data via `fetch('/api/…')`.
+- **API routes** under `src/app/api/**`: server-side, `force-dynamic`, read Prisma / cookies / DATA_DIR. Not part of the UI render path.
+- **Root `src/app/layout.tsx`**: the single server-rendered file. It only sets up `<html>`, fonts, and metadata; it does NOT fetch data. The `<body>` mounts a `ClientRoot` (`'use client'`) that owns global providers (Toast, Tooltip portal) and the route tree.
 
 ```
-page.tsx (server)              ← reads Prisma, computes paths, file IO
-  └─ <ClientIsland data={…} /> ← 'use client'
+src/app/layout.tsx        ← server (HTML shell + fonts only)
+  <ClientRoot>            ← 'use client'  — providers + children
+    page.tsx              ← 'use client'  — fetch + render
 ```
+
+## Data-fetching pattern
+
+Pages own their data via a client-side `fetch`:
+
+```tsx
+'use client';
+
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+export default function MockupPage() {
+  const { id } = useParams<{ id: string }>();
+  const [data, setData] = useState<ViewerPayload | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/mockups/${id}/viewer`, { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((j) => { if (!cancelled) setData(j); })
+      .catch((e) => { if (!cancelled) setError(String(e)); });
+    return () => { cancelled = true; };
+  }, [id]);
+
+  if (error) return <ErrorState code={error} />;
+  if (!data) return <LoadingState />;
+  return <ViewerSurface {...data} />;
+}
+```
+
+See [`docs/frontend/data-fetching.md`](data-fetching.md) for the shared `useApi` hook and the `useRequireAuth` guard.
+
+## Auth gating
+
+Two layers:
+
+1. **`src/middleware.ts`** — runs at the edge. Redirects unauthenticated traffic (no `mk_session` cookie) hitting any `(app)` path to `/login`. Cannot use Prisma — checks only cookie presence.
+2. **Client `useRequireAuth()`** — runs in every in-shell client component. Calls `GET /api/auth/me`; on 401 it `router.replace('/login')`. This catches expired sessions where the cookie still exists but is invalid.
+
+The combination means the URL bar is honest immediately (middleware redirects on first hit) AND the UI never renders stale-cookie state.
 
 ## File layout per shared component
 
@@ -46,7 +86,7 @@ src/components/
     Breadcrumbs.tsx         # 'use client' — breadcrumb nav with truncation
     Breadcrumbs.module.css  # nav, list, link, separator, current styles
   CommandPalette/
-    CommandPalette.tsx         # 'use client' — ⌘K overlay with search + keyboard nav
+    CommandPalette.tsx         # 'use client' — Ctrl+K overlay with search + keyboard nav
     CommandPalette.module.css  # glassmorphism panel, scrim, animations
     flatten.ts                 # pure util — ProjectTree[] → FlatSearchItem[]
     filter.ts                  # pure util — filter + group by type
@@ -54,7 +94,7 @@ src/components/
     Topbar.tsx              # 'use client' — 52px topbar with search pill + avatar + breadcrumb
     Topbar.module.css       # topbar, searchPill, avatarBtn styles
   FolderCard/
-    FolderCard.tsx          # server-safe — folder card with CSS Modules (Link + SVG icon)
+    FolderCard.tsx          # 'use client' — folder card with CSS Modules (Link + SVG icon)
     FolderCard.module.css   # card, icon, info, name, meta styles
   EmptyState/
     EmptyState.tsx          # 'use client' — project/folder empty states
@@ -81,60 +121,60 @@ src/components/
     NewProjectDialog.module.css  # btn-secondary, btn-accent styles
 ```
 
-All authenticated, in-shell pages live under the `(app)` route group. The group's `layout.tsx` renders `AppShell` once for every child route, so the sidebar tree and any other client state inside the shell survive navigation between in-shell pages without remount. Full-page surfaces (`/login`, `/setup`, the side-by-side diff view) live outside the group and render without a shell.
+All authenticated, in-shell pages live under the `(app)` route group. The group's `layout.tsx` is a client component that mounts `AppShell` once for every child route, so the sidebar tree and any other client state inside the shell survive navigation between in-shell pages without remount. Full-page surfaces (`/login`, `/setup`, the side-by-side diff view) live outside the group and render without a shell.
 
 Page-scoped components (used only by one page) live next to the page file:
 
 ```
 src/app/
-  layout.tsx                 # server — root layout: fonts, global ToastProvider
-  AppShell.tsx               # server — auth + Prisma tree fetch → standard sidebar/topbar shell
+  layout.tsx                 # server — root HTML shell, fonts, metadata (no data fetch)
+  ClientRoot.tsx             # 'use client' — Toast/Tooltip providers, mounted under <body>
+  AppShell.tsx               # 'use client' — auth guard + API fetch of tree → sidebar/topbar shell
   (app)/
-    layout.tsx               # server — wraps every in-shell child in <AppShell>
-    page.tsx                 # server — selected project/folder workspace at /
+    layout.tsx               # 'use client' — wraps every in-shell child in <AppShell>
+    page.tsx                 # 'use client' — redirect to /projects on mount
     mockups/
       [id]/
-        page.tsx             # server — fetches the mockup + annotations
+        page.tsx             # 'use client' — fetches /api/mockups/[id]/viewer
         MockupViewer.tsx     # 'use client' — iframe + pin overlay
         Versions.tsx         # 'use client' — sidebar version list
     annotations/
       [id]/
-        page.tsx             # server — annotation detail
+        page.tsx             # 'use client' — fetches /api/annotations/[id]/detail
         ReadOnlyAnnotation.tsx  # 'use client' — read-only canvas
     settings/
       agents/
-        page.tsx             # server — agent token admin
+        page.tsx             # 'use client' — fetches /api/agent-tokens
         AgentsClient.tsx     # 'use client' — list + create + revoke UI
   mockups/
-    page.tsx                 # server — redirects /mockups to /
+    page.tsx                 # 'use client' — redirects /mockups to /projects
     [id]/
       diff/
-        page.tsx             # server — full-page diff (no shell)
+        page.tsx             # 'use client' — fetches /api/mockups/[id]/diff-versions
         DiffViewer.tsx       # 'use client' — side-by-side iframes
-        resolve.ts           # server — version-pair resolution
   projects/
-    page.tsx                 # server — redirects /projects to /
+    page.tsx                 # 'use client' — redirects /projects to first project on mount
     ProjectSidebar.tsx       # 'use client' — sidebar wrapper used by AppShell
     ProjectSidebar.module.css
     layout.module.css        # responsive grid: sidebar + main on desktop, single column on mobile <768px
     [slug]/
-      page.tsx               # server — redirects /projects/[slug] to /?project=slug
+      page.tsx               # 'use client' — fetches /api/projects/[slug]/view
       ProjectContent.tsx     # 'use client' — unified folder/mockup card grid
-      [folderId]/
-        page.tsx             # server — redirects to /?project=slug&folder=id
-  login/                     # full-page, no shell
-  setup/                     # full-page, no shell
+      [...path]/
+        page.tsx             # 'use client' — fetches /api/projects/[slug]/resolve?path=…
+  login/                     # full-page, no shell (still client)
+  setup/                     # full-page, no shell (still client)
 ```
 
 The page-scoped pattern means `MockupViewer.tsx` is co-located with its `page.tsx` under `(app)/mockups/[id]/`. This keeps the import surface obvious and prevents `src/components/` from accumulating one-off pieces.
 
-`AppShell.tsx` lives directly under `src/app/` (not inside `(app)/`) because the route-group layout imports it via a relative path, and other pages still import `getAuthenticatedIdentity` from the same module.
+`AppShell.tsx` lives directly under `src/app/` (not inside `(app)/`) because the route-group layout imports it via a relative path.
 
 ## Composition rules
 
-- **Server components are async functions** that return JSX. Read DB rows directly via the Prisma client; no extra layer of indirection.
-- **Client islands receive plain data**, never functions or Prisma rows. Serialise dates as ISO strings before passing.
-- **Effects run twice in dev** (React Strict Mode). Anything that mutates state (creating a tldraw asset, fetching) must be idempotent. See [tldraw](tldraw.md#strictmode-dedup).
+- **Pages are client components** that fetch data via `fetch('/api/…')` in `useEffect` and render loading / error / success states. They do not import Prisma; they do not call `identify()`.
+- **Client islands receive plain data** — never functions or Prisma rows. Servers return ISO-string dates; clients render them.
+- **Effects run twice in dev** (React Strict Mode). Anything that mutates state (creating a tldraw asset, fetching) must be idempotent. See [tldraw](tldraw.md#strictmode-dedup). For pages, the `useEffect` cleanup MUST set a `cancelled` flag so a fast unmount doesn't write to a dead component.
 - **Refs** for imperative APIs (e.g. tldraw's `editor` instance) live in the client island, exposed via an `onMount` callback to a sibling control:
 
 ```tsx

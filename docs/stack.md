@@ -78,7 +78,7 @@ src/
       threads/[id]/{reply,resolve,reopen}/route.ts
       auth/{login,logout,setup}/route.ts
       agent-tokens/[id]?/route.ts
-    annotations/[id]/       # Annotation detail (server component + client editor)
+    annotations/[id]/       # Annotation detail (client page + read-only canvas)
     mockups/                # List + detail + diff pages
     settings/agents/        # Admin: agent token management
     login/, setup/          # Auth flows
