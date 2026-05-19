@@ -249,8 +249,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  /* In collapsed mode the parent `.add` is a 32px circle with a 1px
+     border — its inner content area is 30×30 because every element
+     uses `box-sizing: border-box`. Sizing the icon container to 30×30
+     keeps the SVG centred in the visible circle instead of overflowing
+     to the right by 1px. The container scales with the SVG, which
+     stays at 14×14. */
+  width: 30px;
+  height: 30px;
 }
 .addIcon svg {
   width: 14px;

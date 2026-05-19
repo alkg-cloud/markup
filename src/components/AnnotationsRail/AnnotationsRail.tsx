@@ -1,5 +1,6 @@
 'use client';
 import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { VscPinned } from 'react-icons/vsc';
 import { modSymbol } from '@/lib/shortcuts/platform';
 import styles from './AnnotationsRail.module.css';
 
@@ -231,9 +232,7 @@ export function AnnotationsRail({
             aria-label={pinned ? 'Unlock' : 'Keep expanded'}
             onClick={() => setPinned((p) => !p)}
           >
-            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path d="M11 4.5V2.5l-.5-.5h-5l-.5.5v2L3 6v2h12V6l-2-1.5zM4 7v-.5L5.5 5l.5-.5V3h4v1.5l.5.5L12 6.5V7H4zm4 1.5v6.5l-1-1V8.5h1z" />
-            </svg>
+            <VscPinned aria-hidden="true" />
           </button>
         </header>
         {badges.length === 0 ? (
