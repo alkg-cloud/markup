@@ -5,10 +5,13 @@ import path from 'node:path';
 import cuid from 'cuid';
 import JSZip from 'jszip';
 import { env } from '@/lib/env';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { thumbnailPath, versionBuildDir, versionSourceZipPath } from './storage';
 import { generateThumbnailFromBuildDir } from './thumbnail-generator';
 import { extractZip } from './zip-extractor';
+
+const log = logger.child({ name: 'mockup-service' });
 
 interface CreateInput {
   name: string;
@@ -98,6 +101,18 @@ export async function createMockupFromZip(input: CreateInput) {
     where: { id: mid },
     data: { currentVersionId: vid },
   });
+  log.info(
+    {
+      event: 'mockup_created',
+      mockupId: mid,
+      versionId: vid,
+      createdBy: input.createdBy,
+      createdByType: input.createdByType,
+      projectId: input.projectId ?? null,
+      folderId: input.folderId ?? null,
+    },
+    'mockup created',
+  );
   return { mockup, version };
 }
 
