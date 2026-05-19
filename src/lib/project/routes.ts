@@ -5,7 +5,10 @@
  * project, folder, and mockup can be linked, bookmarked, and
  * breadcrumbed by a real route. Routes:
  *
- *   /projects                                 → projects browser
+ *   /                                         → all-projects landing
+ *   /projects                                 → redirect to `/`
+ *                                                (kept so external
+ *                                                bookmarks resolve)
  *   /projects/<slug>                          → single project
  *   /projects/<slug>/<folder>                 → folder at root of project
  *   /projects/<slug>/<folder>/<sub>           → nested folder
@@ -18,8 +21,9 @@
  * to find the matching folder ID at runtime.
  */
 
+/** Workspace landing — the all-projects grid lives at `/`. */
 export function projectsHref(): string {
-  return '/projects';
+  return '/';
 }
 
 export function projectHref(projectSlug: string): string {

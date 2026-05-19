@@ -1,0 +1,194 @@
+/* `project-card` — tile for the `all-projects` grid. Mirrors
+   `folder-card` (radius, hover lift, mono meta) but is taller because
+   the project is the top-level container; icon sits in a glass tile,
+   meta line carries both mockup + folder counts, and a kebab popover
+   sits absolutely positioned at the top-right.
+
+   The whole card is a `<Link>`; the kebab is a sibling `<button>` that
+   stops click propagation so opening the menu never navigates. */
+
+.cardWrap {
+  position: relative;
+  display: flex;
+  /* Allow the kebab to receive hover/focus state independently of the
+     link by stretching it as a sibling absolute element. */
+}
+
+.card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  min-height: 88px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-card-active);
+  transform: translateY(-1px);
+}
+
+.card:active {
+  transform: translateY(1px);
+}
+
+.iconTile {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--bg-tinted);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-bright);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.iconTile svg {
+  width: 22px;
+  height: 22px;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  font-size: var(--type-md);
+  color: var(--text-bright);
+  letter-spacing: var(--tracking-tight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--type-2xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metaDot {
+  margin: 0 6px;
+  opacity: 0.6;
+}
+
+/* Kebab — hidden until hover/focus on the card surface, mirrors the
+   sidebar tree pattern but uses opacity (no count-badge swap). */
+.kebab {
+  position: absolute;
+  top: var(--space-xs);
+  right: var(--space-xs);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity var(--motion-fast) var(--ease-standard),
+    background var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.cardWrap:hover .kebab,
+.cardWrap:focus-within .kebab,
+.kebab:focus-visible,
+.kebab[aria-expanded="true"] {
+  opacity: 1;
+}
+
+.kebab:hover {
+  background: var(--surface-hover);
+  color: var(--text-bright);
+}
+
+/* Native popover — anchored via `usePopover`. Glass surface matches
+   `sidebar-tree-kebab-menu`. */
+.kebabMenu {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  min-width: 180px;
+  padding: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-popover);
+  display: none;
+}
+
+.kebabMenu:popover-open {
+  display: block;
+}
+
+.kebabMenuItem {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--type-sm);
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.kebabMenuItem:hover,
+.kebabMenuItem:focus-visible {
+  background: var(--surface-hover);
+}
+
+.kebabMenuDivider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px 2px;
+}
+
+.kebabMenuItemDanger {
+  composes: kebabMenuItem;
+  color: var(--danger);
+}
+
+.kebabMenuItemDanger:hover,
+.kebabMenuItemDanger:focus-visible {
+  background: var(--danger-soft);
+  color: var(--text-bright);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .kebab,
+  .kebabMenuItem {
+    transition: none;
+  }
+}

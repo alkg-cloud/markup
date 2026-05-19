@@ -293,8 +293,8 @@ function flattenProjects(
         // RecentsSection handles the visible recents instead. When this
         // path is wired up, the caller will need to supply the canonical
         // path-based href (project slug + folder names + mockup slug);
-        // we leave a placeholder pointing at /projects so a stray click
-        // doesn't 404 if the dead path ever wakes up.
+        // we leave a placeholder pointing at `/` so a stray click doesn't
+        // 404 if the dead path ever wakes up.
         nodes.push({
           id: `recent-${p.id}-${recentMockupIds[ri]}`,
           type: 'recents-item',
@@ -303,7 +303,7 @@ function flattenProjects(
           expandable: false,
           expanded: false,
           parentId: `recents-${p.id}`,
-          href: '/projects',
+          href: '/',
           setSize: recentMockupIds.length,
           posInSet: ri + 1,
           projectSlug: p.slug,

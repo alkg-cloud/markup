@@ -8,8 +8,8 @@ import {
 } from '@/lib/project/routes';
 
 describe('project route helpers', () => {
-  it('routes the workspace landing through /projects', () => {
-    expect(projectsHref()).toBe('/projects');
+  it('routes the workspace landing through `/` (the all-projects grid)', () => {
+    expect(projectsHref()).toBe('/');
   });
 
   it('routes a project to /projects/<slug>', () => {
