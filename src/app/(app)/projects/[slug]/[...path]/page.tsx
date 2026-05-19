@@ -1,7 +1,8 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
+import { MockupViewerPage } from '@/components/MockupViewer/MockupViewerPage';
 import { prisma } from '@/lib/prisma';
 import { resolveProjectPath } from '@/lib/project/path-resolver';
-import { folderHref, projectDisplayName, projectHref } from '@/lib/project/routes';
+import { folderHref, mockupSlugHref, projectDisplayName, projectHref } from '@/lib/project/routes';
 import { getAuthenticatedIdentity } from '../../../../AppShell';
 import { ProjectContent } from '../../../../projects/[slug]/ProjectContent';
 
@@ -11,9 +12,9 @@ interface Props {
 
 /**
  * Catch-all route under `/projects/<slug>/…` — the segments resolve
- * either to a folder (and we render the folder view) or to a mockup
- * (and we redirect to `/mockups/<id>` to reuse the dedicated viewer
- * route). See `lib/project/path-resolver.ts`.
+ * either to a folder (renders the folder view) or to a mockup (renders
+ * the mockup viewer here, in the same route). See
+ * `lib/project/path-resolver.ts`.
  */
 export default async function ProjectPathPage({ params }: Props) {
   const identity = await getAuthenticatedIdentity();
@@ -25,9 +26,32 @@ export default async function ProjectPathPage({ params }: Props) {
   if (!resolution) notFound();
 
   if (resolution.kind === 'mockup') {
-    // Mockup viewer lives at /mockups/[id]; redirect to keep the
-    // viewer route stable.
-    redirect(`/mockups/${resolution.mockupId}`);
+    // Mockup viewer is rendered inline here — the canonical URL for
+    // a mockup IS the path-based one.
+    const projectCrumb = { label: projectDisplayName(project), href: projectHref(project.slug) };
+    const ancestorCrumbs = resolution.folderPathNames.map((_, i) => {
+      const sub = resolution.folderPathNames.slice(0, i + 1);
+      return { label: sub[sub.length - 1], href: folderHref(project.slug, sub) };
+    });
+    const mockup = await prisma.mockup.findUnique({
+      where: { id: resolution.mockupId },
+      select: { name: true },
+    });
+    const breadcrumbs = [
+      projectCrumb,
+      ...ancestorCrumbs,
+      {
+        label: mockup?.name ?? resolution.mockupSlug,
+        href: mockupSlugHref(project.slug, resolution.folderPathNames, resolution.mockupSlug),
+      },
+    ];
+    return (
+      <MockupViewerPage
+        mockupId={resolution.mockupId}
+        identity={identity}
+        breadcrumbs={breadcrumbs}
+      />
+    );
   }
 
   // Folder view — re-fetch with children + mockups for rendering.

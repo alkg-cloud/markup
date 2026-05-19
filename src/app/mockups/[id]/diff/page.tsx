@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { identify } from '@/lib/auth/identify';
 import { isSetupCompleted } from '@/lib/auth/setup-state';
+import { pathForMockup } from '@/lib/mockup/url';
 import { DiffViewer } from './DiffViewer';
 import { resolveDiffParams } from './resolve';
 
@@ -32,6 +33,8 @@ export default async function DiffPage({
   const { from, to } = await searchParams;
   const resolved = await resolveDiffParams(mockupId, from ?? null, to ?? null);
   if (resolved.kind === 'not_found') notFound();
+  // Back-to-mockup link uses the canonical path-based URL.
+  const viewerHref = (await pathForMockup(mockupId)) ?? '/projects';
   if (resolved.kind === 'invalid') {
     return (
       <main
@@ -72,7 +75,7 @@ export default async function DiffPage({
           &quot;to&quot; version to compare.
         </p>
         <Link
-          href={`/mockups/${mockupId}`}
+          href={viewerHref}
           style={{
             marginTop: 'var(--space-xs)',
             fontSize: 'var(--type-sm)',
@@ -88,6 +91,7 @@ export default async function DiffPage({
   return (
     <DiffViewer
       mockupId={mockupId}
+      viewerHref={viewerHref}
       fromVid={resolved.from.id}
       toVid={resolved.to.id}
       fromCreatedAt={resolved.from.createdAt.toISOString()}

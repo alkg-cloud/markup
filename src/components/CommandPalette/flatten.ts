@@ -1,5 +1,5 @@
 import type { TreeProject } from '@/components/ProjectTree/ProjectTree';
-import { folderHref, projectHref } from '@/lib/project/routes';
+import { folderHref, mockupSlugHref, projectHref } from '@/lib/project/routes';
 
 export interface FlatSearchItem {
   id: string;
@@ -31,7 +31,7 @@ export function flattenProjectTree(projects: TreeProject[]): FlatSearchItem[] {
         name: mockup.name,
         path: project.name,
         type: 'mockup',
-        href: `/mockups/${mockup.id}`,
+        href: mockupSlugHref(project.slug, [], mockup.slug),
         projectSlug: project.slug,
       });
     }
@@ -66,7 +66,7 @@ function walkFolders(
         name: mockup.name,
         path: childPath,
         type: 'mockup',
-        href: `/mockups/${mockup.id}`,
+        href: mockupSlugHref(projectSlug, folderPath, mockup.slug),
         projectSlug,
       });
     }

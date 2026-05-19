@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { FolderCard } from '@/components/FolderCard/FolderCard';
 import { FolderHeader } from '@/components/FolderHeader/FolderHeader';
 import { Topbar } from '@/components/Topbar/Topbar';
+import { mockupSlugHref } from '@/lib/project/routes';
 
 interface FolderSummary {
   id: string;
@@ -92,6 +93,7 @@ export function ProjectContent({
                 slug={m.slug}
                 status={m.status}
                 updatedAt={m.updatedAt}
+                href={mockupSlugHref(projectSlug, folderPathNames ?? [], m.slug)}
               />
             ))}
           </div>
