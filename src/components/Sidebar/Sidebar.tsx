@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { VscLayoutSidebarLeft, VscLayoutSidebarLeftOff } from 'react-icons/vsc';
 import styles from './Sidebar.module.css';
@@ -82,7 +83,13 @@ export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarP
             .filter(Boolean)
             .join(' ')}
         >
-          <button type="button" className={styles.logo} title="Go to home">
+          <Link
+            href="/"
+            className={styles.logo}
+            data-tooltip="Go to projects"
+            data-tooltip-align="left"
+            aria-label="Go to projects"
+          >
             M
             <span
               className={[
@@ -93,7 +100,7 @@ export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarP
               arkup
             </span>
             <span className={styles.logoDot}>.</span>
-          </button>
+          </Link>
 
           <button
             type="button"
