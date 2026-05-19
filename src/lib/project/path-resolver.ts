@@ -43,7 +43,7 @@ export async function resolveProjectPath(
     // Try folder match first — folders with the same name as a mockup
     // slug under the same parent are vanishingly rare; folders win the
     // tie because they're container-like.
-    const folder = await prisma.folder.findFirst({
+    const folder: { id: string; name: string } | null = await prisma.folder.findFirst({
       where: { projectId, parentId, name: segment },
       select: { id: true, name: true },
     });

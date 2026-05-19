@@ -113,7 +113,7 @@ export function AnnotationsRail({
   // Drag handler — pointerdown locks the rail to absolute pixels, then
   // pointermove updates left/top clamped to bounds with 8px margin.
   const dragState = useRef<{ ox: number; oy: number; sx: number; sy: number } | null>(null);
-  const onGrabPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  const onGrabPointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
     const rail = railRef.current;
     if (!rail) return;
     e.preventDefault();
@@ -195,14 +195,15 @@ export function AnnotationsRail({
       onMouseLeave={leave}
       style={style}
     >
-      <div
+      <button
+        type="button"
         className={styles.grab}
         onPointerDown={onGrabPointerDown}
         data-tooltip="Drag to reposition"
-        role="presentation"
+        aria-label="Drag to reposition"
       >
         <GoGrabber className={styles.grabIcon} aria-hidden="true" />
-      </div>
+      </button>
 
       {/* biome-ignore lint/a11y/noStaticElementInteractions: hover-expand is
           progressive enhancement; keyboard users tab into the buttons directly. */}

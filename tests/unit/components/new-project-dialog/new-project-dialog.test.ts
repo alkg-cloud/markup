@@ -36,11 +36,11 @@ describe('NewProjectDialog SSR', () => {
         onSaved: vi.fn(),
       }),
     );
-    expect(html).toContain('PROJECT NAME');
+    expect(html).toContain('Project name');
     expect(html).toContain('input');
   });
 
-  it('renders Cancel and Create project buttons', async () => {
+  it('renders Cancel and Create buttons', async () => {
     const { NewProjectDialog } = await import('@/components/NewProjectDialog/NewProjectDialog');
     const html = renderToStaticMarkup(
       createElement(NewProjectDialog, {
@@ -50,7 +50,9 @@ describe('NewProjectDialog SSR', () => {
       }),
     );
     expect(html).toContain('Cancel');
-    expect(html).toContain('Create Project');
+    // Primary action is just "Create" / "Update" now — the noun is
+    // redundant alongside the dialog title.
+    expect(html).toContain('>Create<');
   });
 
   it('renders IconPicker inside dialog', async () => {

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { ThreadComment } from '@/components/AnnotationCard';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { AppMainViewerWired } from '@/components/MockupViewer/AppMainViewerWired';
@@ -59,7 +60,7 @@ export async function MockupViewerPage({
   mockupId,
   identity,
   breadcrumbs,
-}: MockupViewerPageProps): Promise<JSX.Element> {
+}: MockupViewerPageProps): Promise<ReactNode> {
   const mockup = await prisma.mockup.findUnique({
     where: { id: mockupId },
     include: {
