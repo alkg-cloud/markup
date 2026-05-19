@@ -43,7 +43,7 @@ Single-call aggregator. Reads everything an agent needs to start working on a fi
     "created_at": "2026-05-08T19:19:56.939Z",
     "created_on_version_id": "cmox…"
   },
-  "intent": { /* the full payload from /intent, or null if intent generation failed */ },
+  "intent": null | { /* IntentPayload — full /intent response when generation succeeds */ },
   "thread": {
     "id": "cmox…",
     "status": "open",
@@ -68,6 +68,8 @@ Single-call aggregator. Reads everything an agent needs to start working on a fi
   "folder_path": "Landing Page/Hero Section"
 }
 ```
+
+**`intent`** is `null` when intent generation fails — most commonly when puppeteer can't render the current version (missing build dir, headless launch error, navigation timeout) so the DOM-at-bbox resolution step has nothing to read. Failure is silent at this surface: the aggregator catches the error from the in-process `/intent` call and serves the rest of the payload. Clients that need the structured drawings or DOM anchors must guard for `intent === null` and fall back to `annotation.anchors` + `annotation.pin_coords` for positioning. The `/intent` endpoint itself returns the underlying error code; call it directly for diagnostics.
 
 **`current_version.files`** inlines text files only (extensions: `.html`, `.htm`, `.css`, `.js`, `.mjs`, `.json`, `.svg`, `.txt`, `.md`). Binaries are listed by name in `binary_files` — fetch them separately if needed.
 
@@ -223,7 +225,12 @@ Persist an updated drawing snapshot. Used when the user enters edit mode on an e
 
 Create an annotation. Branches on `Content-Type`:
 
-### JSON body — comment-flow (AppMain redesign, 2026-05)
+- `application/json` → comment-flow (preferred; the only mode the AppMain redesign uses)
+- `multipart/form-data` → legacy drawing-flow (preserved for backward compatibility with older agents; do not use in new clients)
+
+Both modes share the `mockupId` URL parameter, the auth model, and the response status (`201` on success). The body, response shape, and error codes differ — both are documented below.
+
+### JSON body — comment-flow (preferred)
 
 `Content-Type: application/json`
 
@@ -252,9 +259,20 @@ Create an annotation. Branches on `Content-Type`:
 }
 ```
 
+**Errors (JSON mode):**
+
+| Status | `error` | When |
+|---|---|---|
+| 400 | `invalid_body` | Body fails Zod (missing/extra fields, anchors > 20, `colorIndex` outside `0..15`, `status` outside the allowlist) |
+| 401 | `unauthorized` | No identity |
+| 403 | `forbidden_origin` | Cross-origin request (CSRF guard via `assertSameOrigin`) |
+| 404 | `mockup_not_found` | `mockupId` doesn't exist (check is explicit, avoids leaking a Prisma FK 500) |
+
 ### Multipart body — legacy drawing-flow
 
 `Content-Type: multipart/form-data`
+
+Preserved for backward compatibility with older agents that still upload screenshot + tldraw payloads. New clients (the AppMain viewer and all post-2026-05 agents) use the JSON mode above; drawing-based annotations will return as an optional annotation kind later — see `docs/future-features.md` #23.
 
 | Field | Type | Required |
 |---|---|---|
@@ -270,13 +288,7 @@ Create an annotation. Branches on `Content-Type`:
 { "id": "cmox…", "threadId": "cmox…" }
 ```
 
-The legacy drawing-flow is preserved for backward compatibility; new
-agents and the redesigned viewer use the JSON flow. Drawing returns as
-an optional annotation kind later — see `docs/future-features.md` #23.
-
-**Auth:** cookie OR Bearer.
-
-**Errors:**
+**Errors (multipart mode):**
 
 | Status | `error` | When |
 |---|---|---|
@@ -286,11 +298,14 @@ an optional annotation kind later — see `docs/future-features.md` #23.
 | 400 | `invalid_pin_coords` | `pinCoords` JSON malformed |
 | 400 | `invalid_intent_type` | `intent_type` not in allowed set |
 | 401 | `unauthorized` | No identity |
+| 403 | `forbidden_origin` | Cross-origin request (CSRF guard via `assertSameOrigin`) |
 
-**Side effects:**
-- Strips screenshot base64 from the tldraw snapshot before writing
+**Auth (both modes):** cookie OR Bearer.
+
+**Side effects (both modes):**
+- Strips screenshot base64 from the tldraw snapshot before writing (multipart only — the JSON mode never persists tldraw)
 - Stamps `createdOnVersionId` to the mockup's current version (or the explicit `createdOnVersionId` field if passed; reserved for tooling)
-- Defaults `intentType` to `'other'` when omitted
+- Defaults `intentType` to `'other'` when omitted (multipart only — the JSON mode keeps the default at the DB level)
 - Creates a `Thread` row with `status: 'open'` and a first `Message`
 
 ## `POST /api/threads/[id]/reply`

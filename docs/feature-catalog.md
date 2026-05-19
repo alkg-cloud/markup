@@ -261,6 +261,23 @@ Empty state component for projects and folders (`EmptyState.tsx`).
 | `empty-state-cta-secondary` | "Create folder" / "Create subfolder" secondary button (`btn-secondary`) | default, hover (`--btn-bg-hover` + `--border-strong`), focus-visible, active |
 | `empty-state-sidebar-inline` | Inline "Empty folder" text in sidebar when expanded folder has no children | shown below empty expanded folder |
 
+## loading-state
+
+Shared loading placeholder for page-level fetches (`LoadingState.tsx`).
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `loading-state` | Centered, dimmed status line (`--text-muted`, `--type-sm`) inside a `role="status"` + `aria-live="polite"` + `aria-busy="true"` container. Used by `/`, `/projects/<slug>`, `/projects/<slug>/<...path>`, `/annotations/<id>`, `/settings/agents` while their data fetches are in flight. Accepts an optional `message` prop; defaults to `"Loading…"` | visible while `data === null`, dismissed once the fetch resolves |
+
+## error-state
+
+Shared error placeholder for page-level fetches (`ErrorState.tsx`).
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `error-state` | Centered, danger-toned (`--danger`, `--type-sm`) message wrapped in `role="alert"`. Used by the same pages as `loading-state` when a fetch fails or returns a non-OK status | visible on fetch failure |
+| `error-state-retry` | Optional "Try again" button (`--btn-bg`, `--type-sm`). Rendered only when the caller passes `onRetry` | default, hover (`--btn-bg-hover` + `--border-strong`), focus-visible (2 px accent outline), active |
+
 ## mockup-viewer
 
 Mockup viewer at `/projects/<slug>/<...folders>/<mockup-slug>` (the `(app)/projects/[slug]/[...path]/page.tsx` client page detects the mockup-resolution branch of `GET /api/projects/by-slug/[slug]/resolve?path=…` and renders `MockupViewerPage`, which fetches `GET /api/mockups/[id]/viewer` and forwards the payload to `AppMainViewer.tsx`). Canonical viewer URLs are path-based and human-readable; orphan mockups resolve under the synthetic project slug `unsorted`. The viewer composes **floating, draggable chrome** (rail + toolbar + composer + marking-bar) directly above the canvas — no in-canvas toolbar, no side panel.

@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { LoadingState } from '@/components/LoadingState/LoadingState';
 import type { ProjectCardData } from '@/components/ProjectCard/ProjectCard';
 import { AllProjectsPage } from './AllProjectsPage';
 
@@ -46,38 +48,11 @@ export default function Root() {
   const reload = useCallback(() => setReloadToken((n) => n + 1), []);
 
   if (error) {
-    return (
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--danger)',
-          fontSize: 'var(--type-sm)',
-        }}
-      >
-        Failed to load projects ({error}).
-      </div>
-    );
+    return <ErrorState error={`Failed to load projects (${error}).`} onRetry={reload} />;
   }
 
   if (!projects) {
-    return (
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--text-muted)',
-          fontSize: 'var(--type-sm)',
-        }}
-        aria-busy="true"
-      >
-        Loading…
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return <AllProjectsPage projects={projects} onMutated={reload} />;
