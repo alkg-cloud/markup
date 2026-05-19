@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { hashPassword } from '@/lib/auth/password';
 import { createSession, SESSION_COOKIE, SESSION_TTL_SECONDS } from '@/lib/auth/session';
 import { isSetupCompleted, markSetupCompleted } from '@/lib/auth/setup-state';
@@ -14,6 +15,8 @@ const bodySchema = z.object({
 // Public — first-run admin creation; no identity exists yet. Idempotent: the
 // `setup_already_completed` 403 guards against re-running after the admin is in.
 export async function POST(req: Request) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   if (await isSetupCompleted()) {
     return NextResponse.json({ error: 'setup_already_completed' }, { status: 403 });
   }

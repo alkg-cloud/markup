@@ -3,6 +3,7 @@ import path from 'node:path';
 import cuid from 'cuid';
 import { NextResponse } from 'next/server';
 import { identify } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { env } from '@/lib/env';
 import { createMockupFromZip, listMockups } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
@@ -12,6 +13,8 @@ const VALID_STATUSES = ['open', 'resolved', 'archived'] as const;
 type Status = (typeof VALID_STATUSES)[number];
 
 export async function POST(req: Request) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   const id = await identify(req);
   if (!id) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });

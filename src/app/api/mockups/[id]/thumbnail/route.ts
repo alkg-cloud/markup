@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
 import { identify } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { env } from '@/lib/env';
 import { thumbnailPath } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
@@ -39,6 +40,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 }
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   const ident = await identify(req);
   if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id } = await ctx.params;

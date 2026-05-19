@@ -6,6 +6,7 @@ import { parsePinCoords } from '@/lib/annotation/pin-coords';
 import { getAnnotation } from '@/lib/annotation/service';
 import { ANNOTATION_STATUSES } from '@/lib/annotation/status';
 import { identify } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
 
@@ -52,6 +53,8 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
 }
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   const ident = await identify(req);
   if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id } = await ctx.params;
@@ -75,6 +78,8 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 }
 
 export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   const ident = await identify(req);
   if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id } = await ctx.params;
