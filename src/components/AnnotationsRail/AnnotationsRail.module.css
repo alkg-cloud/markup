@@ -77,18 +77,13 @@
   cursor: grabbing;
   color: var(--accent-bright);
 }
-.grabDots {
-  display: grid;
-  grid-template-columns: repeat(3, 4px);
-  grid-template-rows: repeat(2, 4px);
-  gap: 3px;
-}
-.grabDots > span {
-  display: block;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: currentColor;
+/* `GoGrabber` ships vertical (2-col × 3-row). The rail's grab slot is a
+ * horizontal bar at the top, so rotate the icon 90° to keep the
+ * original 3-col × 2-row grab pattern. */
+.grabIcon {
+  width: 18px;
+  height: 18px;
+  transform: rotate(90deg);
 }
 
 /* Collapsed view — vertical badge stack visible by default */
