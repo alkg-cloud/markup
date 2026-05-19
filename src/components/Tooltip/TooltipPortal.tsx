@@ -142,13 +142,5 @@ export function TooltipPortal() {
     };
   }, []);
 
-  return (
-    <div
-      ref={ref}
-      id={TOOLTIP_ID}
-      role="tooltip"
-      popover="hint"
-      className="markup-tooltip"
-    />
-  );
+  return <div ref={ref} id={TOOLTIP_ID} role="tooltip" popover="hint" className="markup-tooltip" />;
 }

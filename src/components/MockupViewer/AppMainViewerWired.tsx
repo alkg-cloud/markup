@@ -190,7 +190,8 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
     async (annotationId: string): Promise<boolean> => {
       const ok = await confirm({
         title: 'Delete annotation',
-        description: 'This will remove the annotation, its thread, replies, and reactions. This cannot be undone.',
+        description:
+          'This will remove the annotation, its thread, replies, and reactions. This cannot be undone.',
         confirmLabel: 'Delete',
         danger: true,
       });

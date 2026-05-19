@@ -57,7 +57,13 @@ export function EmojiPicker({ onPick, emojis = REACTION_EMOJIS }: EmojiPickerPro
           <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
         </svg>
       </button>
-      <div {...popoverProps} ref={popoverRef} className={styles.picker} role="menu" aria-label="Reactions">
+      <div
+        {...popoverProps}
+        ref={popoverRef}
+        className={styles.picker}
+        role="menu"
+        aria-label="Reactions"
+      >
         {emojis.map((emoji) => (
           <button
             key={emoji}

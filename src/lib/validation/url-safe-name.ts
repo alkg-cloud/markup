@@ -45,9 +45,5 @@ export function validateUrlSafeName(value: string): UrlSafeNameError | null {
  * create/update) share one source of truth.
  */
 export function urlSafeNameSchema(maxLength: number) {
-  return z
-    .string()
-    .min(1)
-    .max(maxLength)
-    .regex(URL_SAFE_NAME_PATTERN, 'name_not_url_safe');
+  return z.string().min(1).max(maxLength).regex(URL_SAFE_NAME_PATTERN, 'name_not_url_safe');
 }
