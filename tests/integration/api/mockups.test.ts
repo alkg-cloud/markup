@@ -175,17 +175,18 @@ describe('POST /api/mockups', () => {
 
 describe('Slug support', () => {
   let mockupId: string;
+  let sessionCookie: string;
   const slug = 'my-awesome-mockup';
 
   beforeEach(async () => {
     await prisma.mockupVersion.deleteMany();
     await prisma.mockup.deleteMany();
-    const cookie = await adminCookie();
+    sessionCookie = await adminCookie();
     const fd = await multipart(fixture('valid-simple.zip'), 'My-Mockup', { slug });
     const res = await createMockup(
       new Request('http://l/api/mockups', {
         method: 'POST',
-        headers: { cookie: `mk_session=${cookie}` },
+        headers: { cookie: `mk_session=${sessionCookie}` },
         body: fd,
       }),
     );
@@ -194,18 +195,28 @@ describe('Slug support', () => {
   });
 
   it('should be able to get a mockup resource by slug from /m/[slug]', async () => {
-    const response = await getMockupResource(new Request(`http://l/m/${slug}/index.html`), {
-      params: Promise.resolve({ mockupId: slug, path: ['index.html'] }),
-    });
+    const response = await getMockupResource(
+      new Request(`http://l/m/${slug}/index.html`, {
+        headers: { cookie: `mk_session=${sessionCookie}` },
+      }),
+      {
+        params: Promise.resolve({ mockupId: slug, path: ['index.html'] }),
+      },
+    );
     expect(response.status).toBe(200);
     const text = await response.text();
     expect(text).toContain('hi');
   });
 
   it('should be able to get a mockup resource by id from /m/[id]', async () => {
-    const response = await getMockupResource(new Request(`http://l/m/${mockupId}/index.html`), {
-      params: Promise.resolve({ mockupId: mockupId, path: ['index.html'] }),
-    });
+    const response = await getMockupResource(
+      new Request(`http://l/m/${mockupId}/index.html`, {
+        headers: { cookie: `mk_session=${sessionCookie}` },
+      }),
+      {
+        params: Promise.resolve({ mockupId: mockupId, path: ['index.html'] }),
+      },
+    );
     expect(response.status).toBe(200);
     const text = await response.text();
     expect(text).toContain('hi');

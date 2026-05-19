@@ -19,6 +19,7 @@ src/app/api/<surface>/<resource>/[id]/<sub>/route.ts
 ```ts
 import { NextResponse } from 'next/server';
 import { identify } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const ident = await identify(req);
@@ -28,15 +29,24 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   return NextResponse.json(payload, { status: 200 });
 }
 
+export async function POST(req: Request) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
+  const ident = await identify(req);
+  if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  // … happy path
+}
+
 export const dynamic = 'force-dynamic';
 ```
 
-The four invariants:
+The five invariants:
 
 1. Auth check at the top via `identify(req)` — no exceptions
-2. `params` is a `Promise` — `await ctx.params` to read it
-3. Standard error shape `{ error: 'snake_case_code' }` with HTTP status
-4. `export const dynamic = 'force-dynamic'` at the bottom (unless the route is genuinely static)
+2. CSRF guard via `assertSameOrigin(req)` on every POST/PUT/PATCH/DELETE — runs **before** `identify` so cross-origin probes can't even reach the auth path
+3. `params` is a `Promise` — `await ctx.params` to read it
+4. Standard error shape `{ error: 'snake_case_code' }` with HTTP status
+5. `export const dynamic = 'force-dynamic'` at the bottom (unless the route is genuinely static)
 
 ## Params handling
 
@@ -96,7 +106,7 @@ All routes use `{ error: '<snake_case_code>' }` as the JSON body. Conventions:
 |---|---|---|
 | 400 | `invalid_*` | `invalid_body`, `invalid_intent_type`, `invalid_pin_coords` |
 | 401 | `unauthorized` | always exactly this token |
-| 403 | `forbidden_*` | `forbidden_role` |
+| 403 | `forbidden_*` | `forbidden_role`, `forbidden_origin` |
 | 404 | `<resource>_not_found` or `not_found` | `not_found`, `base_version_not_found`, `screenshot_missing` |
 | 409 | `<verb>_conflict` | `patch_conflict`, `name_exists` |
 | 415 | `<noun>_unsupported` | `binary_patch_unsupported` |

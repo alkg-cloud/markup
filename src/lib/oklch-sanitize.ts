@@ -1,3 +1,5 @@
+import 'server-only';
+
 const OKLCH_RE = /oklch\((?:[^()]*|\([^()]*\))*\)/g;
 
 function gammaEncode(c: number): number {

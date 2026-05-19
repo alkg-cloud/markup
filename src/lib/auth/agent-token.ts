@@ -1,4 +1,7 @@
+import 'server-only';
+
 import crypto from 'node:crypto';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 
 const PREFIX_LIVE = 'mk_live_';
@@ -34,18 +37,16 @@ export async function importAgentToken(name: string, plaintextSecret: string) {
 export async function verifyAgentToken(presented: string) {
   if (!TOKEN_RE.test(presented)) return null;
   const presentedHash = hashAgentSecret(presented);
-  const candidates = await prisma.agentToken.findMany();
-  const presentedBuf = Buffer.from(presentedHash, 'hex');
-  for (const row of candidates) {
-    const stored = Buffer.from(row.tokenHash, 'hex');
-    if (stored.length !== presentedBuf.length) continue;
-    if (crypto.timingSafeEqual(stored, presentedBuf)) {
-      await prisma.agentToken.update({
-        where: { id: row.id },
-        data: { lastUsedAt: new Date() },
-      });
-      return { id: row.id, name: row.name };
-    }
-  }
-  return null;
+  // `tokenHash` is `@unique` in the schema and is itself the SHA-256 of the
+  // secret — looking it up directly is O(1) and does not leak timing info
+  // (the hash IS the comparison material; the attacker would need to invert
+  // SHA-256 to learn anything from a timing oracle).
+  const row = await prisma.agentToken.findUnique({ where: { tokenHash: presentedHash } });
+  if (!row) return null;
+  // Fire-and-forget `lastUsedAt` update; don't block the request on it.
+  prisma.agentToken
+    .update({ where: { id: row.id }, data: { lastUsedAt: new Date() } })
+    .catch((err) => logger.warn({ event: 'agent_token_lastused_update_failed', err }, 'lastUsed'));
+  logger.info({ event: 'agent_token_used', tokenId: row.id, name: row.name }, 'agent auth');
+  return { id: row.id, name: row.name };
 }

@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { verifyPassword } from '@/lib/auth/password';
 import { createSession, SESSION_COOKIE, SESSION_TTL_SECONDS } from '@/lib/auth/session';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { clientIp, loginLimiter } from '@/lib/rate-limit';
 
@@ -9,9 +11,12 @@ const bodySchema = z.object({ email: z.string().email(), password: z.string().mi
 
 // Public — entry point that establishes the session; no identity exists yet.
 export async function POST(req: Request) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   const ip = clientIp(req);
   const limit = loginLimiter.consume(`login:${ip}`);
   if (!limit.ok) {
+    logger.warn({ event: 'login_rate_limited', ip }, 'login throttled');
     return NextResponse.json(
       { error: 'rate_limited', retryAfter: limit.retryAfterSeconds },
       { status: 429, headers: { 'retry-after': String(limit.retryAfterSeconds) } },
@@ -21,9 +26,11 @@ export async function POST(req: Request) {
   if (!body.success) return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
   const user = await prisma.user.findUnique({ where: { email: body.data.email } });
   if (!user || !(await verifyPassword(body.data.password, user.passwordHash))) {
+    logger.warn({ event: 'login_failed', ip, email: body.data.email }, 'invalid credentials');
     return NextResponse.json({ error: 'invalid_credentials' }, { status: 401 });
   }
   const { token } = await createSession(user.id);
+  logger.info({ event: 'login_success', ip, userId: user.id }, 'user logged in');
   const res = NextResponse.json({ id: user.id, email: user.email, name: user.name });
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,

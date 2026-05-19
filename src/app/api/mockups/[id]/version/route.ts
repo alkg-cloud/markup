@@ -3,10 +3,12 @@ import path from 'node:path';
 import cuid from 'cuid';
 import { NextResponse } from 'next/server';
 import { identify } from '@/lib/auth/identify';
+import { assertSameOrigin } from '@/lib/auth/origin';
 import { env } from '@/lib/env';
 import { addVersion } from '@/lib/mockup/service';
-
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
   const id = await identify(req);
   if (!id) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 

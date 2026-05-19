@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach } from 'vitest';
+import { loginLimiter, setupLimiter } from '../src/lib/rate-limit';
 
 const TEST_ROOT = path.resolve(process.cwd(), 'test-data');
 const SHARED_TEST_DB = path.resolve(process.cwd(), 'prisma/test.db');
@@ -35,6 +36,11 @@ beforeEach(() => {
   process.env.DATA_DIR = TEST_ROOT;
   process.env.AUTH_SECRET = 'test-secret-do-not-use-in-prod-must-be-32+chars-long';
   (process.env as Record<string, string>).NODE_ENV = 'test';
+  // The setup / login rate limiters are module-level token buckets. Across
+  // a full test run dozens of tests call `setup` from the `unknown` IP,
+  // which would drain the bucket. Reset the well-known keys per test.
+  loginLimiter.reset('login:unknown');
+  setupLimiter.reset('setup:unknown');
 });
 
 afterEach(() => {
