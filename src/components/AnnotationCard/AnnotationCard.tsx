@@ -1,7 +1,8 @@
 'use client';
-import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { VscReply } from 'react-icons/vsc';
 import { Comment, type CommentReaction } from '@/components/Comment/Comment';
+import { usePopover } from '@/lib/popover/usePopover';
 import styles from './AnnotationCard.module.css';
 
 export type AnnotationStatus = 'open' | 'needs review' | 'resolved';
@@ -87,19 +88,10 @@ export function AnnotationCard({
   onAnnotationStatusChange,
   onAnnotationDelete,
 }: AnnotationCardProps) {
-  // Primary-comment kebab menu — surfaces status toggle + Edit + Delete
-  // for annotations the current user authored. Replaces the standalone
-  // pencil affordance.
-  const [primaryMenuOpen, setPrimaryMenuOpen] = useState(false);
-  const primaryMenuRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (!primaryMenuOpen) return;
-    const onDoc = (e: MouseEvent) => {
-      if (!primaryMenuRef.current?.contains(e.target as Node)) setPrimaryMenuOpen(false);
-    };
-    document.addEventListener('click', onDoc);
-    return () => document.removeEventListener('click', onDoc);
-  }, [primaryMenuOpen]);
+  // Primary-comment kebab popover — surfaces status toggle + Edit +
+  // Delete for annotations the current user authored. Browser-managed
+  // via the HTML popover API (top-layer paint + light dismiss + ESC).
+  const primaryKebab = usePopover<HTMLButtonElement, HTMLDivElement>('right');
   // Accordion-controlled when `threadOpen` is supplied by the parent;
   // otherwise the card manages its own state (preserves the previous
   // local-toggle behaviour for callers that don't lift state).
@@ -157,21 +149,16 @@ export function AnnotationCard({
         </span>
         <span className={[styles.pill, pillClass].join(' ')}>{status}</span>
         {primary.isOwn ? (
-          <div ref={primaryMenuRef} className={styles.primaryActions}>
+          <div className={styles.primaryActions}>
             <button
+              ref={primaryKebab.triggerRef}
               type="button"
-              className={[styles.primaryKebab, primaryMenuOpen && styles.menuOpen]
-                .filter(Boolean)
-                .join(' ')}
+              className={styles.primaryKebab}
               data-tooltip="Annotation actions"
               data-tooltip-align="right"
               aria-label="Annotation actions"
               aria-haspopup="menu"
-              aria-expanded={primaryMenuOpen ? 'true' : 'false'}
-              onClick={(e) => {
-                e.stopPropagation();
-                setPrimaryMenuOpen((o) => !o);
-              }}
+              {...primaryKebab.triggerProps}
             >
               <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                 <circle cx="8" cy="3.5" r="1.2" />
@@ -179,12 +166,7 @@ export function AnnotationCard({
                 <circle cx="8" cy="12.5" r="1.2" />
               </svg>
             </button>
-            <div
-              className={[styles.primaryMenu, primaryMenuOpen && styles.open]
-                .filter(Boolean)
-                .join(' ')}
-              role="menu"
-            >
+            <div {...primaryKebab.popoverProps} className={styles.primaryMenu} role="menu">
               <div className={styles.statusGroup} role="radiogroup" aria-label="Annotation status">
                 {(['open', 'needs review', 'resolved'] as AnnotationStatus[]).map((s) => (
                   <button
@@ -195,9 +177,8 @@ export function AnnotationCard({
                     className={[styles.statusOption, status === s && styles.statusOptionActive]
                       .filter(Boolean)
                       .join(' ')}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPrimaryMenuOpen(false);
+                    onClick={() => {
+                      primaryKebab.close();
                       if (status !== s) void onAnnotationStatusChange?.(s);
                     }}
                   >
@@ -209,9 +190,8 @@ export function AnnotationCard({
                 type="button"
                 className={styles.primaryMenuItem}
                 role="menuitem"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPrimaryMenuOpen(false);
+                onClick={() => {
+                  primaryKebab.close();
                   startEdit(primary.id);
                 }}
               >
@@ -224,9 +204,8 @@ export function AnnotationCard({
                 type="button"
                 className={[styles.primaryMenuItem, styles.danger].join(' ')}
                 role="menuitem"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPrimaryMenuOpen(false);
+                onClick={() => {
+                  primaryKebab.close();
                   void onAnnotationDelete?.();
                 }}
               >

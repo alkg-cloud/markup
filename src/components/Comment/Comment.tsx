@@ -4,6 +4,7 @@ import { VscReply } from 'react-icons/vsc';
 import { EmojiPicker } from '@/components/EmojiPicker/EmojiPicker';
 import { formatReactorList, ReactionPill } from '@/components/ReactionPill/ReactionPill';
 import { initialsForName } from '@/lib/avatar';
+import { usePopover } from '@/lib/popover/usePopover';
 import styles from './Comment.module.css';
 
 export interface CommentReaction {
@@ -72,8 +73,10 @@ export function Comment({
   onDelete,
   onReactionToggle,
 }: CommentProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  // Kebab popover is browser-managed (HTML popover="auto" — top-layer
+  // paint + light dismiss + ESC). `close()` is called on menu-item
+  // click so the action fires + popover dismisses in one gesture.
+  const kebabPopover = usePopover<HTMLButtonElement, HTMLDivElement>('right');
   // Edit-mode draft. Reset whenever the editor opens with a fresh body so
   // re-entering edit after a save shows the canonical (saved) text.
   const [draft, setDraft] = useState(body);
@@ -111,15 +114,6 @@ export function Comment({
     }
   };
 
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onDoc = (e: MouseEvent) => {
-      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false);
-    };
-    document.addEventListener('click', onDoc);
-    return () => document.removeEventListener('click', onDoc);
-  }, [menuOpen]);
-
   const cls = [
     styles.comment,
     variant === 'primary' && styles.primary,
@@ -139,20 +133,17 @@ export function Comment({
             <span className={styles.name}>{author}</span>
             <span className={styles.time}>{timestamp}</span>
           </div>
-          <div ref={menuRef} className={styles.actions}>
+          <div className={styles.actions}>
             {isOwn ? (
               <>
                 <button
+                  ref={kebabPopover.triggerRef}
                   type="button"
-                  className={[styles.kebab, menuOpen && styles.menuOpen].filter(Boolean).join(' ')}
+                  className={styles.kebab}
                   data-tooltip="More actions"
                   aria-label="More actions"
                   aria-haspopup="menu"
-                  aria-expanded={menuOpen ? 'true' : 'false'}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMenuOpen((o) => !o);
-                  }}
+                  {...kebabPopover.triggerProps}
                 >
                   <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                     <circle cx="8" cy="3.5" r="1.2" />
@@ -160,16 +151,13 @@ export function Comment({
                     <circle cx="8" cy="12.5" r="1.2" />
                   </svg>
                 </button>
-                <div
-                  className={[styles.menu, menuOpen && styles.open].filter(Boolean).join(' ')}
-                  role="menu"
-                >
+                <div {...kebabPopover.popoverProps} className={styles.menu} role="menu">
                   <button
                     type="button"
                     className={styles.menuItem}
                     role="menuitem"
                     onClick={() => {
-                      setMenuOpen(false);
+                      kebabPopover.close();
                       onReply?.();
                     }}
                   >
@@ -181,7 +169,7 @@ export function Comment({
                     className={styles.menuItem}
                     role="menuitem"
                     onClick={() => {
-                      setMenuOpen(false);
+                      kebabPopover.close();
                       onEdit?.();
                     }}
                   >
@@ -195,7 +183,7 @@ export function Comment({
                     className={[styles.menuItem, styles.danger].join(' ')}
                     role="menuitem"
                     onClick={() => {
-                      setMenuOpen(false);
+                      kebabPopover.close();
                       onDelete?.();
                     }}
                   >

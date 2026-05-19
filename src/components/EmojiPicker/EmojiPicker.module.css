@@ -1,11 +1,6 @@
 /* Emoji picker — 4x4 grid popover triggered by the "+" button on a
    comment's reactions row. See spec §10. */
 
-.wrap {
-  position: relative;
-  display: inline-flex;
-}
-
 .trigger {
   width: 22px;
   height: 20px;
@@ -16,11 +11,9 @@
   border: 1px dashed var(--border-subtle);
   border-radius: 9999px;
   color: var(--text-muted);
-  /* Hidden until the parent comment is hovered (or the picker is open)
-     so the "+" doesn't clutter the reactions row at rest. The Comment
-     module owns the `:hover` selector that flips `--reaction-add-opacity`
-     to 1; the trigger reads it as its opacity. The fade uses motion-base
-     so it eases in/out alongside the comment's other hover affordances. */
+  /* Hidden until the parent comment is hovered so the "+" doesn't
+     clutter the reactions row at rest. The Comment module owns the
+     `:hover` selector that flips `--reaction-add-opacity` to 1. */
   opacity: var(--reaction-add-opacity, 0);
   pointer-events: var(--reaction-add-pointer, none);
   cursor: pointer;
@@ -30,41 +23,35 @@
     color var(--motion-fast),
     border-color var(--motion-fast);
 }
-.trigger:hover,
-.wrap.open .trigger {
+.trigger:hover {
   background: var(--surface-hover);
   color: var(--accent-bright);
   border-color: var(--accent-overlay-mid);
   border-style: solid;
-}
-/* When the picker is open, keep the trigger visible regardless of the
-   parent's hover state — otherwise mouse-out closes the popover by
-   removing the trigger from the document flow. */
-.wrap.open .trigger {
-  opacity: 1;
-  pointer-events: auto;
 }
 .trigger svg {
   width: 11px;
   height: 11px;
 }
 
+/* Native HTML popover — top-layer paint, fixed positioning written by
+   `usePopover`. The default `inset: 0; margin: auto` is reset so the
+   JS-written top/left win. */
 .picker {
-  display: none;
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 0;
+  position: fixed;
+  inset: auto;
+  margin: 0;
   padding: 6px;
   background: var(--surface-glass-bg);
   backdrop-filter: blur(16px) saturate(140%);
   border: var(--surface-glass-border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-popover);
+  display: none;
   grid-template-columns: repeat(4, 1fr);
   gap: 2px;
-  z-index: 80;
 }
-.wrap.open .picker {
+.picker:popover-open {
   display: grid;
 }
 
