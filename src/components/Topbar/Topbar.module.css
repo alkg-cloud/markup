@@ -74,33 +74,26 @@
   gap: 6px;
   flex-shrink: 0;
   margin-left: auto;
-  position: relative;
 }
 
+/* Native HTML popover — top-layer paint, fixed positioning written by
+   `usePopover`. */
 .accountMenu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  display: none;
+  flex-direction: column;
   min-width: 220px;
-  background: var(--bg-elevated);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border-strong);
+  padding: 4px;
+  background: var(--surface-glass-bg);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: var(--surface-glass-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-glow), var(--shadow-popover);
-  padding: 4px;
-  z-index: 200;
-  animation: menuIn var(--motion-fast) var(--ease-spring) both;
 }
-
-@keyframes menuIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+.accountMenu:popover-open {
+  display: flex;
 }
 
 .menuHeader {

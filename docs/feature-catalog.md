@@ -38,8 +38,8 @@ Global 52 px top bar (`Topbar.tsx`). Present on all authenticated pages. Margin-
 |---|---|---|
 | `topbar-bar` | Fixed top bar with search pill (centered), breadcrumbs (left), avatar (right) | visible on all auth pages; margin-left: 80 px when sidebar collapsed, smooth transition via `--morph-dur` |
 | `topbar-search-pill` | Search trigger pill centered in topbar (min 240 px, max 340 px) with VscSearch icon + "Search..." text + platform shortcut hint (`Ctrl+K` on Windows/Linux, `⌘K` on Apple platforms) | default, hover (border brightens to `--border-strong`, bg to `--surface-hover`), focus-visible, active; opens `command-palette` and closes avatar dropdown |
-| `topbar-avatar-btn` | User avatar button (top-right), 32 px circle with initials | default, hover (border-color accent), focus-visible, active; opens avatar dropdown |
-| `topbar-avatar-menu` | Dropdown from avatar button; two items only: **Agent Tokens** (navigates to `/settings/agents`) and **Sign Out** (danger variant). Settings and Notifications are not shipped. | closed, open; spring animation |
+| `topbar-avatar-btn` | User avatar button (top-right), 32 px circle with initials | default, hover (border-color accent), focus-visible, active; opens `topbar-avatar-menu` via `usePopover` |
+| `topbar-avatar-menu` | Native HTML popover (`popover="auto"`) anchored to `topbar-avatar-btn` via `usePopover('right')`. Two items only: **Agent Tokens** (navigates to `/settings/agents`) and **Sign Out** (danger variant). Settings and Notifications are not shipped. Paints in the browser top-layer — light-dismiss + ESC handled natively. Closes automatically when `command-palette` opens. | closed, open |
 | `topbar-breadcrumbs` | Breadcrumb strip — starts at project name (no "Markup" / "Home" prefix). Logo serves as root navigation | see `breadcrumbs-*` entries |
 
 ## sidebar
@@ -71,19 +71,19 @@ ARIA tree widget for project/folder navigation (`ProjectTree.tsx`).
 | `sidebar-tree-mockup-item` | Mockup leaf node with VscFile icon, name | default, hover, focus-visible, active, selected |
 | `sidebar-tree-expand` | Chevron (12 px) on folder/project. Smooth rotation animation — not abrupt | collapsed (0 deg), expanded (90 deg, color: `--accent`); animates via `--motion-fast` / `--ease-standard` |
 | `sidebar-tree-keyboard-nav` | Full keyboard navigation per WAI-ARIA treeview | ArrowUp/Down (move focus), ArrowRight (expand or move to first child), ArrowLeft (collapse or move to parent), Enter/Space (activate), Home/End, Escape, Tab |
-| `sidebar-tree-kebab` | Three-dot kebab icon. Replaces count badge on hover with animated swap (count scales to 0.8 and fades out, kebab fades in simultaneously) | hidden (default), visible (hover/focus); opens dropdown |
-| `sidebar-tree-kebab-menu` | Dropdown from project kebab: **Open**, **Edit** (opens project update dialog with current values), **New folder** (top-level folder under the project via `POST /api/projects/[id]/folders` with `parentId: null`), **Delete project**. Folder kebab: **Open**, **Rename** (inline input in the row), **New subfolder**, **Delete folder**. Mockup kebab: **Open**, **Rename**, **Delete mockup**. | open, closed; spring animation on open and close |
+| `sidebar-tree-kebab` | Three-dot kebab icon. Replaces count badge on hover with animated swap (count scales to 0.8 and fades out, kebab fades in simultaneously) | hidden (default), visible (hover/focus); opens `sidebar-tree-kebab-menu` via `usePopover` |
+| `sidebar-tree-kebab-menu` | Native HTML popover (`popover="auto"`) anchored to the row's kebab via the `TreeNodeKebab` subcomponent's `usePopover('right')`. Project kebab: **Open**, **Edit** (opens project update dialog with current values), **New folder** (top-level folder under the project via `POST /api/projects/[id]/folders` with `parentId: null`), **Delete project**. Folder kebab: **Open**, **Rename** (inline input in the row), **New subfolder**, **Delete folder**. Mockup kebab: **Open**, **Rename**, **Delete mockup**. Top-layer paint — escapes the sidebar's `overflow-y: auto` so the menu is never clipped. Each row owns its own `usePopover` instance; opening one row's menu closes any other open popover via the HTML spec's single-popover-auto invariant. | open, closed |
 | `sidebar-tree-count-badge` | Child-count badge on folders/projects. Swaps out for kebab on hover | visible (no hover), hidden (hover — replaced by kebab) |
 | `sidebar-tree-indent` | Visual indentation per nesting level (tree-indent-1 through tree-indent-4) | up to 5 nesting levels |
 | `sidebar-tree-accent-bar` | 3 px left accent bar on selected item | visible when item is the current route |
 | `sidebar-tree-truncation` | Long names truncated with `text-overflow: ellipsis` | full name in `title` tooltip |
-| `sidebar-tree-no-project-section` | Section header `NO PROJECT` groups mockups without a project; rendered only when at least one orphan mockup exists. Replaces the prior synthetic `Ungrouped` pseudo-project node. Orphan mockup rows are full treeitems — clickable (navigates to `/mockups/{id}`), Enter/Space activate, and they get `aria-selected` + the active style when the URL matches. | expanded, collapsed; active when URL matches one of its leaves |
+| `sidebar-tree-no-project-section` | Section header `NO PROJECT` groups mockups without a project; rendered only when at least one orphan mockup exists. Replaces the prior synthetic `Ungrouped` pseudo-project node. Orphan mockup rows are full treeitems — clickable (navigates to `/projects/unsorted/<mockup-slug>` via `mockupSlugHref`), Enter/Space activate, and they get `aria-selected` + the active style when the URL matches. | expanded, collapsed; active when URL matches one of its leaves |
 | `sidebar-section-headers` | Section headers `PROJECTS` and `NO PROJECT` divide the sidebar tree. Sticky to the top of the scroll container. | visible, hidden (NO PROJECT hidden when no orphan mockups) |
-| `sidebar-tree-persist-on-nav` | Expand/collapse state of every project and folder node survives navigation between in-shell pages (`/`, `/mockups/[id]`, `/annotations/[id]`, `/settings/agents`) because the shell mounts once in the `(app)` route-group layout | preserved on client-side navigation |
+| `sidebar-tree-persist-on-nav` | Expand/collapse state of every project and folder node survives navigation between in-shell pages (`/`, `/projects`, `/projects/<slug>`, `/projects/<slug>/<...folders>/<mockup-slug>`, `/annotations/[id]`, `/settings/agents`) because the shell mounts once in the `(app)` route-group layout | preserved on client-side navigation |
 | `sidebar-tree-persist-expansion` | Tree expansion (which projects/folders are open) is persisted in `localStorage.markup.sidebar.expanded` (JSON array of node IDs). Survives reload and tab close. Auto-expand of the active node's path on mount remains additive. | persisted across reloads |
 | `sidebar-tree-active-scroll` | When the URL changes (soft-nav), the active tree node is scrolled into view via `scrollIntoView({block:'nearest', behavior:'smooth'})`. | triggered on every soft-navigation |
 | `sidebar-tree-cursor-grab` | Draggable mockup leaves show `cursor: grab` on hover and `cursor: grabbing` on mousedown. | hover, mousedown |
-| `sidebar-tree-active-path` | On mount and on every navigation, the chain of ancestors leading to the currently visible surface is auto-expanded so the active node is in view: the project + every parent folder for `/mockups/[id]` and `/annotations/[id]`, the project + the parent folder for `/?project=slug&folder=id`, the project for `/?project=slug`. Already-expanded nodes are never collapsed by this behaviour | active mockup, active folder, active project |
+| `sidebar-tree-active-path` | On mount and on every navigation, the chain of ancestors leading to the currently visible surface is auto-expanded so the active node is in view: the project + every parent folder for `/projects/<slug>/<...folders>/<mockup-slug>` (walks folder names from the path) and `/annotations/[id]`, the project + the parent folders for `/projects/<slug>/<...folders>`, the project for `/projects/<slug>`. Already-expanded nodes are never collapsed by this behaviour | active mockup, active folder, active project |
 
 ## sidebar-tree-dnd
 
@@ -124,7 +124,7 @@ Inline folder creation input in the sidebar (`InlineFolderCreate.tsx`).
 
 ## breadcrumbs
 
-Structural breadcrumb navigation (`Breadcrumbs.tsx`). No "Markup" or "Home" prefix — the clickable logo handles root navigation. Breadcrumb starts with the project name: `{project} › {folder} › {mockup}`. The mockup viewer renders the full ancestor chain (`/mockups/[id]/page.tsx` walks the `Folder.parentId` ancestry server-side). The settings page (`/settings/agents`) intentionally renders an empty breadcrumb — the page's own h1 carries the label and would be redundant.
+Structural breadcrumb navigation (`Breadcrumbs.tsx`). No "Markup" or "Home" prefix — the clickable logo handles root navigation. Breadcrumb starts with the project name: `{project} › {folder} › {mockup}`. The mockup viewer renders the full ancestor chain (`/projects/[slug]/[...path]/page.tsx` resolves `<...path>` to either a folder or mockup via `resolveProjectPath`; on mockup hits the page renders `MockupViewerPage` and walks the `Folder.parentId` ancestry server-side for the breadcrumb chain). The settings page (`/settings/agents`) intentionally renders an empty breadcrumb — the page's own h1 carries the label and would be redundant.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
@@ -237,7 +237,7 @@ Empty state component for projects and folders (`EmptyState.tsx`).
 
 ## mockup-viewer (AppMain redesign — 2026-05)
 
-Mockup viewer at `/mockups/[id]` (`AppMainViewer.tsx`). The 2026-05 redesign
+Mockup viewer at `/projects/<slug>/<...folders>/<mockup-slug>` (`MockupViewerPage.tsx` server component → `AppMainViewer.tsx` client). The single-segment route `/mockups/[id]` has been removed — canonical viewer URLs are path-based and human-readable; orphan mockups resolve under the synthetic project slug `unsorted`. The 2026-05 redesign
 replaces the in-canvas toolbar + side panel with **floating, draggable chrome**
 (rail + toolbar + composer + marking-bar) directly above the canvas.
 
@@ -320,10 +320,10 @@ inside the chip itself.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `mockup-viewer-version-chip` | Pill with clock icon + label (plain `vN`, no " · current" suffix — the popover already signals active state) + chev | closed, open (chev rotated 180°) |
-| `mockup-viewer-version-popover` | Glass popover with newest-first version list | closed, open; closes on outside click |
-| `mockup-viewer-version-item` | One row per version (dot + label + sub) | default, current (accent bg + glowing dot) |
-| `mockup-viewer-version-kebab` | Per-row kebab menu | opens Promote / Delete |
+| `mockup-viewer-version-chip` | Pill with clock icon + label (plain `vN`, no " · current" suffix — the popover already signals active state) + chev. Opens `mockup-viewer-version-popover` via `usePopover('right')`. | closed, open (chev rotated 180°) |
+| `mockup-viewer-version-popover` | Native HTML popover (`popover="auto"`) with newest-first version list. Top-layer paint — escapes the toolbar's clip and stacking. Browser-managed light-dismiss + ESC. | closed, open |
+| `mockup-viewer-version-item` | One row per version (dot + label + sub). Rendered by the `VersionListRow` subcomponent so each row carries its own `usePopover` for the per-row kebab; nested popovers stack natively via the HTML spec's ancestor relationship — opening a row kebab does NOT close the parent version list. | default, current (accent bg + glowing dot) |
+| `mockup-viewer-version-kebab` | Per-row kebab menu (nested popover) — opens Promote / Delete via `usePopover('right')`. | opens Promote / Delete |
 | `mockup-viewer-version-action-promote` | Promote version to current | enabled, disabled on current row (with "Already current" tooltip) |
 | `mockup-viewer-version-action-delete` | Delete version | danger styling |
 
@@ -353,8 +353,8 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 | `annotation-card-badge` | Colored circular badge with annotation number | per-color palette 0..15 |
 | `annotation-card-author` | Author name in meta row | static |
 | `annotation-card-status-pill` | open / needs review / resolved | open (info), needs review (warning), resolved (success) |
-| `annotation-card-primary-kebab` | 3-dot kebab button in the meta row, visible only when the primary comment is the current user's. Opens `annotation-card-primary-menu` with status toggle group + Edit + Delete affordances. Replaces the previous standalone pencil. | hidden (not own), visible (own); hover (surface-hover bg), open (accent bg) |
-| `annotation-card-primary-menu` | Glass popover anchored under the kebab. Hosts the status toggle group, "Edit" item, and "Delete annotation" (danger) item. Closes on outside click or after a menu action fires. | closed, open |
+| `annotation-card-primary-kebab` | 3-dot kebab button in the meta row, visible only when the primary comment is the current user's. Opens `annotation-card-primary-menu` via `usePopover('right')`. Hosts the status toggle group + Edit + Delete affordances. Replaces the previous standalone pencil. | hidden (not own), visible (own); hover (surface-hover bg), open (accent bg) |
+| `annotation-card-primary-menu` | Native HTML popover (`popover="auto"`) anchored to the kebab. Hosts the status toggle group, "Edit" item, and "Delete annotation" (danger) item. Top-layer paint — escapes the rail's `overflow-y: auto`. Browser-managed light-dismiss + ESC; menu items also call `close()` before firing their action so the popover closes with the same gesture. | closed, open |
 | `annotation-card-status-toggle` | Radio-group of three status options (Open / Needs review / Resolved) at the top of the kebab menu. Active option uses the accent palette. Clicking dispatches `PATCH /api/annotations/[id] { status }`. | per-option idle / hover / active |
 | `annotation-card-delete` | Danger menu item that deletes the annotation via `DELETE /api/annotations/[id]` after a `confirm-dialog` accept. Cascades through the thread → messages → reactions. | idle, hover (danger bg) |
 | `annotation-card-primary` | Primary comment rendered without head row (author in meta) | renders body + reactions only |
@@ -370,7 +370,7 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 | `comment` | Avatar + name + time + body + reactions + actions | default, hover (actions revealed) |
 | `comment-avatar` | 20×20 circular gradient avatar with initials (first letter of first + last word) | per-author color palette 0..15 |
 | `comment-action-reply` | Reply icon for non-own comments | default, hover, focus-visible |
-| `comment-kebab` | Kebab menu for own comments. Reply opens the always-visible reply form below; Edit flips the comment into `comment-edit-inline` mode (no native prompt); Delete confirms then DELETEs `/api/messages/[id]`. The primary message (annotation body) cannot be deleted — the API returns 400 and surfaces "Delete the annotation instead". | opens Reply / Edit / Delete |
+| `comment-kebab` | Kebab menu for own comments. Opens a native HTML popover (`popover="auto"`) via `usePopover('right')`. Reply opens the always-visible reply form below; Edit flips the comment into `comment-edit-inline` mode (no native prompt); Delete confirms then DELETEs `/api/messages/[id]`. The primary message (annotation body) cannot be deleted — the API returns 400 and surfaces "Delete the annotation instead". Top-layer paint + browser-managed light-dismiss + ESC. | opens Reply / Edit / Delete |
 | `comment-edit-inline` | Inline edit affordance — replaces the comment body with a glass-styled textarea pre-filled with the current body, focused on mount. **Save** persists (PATCH `/api/messages/[id]`) and dismisses; **Cancel** discards. Blur commits (acts like Save). Esc cancels; Cmd/Ctrl+Enter commits. Save and Cancel buttons fire on `mousedown` so they run before the textarea's blur handler. | editing, saving (post-blur, awaiting API), error (left in edit mode) |
 | `comment-action-reply` (icon) | Reply affordance uses `VscReply` from `react-icons/vsc` (replaces the inline SVG path); same for the kebab menu's Reply item and the AnnotationCard's submit button. | — |
 
@@ -381,7 +381,7 @@ Modal-first creation flow with optional multi-pin marking. See spec §7.
 | `reaction-pill` | Pill with emoji + optional count (count shown when >1) | idle, reacted (current user in list, accent bg) |
 | `reaction-pill-tooltip` | Custom hover tooltip — "X and Y reacted with 👍" | glass bg matching `--surface-glass-*` |
 | `reaction-add` | Dashed "+" trigger button, always visible next to the existing pills | idle, hover (accent border + bg), open (popover anchored above) |
-| `emoji-picker` | 4×4 grid popover with 16 reaction emojis | closed, open; closes on outside click |
+| `emoji-picker` | 4×4 grid native HTML popover (`popover="auto"`) with 16 reaction emojis. Opens via `usePopover('left')` from the comment's "+" reaction trigger. Top-layer paint + browser-managed light-dismiss + ESC. | closed, open |
 | `emoji-picker-pick` | Individual emoji button | default, hover (scale 1.2) |
 
 ### confirm-dialog
@@ -398,7 +398,7 @@ Promise-based replacement for `window.confirm`/`window.alert`/`window.prompt`. N
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `tooltip` | The single tooltip primitive in the product. A `<div popover="hint" id="markup-tooltip">` rendered once at the root layout by `TooltipPortal`; a capture-phase document listener watches `mouseenter`/`focusin` on every `[data-tooltip]` trigger, copies the text, positions against the trigger's `getBoundingClientRect`, and calls `showPopover()`. Top-layer paint escapes every overflow ancestor and stacking context — the tooltip never gets clipped (e.g. by `.rail .list { overflow-y: auto }`) and never loses a z-index race. The CanvasToolbar's zoom/fullscreen tooltips are the reference; the rail, kebab, comment kebab, emoji-picker `Add reaction`, lock toggle, drag handles, reaction pills, version chip kebab — all route through the same portal. See `docs/code-style.md § Tooltips: one primitive, no exceptions`. | hidden, visible (hover or focus, after ~150 ms dwell) |
+| `tooltip` | The single tooltip primitive in the product. A `<div popover="hint" id="markup-tooltip">` rendered once at the root layout by `TooltipPortal`; a capture-phase document listener watches `mouseenter`/`focusin` on every `[data-tooltip]` trigger, copies the text, positions against the trigger's `getBoundingClientRect`, and calls `showPopover()`. Top-layer paint escapes every overflow ancestor and stacking context — the tooltip never gets clipped (e.g. by `.rail .list { overflow-y: auto }`) and never loses a z-index race. The CanvasToolbar's zoom/fullscreen tooltips are the reference; the rail, project-tree kebab, comment kebab, emoji-picker `Add reaction`, lock toggle, drag handles, reaction pills, version-chip clock + per-row kebab, annotation-card kebab, topbar avatar, sidebar logo + collapse-toggle — all route through the same portal. Pairs with `popover-primitive` (same top-layer mechanism, different content). See `docs/code-style.md § Tooltips: one primitive, no exceptions`. | hidden, visible (hover or focus, after ~150 ms dwell) |
 | `tooltip-align-left` | Default alignment | left-anchored above trigger |
 | `tooltip-align-center` | Centered above trigger | for symmetric layouts |
 | `tooltip-align-right` | Right-aligned above trigger | for triggers near right edge |
@@ -463,16 +463,17 @@ Reusable modal dialog (`Dialog.tsx`).
 | `dialog-field` | Form field wrapper (label + input) | idle, focused, error |
 | `dialog-actions` | Actions row: cancel (`btn-secondary`) + confirm (`btn-accent`) | standard layout |
 
-## dropdown
+## popover-primitive
 
-Positioned popover menu (`Dropdown.tsx`). All dropdowns have open AND close animation.
+The single popover primitive in the product (`src/lib/popover/usePopover.ts`). Wraps the native HTML popover API (`popover="auto"` + `popovertarget`) and pairs it with `positionPopover` (`src/lib/popover/position.ts`) which anchors the popover to its trigger via `getBoundingClientRect`, flips above when there's no room below, and clamps to the viewport with a 4 px gutter. The popover paints in the browser top-layer — same guarantee `tooltip` uses — so it escapes every overflow ancestor and stacking context. Browser owns light-dismiss, ESC-to-close, and the single-popover-auto invariant (opening one closes the rest). See `docs/code-style.md § Popovers: usePopover, no exceptions`.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `dropdown-menu` | Popover menu container | open (spring animation), closed (exit animation); both open and close are animated |
-| `dropdown-item` | Menu item | default, hover (`--surface-hover`), focus-visible |
-| `dropdown-item-danger` | Danger-variant menu item (e.g. Delete, Sign out) | default, hover (`--danger-soft` bg + `--danger` text), focus-visible |
-| `dropdown-divider` | Horizontal divider between item groups | 1 px `--border-subtle`, 4 px margin |
+| `popover-primitive` | `usePopover<TriggerEl, PopoverEl>(align)` returns `{ triggerRef, popoverRef, triggerProps, popoverProps, close }`. Trigger spreads `popovertarget` + `popovertargetaction='toggle'` so the browser toggles the popover; popover spreads `id` + `popover='auto'` + `ref`. The hook listens to `beforetoggle` and calls `positionPopover` on the next animation frame so the popover lands anchored to the trigger. | closed, open; align: `left`, `center`, `right` |
+| `popover-menu-item` | Generic menu item inside a popover (Comment kebab, AnnotationCard kebab, VersionChip rows, Topbar account menu, ProjectTree kebab). | default, hover (`--surface-hover` + `--text-bright`), focus-visible |
+| `popover-menu-item-danger` | Danger-variant menu item (Delete annotation, Delete version, Sign Out, Delete project/folder/mockup). | default, hover (`--danger-soft` bg + `--danger` text), focus-visible |
+| `popover-menu-divider` | Horizontal divider between popover item groups. | 1 px `--border-subtle`, 4 px margin |
+| `popover-nested` | Nested popovers stack natively via the HTML spec's ancestor relationship. Reference: `VersionChip` opens a per-row Promote/Delete popover from inside its own version-list popover; the parent stays open. Each row gets its own `usePopover` instance via the extracted `VersionListRow` subcomponent. | parent + child both open |
 
 ## toast
 
@@ -508,6 +509,8 @@ Cross-cutting visual and interaction surfaces defined in `globals.css` and `toke
 | `global-reduced-motion` | `prefers-reduced-motion: reduce` safety net: all `animation-duration`, `animation-iteration-count`, `transition-duration`, `scroll-behavior` zeroed via `!important` | global override in `globals.css` |
 | `global-typography-manrope` | Manrope font family (body + display), weights 400-800. Display: 700 weight, tracking -0.02em. Body: 400/500/600, 13-14 px. Labels: 600, 10 px, uppercase, tracking 0.12em | via `next/font/google` |
 | `global-typography-jetbrains` | JetBrains Mono (code/tabular), 400/500, 10-12 px | tabular-nums for timestamps, token strings |
+| `global-routing-path-based` | All in-shell URLs are human-readable path segments resolved server-side. `/` = workspace landing. `/projects` = projects index. `/projects/<slug>` = project view. `/projects/<slug>/<...folders>/<mockup-slug>` = mockup viewer (catch-all `[...path]` resolved by `resolveProjectPath` to either a folder or a mockup; mockups render `MockupViewerPage`, folders render the folder view). `/projects/unsorted/<mockup-slug>` covers orphan mockups. `/annotations/[id]` and `/settings/agents` retain stable single-segment routes. The legacy `/mockups/[id]` viewer route has been removed; `/api/mockups/[id]/*` API endpoints continue to use the mockup id. | server-resolved; canonical paths produced by `routes.ts` helpers (`projectsHref`, `projectHref`, `folderHref`, `mockupSlugHref`) |
+| `global-sidebar-collapse-ssr` | Sidebar collapse state is hydration-stable: the server reads the `markup-sidebar-collapsed` cookie via `next/headers cookies()` in the `(app)` shell and passes `defaultCollapsed` to `Sidebar`. No `useEffect`-driven flash on first paint. The client persists changes to the cookie + `localStorage` in the same write. | cookie-driven SSR — no hydration mismatch |
 
 ---
 
@@ -527,8 +530,7 @@ All motion tokens and keyframe animations.
 | `anim-scale-in` | Dialog/palette scale-in entrance | `--motion-fast` | `--ease-spring` | zeroed |
 | `anim-toast-in` | Toast slide-in from bottom | `--motion-fast` | `--ease-standard` | zeroed |
 | `anim-toast-out` | Toast slide-out | `--motion-fast` | `--ease-exit` | zeroed |
-| `anim-dropdown-open` | Dropdown menu spring entrance | `--motion-fast` | `--ease-spring` | zeroed |
-| `anim-dropdown-close` | Dropdown menu exit | `--motion-fast` | `--ease-exit` | zeroed |
+| `anim-popover-open` | Popover top-layer paint (`:popover-open`) — display flip; no entry animation (browser owns light-dismiss + ESC + single-active invariant) | instantaneous | N/A | N/A |
 | `anim-chevron-rotate` | Tree chevron 0 deg → 90 deg smooth rotation | `--motion-fast` | `--ease-standard` | zeroed |
 | `anim-kebab-swap` | Count badge → kebab icon swap on hover (count scales 0.8 + fades, kebab fades in) | `--motion-fast` | `--ease-standard` | zeroed |
 | `anim-dnd-ghost-fade` | DnD ghost fade-out on drop | 80 ms | linear | zeroed |

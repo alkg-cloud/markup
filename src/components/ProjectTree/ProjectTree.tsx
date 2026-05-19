@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PICKER_ICONS } from '@/components/IconPicker/icons';
+import { usePopover } from '@/lib/popover/usePopover';
 import { MAX_FOLDER_DEPTH } from '@/lib/project/constants';
 import { folderHref, mockupSlugHref, projectHref } from '@/lib/project/routes';
 import { InlineFolderCreate } from './InlineFolderCreate';
@@ -469,24 +470,11 @@ export function ProjectTree({
     projectId: string;
     parentId: string | null;
   } | null>(null);
-  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<{ id: string; type: 'folder' | 'mockup' } | null>(null);
   const [renameValue, setRenameValue] = useState('');
-  const menuRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<HTMLDivElement>(null);
   const announceRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!menuOpenId) return;
-    const handle = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpenId(null);
-      }
-    };
-    document.addEventListener('mousedown', handle);
-    return () => document.removeEventListener('mousedown', handle);
-  }, [menuOpenId]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -922,123 +910,43 @@ export function ProjectTree({
                 )}
 
                 {node.type !== 'recents-item' && (
-                  <div
-                    style={{ position: 'relative' }}
-                    ref={menuOpenId === node.id ? menuRef : undefined}
-                  >
-                    <button
-                      type="button"
-                      tabIndex={-1}
-                      className={styles.kebab}
-                      aria-label={`Menu for ${displayLabel}`}
-                      aria-haspopup="true"
-                      aria-expanded={menuOpenId === node.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setMenuOpenId(menuOpenId === node.id ? null : node.id);
-                      }}
-                    >
-                      <KebabIcon />
-                    </button>
-                    {menuOpenId === node.id && (
-                      <div className={styles.kebabMenu} role="menu">
-                        {node.href && (
-                          <button
-                            type="button"
-                            role="menuitem"
-                            className={styles.kebabMenuItem}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setMenuOpenId(null);
-                              router.push(node.href);
-                            }}
-                          >
-                            Open
-                          </button>
-                        )}
-                        {node.type === 'project' && onEditProject && (
-                          <button
-                            type="button"
-                            role="menuitem"
-                            className={styles.kebabMenuItem}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setMenuOpenId(null);
-                              onEditProject(node.id);
-                            }}
-                          >
-                            Edit
-                          </button>
-                        )}
-                        {(node.type === 'folder' || node.type === 'mockup') && onRename && (
-                          <button
-                            type="button"
-                            role="menuitem"
-                            className={styles.kebabMenuItem}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setMenuOpenId(null);
-                              const renameType = node.type as 'folder' | 'mockup';
-                              setRenaming({ id: node.id, type: renameType });
-                              setRenameValue(displayLabel);
-                            }}
-                          >
-                            Rename
-                          </button>
-                        )}
-                        {node.type === 'folder' && onCreateFolder && (
-                          <button
-                            type="button"
-                            role="menuitem"
-                            className={styles.kebabMenuItem}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setMenuOpenId(null);
-                              const proj = projects.find((p) => p.slug === node.projectSlug);
-                              if (proj) {
-                                toggleExpand(node.id);
-                                setCreatingIn({ projectId: proj.slug, parentId: node.id });
-                              }
-                            }}
-                          >
-                            New subfolder
-                          </button>
-                        )}
-                        {node.type === 'project' && onCreateFolder && (
-                          <button
-                            type="button"
-                            role="menuitem"
-                            className={styles.kebabMenuItem}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setMenuOpenId(null);
-                              if (!expanded.has(node.id)) toggleExpand(node.id);
-                              setCreatingIn({ projectId: node.projectSlug, parentId: null });
-                            }}
-                          >
-                            New folder
-                          </button>
-                        )}
-                        <div className={styles.kebabMenuDivider} />
-                        <button
-                          type="button"
-                          role="menuitem"
-                          className={styles.kebabMenuItemDanger}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setMenuOpenId(null);
-                            onDelete?.(node.id, node.type as 'project' | 'folder' | 'mockup');
-                          }}
-                        >
-                          {node.type === 'project'
-                            ? 'Delete project'
-                            : node.type === 'folder'
-                              ? 'Delete folder'
-                              : 'Delete mockup'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  <TreeNodeKebab
+                    node={node}
+                    displayLabel={displayLabel}
+                    onOpen={() => {
+                      if (node.href) router.push(node.href);
+                    }}
+                    onEditProject={onEditProject}
+                    onRename={
+                      node.type === 'folder' || node.type === 'mockup'
+                        ? () => {
+                            const renameType = node.type as 'folder' | 'mockup';
+                            setRenaming({ id: node.id, type: renameType });
+                            setRenameValue(displayLabel);
+                          }
+                        : undefined
+                    }
+                    onCreateSubfolder={
+                      node.type === 'folder' && onCreateFolder
+                        ? () => {
+                            const proj = projects.find((p) => p.slug === node.projectSlug);
+                            if (proj) {
+                              toggleExpand(node.id);
+                              setCreatingIn({ projectId: proj.slug, parentId: node.id });
+                            }
+                          }
+                        : undefined
+                    }
+                    onCreateFolderAtRoot={
+                      node.type === 'project' && onCreateFolder
+                        ? () => {
+                            if (!expanded.has(node.id)) toggleExpand(node.id);
+                            setCreatingIn({ projectId: node.projectSlug, parentId: null });
+                          }
+                        : undefined
+                    }
+                    onDelete={onDelete}
+                  />
                 )}
               </div>
               {dropLine === 'after' && (
@@ -1140,6 +1048,152 @@ export function ProjectTree({
             })}
           </>
         )}
+      </div>
+    </>
+  );
+}
+
+/* ── TreeNodeKebab ─────────────────────────────────────────────────────── */
+
+interface TreeNodeKebabProps {
+  node: FlatNode;
+  displayLabel: string;
+  onOpen: () => void;
+  onEditProject?: (projectId: string) => void;
+  onRename?: () => void;
+  onCreateSubfolder?: () => void;
+  onCreateFolderAtRoot?: () => void;
+  onDelete?: (nodeId: string, nodeType: 'project' | 'folder' | 'mockup') => void;
+}
+
+/**
+ * Per-row kebab for the project tree. Uses `usePopover` so the menu
+ * paints in the top-layer and inherits light-dismiss + ESC semantics
+ * from the native HTML popover API. One hook per row keeps each
+ * popover's open state independent — opening one closes the rest via
+ * the spec's single-popover-auto invariant.
+ *
+ * See `docs/code-style.md § Popovers`.
+ */
+function TreeNodeKebab({
+  node,
+  displayLabel,
+  onOpen,
+  onEditProject,
+  onRename,
+  onCreateSubfolder,
+  onCreateFolderAtRoot,
+  onDelete,
+}: TreeNodeKebabProps) {
+  const kebab = usePopover<HTMLButtonElement, HTMLDivElement>('right');
+  const nodeType = node.type as 'project' | 'folder' | 'mockup';
+  const deleteLabel =
+    nodeType === 'project'
+      ? 'Delete project'
+      : nodeType === 'folder'
+        ? 'Delete folder'
+        : 'Delete mockup';
+
+  return (
+    <>
+      <button
+        ref={kebab.triggerRef}
+        type="button"
+        tabIndex={-1}
+        className={styles.kebab}
+        data-tooltip={`${displayLabel} actions`}
+        data-tooltip-align="right"
+        aria-label={`Menu for ${displayLabel}`}
+        aria-haspopup="menu"
+        {...kebab.triggerProps}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <KebabIcon />
+      </button>
+      <div {...kebab.popoverProps} className={styles.kebabMenu} role="menu">
+        {node.href && (
+          <button
+            type="button"
+            role="menuitem"
+            className={styles.kebabMenuItem}
+            onClick={(e) => {
+              e.stopPropagation();
+              kebab.close();
+              onOpen();
+            }}
+          >
+            Open
+          </button>
+        )}
+        {nodeType === 'project' && onEditProject && (
+          <button
+            type="button"
+            role="menuitem"
+            className={styles.kebabMenuItem}
+            onClick={(e) => {
+              e.stopPropagation();
+              kebab.close();
+              onEditProject(node.id);
+            }}
+          >
+            Edit
+          </button>
+        )}
+        {onRename && (
+          <button
+            type="button"
+            role="menuitem"
+            className={styles.kebabMenuItem}
+            onClick={(e) => {
+              e.stopPropagation();
+              kebab.close();
+              onRename();
+            }}
+          >
+            Rename
+          </button>
+        )}
+        {onCreateSubfolder && (
+          <button
+            type="button"
+            role="menuitem"
+            className={styles.kebabMenuItem}
+            onClick={(e) => {
+              e.stopPropagation();
+              kebab.close();
+              onCreateSubfolder();
+            }}
+          >
+            New subfolder
+          </button>
+        )}
+        {onCreateFolderAtRoot && (
+          <button
+            type="button"
+            role="menuitem"
+            className={styles.kebabMenuItem}
+            onClick={(e) => {
+              e.stopPropagation();
+              kebab.close();
+              onCreateFolderAtRoot();
+            }}
+          >
+            New folder
+          </button>
+        )}
+        <div className={styles.kebabMenuDivider} />
+        <button
+          type="button"
+          role="menuitem"
+          className={styles.kebabMenuItemDanger}
+          onClick={(e) => {
+            e.stopPropagation();
+            kebab.close();
+            onDelete?.(node.id, nodeType);
+          }}
+        >
+          {deleteLabel}
+        </button>
       </div>
     </>
   );
