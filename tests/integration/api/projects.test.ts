@@ -127,12 +127,12 @@ describe('projects API', () => {
     expect((await got.json()).name).toBe('Alpha');
 
     const patched = await patchProjectRoute(
-      new Request('http://l', patchReq(cookie, { name: 'Alpha Renamed', icon: 'emoji:🚀' })),
+      new Request('http://l', patchReq(cookie, { name: 'Alpha-Renamed', icon: 'emoji:🚀' })),
       { params: Promise.resolve({ id: project.id }) },
     );
     expect(patched.status).toBe(200);
     const patchedBody = await patched.json();
-    expect(patchedBody.name).toBe('Alpha Renamed');
+    expect(patchedBody.name).toBe('Alpha-Renamed');
     expect(patchedBody.icon).toBe('emoji:🚀');
 
     const deleted = await deleteProjectRoute(new Request('http://l', deleteReq(cookie)), {
@@ -174,11 +174,11 @@ describe('folders API', () => {
     expect(got.status).toBe(200);
 
     const patched = await patchFolderRoute(
-      new Request('http://l', patchReq(cookie, { name: 'Landing v2' })),
+      new Request('http://l', patchReq(cookie, { name: 'Landing-v2' })),
       { params: Promise.resolve({ id: folder.id }) },
     );
     expect(patched.status).toBe(200);
-    expect((await patched.json()).name).toBe('Landing v2');
+    expect((await patched.json()).name).toBe('Landing-v2');
 
     const deleted = await deleteFolderRoute(new Request('http://l', deleteReq(cookie)), {
       params: Promise.resolve({ id: folder.id }),

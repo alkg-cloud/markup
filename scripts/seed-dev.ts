@@ -337,7 +337,10 @@ async function main() {
     colorIndex: 0,
     anchors: [{ path: ':scope>body>main>section.lede>h1', offsetX: 0.42, offsetY: 0.58 }],
     replies: [
-      { body: 'I tested -0.02em on the desktop comp — feels right. Mobile still reads tight.', authorId: peer.id },
+      {
+        body: 'I tested -0.02em on the desktop comp — feels right. Mobile still reads tight.',
+        authorId: peer.id,
+      },
       'Maybe -0.025em for the 96px variant only?',
       { body: 'v3 lands the lifted leading. Closing as fixed.', authorId: peer.id },
     ],
@@ -365,7 +368,9 @@ async function main() {
       { path: ':scope>body>header.brand>nav.nav', offsetX: 0.85, offsetY: 0.5 },
       { path: ':scope>body>main>section.lede>h1', offsetX: 0.1, offsetY: 0.2 },
     ],
-    replies: [{ body: 'Brand prefers "Reserve" over "Order". Pinged copy to update.', authorId: peer.id }],
+    replies: [
+      { body: 'Brand prefers "Reserve" over "Order". Pinged copy to update.', authorId: peer.id },
+    ],
     primaryReactions: { '💯': [peer.id] },
     versionId: v3.id,
   });
@@ -379,10 +384,7 @@ async function main() {
     status: 'resolved',
     colorIndex: 2,
     anchors: [{ path: ':scope>body>main>aside.specimen', offsetX: 0.5, offsetY: 0.3 }],
-    replies: [
-      { body: 'v3 nails it.', authorId: peer.id },
-      'Closing.',
-    ],
+    replies: [{ body: 'v3 nails it.', authorId: peer.id }, 'Closing.'],
     primaryReactions: { '✅': [user.id, peer.id] },
     replyReactions: {
       0: { '🚀': [user.id] },
@@ -401,9 +403,7 @@ async function main() {
     status: 'open',
     colorIndex: 5,
     anchors: [{ path: ':scope>body>main>section.lede>h1', offsetX: 0.5, offsetY: 0.92 }],
-    replies: [
-      { body: 'Agree — drop the descender, not the cap baseline.', authorId: user.id },
-    ],
+    replies: [{ body: 'Agree — drop the descender, not the cap baseline.', authorId: user.id }],
     primaryReactions: { '🤔': [user.id] },
     versionId: v3.id,
   });
@@ -416,7 +416,9 @@ async function main() {
     body: 'Price label feels heavy. Try lighter weight for the gram suffix.',
     status: 'open',
     colorIndex: 3,
-    anchors: [{ path: ':scope>body>main>aside.specimen>div.card>div.price', offsetX: 0.7, offsetY: 0.5 }],
+    anchors: [
+      { path: ':scope>body>main>aside.specimen>div.card>div.price', offsetX: 0.7, offsetY: 0.5 },
+    ],
     versionId: v3.id,
   });
 
@@ -468,7 +470,9 @@ async function main() {
   console.log(
     `  Mockups:    ${lumenCoffee.mockup.slug}, ${helio.mockup.slug}, ${drone.mockup.slug}`,
   );
-  console.log(`  Annotations on lumen-coffee-hero: 6  (open×4, needs review×1, resolved×1; one by peer)`);
+  console.log(
+    `  Annotations on lumen-coffee-hero: 6  (open×4, needs review×1, resolved×1; one by peer)`,
+  );
   console.log(`  Annotations on helio-pricing:    1`);
   console.log(`  Versions on lumen-coffee-hero:   3  (v3 is current)`);
   console.log('');

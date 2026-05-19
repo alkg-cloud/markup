@@ -3,7 +3,7 @@
    docs/feature-catalog.md `confirm-dialog`. */
 
 .overlay {
-  composes: floatingScrim from '../../styles/glass.module.css';
+  composes: floatingScrim from "../../styles/glass.module.css";
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -11,7 +11,7 @@
 }
 
 .content {
-  composes: floatingSurface from '../../styles/glass.module.css';
+  composes: floatingSurface from "../../styles/glass.module.css";
   position: fixed;
   top: 50%;
   left: 50%;

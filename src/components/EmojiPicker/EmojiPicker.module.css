@@ -38,7 +38,7 @@
    `usePopover`. The default `inset: 0; margin: auto` is reset so the
    JS-written top/left win. */
 .picker {
-  composes: floatingSurface from '../../styles/glass.module.css';
+  composes: floatingSurface from "../../styles/glass.module.css";
   position: fixed;
   inset: auto;
   margin: 0;
