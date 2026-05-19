@@ -119,15 +119,7 @@
   cursor: grabbing;
   color: var(--accent-bright);
 }
-.grabDots {
-  display: grid;
-  grid-template-columns: repeat(2, 3px);
-  gap: 2px;
-}
-.grabDots > span {
-  display: block;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: currentColor;
+.grabIcon {
+  width: 16px;
+  height: 16px;
 }

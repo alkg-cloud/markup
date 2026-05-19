@@ -1,5 +1,6 @@
 'use client';
 import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { GoGrabber } from 'react-icons/go';
 import styles from './CanvasToolbar.module.css';
 import { nextZoomIndex, ZOOM_DEFAULT_INDEX, ZOOM_STEPS, zoomLabel } from './zoom';
 
@@ -188,14 +189,7 @@ export function CanvasToolbar({
         data-tooltip="Drag toolbar"
         role="presentation"
       >
-        <div className={styles.grabDots} aria-hidden="true">
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
+        <GoGrabber className={styles.grabIcon} aria-hidden="true" />
       </div>
     </div>
   );

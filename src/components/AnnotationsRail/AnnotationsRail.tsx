@@ -1,5 +1,6 @@
 'use client';
 import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { GoGrabber } from 'react-icons/go';
 import { VscPinned } from 'react-icons/vsc';
 import { modSymbol } from '@/lib/shortcuts/platform';
 import styles from './AnnotationsRail.module.css';
@@ -200,14 +201,7 @@ export function AnnotationsRail({
         data-tooltip="Drag to reposition"
         role="presentation"
       >
-        <div className={styles.grabDots} aria-hidden="true">
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
+        <GoGrabber className={styles.grabIcon} aria-hidden="true" />
       </div>
 
       {/* biome-ignore lint/a11y/noStaticElementInteractions: hover-expand is
