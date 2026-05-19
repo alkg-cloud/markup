@@ -265,7 +265,7 @@ export function ProjectTree({
       <div
         ref={treeRef}
         role="tree"
-        aria-label="Projetos"
+        aria-label="Projects"
         onKeyDown={handleKeyDown}
         className={styles.tree}
       >
@@ -276,7 +276,7 @@ export function ProjectTree({
           if (node.type === 'recents-header') {
             return (
               <li key={node.id} role="none" className={styles.sectionLabel}>
-                Recentes
+                Recents
               </li>
             );
           }

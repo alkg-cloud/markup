@@ -248,7 +248,7 @@ export function ProjectSidebar({
       <button
         ref={hamburgerRef}
         type="button"
-        aria-label="Abrir menu de navegação"
+        aria-label="Open navigation menu"
         onClick={() => setMobileOpen(true)}
         className="project-sidebar-hamburger"
         style={{
@@ -282,7 +282,7 @@ export function ProjectSidebar({
       <dialog
         ref={dialogRef}
         aria-modal="true"
-        aria-label="Menu de navegação"
+        aria-label="Navigation menu"
         onClick={(e) => {
           if (e.target === dialogRef.current) setMobileOpen(false);
         }}
@@ -324,7 +324,7 @@ export function ProjectSidebar({
         >
           <button
             type="button"
-            aria-label="Fechar menu"
+            aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
             style={{
               position: 'absolute',
@@ -365,7 +365,7 @@ export function ProjectSidebar({
                 fontFamily: 'var(--font-mono)',
               }}
             >
-              Projetos
+              Projects
             </span>
           </div>
           <div
