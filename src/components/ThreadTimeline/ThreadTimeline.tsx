@@ -1,6 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import styles from './ThreadTimeline.module.css';
 
 interface Message {
   id: string;
@@ -18,6 +19,8 @@ interface Props {
   /** Resolved display names by authorId, pre-fetched server-side. */
   authorNamesById?: Record<string, string>;
 }
+
+const cx = (...classes: (string | false | undefined | null)[]) => classes.filter(Boolean).join(' ');
 
 export function ThreadTimeline({
   annotationId: _annotationId,
@@ -67,231 +70,56 @@ export function ThreadTimeline({
   const isResolved = status === 'resolved';
 
   return (
-    <aside
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--space-lg)',
-        minHeight: 400,
-      }}
-    >
-      <style>{`
-        .tt-btn-ghost {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: var(--space-xs);
-          padding: 9px 16px;
-          background: transparent;
-          color: var(--text);
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-pill);
-          font-size: var(--type-xs);
-          font-weight: 700;
-          font-family: inherit;
-          transition:
-            background var(--motion-fast) var(--ease-standard),
-            border-color var(--motion-fast) var(--ease-standard),
-            color var(--motion-fast) var(--ease-standard),
-            transform var(--motion-instant) var(--ease-standard);
-        }
-        .tt-btn-ghost:hover:not(:disabled) {
-          background: var(--surface-hover);
-          border-color: var(--border-strong);
-          color: var(--text-bright);
-        }
-        .tt-btn-ghost:active:not(:disabled) {
-          background: var(--surface-active);
-          transform: translateY(1px);
-        }
-        .tt-btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .tt-btn-primary {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: var(--space-xs);
-          padding: 9px 16px;
-          background: var(--btn-bg);
-          color: var(--accent);
-          border: 0;
-          border-radius: var(--radius-pill);
-          font-size: var(--type-xs);
-          font-weight: 700;
-          font-family: inherit;
-          transition:
-            background var(--motion-fast) var(--ease-standard),
-            transform var(--motion-instant) var(--ease-standard),
-            opacity var(--motion-fast) var(--ease-standard);
-        }
-        .tt-btn-primary:hover:not(:disabled) { background: var(--btn-bg-hover); }
-        .tt-btn-primary:active:not(:disabled) { background: var(--btn-bg-active); transform: translateY(1px); }
-        .tt-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-      `}</style>
+    <aside className={styles.aside}>
       {/* Thread header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingBottom: 'var(--space-sm)',
-          borderBottom: '1px solid var(--border-subtle)',
-        }}
-      >
-        <span
-          style={{
-            fontSize: 'var(--type-2xs)',
-            fontWeight: 700,
-            letterSpacing: 'var(--tracking-wider)',
-            textTransform: 'uppercase',
-            color: 'var(--text-dim)',
-          }}
-        >
-          Thread
-        </span>
+      <div className={styles.header}>
+        <span className={styles.headerLabel}>Thread</span>
 
         {/* Status pill with dot */}
         <span
           data-testid="thread-status"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 4,
-            fontSize: 'var(--type-2xs)',
-            fontWeight: 700,
-            letterSpacing: 'var(--tracking-wide)',
-            padding: '4px 10px',
-            borderRadius: 'var(--radius-pill)',
-            textTransform: 'uppercase',
-            background: isResolved ? 'var(--success-soft)' : 'var(--info-soft)',
-            color: isResolved ? 'var(--success)' : 'var(--info)',
-          }}
+          className={cx(
+            styles.statusPill,
+            isResolved ? styles.statusPillResolved : styles.statusPillOpen,
+          )}
         >
-          <span
-            style={{
-              width: 5,
-              height: 5,
-              borderRadius: '50%',
-              background: 'currentColor',
-              display: 'inline-block',
-              flexShrink: 0,
-            }}
-          />
+          <span className={styles.statusDot} />
           {isResolved ? 'Resolved' : 'Open'}
         </span>
       </div>
 
       {/* Messages */}
-      <ol
-        style={{
-          listStyle: 'none',
-          padding: 0,
-          margin: 0,
-          display: 'grid',
-          gap: 'var(--space-md)',
-          flex: 1,
-          overflowY: 'auto',
-        }}
-      >
+      <ol className={styles.messageList}>
         {messages.map((m) => {
           const isAgent = m.authorType === 'agent';
           const authorName = getAuthorName(m);
           const avatarLetter = authorName.charAt(0).toUpperCase();
 
           return (
-            <li
-              key={m.id}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '28px 1fr',
-                gap: 'var(--space-sm)',
-              }}
-            >
+            <li key={m.id} className={styles.messageRow}>
               {/* Avatar */}
               <div
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: '50%',
-                  display: 'grid',
-                  placeItems: 'center',
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  background: isAgent ? 'var(--accent-soft)' : 'var(--info-soft)',
-                  color: isAgent ? 'var(--accent)' : 'var(--info)',
-                  flexShrink: 0,
-                }}
+                className={cx(styles.avatar, isAgent ? styles.avatarAgent : styles.avatarUser)}
                 aria-hidden="true"
               >
                 {avatarLetter}
               </div>
 
               {/* Body column */}
-              <div style={{ display: 'grid', gap: 4 }}>
+              <div className={styles.messageBody}>
                 {/* Author row */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'baseline',
-                    gap: 'var(--space-xs)',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 'var(--type-xs)',
-                      fontWeight: 700,
-                      color: 'var(--text-bright)',
-                    }}
-                  >
-                    {authorName}
-                  </span>
-                  <time
-                    dateTime={m.createdAt}
-                    className="tnum"
-                    style={{
-                      fontSize: 'var(--type-2xs)',
-                      color: 'var(--text-muted)',
-                    }}
-                  >
+                <div className={styles.authorRow}>
+                  <span className={styles.authorName}>{authorName}</span>
+                  <time dateTime={m.createdAt} className={cx('tnum', styles.timestamp)}>
                     {new Date(m.createdAt).toLocaleString()}
                   </time>
                   {/* Kind chip — agent only */}
-                  {isAgent && (
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        fontSize: 9,
-                        fontWeight: 700,
-                        letterSpacing: 'var(--tracking-wide)',
-                        padding: '2px 6px',
-                        borderRadius: 'var(--radius-pill)',
-                        textTransform: 'uppercase',
-                        background: 'var(--bg-chip)',
-                        color: 'var(--text-dim)',
-                      }}
-                    >
-                      agent
-                    </span>
-                  )}
+                  {isAgent && <span className={styles.kindChip}>agent</span>}
                 </div>
 
                 {/* Message text */}
                 <div
-                  style={{
-                    fontSize: 'var(--type-sm)',
-                    color: 'var(--text)',
-                    lineHeight: 'var(--leading-snug)',
-                    whiteSpace: 'pre-wrap',
-                    ...(isAgent
-                      ? {
-                          paddingLeft: 'var(--space-sm)',
-                          borderLeft: '2px solid var(--accent-overlay-mid)',
-                        }
-                      : {}),
-                  }}
+                  className={cx(styles.messageText, isAgent && styles.messageTextAgent)}
                 >
                   {m.body}
                 </div>
@@ -307,42 +135,24 @@ export function ThreadTimeline({
           e.preventDefault();
           void reply();
         }}
-        style={{ display: 'grid', gap: 'var(--space-sm)' }}
+        className={styles.form}
       >
         <textarea
           placeholder="Reply…"
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          style={{
-            width: '100%',
-            padding: 'var(--space-sm) var(--space-md)',
-            background: 'var(--surface-input)',
-            color: 'var(--text-bright)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)',
-            font: 'inherit',
-            fontSize: 'var(--type-base)',
-            minHeight: 64,
-            resize: 'vertical',
-          }}
+          className={styles.textarea}
         />
 
         {/* Action row */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
+        <div className={styles.actions}>
           {/* Resolve / Reopen — ghost */}
           <button
             type="button"
             onClick={toggleResolve}
             disabled={busy || !threadId}
             data-testid="thread-resolve"
-            className="tt-btn-ghost"
-            style={{ cursor: busy || !threadId ? 'not-allowed' : 'pointer' }}
+            className={styles.btnGhost}
           >
             {isResolved ? 'Reopen' : 'Resolve'}
           </button>
@@ -351,8 +161,7 @@ export function ThreadTimeline({
           <button
             type="submit"
             disabled={busy || !body.trim() || !threadId}
-            className="tt-btn-primary"
-            style={{ cursor: busy || !body.trim() || !threadId ? 'not-allowed' : 'pointer' }}
+            className={styles.btnPrimary}
           >
             Reply →
           </button>
