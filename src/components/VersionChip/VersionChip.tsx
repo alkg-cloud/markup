@@ -34,11 +34,9 @@ export function VersionChip({ versions, onSelect, onPromote, onDelete }: Version
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   const current = versions.find((v) => v.current) ?? versions[0];
-  // Chip mirrors the AppMain mockup: append " · current" when the
-  // displayed version is the active one. The popover list keeps the
-  // plain `vN` label per row since each row also shows current state
-  // via the dot + accent bg + "Already current" button.
-  const label = current ? (current.current ? `${current.label} · current` : current.label) : '—';
+  // Chip uses the plain `vN` label — the popover row's accent bg +
+  // "Already current" button already signal the active version.
+  const label = current?.label ?? '—';
 
   // Close on outside click
   useEffect(() => {
