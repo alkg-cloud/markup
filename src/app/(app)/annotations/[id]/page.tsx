@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react';
 import { ThreadTimeline } from '@/components/ThreadTimeline/ThreadTimeline';
 import { Topbar } from '@/components/Topbar/Topbar';
 import { INTENT_PILL_COLORS, type IntentType } from '@/lib/annotation/intent';
-import { useRequireAuth } from '@/lib/hooks/use-require-auth';
 import { ReadOnlyAnnotation } from './ReadOnlyAnnotation';
 
 interface DetailPayload {
@@ -38,12 +37,11 @@ interface DetailPayload {
 
 export default function AnnotationDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { identity, loading: authLoading } = useRequireAuth();
   const [data, setData] = useState<DetailPayload | null>(null);
   const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
 
   useEffect(() => {
-    if (!id || authLoading || !identity) return;
+    if (!id) return;
     let cancelled = false;
     fetch(`/api/annotations/${encodeURIComponent(id)}/detail`, {
       credentials: 'include',
@@ -73,7 +71,7 @@ export default function AnnotationDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [id, authLoading, identity]);
+  }, [id]);
 
   if (status === 'not_found') {
     return <main style={{ padding: 24 }}>Annotation not found.</main>;
