@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 const COOKIE_KEY = 'markup-sidebar-collapsed';
 
 function clearSidebarCookie() {
+  // biome-ignore lint/suspicious/noDocumentCookie: mirrors the production cookie write in `Sidebar.tsx`.
   document.cookie = `${COOKIE_KEY}=; path=/; max-age=0`;
 }
 
