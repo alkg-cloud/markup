@@ -37,7 +37,7 @@ export default function MockupPage() {
     return () => { cancelled = true; };
   }, [id]);
 
-  if (error) return <ErrorState code={error} />;
+  if (error) return <ErrorState error={error} />;
   if (!data) return <LoadingState />;
   return <ViewerSurface {...data} />;
 }
@@ -50,13 +50,24 @@ Four invariants:
 3. **`credentials: 'include'`** — fetch is same-origin so the cookie rides along automatically, but stating it documents intent (the Bearer-auth path is for non-browser agents).
 4. **401 → redirect to `/login`** — the server's source of truth for auth is `/api/auth/me`. Any data endpoint that returns 401 means the cookie is gone or expired; the only sane response is to send the user to `/login`.
 
+## Loading and error placeholders
+
+Page-level fetches share two reusable surfaces:
+
+| Component | Path | Props | Purpose |
+|---|---|---|---|
+| `LoadingState` | `src/components/LoadingState/LoadingState.tsx` | `message?: string` (defaults to `"Loading…"`) | Centered, dimmed status line with `role="status"` + `aria-live="polite"`. Used while `data` is `null`. |
+| `ErrorState` | `src/components/ErrorState/ErrorState.tsx` | `error: string`, `onRetry?: () => void` | Centered danger-toned message with optional retry button. Wraps the content in `role="alert"`. Used when `fetch` fails or returns a non-OK status. |
+
+Both are CSS-Modules client components and read tokens from `tokens.css`. The in-shell layout (`AppShell`) renders its own bespoke loading bar while `useRequireAuth()` is resolving — `LoadingState` is for page-level fetches inside the shell, not for the shell itself.
+
 ## `useRequireAuth()`
 
 The in-shell layout calls `useRequireAuth()` exactly once. The hook lives in `src/lib/hooks/use-require-auth.ts` and:
 
 1. Calls `GET /api/auth/me`.
 2. On 401, `router.replace('/login')`.
-3. On success, exposes `{ identity, loading }` so the shell can render `<LoadingState />` until the identity is known.
+3. On success, exposes `{ identity, loading }` so the shell can render a placeholder until the identity is known. `AppShell` uses a bespoke grid-centered "Loading…" line (not `LoadingState`) so the sidebar skeleton can mount in the same frame; page-level fetches inside the shell use the shared `LoadingState` component.
 
 Middleware in `src/middleware.ts` runs first at the edge — it redirects on missing `mk_session` cookie before any React mounts. The hook catches the rarer "cookie exists but session is invalid/expired" case, where middleware passes the request through but `/api/auth/me` returns 401.
 
