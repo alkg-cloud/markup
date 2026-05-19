@@ -220,12 +220,22 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
 
   const onVersionDelete = useCallback(
     async (versionId: string) => {
+      const target = props.versions.find((v) => v.id === versionId);
+      const label = target?.label ?? 'this version';
+      const ok = await confirm({
+        title: `Delete ${label}`,
+        description:
+          'The version files are removed from disk and annotations still pointing at this version will lose their source-of-truth pin position. This cannot be undone.',
+        confirmLabel: 'Delete',
+        danger: true,
+      });
+      if (!ok) return;
       await fetch(`/api/mockups/${props.mockupId}/versions/${versionId}`, {
         method: 'DELETE',
       });
       router.refresh();
     },
-    [props.mockupId, router],
+    [props.mockupId, props.versions, router, confirm],
   );
 
   return (

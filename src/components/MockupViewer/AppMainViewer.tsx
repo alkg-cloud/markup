@@ -117,6 +117,11 @@ export function AppMainViewer({
   const [pendingPins, setPendingPins] = useState<{ id: string; anchor: Anchor }[]>([]);
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setFullscreen] = useState(false);
+  // Bumped each time the user clicks a canvas pin so the rail pins
+  // itself open. Decoupling the trigger from `activeId` lets the rail
+  // stay collapsed when the active annotation changes from the rail
+  // itself (e.g. accordion thread toggle).
+  const [railExpandSignal, setRailExpandSignal] = useState(0);
   // Bumped on iframe load to force PinLayer to remount and re-bind to
   // the new contentDocument's elements after a version switch.
   const [iframeGen, setIframeGen] = useState(0);
@@ -232,6 +237,9 @@ export function AppMainViewer({
       return;
     }
     setActiveId(annotationId);
+    // Pin clicks signal intent to interact — expand the rail so the
+    // matching card is visible without an extra hover gesture.
+    setRailExpandSignal((n) => n + 1);
   }, []);
 
   const onCreate = useCallback(() => {
@@ -442,6 +450,7 @@ export function AppMainViewer({
           onCreate={onCreate}
           count={annotations.length}
           resetPositionKey={isFullscreen ? 'fs' : 'win'}
+          expandSignal={railExpandSignal}
         >
           {annotations.map((a) => (
             <AnnotationCard

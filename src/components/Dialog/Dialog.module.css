@@ -71,6 +71,20 @@
   color: var(--text-muted);
 }
 
+.hint,
+.error {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.hint {
+  color: var(--text-muted);
+}
+.error {
+  color: var(--danger);
+}
+
 .actions {
   display: flex;
   gap: 8px;

@@ -164,7 +164,7 @@ function VersionListRow({ row, onSelect, onPromote, onDelete }: VersionListRowPr
           <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
             <path d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9z" />
           </svg>
-          Delete version
+          Delete
         </button>
       </div>
     </li>

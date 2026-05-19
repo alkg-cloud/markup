@@ -57,14 +57,23 @@ export function Dialog({ open, onClose, title, children, actions }: DialogProps)
 interface DialogFieldProps {
   label: string;
   children: ReactNode;
+  /** Optional inline help text rendered below the control. */
+  hint?: string;
+  /** Optional inline error message; takes precedence over `hint`. */
+  error?: string | null;
 }
 
-export function DialogField({ label, children }: DialogFieldProps) {
+export function DialogField({ label, children, hint, error }: DialogFieldProps) {
   return (
     // biome-ignore lint/a11y/noLabelWithoutControl: children prop contains the input control
     <label className={styles.field}>
       <span className={styles.label}>{label}</span>
       {children}
+      {error ? (
+        <span className={styles.error}>{error}</span>
+      ) : hint ? (
+        <span className={styles.hint}>{hint}</span>
+      ) : null}
     </label>
   );
 }
