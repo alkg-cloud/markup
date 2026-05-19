@@ -4,6 +4,8 @@ import type { TLEditorSnapshot } from '@tldraw/tldraw';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { ThreadTimeline } from '@/components/ThreadTimeline/ThreadTimeline';
 import { Topbar } from '@/components/Topbar/Topbar';
 import { INTENT_PILL_COLORS, type IntentType } from '@/lib/annotation/intent';
@@ -74,13 +76,13 @@ export default function AnnotationDetailPage() {
   }, [id]);
 
   if (status === 'not_found') {
-    return <main style={{ padding: 24 }}>Annotation not found.</main>;
+    return <ErrorState error="Annotation not found." />;
   }
   if (status === 'error') {
-    return <main style={{ padding: 24, color: 'var(--danger)' }}>Failed to load annotation.</main>;
+    return <ErrorState error="Failed to load annotation." />;
   }
   if (status === 'loading' || !data) {
-    return null;
+    return <LoadingState />;
   }
 
   const { annotation, author, thread, authorNamesById, mockup, screenshot, tldraw } = data;

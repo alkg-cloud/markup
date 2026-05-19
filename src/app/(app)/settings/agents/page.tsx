@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Topbar } from '@/components/Topbar/Topbar';
 import { useIdentity } from '@/lib/hooks/use-require-auth';
 import { AgentsClient } from './AgentsClient';
@@ -53,13 +55,13 @@ export default function AgentsPage() {
 
   if (error) {
     return (
-      <main style={{ padding: 24, color: 'var(--danger)' }}>
-        {error === 'forbidden' ? 'Admin-only page.' : `Failed to load tokens (${error}).`}
-      </main>
+      <ErrorState
+        error={error === 'forbidden' ? 'Admin-only page.' : `Failed to load tokens (${error}).`}
+      />
     );
   }
   if (!tokens) {
-    return null;
+    return <LoadingState />;
   }
 
   return (
