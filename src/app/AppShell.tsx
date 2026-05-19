@@ -30,6 +30,8 @@ export async function getAuthenticatedIdentity() {
 
 export async function AppShell({ children }: { children: ReactNode }) {
   await getAuthenticatedIdentity();
+  const cs = await cookies();
+  const sidebarCollapsed = cs.get('markup-sidebar-collapsed')?.value === 'true';
 
   const projectList = await listProjects();
   const allTrees = (await Promise.all(projectList.map((p) => getProjectTree(p.id)))).filter(
@@ -68,7 +70,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
         orphanMockups={orphanMockups}
         mockupNames={mockupNames}
         recentMockups={recentMockups}
-        defaultCollapsed={cs.get('markup-sidebar-collapsed')?.value === 'true'}
+        defaultCollapsed={sidebarCollapsed}
       />
       <main className={styles.main}>{children}</main>
       <CommandPalette projects={treeProjects} />
