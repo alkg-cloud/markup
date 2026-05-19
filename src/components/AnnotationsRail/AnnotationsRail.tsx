@@ -26,6 +26,11 @@ export interface AnnotationsRailProps {
   onCreate?: () => void;
   /** Count badge in the expanded header. Defaults to `badges.length`. */
   count?: number;
+  /** Token whose change clears the rail's dragged position so it returns
+   *  to the spec-default coordinates. Fullscreen toggles change the
+   *  containing block's bounds, which can leave the rail off-screen if
+   *  it was previously dragged; bumping this key resets the layout. */
+  resetPositionKey?: string | number;
 }
 
 /**
@@ -47,12 +52,19 @@ export function AnnotationsRail({
   onBadgeClick,
   onCreate,
   count,
+  resetPositionKey,
 }: AnnotationsRailProps) {
   const railRef = useRef<HTMLElement | null>(null);
   const [hover, setHover] = useState(false);
   const [pinned, setPinned] = useState(false);
   const [drag, setDrag] = useState(false);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  // Reset the dragged position when the parent bumps the key (e.g. on
+  // fullscreen toggle). This avoids the rail being stranded off-screen
+  // when the containing block's bounds change underneath it.
+  useEffect(() => {
+    setPos(null);
+  }, [resetPositionKey]);
 
   // Hover-expand: only triggers when the cursor enters the rail body —
   // NOT the drag handle. Each child surface (collapsed, expanded, foot)

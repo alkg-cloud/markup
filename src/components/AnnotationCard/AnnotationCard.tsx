@@ -1,5 +1,6 @@
 'use client';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { VscReply } from 'react-icons/vsc';
 import { Comment, type CommentReaction } from '@/components/Comment/Comment';
 import styles from './AnnotationCard.module.css';
 
@@ -47,6 +48,10 @@ export interface AnnotationCardProps {
   onCommentEditSave?: (commentId: string, newBody: string) => void | Promise<void>;
   onCommentDelete?: (commentId: string) => void;
   onCommentReact?: (commentId: string, emoji: string) => void;
+  /** Change this annotation's status from the primary kebab menu. */
+  onAnnotationStatusChange?: (status: AnnotationStatus) => void | Promise<void>;
+  /** Delete this annotation (cascades to its thread + reactions). */
+  onAnnotationDelete?: () => void | Promise<void>;
 }
 
 /**
@@ -79,7 +84,22 @@ export function AnnotationCard({
   onCommentEditSave,
   onCommentDelete,
   onCommentReact,
+  onAnnotationStatusChange,
+  onAnnotationDelete,
 }: AnnotationCardProps) {
+  // Primary-comment kebab menu — surfaces status toggle + Edit + Delete
+  // for annotations the current user authored. Replaces the standalone
+  // pencil affordance.
+  const [primaryMenuOpen, setPrimaryMenuOpen] = useState(false);
+  const primaryMenuRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!primaryMenuOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!primaryMenuRef.current?.contains(e.target as Node)) setPrimaryMenuOpen(false);
+    };
+    document.addEventListener('click', onDoc);
+    return () => document.removeEventListener('click', onDoc);
+  }, [primaryMenuOpen]);
   // Accordion-controlled when `threadOpen` is supplied by the parent;
   // otherwise the card manages its own state (preserves the previous
   // local-toggle behaviour for callers that don't lift state).
@@ -137,20 +157,86 @@ export function AnnotationCard({
         </span>
         <span className={[styles.pill, pillClass].join(' ')}>{status}</span>
         {primary.isOwn ? (
-          <button
-            type="button"
-            className={styles.editPrimary}
-            data-tooltip="Edit annotation body"
-            aria-label="Edit annotation body"
-            onClick={(e) => {
-              e.stopPropagation();
-              startEdit(primary.id);
-            }}
-          >
-            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path d="M13.23 1h-1.46L3.52 9.25l-.16.22L1 13.59 2.41 15l4.12-2.36.22-.16L15 4.23V2.77L13.23 1zM13 4l-7 7L5 10l7-7 1 1z" />
-            </svg>
-          </button>
+          <div ref={primaryMenuRef} className={styles.primaryActions}>
+            <button
+              type="button"
+              className={[styles.primaryKebab, primaryMenuOpen && styles.menuOpen]
+                .filter(Boolean)
+                .join(' ')}
+              data-tooltip="Annotation actions"
+              data-tooltip-align="right"
+              aria-label="Annotation actions"
+              aria-haspopup="menu"
+              aria-expanded={primaryMenuOpen ? 'true' : 'false'}
+              onClick={(e) => {
+                e.stopPropagation();
+                setPrimaryMenuOpen((o) => !o);
+              }}
+            >
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <circle cx="8" cy="3.5" r="1.2" />
+                <circle cx="8" cy="8" r="1.2" />
+                <circle cx="8" cy="12.5" r="1.2" />
+              </svg>
+            </button>
+            <div
+              className={[styles.primaryMenu, primaryMenuOpen && styles.open]
+                .filter(Boolean)
+                .join(' ')}
+              role="menu"
+            >
+              <div className={styles.statusGroup} role="radiogroup" aria-label="Annotation status">
+                {(['open', 'needs review', 'resolved'] as AnnotationStatus[]).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    role="radio"
+                    aria-checked={status === s ? 'true' : 'false'}
+                    className={[styles.statusOption, status === s && styles.statusOptionActive]
+                      .filter(Boolean)
+                      .join(' ')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPrimaryMenuOpen(false);
+                      if (status !== s) void onAnnotationStatusChange?.(s);
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                className={styles.primaryMenuItem}
+                role="menuitem"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPrimaryMenuOpen(false);
+                  startEdit(primary.id);
+                }}
+              >
+                <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path d="M13.23 1h-1.46L3.52 9.25l-.16.22L1 13.59 2.41 15l4.12-2.36.22-.16L15 4.23V2.77L13.23 1zM13 4l-7 7L5 10l7-7 1 1z" />
+                </svg>
+                Edit
+              </button>
+              <button
+                type="button"
+                className={[styles.primaryMenuItem, styles.danger].join(' ')}
+                role="menuitem"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPrimaryMenuOpen(false);
+                  void onAnnotationDelete?.();
+                }}
+              >
+                <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9z" />
+                </svg>
+                Delete annotation
+              </button>
+            </div>
+          </div>
         ) : null}
       </div>
 
@@ -211,6 +297,7 @@ export function AnnotationCard({
               className={styles.replyBtn}
               disabled={replyDraft.trim().length === 0}
             >
+              <VscReply aria-hidden="true" />
               Reply
             </button>
           </div>

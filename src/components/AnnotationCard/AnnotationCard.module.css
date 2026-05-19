@@ -159,11 +159,15 @@
   color: var(--warning);
 }
 
-/* Edit button for own primary comment — sits at the right of the meta
- * row next to the status pill. Primary comments don't render the
- * Comment.tsx header (and therefore have no kebab), so this is the
- * only affordance for editing the annotation body. */
-.editPrimary {
+/* Primary actions for own annotations — sits at the right of the meta
+ * row next to the status pill. Hosts a kebab that surfaces status
+ * toggle, Edit, and Delete in a glass popover. Replaces the previous
+ * standalone pencil button. */
+.primaryActions {
+  position: relative;
+  flex-shrink: 0;
+}
+.primaryKebab {
   width: 22px;
   height: 22px;
   display: flex;
@@ -171,18 +175,107 @@
   justify-content: center;
   color: var(--text-muted);
   border-radius: var(--radius-xs);
-  flex-shrink: 0;
   transition:
     background var(--motion-fast),
     color var(--motion-fast);
 }
-.editPrimary:hover {
+.primaryKebab:hover,
+.primaryKebab.menuOpen {
   background: var(--surface-hover);
   color: var(--text-bright);
 }
-.editPrimary svg {
+.primaryKebab svg {
   width: 12px;
   height: 12px;
+}
+
+.primaryMenu {
+  display: none;
+  position: absolute;
+  top: 28px;
+  right: 0;
+  z-index: 50;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 6px;
+  gap: 2px;
+  background: var(--surface-glass-bg);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: var(--surface-glass-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-popover);
+}
+.primaryMenu.open {
+  display: flex;
+}
+
+/* Status toggle group — three radio-like options stacked at the top of
+   the menu. Active option uses the accent palette. */
+.statusGroup {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2px;
+  padding: 2px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xs);
+  margin-bottom: 4px;
+}
+.statusOption {
+  padding: 5px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: transparent;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast);
+}
+.statusOption:hover {
+  background: var(--surface-hover);
+  color: var(--text-bright);
+}
+.statusOptionActive,
+.statusOptionActive:hover {
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+}
+
+.primaryMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  border-radius: var(--radius-xs);
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast);
+}
+.primaryMenuItem:hover {
+  background: var(--surface-hover);
+  color: var(--text-bright);
+}
+.primaryMenuItem svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+.primaryMenuItem.danger {
+  color: var(--danger);
+}
+.primaryMenuItem.danger:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 /* Foot row: date + chevron toggle */
@@ -276,6 +369,9 @@
   gap: 6px;
 }
 .replyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 5px 12px;
   background: var(--accent);
   color: oklch(15% 0.04 165);
@@ -289,6 +385,10 @@
   transition:
     background var(--motion-fast),
     opacity var(--motion-fast);
+}
+.replyBtn svg {
+  width: 12px;
+  height: 12px;
 }
 .replyBtn:hover {
   background: var(--accent-bright);
