@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GoGrabber } from 'react-icons/go';
-import { PICKER_ICONS } from '@/components/IconPicker/icons';
+import { resolveIconToken } from '@/components/IconPicker/icons';
 import { usePopover } from '@/lib/popover/usePopover';
 import { MAX_FOLDER_DEPTH } from '@/lib/project/constants';
 import { folderHref, mockupSlugHref, projectHref } from '@/lib/project/routes';
@@ -133,18 +133,6 @@ function KebabIcon() {
       <circle cx="12" cy="8" r="1.2" />
     </svg>
   );
-}
-
-function resolveIconToken(token: string): { type: 'svg' | 'emoji'; content: string } | null {
-  if (token.startsWith('emoji:')) {
-    return { type: 'emoji', content: token.slice(6) };
-  }
-  for (const group of Object.values(PICKER_ICONS)) {
-    const entry = group.find((e) => e.token === token);
-    if (entry?.svg) return { type: 'svg', content: entry.svg };
-    if (entry?.label) return { type: 'emoji', content: entry.label };
-  }
-  return null;
 }
 
 function ProjectIconResolved({ token }: { token: string }) {

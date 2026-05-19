@@ -209,3 +209,27 @@ export function filterIcons(tab: string, query: string): IconEntry[] {
   const q = query.toLowerCase();
   return icons.filter((i) => i.token.toLowerCase().includes(q));
 }
+
+export interface ResolvedIcon {
+  type: 'svg' | 'emoji';
+  content: string;
+}
+
+/**
+ * Resolve a stored icon token (e.g. `vsc:VscFile`, `emoji:🚀`) to a
+ * renderable `{type, content}` pair. Returns `null` for unknown tokens
+ * so the caller can fall back to a default glyph. Single source of
+ * truth for icon resolution across the project tree, folder header,
+ * and project-card surfaces.
+ */
+export function resolveIconToken(token: string): ResolvedIcon | null {
+  if (token.startsWith('emoji:')) {
+    return { type: 'emoji', content: token.slice(6) };
+  }
+  for (const group of Object.values(PICKER_ICONS)) {
+    const entry = group.find((e) => e.token === token);
+    if (entry?.svg) return { type: 'svg', content: entry.svg };
+    if (entry?.label) return { type: 'emoji', content: entry.label };
+  }
+  return null;
+}
