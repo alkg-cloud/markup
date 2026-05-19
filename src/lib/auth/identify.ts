@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 import { verifyAgentToken } from './agent-token';
@@ -11,6 +12,23 @@ export type Identity =
 
 interface ErrorWithStatus extends Error {
   status: number;
+}
+
+/**
+ * Maps the `Error` thrown by `requireIdentity` / `requireAdmin` (and
+ * any other helper that attaches `status` to its error) into a
+ * `NextResponse.json({ error }, { status })`. Route handlers wrap the
+ * `requireAdmin(...)` call in `try/catch` and pass the caught value
+ * here so they don't redeclare the `ErrorWithStatus` shape locally.
+ *
+ * Unknown errors (no `status`) bubble up as 500 — same default the
+ * route boilerplate used before this helper.
+ */
+export function handleAuthError(e: unknown): NextResponse {
+  const err = e as ErrorWithStatus;
+  const status = typeof err?.status === 'number' ? err.status : 500;
+  const message = err?.message ?? 'internal_error';
+  return NextResponse.json({ error: message }, { status });
 }
 
 type CookieJar = { get(name: string): { value: string } | undefined };

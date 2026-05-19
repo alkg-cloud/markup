@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
-import { identify, requireAdmin } from '@/lib/auth/identify';
+import { handleAuthError, identify, requireAdmin } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { prisma } from '@/lib/prisma';
-
-interface ErrorWithStatus extends Error {
-  status?: number;
-}
 
 export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
@@ -13,8 +9,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   try {
     requireAdmin(await identify(req));
   } catch (e) {
-    const err = e as ErrorWithStatus;
-    return NextResponse.json({ error: err.message }, { status: err.status ?? 500 });
+    return handleAuthError(e);
   }
   const { id } = await ctx.params;
   await prisma.agentToken.delete({ where: { id } }).catch(() => null);

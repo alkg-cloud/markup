@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { identify, requireAdmin } from '@/lib/auth/identify';
+import { handleAuthError, identify, requireAdmin } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { createFolder } from '@/lib/project/service';
 import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
-
-interface ErrorWithStatus extends Error {
-  status?: number;
-}
 
 const createSchema = z.object({
   name: urlSafeNameSchema(255),
@@ -20,8 +16,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   try {
     requireAdmin(await identify(req));
   } catch (e) {
-    const err = e as ErrorWithStatus;
-    return NextResponse.json({ error: err.message }, { status: err.status ?? 500 });
+    return handleAuthError(e);
   }
   const { id: projectId } = await ctx.params;
   const parsed = createSchema.safeParse(await req.json().catch(() => ({})));
