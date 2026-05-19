@@ -72,7 +72,8 @@ src/components/
   AnnotationPin/
     AnnotationPin.tsx       # 'use client' — hover/active state on the pin
   ThreadTimeline/
-    ThreadTimeline.tsx      # 'use client' — reply textarea
+    ThreadTimeline.tsx        # 'use client' — reply textarea
+    ThreadTimeline.module.css # header pill, message list (avatar+body+agent quote), reply form, ghost/primary buttons
   ProjectTree/
     ProjectTree.tsx         # 'use client' — ARIA tree with keyboard nav + DnD
     ProjectTree.module.css  # tree items, chevron, count badge, kebab hover-swap, accent bar, indentation
@@ -175,11 +176,17 @@ The page-scoped pattern means `MockupViewer.tsx` is co-located with its `page.ts
 
 `AppShell.tsx` lives directly under `src/app/` (not inside `(app)/`) because the route-group layout imports it via a relative path.
 
+## Copy / i18n
+
+The UI ships in **English**. All visible labels, aria attributes, button copy, section headers, and toast messages are written in EN. The product is not localised — every translated string is a bug.
+
+When adding a new surface, write the strings in EN directly in JSX (no `t()` helper, no locale map). Pre-existing PT-BR text in any new PR must be translated as part of the change.
+
 ## Composition rules
 
 - **Pages are client components** that fetch data via `fetch('/api/…')` in `useEffect` and render loading / error / success states. They do not import Prisma; they do not call `identify()`.
 - **Client islands receive plain data** — never functions or Prisma rows. Servers return ISO-string dates; clients render them.
-- **Effects run twice in dev** (React Strict Mode). Anything that mutates state (creating a tldraw asset, fetching) must be idempotent. See [tldraw](tldraw.md#strictmode-dedup). For pages, the `useEffect` cleanup MUST set a `cancelled` flag so a fast unmount doesn't write to a dead component.
+- **Effects run twice in dev** (React Strict Mode). Anything that mutates state (creating a tldraw asset, fetching) must be idempotent. See [tldraw](tldraw.md#strictmode-dedup). For pages, the `useEffect` cleanup MUST abort the in-flight fetch via an `AbortController` (the catch handler ignores `AbortError`) so a fast unmount or param change doesn't write to a dead component AND doesn't waste a server response.
 - **Refs** for imperative APIs (e.g. tldraw's `editor` instance) live in the client island, exposed via an `onMount` callback to a sibling control:
 
 ```tsx

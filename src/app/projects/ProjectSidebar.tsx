@@ -10,7 +10,6 @@ import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
 import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
 import { RecentsSection } from '@/components/ProjectTree/RecentsSection';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
-import { ToastProvider } from '@/components/Toast/useToast';
 import { projectHref } from '@/lib/project/routes';
 import sidebarStyles from './ProjectSidebar.module.css';
 
@@ -228,163 +227,162 @@ export function ProjectSidebar({
 
   return (
     <div>
-      <ToastProvider>
-        {confirmDialog}
-        <NewProjectDialog
-          open={newProjectOpen}
-          onClose={() => setNewProjectOpen(false)}
-          onSaved={handleProjectSaved}
-        />
-        <NewProjectDialog
-          open={editingProjectId != null}
-          onClose={() => setEditingProjectId(null)}
-          onSaved={handleProjectSaved}
-          project={projects.find((project) => project.id === editingProjectId)}
-        />
-        {/* Desktop: pill-morph sidebar */}
-        <Sidebar footer={footerContent} defaultCollapsed={defaultCollapsed}>
-          {treeContent}
-        </Sidebar>
+      {confirmDialog}
+      <NewProjectDialog
+        open={newProjectOpen}
+        onClose={() => setNewProjectOpen(false)}
+        onSaved={handleProjectSaved}
+      />
+      <NewProjectDialog
+        open={editingProjectId != null}
+        onClose={() => setEditingProjectId(null)}
+        onSaved={handleProjectSaved}
+        project={projects.find((project) => project.id === editingProjectId)}
+      />
+      {/* Desktop: pill-morph sidebar */}
+      <Sidebar footer={footerContent} defaultCollapsed={defaultCollapsed}>
+        {treeContent}
+      </Sidebar>
 
-        {/* Mobile hamburger */}
-        <button
-          ref={hamburgerRef}
-          type="button"
-          aria-label="Abrir menu de navegação"
-          onClick={() => setMobileOpen(true)}
-          className="project-sidebar-hamburger"
-          style={{
-            display: 'none',
-            position: 'fixed',
-            top: 'var(--space-sm)',
-            left: 'var(--space-sm)',
-            zIndex: 50,
-            width: 36,
-            height: 36,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 'var(--radius-xs)',
-            background: 'var(--btn-bg)',
-            color: 'var(--text-dim)',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-            <path
-              d="M3 5h12M3 9h12M3 13h12"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
+      {/* Mobile hamburger */}
+      <button
+        ref={hamburgerRef}
+        type="button"
+        aria-label="Open navigation menu"
+        onClick={() => setMobileOpen(true)}
+        className="project-sidebar-hamburger"
+        style={{
+          display: 'none',
+          position: 'fixed',
+          top: 'var(--space-sm)',
+          left: 'var(--space-sm)',
+          zIndex: 50,
+          width: 36,
+          height: 36,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 'var(--radius-xs)',
+          background: 'var(--btn-bg)',
+          color: 'var(--text-dim)',
+          border: 'none',
+          cursor: 'pointer',
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path
+            d="M3 5h12M3 9h12M3 13h12"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
 
-        {/* Mobile drawer */}
-        <dialog
-          ref={dialogRef}
-          aria-modal="true"
-          aria-label="Menu de navegação"
-          onClick={(e) => {
-            if (e.target === dialogRef.current) setMobileOpen(false);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') setMobileOpen(false);
-          }}
-          className="project-sidebar-drawer"
+      {/* Mobile drawer */}
+      <dialog
+        ref={dialogRef}
+        aria-modal="true"
+        aria-label="Navigation menu"
+        onClick={(e) => {
+          if (e.target === dialogRef.current) setMobileOpen(false);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') setMobileOpen(false);
+        }}
+        className="project-sidebar-drawer"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 100,
+          border: 'none',
+          background: 'transparent',
+          padding: 0,
+          margin: 0,
+          maxWidth: '100vw',
+          maxHeight: '100vh',
+          width: '100vw',
+          height: '100vh',
+        }}
+      >
+        <div
           style={{
-            position: 'fixed',
+            position: 'absolute',
             inset: 0,
-            zIndex: 100,
-            border: 'none',
-            background: 'transparent',
-            padding: 0,
-            margin: 0,
-            maxWidth: '100vw',
-            maxHeight: '100vh',
-            width: '100vw',
-            height: '100vh',
+            background: 'oklch(0% 0 0 / 0.6)',
+          }}
+        />
+        <div
+          style={{
+            position: 'relative',
+            width: 'var(--sidebar-width)',
+            height: '100%',
+            background: 'var(--bg-elevated)',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: 'var(--shadow-md)',
           }}
         >
-          <div
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setMobileOpen(false)}
             style={{
               position: 'absolute',
-              inset: 0,
-              background: 'oklch(0% 0 0 / 0.6)',
-            }}
-          />
-          <div
-            style={{
-              position: 'relative',
-              width: 'var(--sidebar-width)',
-              height: '100%',
-              background: 'var(--bg-elevated)',
+              top: 'var(--space-xs)',
+              right: 'var(--space-xs)',
+              width: 28,
+              height: 28,
               display: 'flex',
-              flexDirection: 'column',
-              boxShadow: 'var(--shadow-md)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 'var(--radius-xs)',
+              background: 'none',
+              color: 'var(--text-muted)',
+              border: 'none',
+              cursor: 'pointer',
+              zIndex: 1,
             }}
           >
-            <button
-              type="button"
-              aria-label="Fechar menu"
-              onClick={() => setMobileOpen(false)}
+            ✕
+          </button>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 'var(--space-xs) var(--space-sm) var(--space-xs) var(--space-md)',
+              borderBottom: '1px solid var(--border-subtle)',
+              flexShrink: 0,
+            }}
+          >
+            <span
               style={{
-                position: 'absolute',
-                top: 'var(--space-xs)',
-                right: 'var(--space-xs)',
-                width: 28,
-                height: 28,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 'var(--radius-xs)',
-                background: 'none',
+                fontSize: 'var(--type-xs)',
+                fontWeight: 'var(--weight-bold)',
+                letterSpacing: 'var(--tracking-wide)',
+                textTransform: 'uppercase',
                 color: 'var(--text-muted)',
-                border: 'none',
-                cursor: 'pointer',
-                zIndex: 1,
+                fontFamily: 'var(--font-mono)',
               }}
             >
-              ✕
-            </button>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 'var(--space-xs) var(--space-sm) var(--space-xs) var(--space-md)',
-                borderBottom: '1px solid var(--border-subtle)',
-                flexShrink: 0,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 'var(--type-xs)',
-                  fontWeight: 'var(--weight-bold)',
-                  letterSpacing: 'var(--tracking-wide)',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-muted)',
-                  fontFamily: 'var(--font-mono)',
-                }}
-              >
-                Projetos
-              </span>
-            </div>
-            <div
-              style={{
-                flex: 1,
-                overflowY: 'auto',
-                scrollbarWidth: 'thin',
-                scrollbarColor: 'var(--border) transparent',
-              }}
-            >
-              {treeContent}
-            </div>
-            <div className={sidebarStyles.mobileFooter}>{footerContent}</div>
+              Projects
+            </span>
           </div>
-        </dialog>
+          <div
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'var(--border) transparent',
+            }}
+          >
+            {treeContent}
+          </div>
+          <div className={sidebarStyles.mobileFooter}>{footerContent}</div>
+        </div>
+      </dialog>
 
-        <style>{`
+      <style>{`
         @media (max-width: 767px) {
           .project-sidebar-hamburger { display: flex !important; }
         }
@@ -393,7 +391,6 @@ export function ProjectSidebar({
         }
         .project-sidebar-drawer::backdrop { background: transparent; }
       `}</style>
-      </ToastProvider>
     </div>
   );
 }
