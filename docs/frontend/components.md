@@ -72,7 +72,8 @@ src/components/
   AnnotationPin/
     AnnotationPin.tsx       # 'use client' — hover/active state on the pin
   ThreadTimeline/
-    ThreadTimeline.tsx      # 'use client' — reply textarea
+    ThreadTimeline.tsx        # 'use client' — reply textarea
+    ThreadTimeline.module.css # header pill, message list (avatar+body+agent quote), reply form, ghost/primary buttons
   ProjectTree/
     ProjectTree.tsx         # 'use client' — ARIA tree with keyboard nav + DnD
     ProjectTree.module.css  # tree items, chevron, count badge, kebab hover-swap, accent bar, indentation
