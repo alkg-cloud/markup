@@ -5,6 +5,7 @@
    See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §4. */
 
 .rail {
+  composes: floatingSurface from '../../styles/glass.module.css';
   position: absolute;
   top: calc(50% - 200px);
   left: 24px;
@@ -13,9 +14,6 @@
   /* Cap rail height at 70vh on desktop / 80vh on mobile so a long
      annotation list never pushes the rail past the canvas bounds. */
   max-height: 70vh;
-  background: var(--surface-glass-bg);
-  backdrop-filter: blur(16px) saturate(140%);
-  border: var(--surface-glass-border);
   border-radius: 14px;
   box-shadow: var(--shadow-popover);
   display: flex;

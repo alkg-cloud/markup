@@ -15,16 +15,18 @@
 
 /* ─── SIDEBAR (position: fixed, morphs into pill) ────────── */
 .sidebar {
+  composes: floatingSurface from '../../styles/glass.module.css';
   position: fixed;
   top: 0;
   left: 0;
   z-index: 100;
   width: var(--sidebar-width);
   height: 100vh;
-  /* AppMain redesign: adopt the shared glass surface tokens so every
-     overlay layer (sidebar, rail, toolbar, popovers) is visually consistent. */
-  background: var(--surface-glass-bg);
-  backdrop-filter: blur(16px) saturate(140%);
+  /* Sidebar overrides the utility's border (no top/left/bottom border —
+   * just the right rail) so the glass surface tucks against the page
+   * edge. The pill-collapsed state restores a full border via
+   * `.pill`. */
+  border: 0;
   border-right: 1px solid var(--border-subtle);
   border-radius: 0;
   box-shadow: none;

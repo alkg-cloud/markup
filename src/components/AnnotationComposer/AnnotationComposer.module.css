@@ -20,16 +20,15 @@
   pointer-events: none;
 }
 
-/* Scrim carries the **standard glass blur** so the mockup canvas
- * visibly blurs behind the composer panel. Tint is slightly stronger
- * than dialog scrims because mockup content beneath can be bright /
- * busy and we need the panel to stay the focal point. */
+/* Scrim uses the shared `floatingScrim` utility so the standard glass
+ * blur is applied; we override the tint to a slightly stronger value
+ * because mockup content beneath can be bright/busy and the panel must
+ * remain the focal point. */
 .scrim {
+  composes: floatingScrim from '../../styles/glass.module.css';
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
   transition: opacity var(--motion-base) var(--ease-standard);
 }
 .composer.marking .scrim {
@@ -38,12 +37,10 @@
 }
 
 .panel {
+  composes: floatingSurface from '../../styles/glass.module.css';
   position: relative;
   width: 440px;
   max-width: calc(100vw - 32px);
-  background: var(--surface-glass-bg);
-  backdrop-filter: blur(16px) saturate(140%);
-  border: var(--surface-glass-border);
   border-radius: 14px;
   box-shadow: var(--shadow-popover);
   display: flex;

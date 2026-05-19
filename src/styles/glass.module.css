@@ -1,0 +1,38 @@
+/*
+ * Shared "glass" surface utilities for every floating overlay in the
+ * product: dialogs, popovers, tooltips, alerts, toasts, the floating
+ * rail, the canvas toolbar, the annotation composer, the marking bar,
+ * the sidebar pill, the command palette, and every custom popup that
+ * paints over other content.
+ *
+ * Rule (`docs/feature-catalog.md § glass-surface-standard`):
+ *   - One single set of properties defines the glass treatment.
+ *   - Components `composes:` the relevant utility instead of repeating
+ *     the property block.
+ *   - `backdrop-filter` is declared as a literal value (NOT
+ *     `var(--surface-glass-blur)`). Lightning CSS — the Next.js CSS
+ *     minifier — drops the standard property when its value is a
+ *     `var()`, leaving only the `-webkit-` prefix which Chrome
+ *     doesn't honor. Writing the value literally lets the minifier
+ *     auto-prefix correctly.
+ *   - Tokens (`--surface-glass-bg`, `--surface-glass-border`) carry
+ *     the colours so all glass surfaces stay single-sourced.
+ */
+
+/* Card / panel / pill / popover surface — anything that floats above
+ * the rest of the UI and itself needs the frosted-glass appearance. */
+.floatingSurface {
+  background: var(--surface-glass-bg);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: var(--surface-glass-border);
+}
+
+/* Modal scrim — sits between the page content and a centred dialog /
+ * palette / composer. Carries the same `blur(16px) saturate(140%)`
+ * filter so blurred page content reads through, but with a darker
+ * `--scrim-glass-bg` tint that dims the background just enough for
+ * the dialog on top to be the focal point. */
+.floatingScrim {
+  background: var(--scrim-glass-bg);
+  backdrop-filter: blur(16px) saturate(140%);
+}

@@ -61,15 +61,13 @@
 /* Native HTML popover — top-layer paint, fixed positioning written by
    `usePopover`. */
 .popover {
+  composes: floatingSurface from '../../styles/glass.module.css';
   position: fixed;
   inset: auto;
   margin: 0;
   display: none;
   min-width: 280px;
   max-width: 320px;
-  background: var(--surface-glass-bg);
-  backdrop-filter: blur(16px) saturate(140%);
-  border: var(--surface-glass-border);
   border-radius: 12px;
   box-shadow: var(--shadow-popover);
   flex-direction: column;
@@ -188,6 +186,7 @@
 /* Per-row actions popover — nested popover that stacks with the parent
    version list popover (HTML popover-auto ancestor relationship). */
 .actions {
+  composes: floatingSurface from '../../styles/glass.module.css';
   position: fixed;
   inset: auto;
   margin: 0;
@@ -195,9 +194,6 @@
   flex-direction: column;
   min-width: 140px;
   padding: 4px;
-  background: var(--surface-glass-bg);
-  backdrop-filter: blur(16px) saturate(140%);
-  border: var(--surface-glass-border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-popover);
 }

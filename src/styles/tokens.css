@@ -109,6 +109,12 @@
 
   --scrim-strong: oklch(0% 0 0 / 0.65);
   --scrim-mid: oklch(0% 0 0 / 0.45);
+  /* Tint used under every glass scrim (dialog, confirm, palette,
+   * annotation composer). Pairs with `floatingScrim` in
+   * `src/styles/glass.module.css`, which adds the standard
+   * `blur(16px) saturate(140%)` filter. Kept low so the blur
+   * dominates and page content reads through. */
+  --scrim-glass-bg: oklch(0% 0 0 / 0.2);
 
   /* Danger button states — border + active-press companion to --danger and
    * --danger-soft, used by the small revoke/delete buttons in Versions and
@@ -270,13 +276,13 @@
      these tokens so the canvas remains the visual focus and tweaks land
      in one place. See AppMain spec §11. ──────────────────────────── */
   --surface-glass-bg: rgb(7 12 15 / 80%);
-  /* INLINED at usage sites — Lightning CSS (Next.js CSS minifier) drops the
-   * standard `backdrop-filter` declaration when its value uses `var()` and
-   * keeps only the `-webkit-` prefixed form, which Chrome doesn't apply
-   * (Chrome supports the unprefixed property natively). Glass components
-   * declare `backdrop-filter: blur(16px) saturate(140%)` literally to keep
-   * both standard + prefixed forms in the served CSS. Keep this token in
-   * lockstep so the design system stays single-sourced. */
+  /* Documents the canonical filter value. Every glass surface uses
+   * the `floatingSurface` / `floatingScrim` utilities from
+   * `src/styles/glass.module.css`, which declare the value literally —
+   * Lightning CSS drops `backdrop-filter` declarations whose value is
+   * a `var()`, so this token is **never** referenced in
+   * `backdrop-filter` directly. Keep it in lockstep with the literal
+   * value used by the utility. */
   --surface-glass-blur: blur(16px) saturate(140%);
   --surface-glass-border: 1px solid var(--border);
 

@@ -192,6 +192,7 @@
 /* Native HTML popover — top-layer paint, fixed positioning written by
    `usePopover`. */
 .primaryMenu {
+  composes: floatingSurface from '../../styles/glass.module.css';
   position: fixed;
   inset: auto;
   margin: 0;
@@ -200,9 +201,6 @@
   min-width: 200px;
   padding: 6px;
   gap: 2px;
-  background: var(--surface-glass-bg);
-  backdrop-filter: blur(16px) saturate(140%);
-  border: var(--surface-glass-border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-popover);
 }
