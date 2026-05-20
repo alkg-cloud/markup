@@ -32,6 +32,7 @@ export interface MockupViewerPageProps {
    *  parent page; matches what `useRequireAuth` exposes). */
   userName?: string;
   userEmail?: string;
+  userRole?: 'admin' | 'member';
 }
 
 /**
@@ -46,6 +47,7 @@ export function MockupViewerPage({
   breadcrumbs,
   userName,
   userEmail,
+  userRole,
 }: MockupViewerPageProps) {
   const [data, setData] = useState<ViewerPayload | null>(null);
   const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
@@ -93,7 +95,12 @@ export function MockupViewerPage({
 
   return (
     <>
-      <Topbar breadcrumbs={breadcrumbs} userName={userName} userEmail={userEmail} />
+      <Topbar
+        breadcrumbs={breadcrumbs}
+        userName={userName}
+        userEmail={userEmail}
+        userRole={userRole}
+      />
       <AppMainViewerWired
         mockupId={data.mockupId}
         mockupName={data.mockupName}

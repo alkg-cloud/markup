@@ -104,6 +104,7 @@ export function AllProjectsPage({ data, onMutated }: AllProjectsPageProps) {
         breadcrumbs={[]}
         userName={data.identity.name ?? undefined}
         userEmail={data.identity.email ?? undefined}
+        userRole={data.identity.role}
       />
 
       <main className={styles.main} aria-label="Home">

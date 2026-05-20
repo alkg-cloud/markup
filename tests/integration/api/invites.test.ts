@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { POST as setup } from '@/app/api/auth/setup/route';
+import { POST as redeem } from '@/app/api/invites/[id]/redeem/route';
 import { DELETE as deleteInvite } from '@/app/api/invites/[id]/route';
-import { POST as redeem } from '@/app/api/invites/[token]/redeem/route';
-import { GET as inviteState } from '@/app/api/invites/[token]/state/route';
+import { GET as inviteState } from '@/app/api/invites/[id]/state/route';
 import { DELETE as clearHistory } from '@/app/api/invites/history/route';
 import { POST as revokeAll } from '@/app/api/invites/revoke-all/route';
 import { POST as createInvite, GET as listInvites } from '@/app/api/invites/route';
@@ -361,7 +361,7 @@ describe('invites API', () => {
     it("unknown token → { usable: false, reason: 'unknown' }, status 200 (case 22)", async () => {
       const fake = `mki_test_${'a'.repeat(64)}`;
       const res = await inviteState(new Request('http://l'), {
-        params: Promise.resolve({ token: fake }),
+        params: Promise.resolve({ id: fake }),
       });
       expect(res.status).toBe(200);
       expect(await res.json()).toEqual({ usable: false, reason: 'unknown' });
@@ -378,7 +378,7 @@ describe('invites API', () => {
         data: { status: 'used', usedAt: new Date() },
       });
       const r1 = await inviteState(new Request('http://l'), {
-        params: Promise.resolve({ token: usedInvite.plaintext }),
+        params: Promise.resolve({ id: usedInvite.plaintext }),
       });
       expect(r1.status).toBe(200);
       expect(await r1.json()).toEqual({ usable: false, reason: 'used' });
@@ -390,7 +390,7 @@ describe('invites API', () => {
         data: { status: 'revoked', revokedAt: new Date() },
       });
       const r2 = await inviteState(new Request('http://l'), {
-        params: Promise.resolve({ token: revokedInvite.plaintext }),
+        params: Promise.resolve({ id: revokedInvite.plaintext }),
       });
       expect(r2.status).toBe(200);
       expect(await r2.json()).toEqual({ usable: false, reason: 'revoked' });
@@ -402,7 +402,7 @@ describe('invites API', () => {
         data: { status: 'disabled', revokedAt: new Date() },
       });
       const r3 = await inviteState(new Request('http://l'), {
-        params: Promise.resolve({ token: disabledInvite.plaintext }),
+        params: Promise.resolve({ id: disabledInvite.plaintext }),
       });
       expect(r3.status).toBe(200);
       expect(await r3.json()).toEqual({ usable: false, reason: 'disabled' });
@@ -414,7 +414,7 @@ describe('invites API', () => {
         data: { expiresAt: new Date(Date.now() - 86_400_000) },
       });
       const r4 = await inviteState(new Request('http://l'), {
-        params: Promise.resolve({ token: expiredInvite.plaintext }),
+        params: Promise.resolve({ id: expiredInvite.plaintext }),
       });
       expect(r4.status).toBe(200);
       expect(await r4.json()).toEqual({ usable: false, reason: 'expired' });
@@ -426,7 +426,7 @@ describe('invites API', () => {
       const cookie = await adminCookie();
       const created = await mintInvite(cookie, { email: null, role: 'member', expiry: '7d' });
       const res = await inviteState(new Request('http://l'), {
-        params: Promise.resolve({ token: created.plaintext }),
+        params: Promise.resolve({ id: created.plaintext }),
       });
       expect(res.status).toBe(200);
       expect(await res.json()).toEqual({ usable: true, boundEmail: false });
@@ -440,7 +440,7 @@ describe('invites API', () => {
         expiry: '7d',
       });
       const res = await inviteState(new Request('http://l'), {
-        params: Promise.resolve({ token: created.plaintext }),
+        params: Promise.resolve({ id: created.plaintext }),
       });
       expect(res.status).toBe(200);
       const text = await res.text();
@@ -470,7 +470,7 @@ describe('invites API', () => {
           password: 'longpassword12345',
           name: 'New User',
         }),
-        { params: Promise.resolve({ token: created.plaintext }) },
+        { params: Promise.resolve({ id: created.plaintext }) },
       );
       expect(res.status).toBe(201);
       const setCookie = res.headers.get('set-cookie');
@@ -499,7 +499,7 @@ describe('invites API', () => {
           password: 'longpassword12345',
           name: 'Other',
         }),
-        { params: Promise.resolve({ token: created.plaintext }) },
+        { params: Promise.resolve({ id: created.plaintext }) },
       );
       expect(res.status).toBe(401);
       expect((await res.json()).error).toBe('email_mismatch');
@@ -524,7 +524,7 @@ describe('invites API', () => {
           password: 'longpassword12345',
           name: 'Collider',
         }),
-        { params: Promise.resolve({ token: created.plaintext }) },
+        { params: Promise.resolve({ id: created.plaintext }) },
       );
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -542,7 +542,7 @@ describe('invites API', () => {
           password: 'short',
           name: 'Foo',
         }),
-        { params: Promise.resolve({ token: created.plaintext }) },
+        { params: Promise.resolve({ id: created.plaintext }) },
       );
       expect(res.status).toBe(400);
       expect((await res.json()).error).toBe('invalid_body');
@@ -560,7 +560,7 @@ describe('invites API', () => {
         inviteRedeemIpLimiter.reset(`invite-redeem:${ip}`);
         const r = await redeem(
           makeRedeem(created.plaintext, { email: 'x@x.com', password: 'short', name: 'X' }, ip),
-          { params: Promise.resolve({ token: created.plaintext }) },
+          { params: Promise.resolve({ id: created.plaintext }) },
         );
         expect(r.status).toBe(400);
       }
@@ -576,7 +576,7 @@ describe('invites API', () => {
           { email: 'x@x.com', password: 'short', name: 'X' },
           '10.0.0.21',
         ),
-        { params: Promise.resolve({ token: created.plaintext }) },
+        { params: Promise.resolve({ id: created.plaintext }) },
       );
       expect(r21.status).toBe(400);
       const after21 = await prisma.invite.findUnique({ where: { id: created.id } });
@@ -600,7 +600,7 @@ describe('invites API', () => {
           { email: 'x@x.com', password: 'longpassword12345', name: 'X' },
           '1.2.3.4',
         ),
-        { params: Promise.resolve({ token: created.plaintext }) },
+        { params: Promise.resolve({ id: created.plaintext }) },
       );
       expect(res.status).toBe(429);
       expect(res.headers.get('retry-after')).toMatch(/^\d+$/);
@@ -618,7 +618,7 @@ describe('invites API', () => {
           { email: 'race1@x.com', password: 'longpassword12345', name: 'Race 1' },
           '5.5.5.5',
         ),
-        { params: Promise.resolve({ token: created.plaintext }) },
+        { params: Promise.resolve({ id: created.plaintext }) },
       );
       const r2Promise = redeem(
         makeRedeem(
@@ -626,7 +626,7 @@ describe('invites API', () => {
           { email: 'race2@x.com', password: 'longpassword12345', name: 'Race 2' },
           '6.6.6.6',
         ),
-        { params: Promise.resolve({ token: created.plaintext }) },
+        { params: Promise.resolve({ id: created.plaintext }) },
       );
 
       const [r1, r2] = await Promise.all([r1Promise, r2Promise]);

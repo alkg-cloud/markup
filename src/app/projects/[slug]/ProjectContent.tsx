@@ -41,6 +41,7 @@ interface ProjectContentProps {
   breadcrumbs: BreadcrumbSegment[];
   userName?: string;
   userEmail?: string;
+  userRole?: 'admin' | 'member';
 }
 
 export function ProjectContent({
@@ -54,12 +55,18 @@ export function ProjectContent({
   breadcrumbs,
   userName,
   userEmail,
+  userRole,
 }: ProjectContentProps) {
   const isEmpty = folders.length === 0 && mockups.length === 0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-      <Topbar breadcrumbs={breadcrumbs} userName={userName} userEmail={userEmail} />
+      <Topbar
+        breadcrumbs={breadcrumbs}
+        userName={userName}
+        userEmail={userEmail}
+        userRole={userRole}
+      />
 
       <AppMain variant="scroll" ariaLabel="Project workspace">
         <FolderHeader
