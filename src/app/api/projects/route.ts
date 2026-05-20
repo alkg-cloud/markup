@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
   try {
-    requireAdmin(await identify(req));
+    await requireAdmin(await identify(req));
   } catch (e) {
     return handleAuthError(e);
   }

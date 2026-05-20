@@ -5,29 +5,20 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Topbar } from '@/components/Topbar/Topbar';
 import { useIdentity } from '@/lib/hooks/use-require-auth';
-import { AgentsClient } from './AgentsClient';
+import { type InviteRow, InvitesClient } from './InvitesClient';
 
-interface AgentTokenRow {
-  id: string;
-  name: string;
-  prefix: string | null;
-  lastFour: string | null;
-  createdAt: string;
-  lastUsedAt: string | null;
+interface InvitesResponse {
+  invites: InviteRow[];
 }
 
-interface AgentTokensResponse {
-  tokens: AgentTokenRow[];
-}
-
-export default function AgentsPage() {
+export default function InvitesPage() {
   const identity = useIdentity();
-  const [tokens, setTokens] = useState<AgentTokenRow[] | null>(null);
+  const [invites, setInvites] = useState<InviteRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/agent-tokens', { credentials: 'include', signal: controller.signal })
+    fetch('/api/invites', { credentials: 'include', signal: controller.signal })
       .then(async (res) => {
         if (res.status === 401) {
           window.location.replace('/login');
@@ -41,8 +32,8 @@ export default function AgentsPage() {
           setError(`http_${res.status}`);
           return;
         }
-        const json: AgentTokensResponse = await res.json();
-        setTokens(json.tokens);
+        const json: InvitesResponse = await res.json();
+        setInvites(json.invites);
       })
       .catch((e) => {
         if (e?.name === 'AbortError') return;
@@ -54,11 +45,11 @@ export default function AgentsPage() {
   if (error) {
     return (
       <ErrorState
-        error={error === 'forbidden' ? 'Admin-only page.' : `Failed to load tokens (${error}).`}
+        error={error === 'forbidden' ? 'Admin-only page.' : `Failed to load invites (${error}).`}
       />
     );
   }
-  if (!tokens) {
+  if (!invites) {
     return <LoadingState />;
   }
 
@@ -70,7 +61,7 @@ export default function AgentsPage() {
         userEmail={identity?.email}
         userRole={identity?.role}
       />
-      <AgentsClient initialTokens={tokens} />
+      <InvitesClient initialInvites={invites} />
     </>
   );
 }
