@@ -52,4 +52,38 @@ describe('isSameOrigin / assertSameOrigin', () => {
       else process.env.MARKUP_ALLOWED_ORIGINS = prev;
     }
   });
+
+  it('auto-allows *.trycloudflare.com / *.ngrok.io / *.ngrok-free.app under NODE_ENV=development', () => {
+    // `process.env.NODE_ENV` is typed as readonly under @types/node; cast to a
+    // mutable string-bag to flip it for the test, then restore in finally.
+    const env = process.env as Record<string, string | undefined>;
+    const prev = env.NODE_ENV;
+    env.NODE_ENV = 'development';
+    try {
+      expect(isSameOrigin(req({ origin: 'https://a-b-c.trycloudflare.com' }))).toBe(true);
+      expect(isSameOrigin(req({ origin: 'https://foo.ngrok.io' }))).toBe(true);
+      expect(isSameOrigin(req({ origin: 'https://foo.ngrok-free.app' }))).toBe(true);
+      // Suffix match — random subdomains under the same TLD pass too.
+      expect(isSameOrigin(req({ origin: 'https://very.long.host.trycloudflare.com' }))).toBe(true);
+      // But unrelated hosts still don't pass just because we're in dev.
+      expect(isSameOrigin(req({ origin: 'https://evil.example' }))).toBe(false);
+      // And a lookalike that doesn't match the suffix anchor is rejected.
+      expect(isSameOrigin(req({ origin: 'https://trycloudflare.com.evil.example' }))).toBe(false);
+    } finally {
+      if (prev === undefined) delete env.NODE_ENV;
+      else env.NODE_ENV = prev;
+    }
+  });
+
+  it('does NOT auto-allow tunnel suffixes when NODE_ENV=production', () => {
+    const env = process.env as Record<string, string | undefined>;
+    const prev = env.NODE_ENV;
+    env.NODE_ENV = 'production';
+    try {
+      expect(isSameOrigin(req({ origin: 'https://a-b-c.trycloudflare.com' }))).toBe(false);
+    } finally {
+      if (prev === undefined) delete env.NODE_ENV;
+      else env.NODE_ENV = prev;
+    }
+  });
 });
