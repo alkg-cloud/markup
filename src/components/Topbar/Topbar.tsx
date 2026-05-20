@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
+import { VscKey, VscMail, VscSearch, VscSignOut } from 'react-icons/vsc';
 import { type BreadcrumbSegment, Breadcrumbs } from '@/components/Breadcrumbs/Breadcrumbs';
 import { usePopover } from '@/lib/popover/usePopover';
 import { formatShortcut } from '@/lib/shortcuts/platform';
@@ -57,20 +58,7 @@ export function Topbar({ breadcrumbs, userName, userEmail, userRole, onSearchCli
         aria-label={`Search... (${kbdLabel})`}
         onClick={handleSearchClick}
       >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
+        <VscSearch size={16} aria-hidden="true" />
         <span className={styles.pillText}>Search...</span>
         <span className={styles.pillKbd}>{kbdLabel}</span>
       </button>
@@ -109,15 +97,7 @@ export function Topbar({ breadcrumbs, userName, userEmail, userRole, onSearchCli
                   router.push('/settings/invites');
                 }}
               >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z" />
-                </svg>
+                <VscMail size={14} aria-hidden="true" />
                 Invites
               </button>
               <button
@@ -129,19 +109,7 @@ export function Topbar({ breadcrumbs, userName, userEmail, userRole, onSearchCli
                   router.push('/settings/agents');
                 }}
               >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M11.351 1.091a4.528 4.528 0 0 1 3.44 3.16c.215.724.247 1.49.093 2.23a4.583 4.583 0 0 1-4.437 3.6c-.438 0-.874-.063-1.293-.19l-.8.938-.379.175H7v1.5l-.5.5H5v1.5l-.5.5h-3l-.5-.5v-2.307l.146-.353L6.12 6.87a4.464 4.464 0 0 1-.2-1.405 4.528 4.528 0 0 1 5.431-4.375zm1.318 7.2a3.568 3.568 0 0 0 1.239-2.005l.004.005A3.543 3.543 0 0 0 9.72 2.08a3.576 3.576 0 0 0-2.8 3.4c-.01.456.07.908.239 1.33l-.11.543L2 12.404v1.6h2v-1.5l.5-.5H6v-1.5l.5-.5h1.245l.876-1.016.561-.14a3.47 3.47 0 0 0 1.269.238 3.568 3.568 0 0 0 2.218-.795zm-.838-2.732a1 1 0 1 0-1.662-1.11 1 1 0 0 0 1.662 1.11z"
-                  />
-                </svg>
+                <VscKey size={14} aria-hidden="true" />
                 Agent Tokens
               </button>
               <div className={styles.menuDivider} />
@@ -153,13 +121,7 @@ export function Topbar({ breadcrumbs, userName, userEmail, userRole, onSearchCli
             className={`${styles.menuItem} ${styles.menuItemDanger}`}
             onClick={handleLogout}
           >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M11.02 3.77v1.56l1-.99V2.5l-.5-.5h-9l-.5.5v.486L2 3v10.29l.36.46 5 1.72L8 15v-1h3.52l.5-.5v-1.81l-1-1V13H8V4.71l-.33-.46L4.036 3h6.984v.77zM7 14.28l-4-1.34V3.72l4 1.34v9.22zm6.52-5.8H8.55v-1h4.93l-1.6-1.6.71-.7 2.47 2.46v.71l-2.49 2.48-.7-.7 1.65-1.65z"
-              />
-            </svg>
+            <VscSignOut size={14} aria-hidden="true" />
             Sign Out
           </button>
         </div>

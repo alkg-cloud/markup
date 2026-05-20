@@ -1,6 +1,7 @@
 'use client';
 import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { GoGrabber } from 'react-icons/go';
+import { VscAdd, VscRemove, VscScreenFull } from 'react-icons/vsc';
 import styles from './CanvasToolbar.module.css';
 import { nextZoomIndex, ZOOM_DEFAULT_INDEX, ZOOM_STEPS, zoomLabel } from './zoom';
 
@@ -153,9 +154,7 @@ export function CanvasToolbar({
           onClick={() => changeZoom(-1)}
           disabled={zoomIndex === 0}
         >
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path d="M4 7h8v2H4z" />
-          </svg>
+          <VscRemove aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -174,9 +173,7 @@ export function CanvasToolbar({
           onClick={() => changeZoom(1)}
           disabled={zoomIndex === ZOOM_STEPS.length - 1}
         >
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path d="M9 4H7v3H4v2h3v3h2V9h3V7H9z" />
-          </svg>
+          <VscAdd aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -186,9 +183,7 @@ export function CanvasToolbar({
           aria-pressed={isFullscreen ? 'true' : 'false'}
           onClick={onFullscreenToggle}
         >
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path d="M3 12h2v1H2v-3h1v2zm10-2h-2v1h1v1h-1v1h2v-3zm-3-7v1h2v2h1V3h-3zm-7 3V4h2V3H2v3h1z" />
-          </svg>
+          <VscScreenFull aria-hidden="true" />
         </button>
       </div>
 

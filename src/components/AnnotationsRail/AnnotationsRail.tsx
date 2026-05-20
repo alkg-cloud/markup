@@ -1,7 +1,7 @@
 'use client';
 import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { GoGrabber } from 'react-icons/go';
-import { VscPinned } from 'react-icons/vsc';
+import { VscAdd, VscPinned } from 'react-icons/vsc';
 import { modSymbol } from '@/lib/shortcuts/platform';
 import styles from './AnnotationsRail.module.css';
 
@@ -267,10 +267,7 @@ export function AnnotationsRail({
       <div className={styles.foot} onMouseEnter={enter}>
         <button type="button" className={styles.add} aria-label="New annotation" onClick={onCreate}>
           <span className={styles.addIcon} aria-hidden="true">
-            <svg viewBox="0 0 16 16" fill="currentColor" aria-label="Plus icon">
-              <title>Plus icon</title>
-              <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
-            </svg>
+            <VscAdd aria-hidden="true" />
           </span>
           <span className={styles.addLabel}>
             <span>New annotation</span>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { VscEllipsis } from 'react-icons/vsc';
 import { resolveIconToken } from '@/components/IconPicker/icons';
 import { usePopover } from '@/lib/popover/usePopover';
 import { projectHref } from '@/lib/project/routes';
@@ -24,7 +25,10 @@ interface ProjectCardProps {
 
 /** Default project glyph — used when `Project.icon` is null OR points
  *  at an unknown token (e.g. an icon set we no longer ship). Same shape
- *  as `sidebar-tree-project-item`'s default for visual coherence. */
+ *  as `sidebar-tree-project-item`'s default for visual coherence.
+ *  custom: lightweight stroked window-tile shape — must stay in lockstep
+ *  with the sidebar's default project glyph; no codicon matches both the
+ *  geometry (rect + single header rule) and the 1.3px stroke weight. */
 function DefaultProjectIcon() {
   return (
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -40,16 +44,6 @@ function ProjectIconResolved({ token }: { token: string | null }) {
   if (!resolved) return <DefaultProjectIcon />;
   if (resolved.type === 'emoji') return <span aria-hidden="true">{resolved.content}</span>;
   return <span aria-hidden="true" dangerouslySetInnerHTML={{ __html: resolved.content }} />;
-}
-
-function KebabIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <circle cx="4" cy="8" r="1.2" />
-      <circle cx="8" cy="8" r="1.2" />
-      <circle cx="12" cy="8" r="1.2" />
-    </svg>
-  );
 }
 
 /* ── Component ──────────────────────────────────────────────────────────── */
@@ -91,7 +85,7 @@ export function ProjectCard({ project, onOpen, onEdit, onDelete }: ProjectCardPr
         aria-haspopup="menu"
         {...kebab.triggerProps}
       >
-        <KebabIcon />
+        <VscEllipsis size={16} aria-hidden="true" />
       </button>
       <div {...kebab.popoverProps} className={styles.kebabMenu} role="menu">
         <button

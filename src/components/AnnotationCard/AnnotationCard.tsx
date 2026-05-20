@@ -1,6 +1,15 @@
 'use client';
 import { type FormEvent, useState } from 'react';
-import { VscCircleLarge, VscCommentUnresolved, VscPass, VscReply } from 'react-icons/vsc';
+import {
+  VscCircleLarge,
+  VscComment,
+  VscCommentUnresolved,
+  VscEdit,
+  VscKebabVertical,
+  VscPass,
+  VscReply,
+  VscTrash,
+} from 'react-icons/vsc';
 import { Comment, type CommentReaction } from '@/components/Comment/Comment';
 import type { AnnotationStatus } from '@/lib/annotation/status';
 import { usePopover } from '@/lib/popover/usePopover';
@@ -161,11 +170,7 @@ export function AnnotationCard({
               aria-haspopup="menu"
               {...primaryKebab.triggerProps}
             >
-              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                <circle cx="8" cy="3.5" r="1.2" />
-                <circle cx="8" cy="8" r="1.2" />
-                <circle cx="8" cy="12.5" r="1.2" />
-              </svg>
+              <VscKebabVertical aria-hidden="true" />
             </button>
             <div {...primaryKebab.popoverProps} className={styles.primaryMenu} role="menu">
               <div className={styles.statusGroup} role="radiogroup" aria-label="Annotation status">
@@ -216,9 +221,7 @@ export function AnnotationCard({
                   startEdit(primary.id);
                 }}
               >
-                <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <path d="M13.23 1h-1.46L3.52 9.25l-.16.22L1 13.59 2.41 15l4.12-2.36.22-.16L15 4.23V2.77L13.23 1zM13 4l-7 7L5 10l7-7 1 1z" />
-                </svg>
+                <VscEdit aria-hidden="true" />
                 Edit
               </button>
               <button
@@ -230,9 +233,7 @@ export function AnnotationCard({
                   void onAnnotationDelete?.();
                 }}
               >
-                <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <path d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9z" />
-                </svg>
+                <VscTrash aria-hidden="true" />
                 Delete
               </button>
             </div>
@@ -268,10 +269,9 @@ export function AnnotationCard({
             toggleThread();
           }}
         >
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path d="M14.5 2h-13l-.5.5v9l.5.5H4v2.5l.854.354L7.707 12H14.5l.5-.5v-9l-.5-.5z" />
-          </svg>
+          <VscComment aria-hidden="true" />
           <span>{replyCountLabel}</span>
+          {/* custom: solid downward-triangle disclosure arrow (rotates 180° via .chev when open); codicon VscChevronDown is a stroke-V, visually different. */}
           <svg className={styles.chev} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
             <path d="M3.2 5.8h9.6L8 11.4z" />
           </svg>

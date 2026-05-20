@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { VscSearch } from 'react-icons/vsc';
 import styles from './IconPicker.module.css';
 import { filterIcons, type IconEntry } from './icons';
 
@@ -45,16 +46,7 @@ export function IconPicker({ value, onSelect }: IconPickerProps) {
       </div>
 
       <div className={styles.searchRow}>
-        <svg
-          className={styles.searchIcon}
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path d="M23.03 21.97L15.16 14.1C16.31 12.72 17 10.94 17 9 17 4.58 13.42 1 9 1 4.58 1 1 4.58 1 9c0 4.42 3.58 8 8 8 1.94 0 3.72-.69 5.1-1.84l7.87 7.87 1.06-1.06zM2.5 9C2.5 5.42 5.42 2.5 9 2.5c3.58 0 6.5 2.92 6.5 6.5S12.58 15.5 9 15.5C5.42 15.5 2.5 12.58 2.5 9z" />
-        </svg>
+        <VscSearch className={styles.searchIcon} size={12} aria-hidden="true" />
         <input
           className={styles.searchInput}
           type="text"

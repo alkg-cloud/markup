@@ -1,4 +1,5 @@
 'use client';
+import { VscAdd } from 'react-icons/vsc';
 import { usePopover } from '@/lib/popover/usePopover';
 import styles from './EmojiPicker.module.css';
 
@@ -53,9 +54,7 @@ export function EmojiPicker({ onPick, emojis = REACTION_EMOJIS }: EmojiPickerPro
         aria-haspopup="menu"
         {...triggerProps}
       >
-        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-          <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
-        </svg>
+        <VscAdd aria-hidden="true" />
       </button>
       <div
         {...popoverProps}

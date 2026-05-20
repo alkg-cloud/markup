@@ -17,6 +17,9 @@ interface FolderCardProps {
 export function FolderCard({ folder, projectSlug, folderPath }: FolderCardProps) {
   return (
     <Link href={folderHref(projectSlug, folderPath)} className={styles.card}>
+      {/* custom: lightweight stroked folder glyph (1.3px outline, no fill) — VscFolder
+          is a filled-style codicon with cut-out details and would clash with the
+          card's thin, low-contrast aesthetic. */}
       <svg
         width="20"
         height="20"

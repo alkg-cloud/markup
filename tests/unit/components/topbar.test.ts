@@ -94,8 +94,10 @@ describe('Topbar', () => {
   it('renders search icon SVG', async () => {
     const { Topbar } = await import('@/components/Topbar/Topbar');
     const html = renderHTML(createElement(Topbar, { breadcrumbs: [] }));
+    // Icon comes from `react-icons/vsc` (VscSearch codicon), so the geometry
+    // is a single path, not the older circle+line we inlined ourselves.
     expect(html).toContain('<svg');
-    expect(html).toContain('<circle');
+    expect(html).toContain('<path');
   });
 });
 
