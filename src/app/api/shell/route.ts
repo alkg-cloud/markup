@@ -26,13 +26,15 @@ export async function GET(req: Request) {
   // Viewer profile — agents have no user row to resolve.
   let userName: string | undefined;
   let userEmail: string | undefined;
+  let userRole: 'admin' | 'member' | undefined;
   if (ident.kind === 'user') {
     const user = await prisma.user.findUnique({
       where: { id: ident.userId },
-      select: { name: true, email: true },
+      select: { name: true, email: true, role: true },
     });
     userName = user?.name ?? undefined;
     userEmail = user?.email ?? undefined;
+    userRole = (user?.role as 'admin' | 'member' | undefined) ?? undefined;
   }
 
   const projectList = await listProjects();
@@ -104,7 +106,7 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({
-    identity: { kind: ident.kind, name: userName, email: userEmail },
+    identity: { kind: ident.kind, name: userName, email: userEmail, role: userRole },
     projects,
     orphanMockups,
     mockupNames,

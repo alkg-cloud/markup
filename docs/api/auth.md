@@ -46,15 +46,17 @@ The browser iframe sends the session cookie automatically (same origin); agents 
 
 ## When to require admin
 
-The `User.role` field is always `'admin'` today (single-tenant first-run setup). If a future deployment introduces non-admin users, gate the admin-only routes via:
+The `User.role` field is checked by `requireAdmin`. The helper looks up the user row by `userId` and returns 403 `forbidden_role` if `user.role !== 'admin'`; agent tokens get 403 `forbidden_kind` instead. All admin routes call:
 
 ```ts
-if (ident.kind !== 'user') return NextResponse.json({ error: 'forbidden_role' }, { status: 403 });
-const user = await prisma.user.findUnique({ where: { id: ident.userId } });
-if (user?.role !== 'admin') return NextResponse.json({ error: 'forbidden_role' }, { status: 403 });
+try {
+  await requireAdmin(await identify(req));
+} catch (e) {
+  return handleAuthError(e);
+}
 ```
 
-The `/api/agent-tokens` family is the existing admin-only surface; the others are open to any authenticated identity.
+`/api/invites` (the first feature to gate by `role`) drives this; `/api/agent-tokens` is gated the same way.
 
 ## Author attribution
 

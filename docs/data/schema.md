@@ -54,6 +54,16 @@ model AgentToken {
 - `name` is the human-friendly identifier (`claude-code-prod`, `designer-bot`, `ci-builder`, etc.)
 - `prefix` (e.g. `mka_`) and `lastFour` are the display hints rendered in the agent-tokens settings list (`mka_…ab12`) — derived at creation time so the UI never has to read the plaintext token back. Nullable for rows seeded before the columns existed.
 
+### Invite
+
+Stores admin-minted signup links. Each row has a SHA-256 `tokenHash` (the plaintext is never persisted, mirrors AgentToken), an optional bound `email`, an explicit `role` (`'admin'` or `'member'`) assigned to the user the invite mints, and an optional `expiresAt`.
+
+The persisted `status` enum is `'unused' | 'used' | 'revoked' | 'disabled'`. A fifth lifecycle state, `'expired'`, is **derived** at read time as `status='unused' AND expiresAt <= now()` — not stored.
+
+The `failedAttempts` counter increments on every failed redeem call (validation, bound-email mismatch). At >20 the row auto-flips to `'disabled'` with `revokedAt = now`.
+
+`createdBy` has `onDelete: Cascade` — when the creating admin is deleted, their minted invites go with them (single-tenant model; no audit-trail value in retaining orphan-creator invite rows). `usedBy` has `onDelete: SetNull` so admin-driven user deletion preserves invite history.
+
 ### Project
 
 ```prisma

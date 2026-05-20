@@ -7,7 +7,13 @@ export async function GET(req: Request) {
   if (!id) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
   if (id.kind === 'user') {
     const user = await prisma.user.findUnique({ where: { id: id.userId } });
-    return NextResponse.json({ kind: 'user', id: user?.id, email: user?.email, name: user?.name });
+    return NextResponse.json({
+      kind: 'user',
+      id: user?.id,
+      email: user?.email,
+      name: user?.name,
+      role: user?.role,
+    });
   }
   return NextResponse.json({ kind: 'agent', id: id.tokenId, name: id.name });
 }

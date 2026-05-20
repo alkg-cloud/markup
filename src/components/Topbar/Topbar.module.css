@@ -186,6 +186,17 @@
   margin: 4px 0;
 }
 
+.menuSubhead {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  padding: 6px 14px;
+  /* same left-padding as .menuItem so the labels line up below the icon column */
+}
+
 .avatarBtn {
   width: 32px;
   height: 32px;

@@ -3,6 +3,7 @@ import 'server-only';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { prisma } from '@/lib/prisma';
 import { verifyAgentToken } from './agent-token';
 import { getSession, SESSION_COOKIE } from './session';
 
@@ -74,13 +75,23 @@ export function requireIdentity(id: Identity | null): asserts id is Identity {
   }
 }
 
-export function requireAdmin(
+export async function requireAdmin(
   id: Identity | null,
-): asserts id is Extract<Identity, { kind: 'user' }> {
+): Promise<Extract<Identity, { kind: 'user' }>> {
   requireIdentity(id);
   if (id.kind !== 'user') {
-    const err = new Error('admin only') as ErrorWithStatus;
+    const err = new Error('forbidden_kind') as ErrorWithStatus;
     err.status = 403;
     throw err;
   }
+  const user = await prisma.user.findUnique({
+    where: { id: id.userId },
+    select: { role: true },
+  });
+  if (!user || user.role !== 'admin') {
+    const err = new Error('forbidden_role') as ErrorWithStatus;
+    err.status = 403;
+    throw err;
+  }
+  return id;
 }

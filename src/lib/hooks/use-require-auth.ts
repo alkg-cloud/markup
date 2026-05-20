@@ -8,6 +8,7 @@ export interface AuthMe {
   id?: string;
   name?: string;
   email?: string;
+  role?: 'admin' | 'member';
 }
 
 /**

@@ -7,13 +7,15 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  name         String
-  passwordHash String
-  role         String    @default("admin")
-  createdAt    DateTime  @default(now())
-  sessions     Session[]
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String
+  passwordHash   String
+  role           String    @default("admin")
+  createdAt      DateTime  @default(now())
+  sessions       Session[]
+  invitesCreated Invite[]  @relation("InvitesCreated")
+  invitesUsed    Invite[]  @relation("InvitesUsed")
 }
 
 model Session {
@@ -33,6 +35,28 @@ model AgentToken {
   lastFour    String?
   createdAt   DateTime  @default(now())
   lastUsedAt  DateTime?
+}
+
+model Invite {
+  id             String    @id @default(cuid())
+  tokenHash      String    @unique
+  prefix         String
+  lastFour       String
+  email          String?
+  role           String
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  createdById    String
+  createdBy      User      @relation("InvitesCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  status         String    @default("unused")
+  usedAt         DateTime?
+  usedById       String?
+  usedBy         User?     @relation("InvitesUsed",  fields: [usedById],  references: [id], onDelete: SetNull)
+  revokedAt      DateTime?
+  failedAttempts Int       @default(0)
+
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Project {
