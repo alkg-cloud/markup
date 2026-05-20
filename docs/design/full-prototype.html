@@ -2209,17 +2209,16 @@ function renderInvites(el) {
   const cardBase = 'background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-card);padding:16px;display:flex;align-items:flex-start;gap:12px;transition:border-color .15s';
   const iconBase = 'width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0';
   const actionBtn = 'width:28px;height:28px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background .15s,color .15s';
-  const tokenChip = 'font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:6px;background:var(--bg-elevated);padding:4px 8px;border-radius:var(--radius-xs);border:1px solid var(--border-subtle);display:inline-block';
+  const actionsWrap = 'display:flex;gap:4px;flex-shrink:0;align-self:center';
 
-  function unusedCard(title, meta, token, email) {
+  function unusedCard(title, meta) {
     return `<div style="${cardBase}">
       <div style="${iconBase};background:var(--accent-overlay-soft);color:var(--accent)">${envSvg}</div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:600;font-size:14px;color:var(--text-bright)">${title}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${meta}</div>
-        <div style="${tokenChip}">${token}</div>
       </div>
-      <div style="display:flex;gap:4px;flex-shrink:0">
+      <div style="${actionsWrap}">
         <button style="${actionBtn}" onmouseover="this.style.background='var(--surface-hover)';this.style.color='var(--text)'" onmouseout="this.style.background='';this.style.color='var(--text-muted)'" onclick="showToast('Invite link copied')" title="Copy link">${copySvg}</button>
         <button style="${actionBtn}" onmouseover="this.style.background='var(--danger-soft)';this.style.color='var(--danger)'" onmouseout="this.style.background='';this.style.color='var(--text-muted)'" onclick="showToast('Invite revoked')" title="Revoke">${trashSvg}</button>
       </div>
@@ -2234,7 +2233,7 @@ function renderInvites(el) {
         <div style="font-weight:600;font-size:14px;color:var(--text-bright)">${title}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${meta}</div>
       </div>
-      <div style="display:flex;gap:4px;flex-shrink:0">
+      <div style="${actionsWrap}">
         <button class="invite-delete-btn" style="${actionBtn};opacity:0;pointer-events:none;transition:opacity .15s,background .15s,color .15s" onmouseover="this.style.background='var(--danger-soft)';this.style.color='var(--danger)'" onmouseout="this.style.background='';this.style.color='var(--text-muted)'" onclick="showToast('Removed from list')" title="Remove from list">${trashSvg}</button>
       </div>
     </div>`;
@@ -2286,8 +2285,8 @@ function renderInvites(el) {
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;max-width:600px">
-      ${unusedCard('Invite for bea@studio.io', 'Created 2 hours ago · Member · <span style="color:var(--text-dim)">Expires in 6d 22h</span>', 'mki_••••••••••••a7b3')}
-      ${unusedCard('Open invite', 'Created yesterday · Admin · <span style="color:var(--text-dim)">Expires in 29d</span>', 'mki_••••••••••••f2e8')}
+      ${unusedCard('Invite for bea@studio.io', 'Created 2 hours ago · Member · <span style="color:var(--text-dim)">Expires in 6d 22h</span>')}
+      ${unusedCard('Open invite', 'Created yesterday · Admin · <span style="color:var(--text-dim)">Expires in 29d</span>')}
       ${terminalCard('used',    'Invite for marco@studio.io', 'Created 5 days ago · Member · <span style="color:var(--text-dim)">Used 3 days ago by marco@studio.io</span>')}
       ${terminalCard('expired', 'Open invite',                 'Created 10 days ago · Member · <span style="color:var(--danger)">Expired 3 days ago</span>')}
       ${terminalCard('revoked', 'Invite for sam@studio.io',    'Created 2 weeks ago · Member · <span style="color:var(--danger)">Revoked yesterday</span>')}
