@@ -17,6 +17,9 @@ export function EmptyState({ variant, onUpload, onCreateFolder }: EmptyStateProp
 
   return (
     <div className={styles.container}>
+      {/* custom: layered "stack of mockup pages" illustration — three offset rounded
+          rects with graduated border tokens plus two header rules; decorative
+          empty-state art tuned to the surrounding card tokens, not an icon. */}
       <svg
         width="48"
         height="48"

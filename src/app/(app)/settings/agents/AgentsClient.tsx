@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { VscAdd, VscCopy, VscKey, VscTrash } from 'react-icons/vsc';
 import { AppMain } from '@/components/AppMain/AppMain';
 import { useConfirm } from '@/components/ConfirmDialog';
 import styles from './AgentsClient.module.css';
@@ -40,49 +41,6 @@ function maskedPreview(prefix: string | null, lastFour: string | null): string {
   }
   const dots = '•'.repeat(12);
   return lastFour ? `${prefix}${dots}${lastFour}` : `${prefix}${dots}`;
-}
-
-function PlusIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
-    </svg>
-  );
-}
-
-function KeyIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M11.351 1.091a4.528 4.528 0 0 1 3.44 3.16c.215.724.247 1.49.093 2.23a4.583 4.583 0 0 1-4.437 3.6c-.438 0-.874-.063-1.293-.19l-.8.938-.379.175H7v1.5l-.5.5H5v1.5l-.5.5h-3l-.5-.5v-2.307l.146-.353L6.12 6.87a4.464 4.464 0 0 1-.2-1.405 4.528 4.528 0 0 1 5.431-4.375zm1.318 7.2a3.568 3.568 0 0 0 1.239-2.005l.004.005A3.543 3.543 0 0 0 9.72 2.08a3.576 3.576 0 0 0-2.8 3.4c-.01.456.07.908.239 1.33l-.11.543L2 12.404v1.6h2v-1.5l.5-.5H6v-1.5l.5-.5h1.245l.876-1.016.561-.14a3.47 3.47 0 0 0 1.269.238 3.568 3.568 0 0 0 2.218-.795zm-.838-2.732a1 1 0 1 0-1.662-1.11 1 1 0 0 0 1.662 1.11z"
-      />
-    </svg>
-  );
-}
-
-function CopyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"
-      />
-      <path fillRule="evenodd" clipRule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M10 6H9V12H10V6Z" />
-      <path d="M7 6H6V12H7V6Z" />
-      <path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z" />
-    </svg>
-  );
 }
 
 export function AgentsClient({
@@ -231,7 +189,7 @@ export function AgentsClient({
         </span>
         {!showForm && (
           <button type="button" className={styles.btnAction} onClick={() => setShowForm(true)}>
-            <PlusIcon /> New Token
+            <VscAdd size={14} aria-hidden="true" /> New Token
           </button>
         )}
       </div>
@@ -247,7 +205,7 @@ export function AgentsClient({
             return (
               <div key={t.id} className={styles.card}>
                 <div className={styles.keyIcon} aria-hidden="true">
-                  <KeyIcon />
+                  <VscKey size={16} aria-hidden="true" />
                 </div>
                 <div className={styles.body}>
                   <h3 className={styles.name}>{t.name}</h3>
@@ -264,7 +222,7 @@ export function AgentsClient({
                     title="Copy"
                     onClick={() => copyToken(masked)}
                   >
-                    <CopyIcon />
+                    <VscCopy size={14} aria-hidden="true" />
                   </button>
                   <button
                     type="button"
@@ -273,7 +231,7 @@ export function AgentsClient({
                     onClick={() => onRevoke(t.id, t.name)}
                     className={styles.danger}
                   >
-                    <TrashIcon />
+                    <VscTrash size={14} aria-hidden="true" />
                   </button>
                 </div>
               </div>

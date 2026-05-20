@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { VscSearch } from 'react-icons/vsc';
 import type { TreeProject } from '@/components/ProjectTree/ProjectTree';
 import styles from './CommandPalette.module.css';
 import { filterAndGroup } from './filter';
@@ -240,16 +241,7 @@ export function CommandPalette({ projects }: CommandPaletteProps) {
         onKeyDown={handlePanelKeyDown}
       >
         <div className={styles.inputRow}>
-          <svg
-            className={styles.searchIcon}
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97ZM2.5 9C2.5 5.416 5.416 2.5 9 2.5C12.584 2.5 15.5 5.416 15.5 9C15.5 12.584 12.584 15.5 9 15.5C5.416 15.5 2.5 12.584 2.5 9Z" />
-          </svg>
+          <VscSearch className={styles.searchIcon} size={18} aria-hidden="true" />
           <input
             ref={inputRef}
             className={styles.input}
