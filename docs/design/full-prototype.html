@@ -361,27 +361,65 @@
     .tree-children-inner { overflow: hidden; }
     .tree-children.open { grid-template-rows: 1fr; }
 
-    /* Sidebar footer (styles merged into phased-fade block above) */
-    .btn-new-project {
+    /* Sidebar footer — "+ New Mockup" pill (replaces former "+ New Project" CTA) */
+    .btn-new-mockup {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       width: 100%;
       height: 34px;
       padding: 0 12px;
-      border-radius: var(--radius-sm);
-      background: var(--accent-soft);
-      border: 1px solid var(--accent-overlay-mid);
+      border-radius: var(--radius-pill);
+      background: var(--btn-bg);
+      border: 1px solid var(--border);
       color: var(--accent);
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       transition: background var(--motion-fast), color var(--motion-fast), border-color var(--motion-fast);
     }
-    .btn-new-project:hover {
-      background: var(--accent-overlay-mid);
-      border-color: var(--accent);
+    .btn-new-mockup:hover {
+      background: var(--btn-bg-hover);
+      border-color: var(--accent-overlay-mid);
       color: var(--accent-bright);
+    }
+
+    /* Projects pill header — fixed top of sidebar, mono uppercase, "+" affordance */
+    .projects-pill-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 32px;
+      padding: 0 12px;
+      margin: 6px 8px 4px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-pill);
+      flex-shrink: 0;
+    }
+    .projects-pill-header .header-plus-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: var(--radius-xs);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: background var(--motion-fast), color var(--motion-fast);
+    }
+    .projects-pill-header .header-plus-btn:hover {
+      background: var(--surface-hover);
+      color: var(--accent);
     }
 
     /* ─── RIGHT PANEL (topbar + main) ───────────────────────────── */
@@ -1383,6 +1421,71 @@
 
     /* ─── VIEW TRANSITIONS ──────────────────────────────────────── */
     .view-hidden { display: none !important; }
+
+    /* ─── DROP OVERLAY (uploads-drag-drop · state showcase) ─────── */
+    #drop-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: var(--scrim-glass-bg);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      animation: drop-overlay-in var(--motion-base) var(--ease-standard);
+    }
+    body.show-drop-overlay #drop-overlay { display: flex; }
+    @keyframes drop-overlay-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .drop-overlay-panel {
+      position: relative;
+      background: var(--surface-glass-bg);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+      width: min(480px, calc(100% - 32px));
+      box-shadow: var(--shadow-popover);
+    }
+    .drop-overlay-panel::before {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 2px dashed var(--accent-overlay-mid);
+      border-radius: calc(var(--radius-md) - 4px);
+      pointer-events: none;
+    }
+    .drop-overlay-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--accent-overlay-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+    }
+    .drop-overlay-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-bright);
+      letter-spacing: -0.01em;
+    }
+    .drop-overlay-sub {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-dim);
+    }
   </style>
 </head>
 <body>
@@ -1399,8 +1502,13 @@
         <span class="icon-expand"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.00073L1 2.00073V14.0007L2 15.0007H14L15 14.0007V2.00073L14 1.00073H2ZM2 14.0007V2.00073H6V14.0007H2ZM7 14.0007V2.00073H14V14.0007H7Z"/></svg></span>
       </button>
     </div>
+    <div class="projects-pill-header" aria-label="Projects">
+      <span>Projects</span>
+      <button class="header-plus-btn" id="btnNewProject" title="New project · Ctrl+Shift+P" aria-label="New project">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+      </button>
+    </div>
     <div class="sidebar-scroll" id="sidebarScroll">
-      <div class="sidebar-section-label">Projects</div>
       <div id="sidebarTree" role="tree" aria-label="Project tree"></div>
 
       <div class="sidebar-section-label" style="margin-top:8px">No Project</div>
@@ -1408,9 +1516,9 @@
     </div>
 
     <div class="sidebar-footer">
-      <button class="btn-new-project" id="btnNewProject" aria-label="New project">
+      <button class="btn-new-mockup" id="btnNewMockup" title="Upload mockup · Ctrl+U" aria-label="New mockup">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-        New Project
+        New Mockup
       </button>
     </div>
   </aside>
@@ -1535,6 +1643,17 @@
 <div id="states-btn">
   <button id="states-toggle">[ States ▾ ]</button>
   <div id="states-menu"></div>
+</div>
+
+<!-- ═══ DROP OVERLAY (uploads-drag-drop · state showcase) ═══ -->
+<div id="drop-overlay" aria-hidden="true">
+  <div class="drop-overlay-panel">
+    <div class="drop-overlay-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+    </div>
+    <div class="drop-overlay-title">Drop your HTML here</div>
+    <div class="drop-overlay-sub" id="dropOverlayPath">Will be added to · current view</div>
+  </div>
 </div>
 
 <script>
@@ -2578,7 +2697,16 @@ function renderStateSwitcher() {
         <span class="state-num">${i + 1}</span>
         <span class="state-label">${v.label}</span>
       </button>
-    `).join('');
+    `).join('') +
+    '<div class="states-menu-header">Overlays</div>' +
+    `<button class="state-item" onclick="toggleDropOverlay();$('#states-menu').classList.remove('open')">
+       <span class="state-num">·</span>
+       <span class="state-label">Drop overlay (toggle)</span>
+     </button>`;
+}
+
+function toggleDropOverlay() {
+  document.body.classList.toggle('show-drop-overlay');
 }
 
 function updateStateSwitcher() {

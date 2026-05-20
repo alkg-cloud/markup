@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>26 — Empty State (Uploads)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-pill:9999px;
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
+  background-attachment:fixed;min-height:100vh;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
+.page{padding:48px 32px 96px;max-width:1280px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:760px;line-height:1.55}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.variant-label{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-dim);margin-bottom:10px;text-transform:lowercase;display:flex;align-items:center;justify-content:space-between}
+.variant-label .ctx{color:var(--text-muted)}
+
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+@media(max-width:1100px){.grid-3{grid-template-columns:1fr}}
+
+.frame{
+  position:relative;background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  height:360px;padding:18px;overflow:hidden;display:flex;flex-direction:column;
+}
+.fake-topbar{
+  height:36px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  display:flex;align-items:center;padding:0 10px;gap:10px;font-family:var(--font-mono);font-size:10px;color:var(--text-muted);
+  margin-bottom:12px;flex-shrink:0;
+}
+.fake-topbar .crumb{color:var(--text-dim)}
+.fake-topbar .crumb-current{color:var(--text-bright);font-weight:600}
+.fake-topbar .grow{flex:1}
+.fake-topbar .new-project-chip{
+  display:inline-flex;align-items:center;gap:4px;background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);
+  color:var(--accent);border-radius:var(--radius-pill);padding:3px 9px;font-weight:600;font-size:10px;
+}
+.fake-main{
+  flex:1;display:flex;align-items:center;justify-content:center;position:relative;
+}
+
+/* drop-zone-gigante */
+.drop-zone-large{
+  width:100%;height:100%;border:2px dashed var(--accent-overlay-mid);border-radius:var(--radius-md);
+  background:oklch(20% 0.05 165 / 0.18);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;
+  cursor:pointer;
+}
+.drop-zone-large .cloud{
+  width:48px;height:48px;border-radius:50%;background:var(--accent-overlay-soft);
+  display:flex;align-items:center;justify-content:center;color:var(--accent);
+}
+.drop-zone-large .title{font-size:16px;font-weight:700;color:var(--text-bright);letter-spacing:-0.01em;text-align:center}
+.drop-zone-large .sub{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);text-align:center}
+
+/* botao-pill */
+.pill-cta-wrap{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;
+}
+.upload-pill{
+  display:inline-flex;align-items:center;gap:6px;background:var(--btn-bg);color:var(--accent);
+  border:1px solid var(--accent-overlay-mid);border-radius:var(--radius-pill);
+  padding:8px 16px;font-size:13px;font-weight:600;
+}
+.upload-pill:hover{background:var(--btn-bg-hover);color:var(--accent-bright)}
+.pill-cta-wrap .sub{font-family:var(--font-mono);font-size:11px;color:var(--text-muted)}
+
+/* footer notes */
+.footer-note{
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--border-subtle);
+  font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.7;
+}
+.note-row{margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="page" data-ds-component="empty-state">
+  <h1 class="h1">26 — Empty State (Uploads)</h1>
+  <p class="lede">Replaces the content of any workspace view when there are zero mockups (or zero projects) to show. Three sub-variants — a giant drop zone, a discreet pill CTA, and a both-paths layout. Each variant adapts its copy to the current context (All Projects, Project, Folder).</p>
+
+  <!-- ──── drop-zone-gigante ──── -->
+  <div class="section">
+    <div class="section-title">drop-zone-gigante (default)</div>
+    <div class="grid-3">
+
+      <div>
+        <div class="variant-label"><span>all-projects</span><span class="ctx">/</span></div>
+        <div class="frame">
+          <div class="fake-topbar"><span class="crumb-current">All Projects</span><span class="grow"></span></div>
+          <div class="fake-main">
+            <div class="drop-zone-large">
+              <div class="cloud"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
+              <div class="title">Drop your first mockup here</div>
+              <div class="sub">or click to choose a file</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="variant-label"><span>project</span><span class="ctx">/projects/lumen-coffee</span></div>
+        <div class="frame">
+          <div class="fake-topbar"><span class="crumb">Lumen Coffee ›</span> <span class="crumb-current">Mockups</span><span class="grow"></span></div>
+          <div class="fake-main">
+            <div class="drop-zone-large">
+              <div class="cloud"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
+              <div class="title">No mockups in Lumen Coffee yet</div>
+              <div class="sub">Drop an HTML or click to upload to this project</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="variant-label"><span>folder</span><span class="ctx">/lumen-coffee/hero</span></div>
+        <div class="frame">
+          <div class="fake-topbar"><span class="crumb">Lumen Coffee › Hero</span><span class="grow"></span></div>
+          <div class="fake-main">
+            <div class="drop-zone-large">
+              <div class="cloud"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
+              <div class="title">Hero is empty</div>
+              <div class="sub">Drop an HTML or click to upload to this folder</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ──── botao-pill ──── -->
+  <div class="section">
+    <div class="section-title">botao-pill</div>
+    <div class="grid-3">
+
+      <div>
+        <div class="variant-label"><span>all-projects</span><span class="ctx">/</span></div>
+        <div class="frame">
+          <div class="fake-topbar"><span class="crumb-current">All Projects</span><span class="grow"></span></div>
+          <div class="fake-main">
+            <div class="pill-cta-wrap">
+              <button class="upload-pill">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+                Upload mockup
+              </button>
+              <div class="sub">or drop anywhere on the page</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="variant-label"><span>project</span><span class="ctx">/projects/lumen-coffee</span></div>
+        <div class="frame">
+          <div class="fake-topbar"><span class="crumb">Lumen Coffee ›</span> <span class="crumb-current">Mockups</span><span class="grow"></span></div>
+          <div class="fake-main">
+            <div class="pill-cta-wrap">
+              <button class="upload-pill">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+                Upload mockup
+              </button>
+              <div class="sub">or drop anywhere · saves to Lumen Coffee</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="variant-label"><span>folder</span><span class="ctx">/lumen-coffee/hero</span></div>
+        <div class="frame">
+          <div class="fake-topbar"><span class="crumb">Lumen Coffee › Hero</span><span class="grow"></span></div>
+          <div class="fake-main">
+            <div class="pill-cta-wrap">
+              <button class="upload-pill">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+                Upload mockup
+              </button>
+              <div class="sub">or drop anywhere · saves to Hero</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ──── both ──── -->
+  <div class="section">
+    <div class="section-title">both — drop zone + topbar "+ New project" chip</div>
+    <div class="grid-3">
+
+      <div>
+        <div class="variant-label"><span>all-projects</span><span class="ctx">/</span></div>
+        <div class="frame">
+          <div class="fake-topbar">
+            <span class="crumb-current">All Projects</span>
+            <span class="grow"></span>
+            <button class="new-project-chip"><svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New project</button>
+          </div>
+          <div class="fake-main">
+            <div class="drop-zone-large">
+              <div class="cloud"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
+              <div class="title">Drop your first mockup here</div>
+              <div class="sub">or click to choose a file</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="variant-label"><span>project</span><span class="ctx">/projects/lumen-coffee</span></div>
+        <div class="frame">
+          <div class="fake-topbar">
+            <span class="crumb">Lumen Coffee ›</span><span class="crumb-current">Mockups</span>
+            <span class="grow"></span>
+            <button class="new-project-chip"><svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New project</button>
+          </div>
+          <div class="fake-main">
+            <div class="drop-zone-large">
+              <div class="cloud"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
+              <div class="title">No mockups in Lumen Coffee yet</div>
+              <div class="sub">Drop an HTML or click to upload to this project</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="variant-label"><span>folder</span><span class="ctx">/lumen-coffee/hero</span></div>
+        <div class="frame">
+          <div class="fake-topbar">
+            <span class="crumb">Lumen Coffee › Hero</span>
+            <span class="grow"></span>
+            <button class="new-project-chip"><svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New project</button>
+          </div>
+          <div class="fake-main">
+            <div class="drop-zone-large">
+              <div class="cloud"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
+              <div class="title">Hero is empty</div>
+              <div class="sub">Drop an HTML or click to upload to this folder</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <div class="note-row">Trigger: clicking the panel opens the OS file picker. Drop opens <code>25-new-mockup-dialog</code> with the parsed file pre-filled.</div>
+    <div class="note-row">Tokens: <code>--accent-overlay-mid</code> (dashed border), <code>--accent-overlay-soft</code> (cloud halo), <code>--btn-bg</code> + <code>--accent</code> (pill CTA).</div>
+    <div class="note-row">Hover/focus: panel border brightens to <code>--accent</code>; pill border + text shift to <code>--accent-bright</code>. Focus-visible inherits the global ring.</div>
+    <div class="note-row">Active path: same drop-overlay scrim appears on dragenter; release routes to dialog. Errors surface via toast.</div>
+  </div>
+</div>
+</body>
+</html>
