@@ -41,9 +41,21 @@ interface MockupCardProps {
    *  slug + folder path + mockup slug so the card doesn't need to walk
    *  the tree itself. */
   href: string;
+  /** Optional context line rendered between name and meta (e.g. the
+   *  `Project · Folder` breadcrumb used by `home-recents-section`).
+   *  When absent the card renders exactly as before — no extra spacing. */
+  subtitle?: string;
 }
 
-export default function MockupCard({ id, name, slug, status, updatedAt, href }: MockupCardProps) {
+export default function MockupCard({
+  id,
+  name,
+  slug,
+  status,
+  updatedAt,
+  href,
+  subtitle,
+}: MockupCardProps) {
   const [imgError, setImgError] = useState(false);
 
   const hue = hueForSlug(slug);
@@ -70,6 +82,11 @@ export default function MockupCard({ id, name, slug, status, updatedAt, href }: 
 
       <div className={styles.body}>
         <div className={styles.name}>{name}</div>
+        {subtitle && (
+          <div className={styles.subtitle} title={subtitle}>
+            {subtitle}
+          </div>
+        )}
         <div className={styles.meta}>Updated {relativeTime(new Date(updatedAt))}</div>
 
         {status === 'open' && <div className={`${styles.badge} ${styles.badgeWarning}`}>Open</div>}
