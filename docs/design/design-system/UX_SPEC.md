@@ -626,6 +626,43 @@ Dock central-inferior flutuante (`src/components/CanvasToolbar`).
 - **Grab handle:** 25 × 32 slot; `GoGrabber` 25 × 25 (default vertical). `touch-action: none`. Dragging: extra `0 0 0 1px --accent-overlay-mid` ring.
 - **Clamping:** AppMain bounds (8 px margin) — NÃO viewport. Dragged pos cleared on fullscreen toggle.
 
+### 01 amend — Sidebar Projects pill header + New Mockup footer (`01-sidebar.html`)
+
+A sidebar ganha duas mudanças na ancoragem dos CTAs de criação:
+
+- **Fixed-top Projects pill header** — pill de 32 px na largura do scroll com fundo `--bg-card` e borda `--border-subtle`. Tipografia mono uppercase 11 px / 700, letter-spacing 0.12 em, cor `--text-muted`. À direita, ícone-button `+` 22 × 22 (`--text-dim` idle, `--accent` hover), tooltip `New project · Ctrl+Shift+P`. Três variantes de comportamento: `sticky-top` (default, posição sticky dentro do scroll), `sticky-pill` (pill flutuante com `--surface-glass-bg` + `blur(16px) saturate(140%)`), `sempre-visivel` (fora do scroll, via flex layout do sidebar).
+- **Footer "+ New Mockup"** — substitui o antigo `+ New Project`. Pill width 100%, `--btn-bg` + `--border` border, texto `--accent`, `--radius-pill`. Hover muda fundo para `--btn-bg-hover`, borda para `--accent-overlay-mid`, texto para `--accent-bright`. Tooltip `Upload mockup · Ctrl+U`. Click abre o file picker; selecionar arquivo abre `25-new-mockup-dialog`.
+
+Três placements do CTA: `footer-button` (default), `header-plus` (footer pill some e o `+` da pill header abre menu `New project / New mockup`), `both` (footer pill + header `+` ambos visíveis).
+
+### 24 — Drop Overlay (`24-drop-overlay.html`)
+
+Overlay full-bleed que aparece no momento em que o usuário começa a arrastar arquivo sobre a janela. Z-index 90 (acima de sidebar 100-pill, dialog scrim ~50, tweaker 80). Dismiss em `dragleave` da window (fade 120 ms) ou após drop bem-sucedido (route para `25-new-mockup-dialog`).
+
+- **Surface:** glass — `--surface-glass-bg` (rgb(7 12 15 / 80%)) + `backdrop-filter: blur(16px) saturate(140%)` no painel central; o scrim usa `--scrim-glass-bg` + o mesmo filtro.
+- **Painel central:** 480 × auto px, `--radius-md`, padding 28 × 32 px, dashed `--accent-overlay-mid` border 2 px inset 6 px. Ícone cloud-up 48 × 48 num círculo `--accent-overlay-soft`. Título `Drop your HTML here` (20 px / 700, `--text-bright`). Sub `Will be added to <breadcrumb-path>` (mono 12 px, `--text-dim`).
+- **Variantes (4):** `glass-full` (default), `dashed-border` (sem scrim, só dashed border no alvo + chip top-right), `scrim-leve` (scrim blur 4 px + opacity 40 %), `hybrid` (dashed border + chip compacto central).
+- **Motion:** entry fade 220 ms (`--motion-base`) com `--ease-standard`; exit 120 ms. Zerado em `prefers-reduced-motion: reduce`.
+
+### 25 — New Mockup Dialog (`25-new-mockup-dialog.html`)
+
+Diálogo que surge após drop bem-sucedido ou após o file picker (sidebar footer / empty-state CTA). Glass `--surface-glass-bg` + `blur(16px) saturate(140%)`, 520 px wide (680 px na variante preview), scrim padrão.
+
+- **Header:** título `New mockup` 18 px / 700 + file chip (`<icon> <filename> · <size>`). Chip color-coded: HTML em oklch(74% 0.16 35) (laranja), ZIP em oklch(74% 0.13 240) (azul), variante `mono` em `--text-dim`, variante `no-icon` apenas texto.
+- **Body:** Name input (validação `URL_SAFE_NAME_PATTERN`; erro inline em alert `--danger-soft` acima do body com mensagem `Name must be lowercase letters, numbers, or hyphens.` + código `name_not_url_safe`). Project picker (native `<select>` ou chip-row inline). Folder picker com indentação por profundidade (`Hero`, `Hero / Section`, `Hero / Section / Variants`). Preview opcional 320 × 180 (iframe sandboxed ou placeholder SVG hue-cycled).
+- **Replace toggle:** visível só quando o usuário dropou em mockup view. Radio pair `Add as new mockup` / `Replace as new version of "<slug>"`. Variante `hidden-until-edit` colapsa em link `Or replace this mockup with a new version` que expande no click.
+- **Footer:** `Cancel` (ghost) + `Add` (primary `--btn-bg` + `--accent-overlay-mid` border + `--accent` text). Esc cancela. `Add` desabilita e mostra progresso inline (barra 4 px com `--accent` fill).
+- **Layout variants (4):** `nome-only`, `nome+pickers` (default), `nome+pickers+preview`, `nome+inline-pickers`.
+
+### 26 — Empty State Uploads (`26-empty-state.html`)
+
+Substitui o conteúdo de qualquer view de workspace quando não há mockups (ou projetos) para mostrar. Click no painel abre file picker; drop abre `25-new-mockup-dialog`.
+
+- **drop-zone-gigante (default):** painel 100 % de AppMain, dashed `--accent-overlay-mid` border 2 px, bg `oklch(20% 0.05 165 / 0.18)`, ícone cloud + título + sub. Copy adapta por contexto: All Projects = `Drop your first mockup here / or click to choose a file`; Project = `No mockups in <project> yet / Drop an HTML or click to upload to this project`; Folder = `<folder> is empty / Drop an HTML or click to upload to this folder`.
+- **botao-pill:** pill `+ Upload mockup` (accent text on `--btn-bg`, `--accent-overlay-mid` border, `--radius-pill`) + sub `or drop anywhere on the page` (variação `· saves to <project|folder>` em views escopadas).
+- **both:** drop zone + chip `+ New project` no topbar — surfaceia os dois caminhos. Reservado para `/` quando o usuário tem zero projetos.
+- **Hover/focus:** dropzone border brightens para `--accent`; pill ganha `--accent-bright` text. Focus-visible herda o ring global.
+
 ### 20 — Pins (`20-pins.html`)
 
 Marcadores teardrop sobre a canvas (`src/components/Pin`, `src/components/AnnotationPin`).
