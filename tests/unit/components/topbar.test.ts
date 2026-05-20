@@ -73,7 +73,7 @@ describe('Topbar', () => {
     const root = createRoot(container);
 
     await act(async () => {
-      root.render(createElement(Topbar, { breadcrumbs: [], userName: 'Maria' }));
+      root.render(createElement(Topbar, { breadcrumbs: [], userName: 'Maria', userRole: 'admin' }));
     });
 
     // The menu is a `popover="auto"` element — items live in the DOM
@@ -83,6 +83,9 @@ describe('Topbar', () => {
     // the two overlays never coexist, but that's behaviour we trust
     // the browser with and don't reassert here (jsdom's popover
     // support is incomplete).
+    // `userRole: 'admin'` is required for the Admin group (Invites +
+    // Agent Tokens) to render — members see only Settings / Sign Out.
+    expect(container.textContent).toContain('Invites');
     expect(container.textContent).toContain('Agent Tokens');
     expect(container.textContent).toContain('Sign Out');
     root.unmount();

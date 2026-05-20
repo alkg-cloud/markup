@@ -105,6 +105,16 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 | `POST` | `/api/agent-tokens` | Create (returns `plaintext` once) |
 | `DELETE` | `/api/agent-tokens/[id]` | Revoke |
 
+### Invites
+
+- `GET /api/invites` — admin, list invites with `effectiveStatus` surfaced.
+- `POST /api/invites` — admin, create an invite; returns plaintext once.
+- `DELETE /api/invites/[id]` — admin, revoke (if unused) or hard-delete (if terminal).
+- `POST /api/invites/revoke-all` — admin, bulk-revoke every unused-not-expired invite.
+- `DELETE /api/invites/history` — admin, bulk-delete every terminal row (including computed expired).
+- `GET /api/invites/[token]/state` — public, anti-enumeration probe (`{ usable, boundEmail }` / `{ usable: false, reason }`).
+- `POST /api/invites/[token]/redeem` — public, rate-limited, creates the User + session cookie.
+
 ### Shell
 
 | Method | Path | Purpose |
