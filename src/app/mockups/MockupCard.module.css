@@ -82,6 +82,16 @@
   text-overflow: ellipsis;
 }
 
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
 .meta {
   font-family: var(--font-mono);
   font-size: 10px;
