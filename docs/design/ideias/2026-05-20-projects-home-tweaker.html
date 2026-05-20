@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Projects Home — Tweaker (ideia 2026-05-20)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────────────────────
+   TOKENS — copied verbatim from docs/design/design-system/05-project-card.html
+   (oklch palette, motion, radii, shadows, focus-ring, shell heights)
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bg: oklch(11% 0.03 165);
+  --bg-elevated: oklch(7% 0.02 165);
+  --bg-card: oklch(12% 0.02 165);
+  --bg-card-active: oklch(15% 0.025 165);
+  --bg-tinted: oklch(9% 0.02 165);
+  --surface-hover: rgba(255,255,255,0.04);
+  --surface-active: rgba(255,255,255,0.07);
+  --border-subtle: oklch(17% 0.02 165);
+  --border: oklch(21% 0.025 165);
+  --border-strong: oklch(28% 0.025 165);
+  --text-bright: oklch(97% 0.01 165);
+  --text: oklch(82% 0.04 165);
+  --text-dim: oklch(60% 0.02 165);
+  --text-muted: oklch(47% 0.02 165);
+  --accent: oklch(74.4% 0.193 165);
+  --accent-bright: oklch(82% 0.18 165);
+  --accent-soft: oklch(28% 0.08 165);
+  --accent-overlay-soft: oklch(74.4% 0.193 165/0.18);
+  --accent-overlay-mid: oklch(74.4% 0.193 165/0.35);
+  --btn-bg: rgb(39,39,39);
+  --btn-bg-hover: rgb(48,48,48);
+  --danger: oklch(70% 0.2 25);
+  --danger-soft: oklch(28% 0.09 25);
+  --success: oklch(76% 0.16 152);
+  --warning: oklch(80% 0.15 80);
+  --font-body: "Manrope", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --ease-standard: cubic-bezier(0.32,0.72,0,1);
+  --ease-spring: cubic-bezier(0.5,1.4,0.6,1);
+  --ease-exit: cubic-bezier(0.32,0,0.67,0);
+  --motion-fast: 160ms;
+  --motion-base: 220ms;
+  --topbar-height: 52px;
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 52px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-card: 14px;
+  --radius-pill: 9999px;
+  --shadow-sm: 0 2px 6px oklch(0%,0,0/0.45);
+  --shadow-md: 0 6px 16px oklch(0%,0,0/0.5);
+  --shadow-glow: 0 0 0 1px oklch(74.4% 0.193 165/0.4), 0 0 24px oklch(74.4% 0.193 165/0.18);
+  --shadow-popover: 0 14px 32px oklch(0%,0,0/0.6), 0 6px 12px oklch(0%,0,0/0.45), inset 0 1px 0 oklch(100%,0,0/0.06);
+  --scrim-strong: oklch(0% 0 0/0.65);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+
+  /* Spacing scale — sibling variantes use this same scale. */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 40px;
+
+  /* Mockup-only tweaker variables. */
+  --ideia-density: 1;
+  --ideia-content-max: 1280px;
+  --ideia-section-gap: calc(var(--space-xl) * var(--ideia-density));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-fast: 0ms; --motion-base: 0ms; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RESET + base
+   ───────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-xs); }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-pill); }
+
+/* ─────────────────────────────────────────────────────────────
+   SHELL — sidebar pill + topbar + app-main grid
+   ───────────────────────────────────────────────────────────── */
+.app-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-collapsed-width) 1fr;
+  grid-template-rows: var(--topbar-height) 1fr;
+  height: 100vh;
+  width: 100vw;
+}
+
+.sidebar-pill {
+  grid-row: 1 / span 2;
+  grid-column: 1;
+  margin: 8px;
+  width: calc(var(--sidebar-collapsed-width) - 16px);
+  min-width: 0;
+  height: calc(100vh - 16px);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 10px;
+}
+.sidebar-pill .logo {
+  width: 28px; height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  display: grid; place-items: center;
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+}
+.sidebar-pill .pill-icons {
+  margin-top: 8px;
+  display: flex; flex-direction: column;
+  gap: 6px;
+}
+.sidebar-pill .pill-icon {
+  width: 28px; height: 28px;
+  border-radius: var(--radius-sm);
+  display: grid; place-items: center;
+  color: var(--text-muted);
+  opacity: 0.45;
+}
+.sidebar-pill .pill-icon svg { width: 16px; height: 16px; }
+.sidebar-pill .pill-icon.active { opacity: 1; color: var(--text-bright); background: var(--surface-hover); }
+
+.topbar {
+  grid-row: 1; grid-column: 2;
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-lg);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg);
+}
+.topbar-breadcrumbs {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.topbar-avatar {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--accent), oklch(60% 0.2 290));
+  display: grid; place-items: center;
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.app-main {
+  grid-row: 2; grid-column: 2;
+  overflow: auto;
+  background: var(--bg);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DASHBOARD layout
+   ───────────────────────────────────────────────────────────── */
+.dashboard {
+  max-width: var(--ideia-content-max);
+  margin: 0 auto;
+  padding: var(--ideia-section-gap);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ideia-section-gap);
+}
+.section { display: flex; flex-direction: column; gap: var(--space-md); }
+.section[hidden] { display: none !important; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+.section-header h2 {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-bright);
+  letter-spacing: -0.01em;
+}
+.count-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-tinted);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+}
+.section-header-spacer { flex: 1; }
+.link-action {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent);
+}
+.link-action.secondary { color: var(--text-dim); }
+.btn-pill {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+  font-size: 12px;
+  font-family: var(--font-body);
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background var(--motion-fast);
+}
+.btn-pill:hover { background: var(--accent-bright); }
+
+/* When sections animate during reorder. */
+body.reordering .section {
+  transition: opacity 220ms var(--ease-standard);
+  opacity: 0.4;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   HERO variants
+   ───────────────────────────────────────────────────────────── */
+.hero { display: flex; align-items: center; gap: var(--space-xl); }
+.hero h1 {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--text-bright);
+  letter-spacing: -0.02em;
+}
+.hero .sub {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+.hero .hero-text { flex: 1; min-width: 0; }
+.hero-blob { flex-shrink: 0; }
+.hero .stats-strip {
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.hero .stats-strip .num { color: var(--text); }
+.hero .stats-strip .dot { opacity: 0.6; margin: 0 8px; }
+
+/* ─────────────────────────────────────────────────────────────
+   RECENTS variants
+   ───────────────────────────────────────────────────────────── */
+.recents-body.list {
+  display: flex; flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.recent-row {
+  display: flex; align-items: center; gap: var(--space-md);
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+.recent-row:first-child { border-top: none; }
+.recent-row:hover { background: var(--surface-hover); }
+.recent-row .thumb { flex-shrink: 0; border-radius: var(--radius-xs); overflow: hidden; display: block; }
+.recent-row .info { flex: 1; min-width: 0; }
+.recent-row .name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-bright);
+  letter-spacing: -0.005em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.recent-row .breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.recent-row .meta-second {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.recent-row .time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.recents-body.h-scroll {
+  display: flex; gap: var(--space-md);
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x mandatory;
+}
+.recents-body.h-scroll .recent-card {
+  flex-shrink: 0;
+  width: 240px;
+  scroll-snap-align: start;
+}
+.recents-body.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+.recent-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--motion-fast), transform var(--motion-fast), background var(--motion-fast);
+}
+.recent-card:hover {
+  border-color: var(--border);
+  background: var(--bg-card-active);
+  transform: translateY(-1px);
+}
+.recent-card .thumb { display: block; width: 100%; }
+.recent-card .meta-row {
+  padding: 10px 12px;
+}
+.recent-card .name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-bright);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.recent-card .breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.recent-card .time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PROJECTS variants
+   ───────────────────────────────────────────────────────────── */
+.projects-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+.project-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard);
+}
+.project-card:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-card-active);
+  transform: translateY(-1px);
+}
+
+/* minimal variant */
+.project-card.minimal {
+  display: flex; align-items: center; gap: var(--space-md);
+  min-height: 88px;
+  padding: var(--space-md);
+}
+.project-card.minimal .icon-tile,
+.project-card.glass .icon-tile {
+  flex-shrink: 0;
+  width: 48px; height: 48px;
+  display: grid; place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--bg-tinted);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-bright);
+  font-size: 22px;
+  line-height: 1;
+}
+.project-card .info { flex: 1; min-width: 0; }
+.project-card .name {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-bright);
+  letter-spacing: -0.01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.project-card .meta {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.project-card .meta .dot { opacity: 0.6; margin: 0 6px; }
+
+/* thumb variant */
+.project-card.thumb .thumb { display: block; width: 100%; }
+.project-card.thumb .card-body {
+  display: flex; align-items: center; gap: var(--space-sm);
+  padding: 12px;
+}
+.project-card.thumb .icon-glyph { font-size: 18px; line-height: 1; }
+
+/* hero variant */
+.project-card.hero {
+  padding: var(--space-lg);
+  display: flex; flex-direction: column; gap: var(--space-sm);
+  min-height: 200px;
+}
+.project-card.hero .head {
+  display: flex; align-items: center; gap: var(--space-md);
+}
+.project-card.hero .icon-big { font-size: 32px; line-height: 1; }
+.project-card.hero .name-lg {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text-bright);
+  letter-spacing: -0.01em;
+}
+.project-card.hero .mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-top: auto;
+}
+.project-card.hero .mini-grid svg { width: 100%; height: auto; display: block; border-radius: var(--radius-xs); }
+
+/* glass variant */
+.project-card.glass {
+  display: flex; align-items: center; gap: var(--space-md);
+  min-height: 88px;
+  padding: var(--space-md);
+  background: var(--accent-overlay-soft);
+  border: 1px solid var(--accent);
+  box-shadow: var(--shadow-glow);
+}
+.project-card.glass .icon-tile {
+  background: oklch(20% 0.06 165);
+  border-color: var(--accent-soft);
+}
+.project-card.glass .name { color: var(--text-bright); }
+.project-card.glass .meta { color: var(--text-dim); }
+
+/* ─────────────────────────────────────────────────────────────
+   ORPHANS variants
+   ───────────────────────────────────────────────────────────── */
+.orphans-body.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-md);
+}
+.orphans-body.h-scroll {
+  display: flex; gap: var(--space-md);
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+.orphans-body.h-scroll .orphan-card {
+  flex-shrink: 0;
+  width: 220px;
+}
+.orphan-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--motion-fast), transform var(--motion-fast);
+}
+.orphan-card:hover { border-color: var(--border); transform: translateY(-1px); }
+.orphan-card .thumb { display: block; width: 100%; }
+.orphan-card .body {
+  padding: 10px 12px;
+  display: flex; align-items: center; gap: var(--space-sm);
+}
+.orphan-card .name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-bright);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.status-badge {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+.status-badge.open { background: var(--accent-soft); color: var(--accent); }
+.status-badge.resolved { background: oklch(28% 0.08 152); color: var(--success); }
+.status-badge.archived { background: oklch(28% 0.08 80); color: var(--warning); }
+
+.orphans-body.list {
+  display: flex; flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.orphan-row {
+  display: flex; align-items: center; gap: var(--space-md);
+  padding: 8px 12px;
+  border-top: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+.orphan-row:first-child { border-top: none; }
+.orphan-row:hover { background: var(--surface-hover); }
+.orphan-row .thumb { flex-shrink: 0; border-radius: var(--radius-xs); overflow: hidden; display: block; }
+.orphan-row .name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-bright);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.orphan-row .time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.orphans-body.bucket {}
+.bucket-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--space-md);
+}
+.bucket-card > summary {
+  list-style: none;
+  display: flex; align-items: center; gap: var(--space-md);
+  cursor: pointer;
+}
+.bucket-card > summary::-webkit-details-marker { display: none; }
+.bucket-card .bucket-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid; place-items: center;
+  font-size: 16px;
+}
+.bucket-card .bucket-title {
+  font-weight: 700;
+  color: var(--text-bright);
+  font-size: 14px;
+}
+.bucket-card .bucket-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.bucket-card .chevron {
+  margin-left: auto;
+  color: var(--text-muted);
+  transition: transform var(--motion-fast);
+}
+.bucket-card[open] > summary .chevron { transform: rotate(90deg); }
+.bucket-card .bucket-list {
+  margin-top: var(--space-md);
+  display: flex; flex-direction: column;
+  border-top: 1px solid var(--border-subtle);
+}
+.bucket-card .bucket-list .orphan-row { border-top: 1px solid var(--border-subtle); }
+.bucket-card .bucket-list .orphan-row:first-child { border-top: none; }
+
+/* ─────────────────────────────────────────────────────────────
+   TWEAKER panel
+   ───────────────────────────────────────────────────────────── */
+.tweaker {
+  position: fixed;
+  top: 16px; right: 16px;
+  width: 320px;
+  max-height: calc(100vh - 32px);
+  z-index: 80;
+  background: color-mix(in oklch, var(--bg-elevated) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  user-select: none;
+}
+.tweaker[hidden] { display: none; }
+
+.tweaker-header {
+  height: 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 8px 0 12px;
+  cursor: grab;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.tweaker-header:active { cursor: grabbing; }
+.tweaker-handle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  display: flex; align-items: center; gap: 6px;
+}
+.tweaker-actions { display: flex; gap: 2px; }
+.tweaker-actions button {
+  width: 24px; height: 24px;
+  border-radius: var(--radius-xs);
+  color: var(--text-muted);
+  display: grid; place-items: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  position: relative;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.tweaker-actions button:hover { background: var(--surface-hover); color: var(--text-bright); }
+.tweaker-actions button .copied-tooltip {
+  position: absolute;
+  top: 28px; right: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 2px 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--motion-fast);
+}
+.tweaker-actions button .copied-tooltip.show { opacity: 1; }
+
+.tweaker-body {
+  overflow-y: auto;
+  padding: 12px;
+  display: flex; flex-direction: column;
+  gap: 12px;
+}
+
+.tweaker-body details {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tinted);
+  overflow: hidden;
+}
+.tweaker-body details > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 8px 10px;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+.tweaker-body details > summary::-webkit-details-marker { display: none; }
+.tweaker-body details > summary .caret {
+  color: var(--text-muted);
+  transition: transform var(--motion-fast);
+}
+.tweaker-body details[open] > summary .caret { transform: rotate(90deg); }
+.tweaker-body details .knob-chips {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  padding: 0 10px 10px;
+}
+
+.chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--btn-bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  transition: background var(--motion-fast), border-color var(--motion-fast), color var(--motion-fast);
+}
+.chip:hover { background: var(--btn-bg-hover); color: var(--text); }
+.chip[aria-pressed="true"],
+.chip.is-selected {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.tweaker-body hr {
+  border: none;
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px 0;
+}
+.tweaker-body h3 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.tweaker-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+}
+.tweaker-row .label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.tweaker-row .segmented { display: flex; gap: 4px; }
+
+.tweaker-order {
+  list-style: none;
+  display: flex; flex-direction: column;
+  gap: 4px;
+}
+.tweaker-order li {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--btn-bg);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  cursor: grab;
+}
+.tweaker-order li:active { cursor: grabbing; }
+.tweaker-order li .grip { color: var(--text-muted); }
+.tweaker-order li.dragging { opacity: 0.4; }
+.tweaker-order li.drop-above { box-shadow: inset 0 2px 0 0 var(--accent); }
+.tweaker-order li.drop-below { box-shadow: inset 0 -2px 0 0 var(--accent); }
+
+/* Collapsed pill (replaces panel) */
+.tweaker-pill {
+  position: fixed;
+  top: 16px; right: 16px;
+  width: 156px; height: 36px;
+  background: color-mix(in oklch, var(--bg-elevated) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+  z-index: 80;
+  cursor: grab;
+  transition: box-shadow var(--motion-fast);
+}
+.tweaker-pill:hover { box-shadow: var(--shadow-glow); }
+.tweaker-pill[hidden] { display: none; }
+
+/* Hidden-hint toast */
+.tweaker-hint {
+  position: fixed;
+  bottom: 56px; right: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  background: color-mix(in oklch, var(--bg-elevated) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  z-index: 79;
+  opacity: 0;
+  animation: hint-fade 2s var(--ease-standard) forwards;
+  pointer-events: none;
+}
+@keyframes hint-fade {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Cheatsheet */
+.tweaker-cheatsheet {
+  position: fixed;
+  inset: 0;
+  display: grid; place-items: center;
+  z-index: 100;
+  background: var(--scrim-strong);
+}
+.tweaker-cheatsheet[hidden] { display: none; }
+.tweaker-cheatsheet .panel {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: 20px 24px;
+  min-width: 360px;
+  display: flex; flex-direction: column;
+  gap: 10px;
+}
+.tweaker-cheatsheet h4 {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 4px;
+}
+.tweaker-cheatsheet ul {
+  list-style: none;
+  display: flex; flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+}
+.tweaker-cheatsheet kbd {
+  background: var(--bg-tinted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-bright);
+}
+.tweaker-cheatsheet .esc {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Demo label */
+.demo-label {
+  position: fixed;
+  bottom: 16px; right: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: color-mix(in oklch, var(--bg-elevated) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  z-index: 70;
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- ── SHELL: sidebar collapsed pill ── -->
+  <aside class="sidebar-pill" aria-label="Sidebar (collapsed, decorative)">
+    <div class="logo">M</div>
+    <div class="pill-icons">
+      <div class="pill-icon active" title="Home">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5 1 7v8h5v-5h4v5h5V7z"/></svg>
+      </div>
+      <div class="pill-icon" title="Projects">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/></svg>
+      </div>
+      <div class="pill-icon" title="Recents">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── SHELL: topbar ── -->
+  <header class="topbar">
+    <div class="topbar-breadcrumbs">/</div>
+    <div class="topbar-avatar">AG</div>
+  </header>
+
+  <!-- ── SHELL: app-main with dashboard ── -->
+  <div class="app-main">
+    <main class="dashboard">
+      <section class="section section-hero" data-section="hero">
+        <div class="hero"></div>
+      </section>
+      <section class="section section-recents" data-section="recents">
+        <div class="section-header">
+          <h2>Continue working</h2>
+          <span class="count-chip" id="recents-count">6 items</span>
+          <div class="section-header-spacer"></div>
+          <a class="link-action" href="#" onclick="return false">View all →</a>
+        </div>
+        <div class="recents-body"></div>
+      </section>
+      <section class="section section-projects" data-section="projects">
+        <div class="section-header">
+          <h2>Projects</h2>
+          <span class="count-chip" id="projects-count">6 projects</span>
+          <div class="section-header-spacer"></div>
+          <button class="btn-pill" onclick="return false">+ New project</button>
+        </div>
+        <div class="projects-body"></div>
+      </section>
+      <section class="section section-orphans" data-section="orphans">
+        <div class="section-header">
+          <h2>No project</h2>
+          <span class="count-chip" id="orphans-count">4 mockups</span>
+          <div class="section-header-spacer"></div>
+          <a class="link-action secondary" href="#" onclick="return false">Move into a project →</a>
+        </div>
+        <div class="orphans-body"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- ── TWEAKER: panel ── -->
+<aside class="tweaker" id="tweaker" aria-label="Tweaker panel">
+  <div class="tweaker-header" id="tweaker-header">
+    <div class="tweaker-handle">⋮⋮ Tweaker</div>
+    <div class="tweaker-actions">
+      <button id="tw-reset" title="Reset (R)">R</button>
+      <button id="tw-copy" title="Copy config">⧉<span class="copied-tooltip">Copied</span></button>
+      <button id="tw-collapse" title="Collapse">–</button>
+      <button id="tw-hide" title="Hide (T to restore)">×</button>
+    </div>
+  </div>
+  <div class="tweaker-body" id="tweaker-body">
+
+    <details open>
+      <summary><span class="caret">▸</span> Hero</summary>
+      <div class="knob-chips">
+        <button class="chip" data-knob="hero" data-variant="none">none</button>
+        <button class="chip" data-knob="hero" data-variant="minimal">minimal</button>
+        <button class="chip" data-knob="hero" data-variant="banner">banner</button>
+        <button class="chip" data-knob="hero" data-variant="stats">stats</button>
+      </div>
+    </details>
+
+    <details open>
+      <summary><span class="caret">▸</span> Recents</summary>
+      <div class="knob-chips">
+        <button class="chip" data-knob="recents" data-variant="list">list</button>
+        <button class="chip" data-knob="recents" data-variant="h-scroll">h-scroll</button>
+        <button class="chip" data-knob="recents" data-variant="grid">grid</button>
+        <button class="chip" data-knob="recents" data-variant="meta-heavy">meta-heavy</button>
+      </div>
+    </details>
+
+    <details open>
+      <summary><span class="caret">▸</span> Projects</summary>
+      <div class="knob-chips">
+        <button class="chip" data-knob="projects" data-variant="minimal">minimal</button>
+        <button class="chip" data-knob="projects" data-variant="thumb">thumb</button>
+        <button class="chip" data-knob="projects" data-variant="hero">hero</button>
+        <button class="chip" data-knob="projects" data-variant="glass">glass</button>
+      </div>
+    </details>
+
+    <details open>
+      <summary><span class="caret">▸</span> Orphans</summary>
+      <div class="knob-chips">
+        <button class="chip" data-knob="orphans" data-variant="grid">grid</button>
+        <button class="chip" data-knob="orphans" data-variant="h-scroll">h-scroll</button>
+        <button class="chip" data-knob="orphans" data-variant="list">list</button>
+        <button class="chip" data-knob="orphans" data-variant="bucket">bucket</button>
+      </div>
+    </details>
+
+    <hr>
+    <h3>Layout</h3>
+
+    <div class="tweaker-row">
+      <span class="label">Density</span>
+      <div class="segmented">
+        <button class="chip" data-knob="density" data-variant="cozy">Cozy</button>
+        <button class="chip" data-knob="density" data-variant="spacious">Spacious</button>
+      </div>
+    </div>
+
+    <div class="tweaker-row">
+      <span class="label">Width</span>
+      <div class="segmented">
+        <button class="chip" data-knob="width" data-variant="full">Full</button>
+        <button class="chip" data-knob="width" data-variant="centered">Centered</button>
+      </div>
+    </div>
+
+    <hr>
+    <h3>Section order</h3>
+
+    <ul class="tweaker-order" id="tweaker-order">
+      <li draggable="true" data-section="hero"><span class="grip">☰</span> Hero</li>
+      <li draggable="true" data-section="recents"><span class="grip">☰</span> Recents</li>
+      <li draggable="true" data-section="projects"><span class="grip">☰</span> Projects</li>
+      <li draggable="true" data-section="orphans"><span class="grip">☰</span> Orphans</li>
+    </ul>
+
+  </div>
+</aside>
+
+<button class="tweaker-pill" id="tweaker-pill" hidden>⚙ Tweaker · 7 knobs</button>
+
+<div class="tweaker-cheatsheet" id="tweaker-cheatsheet" hidden>
+  <div class="panel">
+    <h4>Tweaker shortcuts</h4>
+    <ul>
+      <li><kbd>T</kbd> toggle panel</li>
+      <li><kbd>R</kbd> reset to defaults</li>
+      <li><kbd>?</kbd> this help</li>
+      <li><kbd>Esc</kbd> dismiss</li>
+      <li>Drag header to move</li>
+      <li>Drag ☰ to reorder sections</li>
+    </ul>
+    <div class="esc">Press Esc or click outside to close.</div>
+  </div>
+</div>
+
+<div class="demo-label">2026-05-20 · projects-home-tweaker</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   DATA — placeholder fixture per spec §6
+   ───────────────────────────────────────────────────────────── */
+const DATA = {
+  user: { name: 'Alessandro', email: 'acamillo.goncalves@gmail.com' },
+  stats: { projects: 6, mockups: 41, annotations: 218 },
+  recents: [
+    { name: 'Onboarding flow v3',  path: 'Project Alpha · Auth',    updatedAt: '2h ago',     thumbHue: 165, orphan: false },
+    { name: 'Pricing — variant B', path: 'Helio · Marketing',       updatedAt: '5h ago',     thumbHue: 80,  orphan: false },
+    { name: 'Drone telemetry view',path: 'Ungrouped',               updatedAt: 'Yesterday',  thumbHue: 25,  orphan: true  },
+    { name: 'Settings · agents',   path: 'Project Alpha · Settings',updatedAt: '2d ago',     thumbHue: 220, orphan: false },
+    { name: 'Email digest sketch', path: 'Helio · Marketing',       updatedAt: '3d ago',     thumbHue: 290, orphan: false },
+    { name: 'Quick capture idea',  path: 'Ungrouped',               updatedAt: '5d ago',     thumbHue: 340, orphan: true  },
+  ],
+  projects: [
+    { name: 'Project Alpha',                            slug: 'alpha',   icon: '🎨', mockupCount: 12, folderCount: 3 },
+    { name: 'Helio',                                    slug: 'helio',   icon: '📐', mockupCount: 28, folderCount: 4 },
+    { name: 'Drone Console',                            slug: 'drone',   icon: '🚀', mockupCount: 7,  folderCount: 2 },
+    { name: 'Lumen Coffee Roastery — Spring Catalogue', slug: 'lumen',   icon: '🌊', mockupCount: 4,  folderCount: 1 },
+    { name: 'Vespera',                                  slug: 'vespera', icon: null,  mockupCount: 0,  folderCount: 0 },
+    { name: 'Orla',                                     slug: 'orla',    icon: null,  mockupCount: 2,  folderCount: 0 },
+  ],
+  orphans: [
+    { name: 'Untitled mockup 1', status: 'open',     thumbHue: 165, updatedAt: '4h ago'    },
+    { name: 'Quick capture #7',  status: 'open',     thumbHue: 80,  updatedAt: 'Yesterday' },
+    { name: 'Old hero variant',  status: 'resolved', thumbHue: 152, updatedAt: '6d ago'    },
+    { name: 'Scratch — pricing', status: 'archived', thumbHue: 80,  updatedAt: '14d ago'   },
+  ],
+};
+
+/* ─────────────────────────────────────────────────────────────
+   THUMB SVG helper
+   ───────────────────────────────────────────────────────────── */
+function thumbSvg(hue, w, h) {
+  const id = 'g' + Math.floor(Math.random() * 1e9);
+  const base = `oklch(40% 0.08 ${hue})`;
+  const tint = `oklch(60% 0.14 ${hue})`;
+  return `<svg class="thumb" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="${id}-top" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${tint}" stop-opacity="0.6"/>
+        <stop offset="60%" stop-color="${tint}" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="${id}-bot" cx="50%" cy="100%" r="80%">
+        <stop offset="0%" stop-color="oklch(0% 0 0)" stop-opacity="0.45"/>
+        <stop offset="100%" stop-color="oklch(0% 0 0)" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="${w}" height="${h}" fill="${base}"/>
+    <rect width="${w}" height="${h}" fill="url(#${id}-top)"/>
+    <rect width="${w}" height="${h}" fill="url(#${id}-bot)"/>
+  </svg>`;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RENDER: HERO
+   ───────────────────────────────────────────────────────────── */
+function renderHero(variant) {
+  const section = document.querySelector('.section-hero');
+  const host = section.querySelector('.hero');
+
+  if (variant === 'none') {
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+
+  if (variant === 'minimal') {
+    host.innerHTML = `
+      <div class="hero-text">
+        <h1>Good morning, Alessandro</h1>
+        <div class="sub">Tuesday, May 20 · 3 mockups updated since yesterday</div>
+      </div>`;
+    return;
+  }
+
+  if (variant === 'banner') {
+    host.innerHTML = `
+      <div class="hero-text">
+        <h1>Good morning, Alessandro</h1>
+        <div class="sub">Tuesday, May 20 · 3 mockups updated since yesterday</div>
+      </div>
+      <svg class="hero-blob" width="180" height="120" viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="blobA" cx="30%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="var(--accent-bright)" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="blobB" cx="75%" cy="70%" r="50%">
+            <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect width="180" height="120" rx="14" fill="oklch(18% 0.05 165)"/>
+        <rect width="180" height="120" rx="14" fill="url(#blobA)"/>
+        <rect width="180" height="120" rx="14" fill="url(#blobB)"/>
+      </svg>`;
+    return;
+  }
+
+  if (variant === 'stats') {
+    const { projects, mockups, annotations } = DATA.stats;
+    host.innerHTML = `
+      <div class="hero-text">
+        <h1>Good morning, Alessandro</h1>
+        <div class="stats-strip">
+          <span class="num">${projects}</span> projects
+          <span class="dot">·</span>
+          <span class="num">${mockups}</span> mockups
+          <span class="dot">·</span>
+          <span class="num">${annotations}</span> annotations
+        </div>
+      </div>`;
+    return;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RENDER: RECENTS
+   ───────────────────────────────────────────────────────────── */
+function renderRecents(variant) {
+  const host = document.querySelector('.recents-body');
+  host.className = 'recents-body ' + variant;
+  document.getElementById('recents-count').textContent = `${DATA.recents.length} items`;
+
+  if (variant === 'list') {
+    host.innerHTML = DATA.recents.map(r => `
+      <div class="recent-row">
+        ${thumbSvg(r.thumbHue, 56, 36)}
+        <div class="info">
+          <div class="name">${r.name}</div>
+          <div class="breadcrumb">${r.path}</div>
+        </div>
+        <div class="time">${r.updatedAt}</div>
+      </div>`).join('');
+    return;
+  }
+
+  if (variant === 'meta-heavy') {
+    host.innerHTML = DATA.recents.map(r => `
+      <div class="recent-row">
+        ${thumbSvg(r.thumbHue, 88, 56)}
+        <div class="info">
+          <div class="name">${r.name}</div>
+          <div class="breadcrumb">${r.path}</div>
+          <div class="meta-second">${(r.path.split(' · ')[0]) || 'Ungrouped'} · Last edited by you</div>
+        </div>
+        <div class="time">${r.updatedAt}</div>
+      </div>`).join('');
+    return;
+  }
+
+  // h-scroll + grid both use card shape; size of thumb differs
+  const isHScroll = variant === 'h-scroll';
+  const w = isHScroll ? 240 : 300;
+  const h = isHScroll ? 150 : 188;
+  host.innerHTML = DATA.recents.map(r => `
+    <div class="recent-card">
+      ${thumbSvg(r.thumbHue, w, h)}
+      <div class="meta-row">
+        <div class="name">${r.name}</div>
+        <div class="breadcrumb">${r.path}</div>
+        <div class="time">${r.updatedAt}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RENDER: PROJECTS
+   ───────────────────────────────────────────────────────────── */
+function defaultGlyph() {
+  // simple folder glyph for projects without an icon
+  return `<svg viewBox="0 0 16 16" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4.5a1.5 1.5 0 0 1 1.5-1.5h3l1.5 1.5h5A1.5 1.5 0 0 1 14.5 6v6A1.5 1.5 0 0 1 13 13.5H3A1.5 1.5 0 0 1 1.5 12V4.5z"/></svg>`;
+}
+function defaultGlyphSm() {
+  return `<svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4.5a1.5 1.5 0 0 1 1.5-1.5h3l1.5 1.5h5A1.5 1.5 0 0 1 14.5 6v6A1.5 1.5 0 0 1 13 13.5H3A1.5 1.5 0 0 1 1.5 12V4.5z"/></svg>`;
+}
+
+function projectHue(i) { return [165, 80, 25, 220, 290, 340][i % 6]; }
+
+function renderProjects(variant) {
+  const host = document.querySelector('.projects-body');
+  host.className = 'projects-body ' + variant;
+  document.getElementById('projects-count').textContent = `${DATA.projects.length} projects`;
+
+  host.innerHTML = DATA.projects.map((p, i) => {
+    const iconLg = p.icon ?? defaultGlyph();
+    const iconSm = p.icon ?? defaultGlyphSm();
+    const meta = `<span>${p.mockupCount}</span> mockups <span class="dot">·</span> <span>${p.folderCount}</span> folders`;
+    const hue = projectHue(i);
+
+    if (variant === 'minimal') {
+      return `
+        <article class="project-card minimal">
+          <div class="icon-tile">${iconLg}</div>
+          <div class="info">
+            <div class="name">${p.name}</div>
+            <div class="meta">${meta}</div>
+          </div>
+        </article>`;
+    }
+    if (variant === 'thumb') {
+      return `
+        <article class="project-card thumb">
+          ${thumbSvg(hue, 280, 140)}
+          <div class="card-body">
+            <span class="icon-glyph">${iconSm}</span>
+            <div class="info">
+              <div class="name">${p.name}</div>
+              <div class="meta">${meta}</div>
+            </div>
+          </div>
+        </article>`;
+    }
+    if (variant === 'hero') {
+      return `
+        <article class="project-card hero">
+          <div class="head">
+            <span class="icon-big">${iconLg}</span>
+            <div class="info">
+              <div class="name name-lg">${p.name}</div>
+              <div class="meta">${meta}</div>
+            </div>
+          </div>
+          <div class="mini-grid">
+            ${thumbSvg(hue, 80, 50)}
+            ${thumbSvg(hue + 30, 80, 50)}
+            ${thumbSvg(hue + 60, 80, 50)}
+          </div>
+        </article>`;
+    }
+    if (variant === 'glass') {
+      return `
+        <article class="project-card glass">
+          <div class="icon-tile">${iconLg}</div>
+          <div class="info">
+            <div class="name">${p.name}</div>
+            <div class="meta">${meta}</div>
+          </div>
+        </article>`;
+    }
+    return '';
+  }).join('');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RENDER: ORPHANS
+   ───────────────────────────────────────────────────────────── */
+function renderOrphans(variant) {
+  const host = document.querySelector('.orphans-body');
+  host.className = 'orphans-body ' + variant;
+  document.getElementById('orphans-count').textContent = `${DATA.orphans.length} mockups`;
+
+  if (variant === 'grid' || variant === 'h-scroll') {
+    host.innerHTML = DATA.orphans.map(o => `
+      <article class="orphan-card">
+        ${thumbSvg(o.thumbHue, 240, 160)}
+        <div class="body">
+          <div class="name">${o.name}</div>
+          <span class="status-badge ${o.status}">${o.status}</span>
+        </div>
+      </article>`).join('');
+    return;
+  }
+
+  if (variant === 'list') {
+    host.innerHTML = DATA.orphans.map(o => `
+      <div class="orphan-row">
+        ${thumbSvg(o.thumbHue, 40, 26)}
+        <div class="name">${o.name}</div>
+        <span class="status-badge ${o.status}">${o.status}</span>
+        <span class="time">${o.updatedAt}</span>
+      </div>`).join('');
+    return;
+  }
+
+  if (variant === 'bucket') {
+    const rows = DATA.orphans.map(o => `
+      <div class="orphan-row">
+        ${thumbSvg(o.thumbHue, 40, 26)}
+        <div class="name">${o.name}</div>
+        <span class="status-badge ${o.status}">${o.status}</span>
+        <span class="time">${o.updatedAt}</span>
+      </div>`).join('');
+    host.innerHTML = `
+      <details class="bucket-card">
+        <summary>
+          <div class="bucket-icon">↘</div>
+          <div>
+            <div class="bucket-title">Quick Drop</div>
+            <div class="bucket-meta">${DATA.orphans.length} orphan mockups · click to expand</div>
+          </div>
+          <span class="chevron">▸</span>
+        </summary>
+        <div class="bucket-list">${rows}</div>
+      </details>`;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   STATE + persistence
+   ───────────────────────────────────────────────────────────── */
+const DEFAULTS = {
+  hero: 'minimal', recents: 'h-scroll', projects: 'thumb', orphans: 'grid',
+  density: 'cozy', width: 'centered',
+  order: ['hero','recents','projects','orphans'],
+  panel: { x: null, y: null, collapsed: false, hidden: false }
+};
+const STORAGE_KEY = 'markup.ideia.projects-home.tweaker';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // shallow merge defaults to tolerate older payloads
+    return {
+      ...structuredClone(DEFAULTS),
+      ...parsed,
+      panel: { ...DEFAULTS.panel, ...(parsed.panel || {}) }
+    };
+  } catch { return null; }
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+}
+let state = loadState() ?? structuredClone(DEFAULTS);
+
+function applyState() {
+  document.documentElement.style.setProperty('--ideia-density', state.density === 'spacious' ? '1.18' : '1');
+  document.documentElement.style.setProperty('--ideia-content-max', state.width === 'full' ? '100%' : '1280px');
+  renderHero(state.hero);
+  renderRecents(state.recents);
+  renderProjects(state.projects);
+  renderOrphans(state.orphans);
+  applyOrder(state.order);
+  syncChipSelection();
+  applyOrderSelection();
+  applyPanelVisibility();
+  applyPanelPosition();
+}
+
+function applyOrder(order) {
+  order.forEach((key, i) => {
+    const el = document.querySelector(`.section[data-section="${key}"]`);
+    if (el) el.style.order = i;
+  });
+}
+
+function syncChipSelection() {
+  document.querySelectorAll('.chip[data-knob]').forEach(chip => {
+    const knob = chip.dataset.knob;
+    const variant = chip.dataset.variant;
+    const selected = state[knob] === variant;
+    chip.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    chip.classList.toggle('is-selected', selected);
+  });
+}
+
+function applyOrderSelection() {
+  const ul = document.getElementById('tweaker-order');
+  const byKey = new Map([...ul.querySelectorAll('li')].map(li => [li.dataset.section, li]));
+  state.order.forEach(key => {
+    const li = byKey.get(key);
+    if (li) ul.appendChild(li);
+  });
+}
+
+function applyPanelVisibility() {
+  const panel = document.getElementById('tweaker');
+  const pill  = document.getElementById('tweaker-pill');
+
+  if (state.panel.hidden) {
+    panel.hidden = true;
+    pill.hidden = true;
+    return;
+  }
+  if (state.panel.collapsed) {
+    panel.hidden = true;
+    pill.hidden = false;
+  } else {
+    panel.hidden = false;
+    pill.hidden = true;
+  }
+}
+
+function applyPanelPosition() {
+  const panel = document.getElementById('tweaker');
+  const pill  = document.getElementById('tweaker-pill');
+
+  if (state.panel.x == null || state.panel.y == null) {
+    // default snap to top-right
+    panel.style.left = '';
+    panel.style.top  = '';
+    panel.style.right = '16px';
+    panel.style.top   = '16px';
+    pill.style.left = '';
+    pill.style.top  = '';
+    pill.style.right = '16px';
+    pill.style.top   = '16px';
+    return;
+  }
+  panel.style.right = '';
+  panel.style.left = state.panel.x + 'px';
+  panel.style.top  = state.panel.y + 'px';
+  pill.style.right = '';
+  pill.style.left = state.panel.x + 'px';
+  pill.style.top  = state.panel.y + 'px';
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CHIP click delegation
+   ───────────────────────────────────────────────────────────── */
+document.getElementById('tweaker-body').addEventListener('click', e => {
+  const chip = e.target.closest('.chip[data-knob][data-variant]');
+  if (!chip) return;
+  const { knob, variant } = chip.dataset;
+  state[knob] = variant;
+  saveState();
+  // re-apply just what changed for snappier feel
+  if (knob === 'hero') renderHero(variant);
+  else if (knob === 'recents') renderRecents(variant);
+  else if (knob === 'projects') renderProjects(variant);
+  else if (knob === 'orphans') renderOrphans(variant);
+  else if (knob === 'density') document.documentElement.style.setProperty('--ideia-density', variant === 'spacious' ? '1.18' : '1');
+  else if (knob === 'width') document.documentElement.style.setProperty('--ideia-content-max', variant === 'full' ? '100%' : '1280px');
+  syncChipSelection();
+});
+
+/* ─────────────────────────────────────────────────────────────
+   HEADER drag (pointer events)
+   ───────────────────────────────────────────────────────────── */
+function attachDrag(elem, handle) {
+  let dragging = false;
+  let originX = 0, originY = 0;
+  let startX = 0,  startY = 0;
+  let pointerId = null;
+
+  handle.addEventListener('pointerdown', e => {
+    if (e.target.closest('button')) return; // don't drag from action buttons
+    dragging = true;
+    pointerId = e.pointerId;
+    const rect = elem.getBoundingClientRect();
+    startX = rect.left;
+    startY = rect.top;
+    originX = e.clientX;
+    originY = e.clientY;
+    handle.setPointerCapture(pointerId);
+    handle.style.cursor = 'grabbing';
+    elem.style.right = '';
+    elem.style.left = startX + 'px';
+    elem.style.top  = startY + 'px';
+    e.preventDefault();
+  });
+
+  handle.addEventListener('pointermove', e => {
+    if (!dragging || e.pointerId !== pointerId) return;
+    const dx = e.clientX - originX;
+    const dy = e.clientY - originY;
+    const w = elem.offsetWidth;
+    const h = elem.offsetHeight;
+    const maxX = window.innerWidth  - w - 8;
+    const maxY = window.innerHeight - h - 8;
+    let nx = Math.min(Math.max(8, startX + dx), maxX);
+    let ny = Math.min(Math.max(8, startY + dy), maxY);
+    elem.style.left = nx + 'px';
+    elem.style.top  = ny + 'px';
+  });
+
+  function end(e) {
+    if (!dragging || e.pointerId !== pointerId) return;
+    dragging = false;
+    try { handle.releasePointerCapture(pointerId); } catch {}
+    handle.style.cursor = '';
+    pointerId = null;
+    const moved = Math.hypot(e.clientX - originX, e.clientY - originY);
+    if (moved > 4) window.__justDragged = true;
+    state.panel.x = parseFloat(elem.style.left);
+    state.panel.y = parseFloat(elem.style.top);
+    saveState();
+    // sync the other surface (pill or panel) to the same coords
+    const other = elem.id === 'tweaker'
+      ? document.getElementById('tweaker-pill')
+      : document.getElementById('tweaker');
+    other.style.right = '';
+    other.style.left = state.panel.x + 'px';
+    other.style.top  = state.panel.y + 'px';
+  }
+  handle.addEventListener('pointerup', end);
+  handle.addEventListener('pointercancel', end);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PANEL actions: reset, copy, collapse, hide
+   ───────────────────────────────────────────────────────────── */
+document.getElementById('tw-reset').addEventListener('click', resetAll);
+document.getElementById('tw-copy').addEventListener('click', copyConfig);
+document.getElementById('tw-collapse').addEventListener('click', () => {
+  state.panel.collapsed = true;
+  saveState();
+  applyPanelVisibility();
+});
+document.getElementById('tw-hide').addEventListener('click', () => {
+  state.panel.hidden = true;
+  saveState();
+  applyPanelVisibility();
+  flashHint();
+});
+document.getElementById('tweaker-pill').addEventListener('click', () => {
+  // After a drag we suppress the synthetic click via __justDragged (set in drag end).
+  if (window.__justDragged) { window.__justDragged = false; return; }
+  state.panel.collapsed = false;
+  saveState();
+  applyPanelVisibility();
+});
+
+function resetAll() {
+  state = structuredClone(DEFAULTS);
+  saveState();
+  // clear inline positioning
+  const panel = document.getElementById('tweaker');
+  const pill  = document.getElementById('tweaker-pill');
+  panel.style.left = ''; panel.style.top = ''; panel.style.right = '';
+  pill.style.left  = ''; pill.style.top  = ''; pill.style.right  = '';
+  applyState();
+}
+
+async function copyConfig() {
+  const cfg = {
+    hero: state.hero, recents: state.recents, projects: state.projects, orphans: state.orphans,
+    density: state.density, width: state.width, order: state.order
+  };
+  const text = JSON.stringify(cfg);
+  let ok = false;
+  try {
+    await navigator.clipboard.writeText(text);
+    ok = true;
+  } catch {
+    // fallback: temporary textarea selection
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { ok = document.execCommand('copy'); } catch {}
+    document.body.removeChild(ta);
+  }
+  const btn = document.getElementById('tw-copy');
+  const tip = btn.querySelector('.copied-tooltip');
+  tip.textContent = ok ? 'Copied' : 'Copy failed';
+  tip.classList.add('show');
+  setTimeout(() => tip.classList.remove('show'), 1200);
+}
+
+function flashHint() {
+  const old = document.querySelector('.tweaker-hint');
+  if (old) old.remove();
+  const el = document.createElement('div');
+  el.className = 'tweaker-hint';
+  el.textContent = 'Press T for tweaker';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2100);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   KEYBOARD shortcuts
+   ───────────────────────────────────────────────────────────── */
+window.addEventListener('keydown', e => {
+  const tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+  if (e.key === 't' || e.key === 'T') {
+    state.panel.hidden = !state.panel.hidden;
+    // when restoring, also exit collapsed-pill so the panel itself shows
+    if (!state.panel.hidden) state.panel.collapsed = false;
+    saveState();
+    applyPanelVisibility();
+    e.preventDefault();
+    return;
+  }
+  if (e.key === 'r' || e.key === 'R') {
+    resetAll();
+    e.preventDefault();
+    return;
+  }
+  if (e.key === '?') {
+    document.getElementById('tweaker-cheatsheet').hidden = false;
+    e.preventDefault();
+    return;
+  }
+  if (e.key === 'Escape') {
+    const ch = document.getElementById('tweaker-cheatsheet');
+    if (!ch.hidden) { ch.hidden = true; e.preventDefault(); }
+  }
+});
+document.getElementById('tweaker-cheatsheet').addEventListener('click', e => {
+  if (e.target.id === 'tweaker-cheatsheet') {
+    e.currentTarget.hidden = true;
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION-ORDER drag
+   ───────────────────────────────────────────────────────────── */
+(function attachOrderDrag() {
+  const ul = document.getElementById('tweaker-order');
+  let dragSrc = null;
+
+  ul.addEventListener('dragstart', e => {
+    const li = e.target.closest('li[draggable="true"]');
+    if (!li) return;
+    dragSrc = li;
+    li.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', li.dataset.section); } catch {}
+  });
+
+  ul.addEventListener('dragend', () => {
+    [...ul.querySelectorAll('li')].forEach(li => li.classList.remove('dragging','drop-above','drop-below'));
+    dragSrc = null;
+  });
+
+  ul.addEventListener('dragover', e => {
+    const over = e.target.closest('li[draggable="true"]');
+    if (!over || over === dragSrc) return;
+    e.preventDefault();
+    [...ul.querySelectorAll('li')].forEach(li => li.classList.remove('drop-above','drop-below'));
+    const rect = over.getBoundingClientRect();
+    const before = (e.clientY - rect.top) < rect.height / 2;
+    over.classList.add(before ? 'drop-above' : 'drop-below');
+  });
+
+  ul.addEventListener('drop', e => {
+    e.preventDefault();
+    const over = e.target.closest('li[draggable="true"]');
+    if (!over || !dragSrc || over === dragSrc) return;
+    const rect = over.getBoundingClientRect();
+    const before = (e.clientY - rect.top) < rect.height / 2;
+    if (before) ul.insertBefore(dragSrc, over);
+    else ul.insertBefore(dragSrc, over.nextSibling);
+    state.order = [...ul.querySelectorAll('li')].map(li => li.dataset.section);
+    saveState();
+    document.body.classList.add('reordering');
+    setTimeout(() => document.body.classList.remove('reordering'), 220);
+    applyOrder(state.order);
+  });
+})();
+
+/* ─────────────────────────────────────────────────────────────
+   BOOT
+   ───────────────────────────────────────────────────────────── */
+function boot() {
+  attachDrag(document.getElementById('tweaker'),      document.getElementById('tweaker-header'));
+  attachDrag(document.getElementById('tweaker-pill'), document.getElementById('tweaker-pill'));
+  applyState();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
+</script>
+</body>
+</html>
