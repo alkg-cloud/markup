@@ -53,11 +53,33 @@ Collapsible sidebar shell (`Sidebar.tsx`). Present on every authenticated worksp
 | `sidebar-logo` | "Markup." text with capital M, accent-green dot. Animates to "M." on collapse via `max-width` + opacity transition. Full text fades out at 50% of morph-dur (ease-exit), fades in with 40% delay on expand (ease-standard) | expanded ("Markup."), collapsed ("M.") |
 | `sidebar-collapse-toggle` | Toggle button to expand/collapse. Icon changes: VscLayoutSidebarLeftOff (expanded) → VscLayoutSidebarLeft (collapsed). Height: 14 px. Remains visible as floating button next to logo in collapsed state | default, hover (`--surface-hover` bg), focus-visible, active |
 | `sidebar-scroll` | Scrollable tree area. Phased fade: opacity fades out at 35% of morph-dur (ease-exit) before geometry morphs. On expand, fades in at 55% delay. `pointer-events: none` + `overflow: hidden` when collapsed | visible (expanded), hidden (collapsed) |
-| `sidebar-footer` | Footer with "+ New Project" button. Same phased fade as scroll area | visible (expanded), hidden (collapsed) |
-| `sidebar-new-project-btn` | "+ New Project" button in footer | default, hover, focus-visible, active; opens `new-project-dialog` |
+| `sidebar-footer` | Footer with "+ New Mockup" pill (replaces the former "+ New Project" CTA — project creation moves to `sidebar-projects-header`'s `+`). Same phased fade as scroll area | visible (expanded), hidden (collapsed) |
+| `sidebar-new-mockup-btn` | "+ New Mockup" pill in footer. Accent text on `--btn-bg`, `--radius-pill`. Tooltip `Upload mockup · Ctrl+U`. Opens the OS file picker; on selection routes to `new-mockup-dialog` | default, hover (`--btn-bg-hover` bg, `--accent-overlay-mid` border, `--accent-bright` text), focus-visible, active |
 | `sidebar-pill-position` | Collapsed pill position: `--pill-top: 5px`, `--pill-left: 5px` | pill has border-radius pill, elevated shadow, translucent bg with backdrop-filter |
 | `sidebar-mobile-drawer` | `<dialog>` drawer on viewports < 768 px | closed, open; focus-trapped, scrim backdrop |
 | `sidebar-mobile-hamburger` | Hamburger button to open mobile drawer | default, hover, focus-visible, active |
+
+## sidebar-projects-header
+
+Fixed-top "Projects" pill header inside the sidebar — replaces the prior inline `PROJECTS` section label. 32 px tall, mono uppercase, `--text-muted`, sits in a `--bg-card` pill with `--border-subtle`. The header is the single anchor for the section + the home of the project-creation `+` affordance, freeing the footer for the new-mockup CTA.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `sidebar-projects-header` | "Projects" pill at the top of the sidebar scroll area. 32 px tall, mono uppercase 11 px / 700, letter-spacing 0.12em, `--text-muted`. Three placement strategies share the same visual surface — only the scroll relationship differs | rendered above the tree on every workspace route; hidden when sidebar is collapsed (phased fade with `sidebar-scroll`) |
+| `sidebar-projects-header-sticky-top` | Default — header is `position: sticky; top: 0` inside the sidebar scroll, so it scrolls with the first batch then locks at the top | default placement; collapses with the scroll fade |
+| `sidebar-projects-header-plus-button` | 22 × 22 `+` icon button on the right of the pill. `--text-dim` idle, `--accent` on hover. Tooltip `New project · Ctrl+Shift+P`. Opens `new-project-dialog` in the `footer-button` and `sticky-top` variants; opens a 2-item action menu in the `header-plus` and `both` CTA placements | default, hover (`--surface-hover` bg + `--accent` text), focus-visible, active, menu-open (sticky `--accent-overlay-soft` bg) |
+| `sidebar-projects-header-sempre-visivel` | Header rendered outside the scroll container — truly fixed via the sidebar's flex layout. The scroll never overlays the header | always visible; no sticky behaviour |
+| `sidebar-projects-header-sticky-pill` | Variant — header is a floating glass pill (`--surface-glass-bg` + `blur(16px) saturate(140%)`, `--border` border) layered over the scroll area; scroll content slides under it | float over scroll; glass surface |
+
+## sidebar-new-mockup-cta
+
+The "+ New Mockup" affordance — the upload entry point reachable from the sidebar. Three placement strategies determine whether it lives in the footer, in the Projects header `+`, or in both.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `sidebar-new-mockup-cta-footer` | Default — footer pill button (`sidebar-new-mockup-btn`). Opens the OS file picker; on selection routes to `new-mockup-dialog`. Shortcut `Ctrl+U` (or `⌘U` on Apple). The footer is the canonical home of the CTA | default, hover, focus-visible, active |
+| `sidebar-new-mockup-cta-header-plus` | The Projects pill `+` opens a 2-item action menu — **New project** (opens `new-project-dialog`) and **New mockup** (opens the file picker). The footer pill is hidden in this placement | menu closed, menu open (popover) |
+| `sidebar-new-mockup-cta-both` | The footer pill is present AND the header `+` opens the 2-item menu — redundant, both paths shipped | both visible |
 
 ## sidebar-tree
 
@@ -262,6 +284,47 @@ Empty state component for projects and folders (`EmptyState.tsx`).
 | `empty-state-cta-primary` | "Upload mockup" accent button (`btn-accent`) | default, hover (`--accent-bright`), focus-visible, active |
 | `empty-state-cta-secondary` | "Create folder" / "Create subfolder" secondary button (`btn-secondary`) | default, hover (`--btn-bg-hover` + `--border-strong`), focus-visible, active |
 | `empty-state-sidebar-inline` | Inline "Empty folder" text in sidebar when expanded folder has no children | shown below empty expanded folder |
+
+## drop-overlay
+
+Full-bleed overlay that surfaces while the user drags a file over the workspace window. Drops route to `new-mockup-dialog`; dragleave dismisses with a 120 ms fade. Sits at `z-index: 90` — above sidebar, topbar, content, and any mockup iframe.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `drop-overlay` | Container that mounts on `dragenter` of a file over the window, dismounts on `dragleave` or after the drop hands off to `new-mockup-dialog`. Z-index 90 (above tweaker 80, dialog scrim ~50) | hidden (idle), visible (dragging file), entering (220 ms fade), exiting (120 ms fade) |
+| `drop-overlay-glass-full` | Default — full-bleed scrim with `--scrim-glass-bg` + `blur(16px) saturate(140%)`. Centred panel `--surface-glass-bg` glass with dashed `--accent-overlay-mid` border (2 px), cloud-up icon, title `Drop your HTML here`, sub-line `Will be added to <breadcrumb-path>` (mono, `--text-dim`) | visible variant |
+| `drop-overlay-dashed-border` | No scrim; only a dashed `--accent` 2 px border over the section/iframe target plus a floating glass chip top-right (`Drop here · <path>` in `--accent`) | visible variant |
+| `drop-overlay-scrim-leve` | Same panel as `glass-full` but the scrim uses `blur(4px)` and 40 % opacity — less imposing | visible variant |
+| `drop-overlay-hybrid` | Dashed `--accent-overlay-mid` border on the section target combined with a translucent, compact (~340 px wide) centre chip | visible variant |
+
+## new-mockup-dialog
+
+Dialog that surfaces after a successful drop OR after the file picker (sidebar footer or empty-state CTA) returns a file. Carries the parsed filename as Name, pre-selects destination by view inference, and offers a Replace-as-new-version toggle when the user dropped on a mockup view.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `new-mockup-dialog` | Glass surface, 520 px wide (680 px on the preview variant), standard scrim. Esc cancels. `Add` disables and shows inline progress while uploading | closed, open, submitting, success-redirect, error |
+| `new-mockup-dialog-name` | Name input (uncontrolled, pre-populated by `filename.replace(/\.html?$|\.zip$/, '')`). Validates against `URL_SAFE_NAME_PATTERN` | default, focused (`--accent` border), invalid (`--danger` border + inline `name_not_url_safe` alert above the body), submitting |
+| `new-mockup-dialog-project-picker` | Project selector — native `<select>` in the default layout. Pre-selected by view inference (current project, or `Unsorted` at `/`) | default, focused, changed (resets the folder picker) |
+| `new-mockup-dialog-folder-picker` | Folder selector with depth indentation (`Hero`, `Hero / Section`, `Hero / Section / Variants`). Pre-selected by view inference. Native `<select>` or inline option-list per layout variant | default, focused, depth-indented options |
+| `new-mockup-dialog-preview` | 320 × 180 sandboxed iframe (or static SVG gradient placeholder) showing a preview of the dropped HTML. Rendered only in the `nome+pickers+preview` layout variant | hidden, visible (iframe loaded), error (no preview) |
+| `new-mockup-dialog-replace-toggle` | Radio pair `Add as new mockup` / `Replace as new version of "<name>"`. Visible only when the drop happened on a mockup view. Default selection: `Add`. The `hidden-until-edit` sub-variant collapses to a single link `Or replace this mockup with a new version` until clicked | hidden (not on mockup view), visible-add (default), visible-replace (selected), collapsed-link, expanded |
+| `new-mockup-dialog-file-chip` | Small chip in the header showing the file the user is uploading: `<icon> <name> · <size> · <type>` (e.g. `pricing-v3.html · 12.4 KB · HTML`). Three icon variants — `color-coded` (orange HTML / blue ZIP, default), `mono` (`--text-dim` glyph for both), `no-icon` (text only) | color-coded, mono, no-icon |
+| `new-mockup-dialog-inline-pickers` | Layout variant where Project + Folder use chip rows (`picker-chip`) instead of native `<select>`. Selected chip has `--accent-soft` bg + `--accent-overlay-mid` border + `--accent` text | default, hover, active (selected) |
+| `new-mockup-dialog-progress` | Inline progress bar above the footer buttons while the upload is in flight. Indeterminate by default, determinate if `xhr.upload.progress` is available | hidden, indeterminate, determinate |
+| `new-mockup-dialog-layout-nome-only` | Layout variant — only the Name input, no pickers. Submits to the inferred project/folder silently | visible variant |
+| `new-mockup-dialog-layout-pickers` | Default layout — Name + Project + Folder (native selects) | visible variant |
+
+## empty-state-uploads
+
+Upload-focused empty state — replaces the content of any workspace view when there are zero mockups (or zero projects) to show. Three sub-variants determine whether the user lands on a giant drop zone, a discreet pill, or both. Context-aware copy adapts to All Projects / Project / Folder.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `empty-state-uploads` | Container that swaps in for the content grid when the current view has nothing to render. Clicking anywhere on the drop zone opens the OS file picker; drop opens `new-mockup-dialog` | visible when current view has zero mockups (and, at `/`, zero projects + zero orphans) |
+| `empty-state-drop-zone` | Default — large dashed `--accent-overlay-mid` border panel on `oklch(20% 0.05 165 / 0.18)` surface, cloud-up icon, title + sub. Copy adapts by context: All Projects = `Drop your first mockup here / or click to choose a file`; Project = `No mockups in <project> yet / Drop an HTML or click to upload to this project`; Folder = `<folder> is empty / Drop an HTML or click to upload to this folder` | default, hover (panel border brightens to `--accent`), focus-visible, drag-over (`--accent-overlay-mid` background pulse) |
+| `empty-state-pill-cta` | Discreet — pill button `+ Upload mockup` (accent text on `--btn-bg`) + sub-line `or drop anywhere on the page` (variation `or drop anywhere · saves to <project|folder>` in scoped views) | default, hover, focus-visible, active |
+| `empty-state-both` | Combines the giant drop zone with a `+ New project` chip in the topbar — two paths surfaced simultaneously. Only used at `/` when the user has zero projects | visible at `/` with no content |
 
 ## loading-state
 

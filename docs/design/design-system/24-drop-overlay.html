@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>24 — Drop Overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --scrim-glass-bg:oklch(0% 0 0/0.2);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-pill:9999px;
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
+  background-attachment:fixed;min-height:100vh;
+}
+.page{padding:48px 32px 96px;max-width:1200px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.frame{
+  position:relative;background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  height:360px;overflow:hidden;
+}
+.frame-meta{
+  position:absolute;left:10px;top:10px;z-index:2;
+  font-family:var(--font-mono);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+  background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-xs);padding:3px 7px;
+}
+.frame-stage{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+}
+/* Fake page content for context behind the overlay */
+.stage-content{
+  display:flex;gap:8px;padding:18px;width:100%;height:100%;align-items:flex-start;
+}
+.fake-card{
+  flex:1;height:120px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  padding:10px;
+}
+.fake-card .line{height:8px;background:var(--surface-active);border-radius:2px;margin-bottom:6px}
+.fake-card .line:nth-child(1){width:60%}
+.fake-card .line:nth-child(2){width:90%;background:var(--surface-hover)}
+.fake-card .line:nth-child(3){width:40%;background:var(--surface-hover)}
+
+/* ─── Scrim variants ─── */
+.scrim-glass{
+  position:absolute;inset:0;
+  background:var(--scrim-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+  display:flex;align-items:center;justify-content:center;padding:24px;
+}
+.scrim-leve{
+  position:absolute;inset:0;
+  background:oklch(0% 0 0/0.4);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;padding:24px;
+}
+
+/* ─── Drop panel (centered, glass) ─── */
+.drop-panel{
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  padding:28px 32px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;
+  box-shadow:var(--shadow-popover);
+  width:min(440px,calc(100% - 32px));position:relative;
+}
+.drop-panel.compact{width:min(340px,calc(100% - 32px));padding:18px 22px;gap:8px}
+.drop-panel::before{
+  content:'';position:absolute;inset:6px;border:2px dashed var(--accent-overlay-mid);border-radius:calc(var(--radius-md) - 4px);
+  pointer-events:none;animation:dashCycle 4s linear infinite;
+}
+@keyframes dashCycle{
+  0%{background-position:0 0}
+  100%{background-position:24px 0}
+}
+.drop-icon{
+  width:44px;height:44px;border-radius:50%;
+  background:var(--accent-overlay-soft);
+  display:flex;align-items:center;justify-content:center;color:var(--accent);
+}
+.drop-panel.compact .drop-icon{width:34px;height:34px}
+.drop-title{
+  font-size:18px;font-weight:700;color:var(--text-bright);letter-spacing:-0.01em;
+}
+.drop-panel.compact .drop-title{font-size:14px}
+.drop-sub{
+  font-family:var(--font-mono);font-size:11px;color:var(--text-dim);
+}
+
+/* ─── Floating chip variant (dashed-border) ─── */
+.frame.dashed::after{
+  content:'';position:absolute;inset:14px;border:2px dashed var(--accent);border-radius:var(--radius-md);
+  pointer-events:none;
+}
+.drop-chip{
+  position:absolute;top:14px;right:14px;z-index:3;
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--accent-overlay-mid);
+  border-radius:var(--radius-pill);padding:6px 12px;
+  font-family:var(--font-mono);font-size:11px;color:var(--accent);
+  box-shadow:var(--shadow-popover);
+}
+.drop-chip svg{color:var(--accent)}
+
+/* ─── Hybrid: dashed + centre chip ─── */
+.frame.hybrid::after{
+  content:'';position:absolute;inset:14px;border:2px dashed var(--accent-overlay-mid);border-radius:var(--radius-md);
+  pointer-events:none;
+}
+
+/* Footer */
+.footer-note{
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--border-subtle);
+  font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.7;
+}
+</style>
+</head>
+<body>
+<div class="page" data-ds-component="drop-overlay">
+  <h1 class="h1">24 — Drop Overlay</h1>
+  <p class="lede">Full-bleed overlay that appears the moment a file enters the window during drag-n-drop upload. Sits at <code style="font-family:var(--font-mono);font-size:12px">z-index: 90</code> above sidebar, topbar, content, and any mockup iframe. Dismisses on dragleave (120 ms fade) or routes to the New Mockup dialog on drop. Four variants cover the range from imposing scrim to discreet chip.</p>
+
+  <div class="section">
+    <div class="section-title">Variants</div>
+    <div class="grid">
+
+      <!-- glass-full (default) -->
+      <div class="frame" aria-label="glass-full">
+        <div class="frame-meta">glass-full · default</div>
+        <div class="frame-stage">
+          <div class="stage-content">
+            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+          </div>
+        </div>
+        <div class="scrim-glass">
+          <div class="drop-panel">
+            <div class="drop-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+            </div>
+            <div class="drop-title">Drop your HTML here</div>
+            <div class="drop-sub">Will be added to · Lumen Coffee › Hero</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- dashed-border -->
+      <div class="frame dashed" aria-label="dashed-border">
+        <div class="frame-meta">dashed-border</div>
+        <div class="frame-stage">
+          <div class="stage-content">
+            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+          </div>
+        </div>
+        <div class="drop-chip">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+          Drop here · Lumen Coffee › Hero
+        </div>
+      </div>
+
+      <!-- scrim-leve -->
+      <div class="frame" aria-label="scrim-leve">
+        <div class="frame-meta">scrim-leve</div>
+        <div class="frame-stage">
+          <div class="stage-content">
+            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+          </div>
+        </div>
+        <div class="scrim-leve">
+          <div class="drop-panel">
+            <div class="drop-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+            </div>
+            <div class="drop-title">Drop your HTML here</div>
+            <div class="drop-sub">Will be added to · Lumen Coffee › Hero</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- hybrid -->
+      <div class="frame hybrid" aria-label="hybrid">
+        <div class="frame-meta">hybrid</div>
+        <div class="frame-stage">
+          <div class="stage-content">
+            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+          </div>
+        </div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:oklch(0% 0 0/0.18);backdrop-filter:blur(6px) saturate(140%);-webkit-backdrop-filter:blur(6px) saturate(140%)">
+          <div class="drop-panel compact">
+            <div class="drop-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+            </div>
+            <div class="drop-title">Drop your HTML here</div>
+            <div class="drop-sub">Lumen Coffee › Hero</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Tokens: <code>--surface-glass-bg</code>, <code>--scrim-glass-bg</code>, <code>--accent</code>, <code>--accent-overlay-mid</code>, <code>--border</code>.
+    Filter: <code>blur(16px) saturate(140%)</code> on glass variants, <code>blur(4px)</code> on scrim-leve.
+    Motion: 120 ms fade-out on dragleave; entry 220 ms (<code>--motion-base</code>) with <code>--ease-standard</code>.
+    Z-index: 90 — above tweaker (80), dialog scrim (~50), sidebar (100 except when collapsed pill).
+  </div>
+</div>
+</body>
+</html>
