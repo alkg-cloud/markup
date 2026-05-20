@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>21 — Invites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--sidebar-collapsed-width:52px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0% 0 0/0.45);--shadow-md:0 6px 16px oklch(0% 0 0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
+.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
+.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px}
+
+.list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.count{font-size:13px;color:var(--text-dim)}
+.btn-action{display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);border-radius:var(--radius-sm);color:var(--accent);font-size:13px;font-weight:600;transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast)}
+.btn-action:hover{background:var(--accent-overlay-mid);border-color:var(--accent);color:var(--accent-bright)}
+.list{display:flex;flex-direction:column;gap:8px}
+
+.card{display:flex;align-items:flex-start;gap:12px;padding:16px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-card);transition:border-color var(--motion-fast)}
+.card:hover{border-color:var(--border)}
+.card.is-terminal{opacity:0.65}
+.card-icon{width:36px;height:36px;border-radius:var(--radius-sm);background:var(--accent-overlay-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card.is-state-used .card-icon{background:rgba(255,255,255,0.04);color:var(--text-muted)}
+.card.is-state-expired .card-icon,.card.is-state-revoked .card-icon{background:var(--danger-soft);color:var(--danger)}
+.card-info{flex:1;min-width:0}
+.card-title{font-size:14px;font-weight:600;color:var(--text-bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-meta{font-size:11px;color:var(--text-muted);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.card-meta .sep{color:var(--text-muted);opacity:0.5}
+.card-meta .meta-state{color:var(--text-dim)}
+.card.is-state-expired .card-meta .meta-state,.card.is-state-revoked .card-meta .meta-state{color:var(--danger)}
+.card-token{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:6px;background:var(--bg-elevated);padding:4px 8px;border-radius:var(--radius-xs);border:1px solid var(--border-subtle);display:inline-block}
+.card.is-terminal .card-token{display:none}
+.card-actions{display:flex;gap:4px;flex-shrink:0}
+.card-action{width:28px;height:28px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast)}
+.card-action:hover{background:var(--surface-hover);color:var(--text)}
+.card-action.danger:hover{background:var(--danger-soft);color:var(--danger)}
+.card.is-terminal .card-action{display:none}
+</style>
+</head>
+<body>
+
+<div class="demo" style="padding:32px;max-width:600px">
+  <div class="title">Invites</div>
+  <div class="subtitle">Generate invite links for new teammates.</div>
+
+  <div class="list-header">
+    <span class="count">5 invites</span>
+    <button class="btn-action">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+      New Invite
+    </button>
+  </div>
+
+  <div class="list">
+
+    <!-- Unused, email-bound -->
+    <div class="card is-state-unused">
+      <div class="card-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
+      </div>
+      <div class="card-info">
+        <div class="card-title">Invite for bea@studio.io</div>
+        <div class="card-meta">
+          <span>Created 2 hours ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Expires in 6d 22h</span>
+        </div>
+        <div class="card-token">mki_••••••••••••a7b3</div>
+      </div>
+      <div class="card-actions">
+        <button class="card-action" title="Copy link">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
+        </button>
+        <button class="card-action danger" title="Revoke">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Unused, open -->
+    <div class="card is-state-unused">
+      <div class="card-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
+      </div>
+      <div class="card-info">
+        <div class="card-title">Open invite</div>
+        <div class="card-meta">
+          <span>Created yesterday</span><span class="sep">·</span><span>Admin</span><span class="sep">·</span><span class="meta-state">Expires in 29d</span>
+        </div>
+        <div class="card-token">mki_••••••••••••f2e8</div>
+      </div>
+      <div class="card-actions">
+        <button class="card-action" title="Copy link">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
+        </button>
+        <button class="card-action danger" title="Revoke">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Used -->
+    <div class="card is-state-used is-terminal">
+      <div class="card-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M14.431 3.323l-8.47 10-.79-.036-3.35-4.77.818-.574 2.978 4.24L13.668 2.681l.763.642z"/></svg>
+      </div>
+      <div class="card-info">
+        <div class="card-title">Invite for marco@studio.io</div>
+        <div class="card-meta">
+          <span>Created 5 days ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Used 3 days ago by marco@studio.io</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expired -->
+    <div class="card is-state-expired is-terminal">
+      <div class="card-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>
+      </div>
+      <div class="card-info">
+        <div class="card-title">Open invite</div>
+        <div class="card-meta">
+          <span>Created 10 days ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Expired 3 days ago</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revoked -->
+    <div class="card is-state-revoked is-terminal">
+      <div class="card-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>
+      </div>
+      <div class="card-info">
+        <div class="card-title">Invite for sam@studio.io</div>
+        <div class="card-meta">
+          <span>Created 2 weeks ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Revoked yesterday</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="demo-label">21 — Invites</div>
+</body>
+</html>

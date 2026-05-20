@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>23 — Invite Signup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--motion-fast:160ms;--motion-base:220ms;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--shadow-sm:0 2px 6px oklch(0% 0 0/0.45);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+input{font-family:inherit;color:inherit}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
+.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
+.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px;max-width:600px}
+.row{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.col-label{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
+
+.signup-frame{display:flex;flex-direction:column;align-items:center;padding:32px;background:repeating-linear-gradient(135deg,oklch(12% 0.025 165) 0 18px,oklch(11% 0.02 165) 18px 36px);border:1px solid var(--border-subtle);border-radius:var(--radius-md)}
+.wordmark{font-family:var(--font-body);font-weight:800;font-size:28px;letter-spacing:-0.025em;color:var(--text-bright);margin-bottom:20px;display:inline-flex;align-items:baseline}
+.wordmark .dot{color:var(--accent);font-size:32px;line-height:0.4;margin-left:1px}
+
+.signup-card{width:380px;max-width:calc(100% - 32px);padding:28px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-card);display:flex;flex-direction:column;gap:16px;box-shadow:var(--shadow-sm)}
+.signup-h1{font-size:20px;font-weight:700;color:var(--text-bright);line-height:1.2}
+.signup-preamble{font-size:13px;color:var(--text-dim);line-height:1.5}
+
+.field{display:block}
+.field-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;display:block}
+.signup-input{width:100%;height:36px;padding:0 12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:var(--text-bright);outline:none;transition:border-color var(--motion-fast),box-shadow var(--motion-fast)}
+.signup-input:focus{border-color:var(--accent-bright);box-shadow:0 0 0 3px var(--accent-soft)}
+.field-hint{display:block;margin-top:6px;font-size:11px;line-height:1.4;color:var(--text-muted)}
+
+.signup-submit{width:100%;height:40px;background:var(--accent);color:var(--bg);font-size:13px;font-weight:700;letter-spacing:0.02em;border-radius:var(--radius-sm);transition:background var(--motion-fast)}
+.signup-submit:hover{background:var(--accent-bright)}
+.signup-error{padding:8px 12px;border-radius:var(--radius-xs);background:var(--danger-soft);color:var(--danger);font-size:12px;line-height:1.4}
+.signup-foot{font-size:12px;color:var(--text-muted);margin-top:20px;letter-spacing:0.01em}
+
+/* Warning-card (terminal states) */
+.warning-card{width:380px;max-width:calc(100% - 32px);padding:28px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-card);display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;box-shadow:var(--shadow-sm)}
+.warning-icon{width:28px;height:28px;border-radius:var(--radius-sm);background:var(--danger-soft);color:var(--danger);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.warning-title{font-size:16px;font-weight:700;color:var(--text-bright)}
+.warning-body{font-size:13px;color:var(--text-dim);line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="demo" style="padding:32px;max-width:920px">
+  <div class="title">Invite Signup</div>
+  <div class="subtitle">Public route <code style="font-family:var(--font-mono);font-size:12px;color:var(--text)">/invite/&lt;token&gt;</code>. Mirrors the setup-page structure. Open and email-bound invites are visually indistinguishable at rest — the only signal of a bound invite is the helper text under the email field and the explicit mismatch error on submit. Four terminal states share one warning-card template.</div>
+
+  <div class="row">
+
+    <!-- Open / bound (idêntico em repouso, com helper text só no bound) -->
+    <div>
+      <div class="col-label">Email-bound, clean</div>
+      <div class="signup-frame">
+        <div class="wordmark">Markup<span class="dot">.</span></div>
+
+        <div class="signup-card">
+          <div class="signup-h1">Create your account</div>
+          <div class="signup-preamble">You were invited to Markup.</div>
+
+          <div class="field">
+            <label class="field-label" for="signup-email">Email</label>
+            <input class="signup-input" id="signup-email" type="email" placeholder="you@company.com">
+            <span class="field-hint">Use the email your admin used to invite you.</span>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="signup-password">Password</label>
+            <input class="signup-input" id="signup-password" type="password" placeholder="">
+            <span class="field-hint">At least 8 characters.</span>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="signup-name">Name</label>
+            <input class="signup-input" id="signup-name" type="text" placeholder="Your name">
+          </div>
+
+          <button class="signup-submit">Create account</button>
+        </div>
+
+        <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
+      </div>
+    </div>
+
+    <!-- Email mismatch -->
+    <div>
+      <div class="col-label">Email-bound, mismatch</div>
+      <div class="signup-frame">
+        <div class="wordmark">Markup<span class="dot">.</span></div>
+
+        <div class="signup-card">
+          <div class="signup-h1">Create your account</div>
+          <div class="signup-preamble">You were invited to Markup.</div>
+
+          <div class="field">
+            <label class="field-label" for="signup-email-2">Email</label>
+            <input class="signup-input" id="signup-email-2" type="email" value="alex@x.com">
+            <span class="field-hint">Use the email your admin used to invite you.</span>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="signup-password-2">Password</label>
+            <input class="signup-input" id="signup-password-2" type="password">
+            <span class="field-hint">At least 8 characters.</span>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="signup-name-2">Name</label>
+            <input class="signup-input" id="signup-name-2" type="text" placeholder="Your name">
+          </div>
+
+          <div class="signup-error">Email doesn't match this invite. Use the email your admin invited.</div>
+
+          <button class="signup-submit">Create account</button>
+        </div>
+
+        <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
+      </div>
+    </div>
+
+    <!-- Terminal state -->
+    <div>
+      <div class="col-label">Terminal state (expired / used / revoked / disabled)</div>
+      <div class="signup-frame">
+        <div class="wordmark">Markup<span class="dot">.</span></div>
+
+        <div class="warning-card">
+          <div class="warning-icon">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>
+          </div>
+          <div class="warning-title">This invite was disabled.</div>
+          <div class="warning-body">It received too many failed attempts and was disabled for safety. Ask your admin for a new link.</div>
+        </div>
+
+        <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="demo-label">23 — Invite Signup</div>
+</body>
+</html>
