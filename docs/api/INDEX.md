@@ -20,11 +20,17 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 | `GET` | `/api/auth/setup-status` | Public — returns `{ completed: boolean }` so `/login` and `/setup` can route themselves client-side |
 | `GET` | `/api/auth/me` | Resolve the current identity into `{ kind, id, name?, email? }` for the client-side auth guard |
 
+### Home
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/home` | Workspace home aggregator — identity + greeting (time-of-day + 24h updated count) + recents (top 6 by `updatedAt`, cross-project incl. orphans, with breadcrumb) + projects (same payload as `/api/projects`) + orphans (all mockups with `projectId === null`, by `updatedAt` desc). Single fetch used by `/`. |
+
 ### Projects
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/api/projects` | List all projects ordered by `position`. Each entry includes `id`, `name`, `slug`, `icon`, `position`, `mockupCount`, `folderCount`, `createdAt`, `updatedAt` — used by the `all-projects` landing grid |
+| `GET` | `/api/projects` | List all projects ordered by `position`. Each entry includes `id`, `name`, `slug`, `icon`, `position`, `mockupCount`, `folderCount`, `createdAt`, `updatedAt` — used by the sidebar tree and by third-party consumers; the `/` home page uses `/api/home` instead |
 | `POST` | `/api/projects` | Create project (`name`) |
 | `GET` | `/api/projects/[id]` | Single project metadata |
 | `PATCH` | `/api/projects/[id]` | Update project (`name`) |
