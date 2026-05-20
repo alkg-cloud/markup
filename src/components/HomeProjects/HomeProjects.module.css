@@ -1,0 +1,110 @@
+/* `home-projects-section` — section header + project grid + new-project
+   CTA + inline empty state. Shares the section/header/title/count/grid
+   metrics with `home-recents-section` and `home-orphans-section`; adds
+   a trailing accent pill CTA on the header (the only home section with
+   one) and an inline empty state inside the section body. */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: 20px;
+  color: var(--text-bright);
+  letter-spacing: var(--tracking-tight);
+}
+
+.count {
+  font-family: var(--font-mono);
+  font-size: var(--type-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding: 8px 16px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-weight: var(--weight-bold);
+  font-size: var(--type-sm);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+.cta:hover {
+  background: var(--accent-bright);
+  transform: translateY(-1px);
+}
+
+.cta:active {
+  transform: translateY(1px);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+
+/* Inline empty state — sits in the section body when projects.length
+   === 0. Hero + (optional) Recents still render above, so this never
+   needs to fill the whole viewport — generous padding + centered stack
+   is enough. */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  text-align: center;
+  padding: var(--space-2xl) var(--space-md);
+  min-height: 280px;
+}
+
+.emptyIcon {
+  opacity: 0.5;
+  margin-bottom: var(--space-xs);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--type-lg);
+  color: var(--text-bright);
+}
+
+.emptyDesc {
+  margin: 0 0 var(--space-sm);
+  max-width: 360px;
+  font-size: var(--type-sm);
+  color: var(--text-dim);
+  line-height: var(--leading-normal);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta {
+    transition: none;
+  }
+}

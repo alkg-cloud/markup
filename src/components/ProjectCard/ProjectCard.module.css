@@ -21,21 +21,29 @@
   gap: var(--space-md);
   padding: var(--space-md);
   min-height: 88px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  /* Glass treatment — accent-tinted fill + accent border + accent glow.
+     Matches the `glass` variant explored in the projects-home tweaker
+     (`docs/design/ideias/2026-05-20-projects-home-tweaker.html`) and
+     is the single shipping look for project cards (no variants). */
+  background: var(--accent-overlay-soft);
+  border: 1px solid var(--accent);
   border-radius: var(--radius-card);
+  box-shadow: var(--shadow-glow);
   color: inherit;
   text-decoration: none;
   cursor: pointer;
   transition:
     border-color var(--motion-fast) var(--ease-standard),
     background var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
     transform var(--motion-fast) var(--ease-standard);
 }
 
 .card:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-card-active);
+  border-color: var(--accent-bright);
+  box-shadow:
+    var(--shadow-glow),
+    0 0 16px var(--accent-overlay-soft);
   transform: translateY(-1px);
 }
 
@@ -50,8 +58,10 @@
   display: grid;
   place-items: center;
   border-radius: var(--radius-md);
-  background: var(--bg-tinted);
-  border: 1px solid var(--border-subtle);
+  /* Darker teal tile so the glyph reads against the accent-tinted card
+     fill — matches the glass variant in the projects-home tweaker. */
+  background: oklch(20% 0.06 165);
+  border: 1px solid var(--accent-soft);
   color: var(--text-bright);
   font-size: 22px;
   line-height: 1;
@@ -83,7 +93,7 @@
   margin-top: 4px;
   font-family: var(--font-mono);
   font-size: var(--type-2xs);
-  color: var(--text-muted);
+  color: var(--text-dim);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   overflow: hidden;

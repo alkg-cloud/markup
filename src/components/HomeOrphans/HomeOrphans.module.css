@@ -1,0 +1,39 @@
+/* `home-orphans-section` — identical metrics to `home-recents-section`
+   so the three sections share a single column rhythm. Kept as a
+   separate stylesheet (instead of `composes:` from Recents) because
+   each home section owns its layout independently — a future
+   tweak to one section should not silently move the others. */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: 20px;
+  color: var(--text-bright);
+  letter-spacing: var(--tracking-tight);
+}
+
+.count {
+  font-family: var(--font-mono);
+  font-size: var(--type-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
