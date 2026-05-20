@@ -159,6 +159,73 @@ const intent = intentRes.ok ? await intentRes.json() : null;
 
 This is the only sanctioned cross-route import. Other routes do not directly invoke each other.
 
+## Endpoint specs
+
+### GET /api/home
+
+Workspace home aggregator. Backs the `/` page (the 4-section dashboard — Hero, Recents, Projects, Orphans) with a single round-trip.
+
+- **Auth:** `identify(req)`. Returns `401 { error: 'unauthorized' }` when the request carries no identified user or agent.
+- **Dynamic:** `export const dynamic = 'force-dynamic'` — reads the session cookie and live DB rows on every request.
+- **Cache headers:** none beyond Next.js defaults. `force-dynamic` opts out of the static cache; the route does not set `Cache-Control` or `ETag` (the payload is identity-scoped and changes on every mockup edit, so caching would just complicate invalidation).
+- **Performance:** single round-trip; ≤ 6 DB queries (mockup list + project list + folder list + 24h count, parallelised via `Promise.all`); recents capped at 6 in-memory after the mockup list fetch. Breadcrumb walks resolve in-memory against the pre-fetched folder map — no N+1.
+
+Response shape (from `src/lib/home/types.ts`):
+
+```ts
+interface HomeIdentity {
+  name: string | null;
+  email: string | null;
+  role: 'admin' | 'member';
+}
+
+interface HomeGreeting {
+  timeOfDay: 'morning' | 'afternoon' | 'evening';  // computed from the server clock
+  updatedSinceYesterdayCount: number;              // mockups with updatedAt > now - 24h
+}
+
+interface RecentEntry {
+  id: string;
+  name: string;
+  slug: string;
+  status: 'open' | 'resolved' | 'archived';
+  updatedAt: string;   // ISO
+  href: string;        // canonical path-based URL built via routes.ts helpers
+  breadcrumb: string;  // "Project · Folder · Subfolder" or "Ungrouped" for orphans
+}
+
+interface OrphanEntry {
+  id: string;
+  name: string;
+  slug: string;
+  status: 'open' | 'resolved' | 'archived';
+  updatedAt: string;   // ISO
+  href: string;        // /projects/unsorted/<mockup-slug>
+}
+
+interface ProjectListEntry {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+  position: number;
+  createdAt: string;   // ISO
+  updatedAt: string;   // ISO
+  mockupCount: number;
+  folderCount: number;
+}
+
+interface HomeData {
+  identity: HomeIdentity;
+  greeting: HomeGreeting;
+  recents: RecentEntry[];   // top 6 by updatedAt desc, cross-project, includes orphans, excludes archived
+  projects: ProjectListEntry[];
+  orphans: OrphanEntry[];   // every mockup with projectId === null, by updatedAt desc, excludes archived
+}
+```
+
+The `recents` and `orphans` arrays both filter out `status: 'archived'` to match the sidebar tree's `getProjectTree` behaviour. `recents.breadcrumb` is `'Ungrouped'` for any mockup with `projectId === null`, matching the `projectDisplayName` helper.
+
 ## Streaming responses
 
 Currently no route streams. When a route needs to stream a large payload (e.g. a future bulk export), use `new NextResponse(readable, { headers: { 'Content-Type': '…' } })` with a Web `ReadableStream`. Document the streaming contract in this file when it lands.
