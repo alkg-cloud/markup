@@ -780,7 +780,8 @@ body.reordering .section {
 .tweaker-pill {
   position: fixed;
   top: 16px; right: 16px;
-  width: 156px; height: 36px;
+  min-width: 140px; height: 36px;
+  white-space: nowrap;
   background: color-mix(in oklch, var(--bg-elevated) 92%, transparent);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -957,7 +958,7 @@ body.reordering .section {
     <div class="tweaker-handle">⋮⋮ Tweaker</div>
     <div class="tweaker-actions">
       <button id="tw-reset" title="Reset (R)">R</button>
-      <button id="tw-copy" title="Copy config">⧉<span class="copied-tooltip">Copied</span></button>
+      <button id="tw-copy" title="Copy config" aria-label="Copy config">Copy<span class="copied-tooltip">Copied</span></button>
       <button id="tw-collapse" title="Collapse">–</button>
       <button id="tw-hide" title="Hide (T to restore)">×</button>
     </div>
@@ -1042,14 +1043,13 @@ body.reordering .section {
   <div class="panel">
     <h4>Tweaker shortcuts</h4>
     <ul>
-      <li><kbd>T</kbd> toggle panel</li>
-      <li><kbd>R</kbd> reset to defaults</li>
+      <li><kbd>T</kbd> toggle</li>
+      <li><kbd>R</kbd> reset</li>
       <li><kbd>?</kbd> this help</li>
       <li><kbd>Esc</kbd> dismiss</li>
       <li>Drag header to move</li>
       <li>Drag ☰ to reorder sections</li>
     </ul>
-    <div class="esc">Press Esc or click outside to close.</div>
   </div>
 </div>
 
@@ -1362,7 +1362,8 @@ const DEFAULTS = {
   hero: 'minimal', recents: 'h-scroll', projects: 'thumb', orphans: 'grid',
   density: 'cozy', width: 'centered',
   order: ['hero','recents','projects','orphans'],
-  panel: { x: null, y: null, collapsed: false, hidden: false }
+  panel: { x: null, y: null, collapsed: false, hidden: false },
+  pill: { x: null, y: null }
 };
 const STORAGE_KEY = 'markup.ideia.projects-home.tweaker';
 
@@ -1375,7 +1376,8 @@ function loadState() {
     return {
       ...structuredClone(DEFAULTS),
       ...parsed,
-      panel: { ...DEFAULTS.panel, ...(parsed.panel || {}) }
+      panel: { ...DEFAULTS.panel, ...(parsed.panel || {}) },
+      pill:  { ...DEFAULTS.pill,  ...(parsed.pill  || {}) }
     };
   } catch { return null; }
 }
@@ -1442,28 +1444,52 @@ function applyPanelVisibility() {
   }
 }
 
+function clampToViewport(x, y, w, h) {
+  const margin = 8;
+  const maxX = Math.max(margin, window.innerWidth  - w - margin);
+  const maxY = Math.max(margin, window.innerHeight - h - margin);
+  return {
+    x: Math.min(Math.max(margin, x), maxX),
+    y: Math.min(Math.max(margin, y), maxY)
+  };
+}
+
 function applyPanelPosition() {
   const panel = document.getElementById('tweaker');
   const pill  = document.getElementById('tweaker-pill');
 
+  // Panel position: explicit state.panel.{x,y} or CSS default (top-right).
   if (state.panel.x == null || state.panel.y == null) {
-    // default snap to top-right
     panel.style.left = '';
     panel.style.top  = '';
     panel.style.right = '16px';
     panel.style.top   = '16px';
-    pill.style.left = '';
-    pill.style.top  = '';
-    pill.style.right = '16px';
-    pill.style.top   = '16px';
-    return;
+  } else {
+    panel.style.right = '';
+    panel.style.left = state.panel.x + 'px';
+    panel.style.top  = state.panel.y + 'px';
   }
-  panel.style.right = '';
-  panel.style.left = state.panel.x + 'px';
-  panel.style.top  = state.panel.y + 'px';
-  pill.style.right = '';
-  pill.style.left = state.panel.x + 'px';
-  pill.style.top  = state.panel.y + 'px';
+
+  // Pill position: explicit state.pill.{x,y} (set on collapse / drag), or
+  // computed as the panel's current bottom-right corner minus the pill size.
+  if (state.pill.x == null || state.pill.y == null) {
+    const pillW = pill.offsetWidth  || 140;
+    const pillH = pill.offsetHeight || 36;
+    // Resolve panel bottom-right even when the panel is currently hidden
+    // (collapsed state) by measuring with a temporary visibility toggle.
+    const wasHidden = panel.hidden;
+    if (wasHidden) { panel.hidden = false; panel.style.visibility = 'hidden'; }
+    const r = panel.getBoundingClientRect();
+    if (wasHidden) { panel.hidden = true; panel.style.visibility = ''; }
+    const { x, y } = clampToViewport(r.right - pillW, r.bottom - pillH, pillW, pillH);
+    pill.style.right = '';
+    pill.style.left = x + 'px';
+    pill.style.top  = y + 'px';
+  } else {
+    pill.style.right = '';
+    pill.style.left = state.pill.x + 'px';
+    pill.style.top  = state.pill.y + 'px';
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -1533,16 +1559,20 @@ function attachDrag(elem, handle) {
     pointerId = null;
     const moved = Math.hypot(e.clientX - originX, e.clientY - originY);
     if (moved > 4) window.__justDragged = true;
-    state.panel.x = parseFloat(elem.style.left);
-    state.panel.y = parseFloat(elem.style.top);
+    const nx = parseFloat(elem.style.left);
+    const ny = parseFloat(elem.style.top);
+    if (elem.id === 'tweaker') {
+      state.panel.x = nx;
+      state.panel.y = ny;
+      // Panel moved → invalidate pill cache so next collapse re-anchors at
+      // the panel's new bottom-right corner.
+      state.pill.x = null;
+      state.pill.y = null;
+    } else {
+      state.pill.x = nx;
+      state.pill.y = ny;
+    }
     saveState();
-    // sync the other surface (pill or panel) to the same coords
-    const other = elem.id === 'tweaker'
-      ? document.getElementById('tweaker-pill')
-      : document.getElementById('tweaker');
-    other.style.right = '';
-    other.style.left = state.panel.x + 'px';
-    other.style.top  = state.panel.y + 'px';
   }
   handle.addEventListener('pointerup', end);
   handle.addEventListener('pointercancel', end);
@@ -1554,9 +1584,19 @@ function attachDrag(elem, handle) {
 document.getElementById('tw-reset').addEventListener('click', resetAll);
 document.getElementById('tw-copy').addEventListener('click', copyConfig);
 document.getElementById('tw-collapse').addEventListener('click', () => {
+  // Anchor the pill at the panel's last bottom-right corner before collapsing.
+  const panelEl = document.getElementById('tweaker');
+  const pillEl  = document.getElementById('tweaker-pill');
+  const r = panelEl.getBoundingClientRect();
+  const pillW = pillEl.offsetWidth  || 140;
+  const pillH = pillEl.offsetHeight || 36;
+  const { x, y } = clampToViewport(r.right - pillW, r.bottom - pillH, pillW, pillH);
+  state.pill.x = x;
+  state.pill.y = y;
   state.panel.collapsed = true;
   saveState();
   applyPanelVisibility();
+  applyPanelPosition();
 });
 document.getElementById('tw-hide').addEventListener('click', () => {
   state.panel.hidden = true;
@@ -1567,9 +1607,28 @@ document.getElementById('tw-hide').addEventListener('click', () => {
 document.getElementById('tweaker-pill').addEventListener('click', () => {
   // After a drag we suppress the synthetic click via __justDragged (set in drag end).
   if (window.__justDragged) { window.__justDragged = false; return; }
+  // Anchor the panel's bottom-right corner at the pill's current bottom-right
+  // so the expansion feels like "unfolding from the pill" rather than jumping.
+  const panelEl = document.getElementById('tweaker');
+  const pillEl  = document.getElementById('tweaker-pill');
+  const pr = pillEl.getBoundingClientRect();
+  // Measure the panel's full size (it's currently hidden, so reveal invisibly).
+  panelEl.hidden = false;
+  panelEl.style.visibility = 'hidden';
+  const panelW = panelEl.offsetWidth  || 320;
+  const panelH = panelEl.offsetHeight || 0;
+  panelEl.style.visibility = '';
+  const { x, y } = clampToViewport(pr.right - panelW, pr.bottom - panelH, panelW, panelH);
+  state.panel.x = x;
+  state.panel.y = y;
+  // The pill cache is now consumed; clear it so the next collapse re-anchors
+  // at the (possibly new) panel bottom-right.
+  state.pill.x = null;
+  state.pill.y = null;
   state.panel.collapsed = false;
   saveState();
   applyPanelVisibility();
+  applyPanelPosition();
 });
 
 function resetAll() {
