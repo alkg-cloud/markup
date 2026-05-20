@@ -26,10 +26,15 @@ a{color:inherit;text-decoration:none}
 
 .page-title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
 .page-subtitle{font-size:13px;color:var(--text-dim);margin-bottom:20px}
+
 .list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .count{font-size:13px;color:var(--text-dim)}
+.header-actions{display:flex;align-items:center;gap:6px}
 .btn-action{display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);border-radius:var(--radius-sm);color:var(--accent);font-size:13px;font-weight:600;transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast)}
 .btn-action:hover{background:var(--accent-overlay-mid);border-color:var(--accent);color:var(--accent-bright)}
+.kebab-btn{width:32px;height:32px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast)}
+.kebab-btn:hover{background:var(--surface-hover);color:var(--text)}
+
 .list{display:flex;flex-direction:column;gap:8px}
 
 .card{display:flex;align-items:flex-start;gap:12px;padding:16px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-card);transition:border-color var(--motion-fast)}
@@ -46,11 +51,14 @@ a{color:inherit;text-decoration:none}
 .card.is-state-expired .card-meta .meta-state,.card.is-state-revoked .card-meta .meta-state{color:var(--danger)}
 .card-token{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:6px;background:var(--bg-elevated);padding:4px 8px;border-radius:var(--radius-xs);border:1px solid var(--border-subtle);display:inline-block}
 .card.is-terminal .card-token{display:none}
-.card-actions{display:flex;gap:4px;flex-shrink:0}
-.card-action{width:28px;height:28px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast)}
+.card-actions{display:flex;gap:4px;flex-shrink:0;align-items:center}
+.card-action{width:28px;height:28px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast),opacity var(--motion-fast)}
 .card-action:hover{background:var(--surface-hover);color:var(--text)}
 .card-action.danger:hover{background:var(--danger-soft);color:var(--danger)}
-.card.is-terminal .card-action{display:none}
+.card.is-terminal .card-action.is-active-only{display:none}
+.card-action.is-terminal-only{display:none}
+.card.is-terminal .card-action.is-terminal-only{display:flex;opacity:0;pointer-events:none}
+.card.is-terminal:hover .card-action.is-terminal-only{opacity:1;pointer-events:auto}
 
 /* Empty — first-visit onboarding card */
 .empty-onboarding{border:1px dashed var(--border);border-radius:var(--radius-card);padding:24px;background:rgba(255,255,255,0.015);position:relative}
@@ -68,17 +76,32 @@ a{color:inherit;text-decoration:none}
 .empty-terse-title{font-size:16px;font-weight:600;color:var(--text-bright);margin-bottom:4px}
 .empty-terse-line{font-size:13px;color:var(--text-dim)}
 
+/* Bulk-actions popover */
+.kebab-stage{display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap}
+.kebab-anchor{display:flex;align-items:center;gap:6px;padding:12px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-sm)}
+.kebab-anchor .btn-action{pointer-events:none}
+.kebab-anchor .kebab-btn{pointer-events:none;background:var(--surface-hover);color:var(--text)}
+.kebab-menu{width:240px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-popover);overflow:hidden;padding:4px 0}
+.kebab-item{display:flex;align-items:center;gap:10px;padding:10px 14px;color:var(--danger);font-size:13px;font-weight:500;cursor:pointer;transition:background var(--motion-fast);width:100%;text-align:left}
+.kebab-item:hover{background:var(--danger-soft)}
+.kebab-item .count-chip{margin-left:auto;font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-muted);background:var(--bg-elevated);border:1px solid var(--border-subtle);padding:1px 6px;border-radius:var(--radius-xs)}
+.kebab-item.is-disabled{color:var(--text-muted);opacity:0.4;cursor:not-allowed}
+.kebab-item.is-disabled:hover{background:transparent}
+.kebab-item svg{flex-shrink:0;opacity:0.8}
+.kebab-divider{height:1px;background:var(--border-subtle);margin:4px 8px}
+
 /* Page layout */
 .page-wrap{display:flex;flex-direction:column;gap:56px;padding:32px}
 .state-frame{max-width:600px}
+.state-frame.is-wide{max-width:760px}
 </style>
 </head>
 <body>
 
 <div class="demo">
-  <div style="padding:32px 32px 0 32px;max-width:600px">
+  <div style="padding:32px 32px 0 32px;max-width:680px">
     <div class="title">Invites</div>
-    <div class="subtitle">Generate invite links for new teammates. Three canonical states below: the populated list, the first-visit empty state with the onboarding card, and the post-activity empty state. The transition first-visit → post-activity happens on either of two events (admin creates the first invite OR dismisses the onboarding card) and is one-way.</div>
+    <div class="subtitle">Generate invite links for new teammates. Three canonical list states (populated, first-visit onboarding, post-activity terse); plus the bulk-actions popover anchored to the header kebab. The transition first-visit → post-activity happens on either of two events (admin creates the first invite OR dismisses the onboarding card) and is one-way.</div>
   </div>
 
   <div class="page-wrap">
@@ -92,10 +115,15 @@ a{color:inherit;text-decoration:none}
 
       <div class="list-header">
         <span class="count">5 invites</span>
-        <button class="btn-action">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-          New Invite
-        </button>
+        <div class="header-actions">
+          <button class="btn-action">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+            New Invite
+          </button>
+          <button class="kebab-btn" title="Bulk actions">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+          </button>
+        </div>
       </div>
 
       <div class="list">
@@ -113,10 +141,10 @@ a{color:inherit;text-decoration:none}
             <div class="card-token">mki_••••••••••••a7b3</div>
           </div>
           <div class="card-actions">
-            <button class="card-action" title="Copy link">
+            <button class="card-action is-active-only" title="Copy link">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
             </button>
-            <button class="card-action danger" title="Revoke">
+            <button class="card-action is-active-only danger" title="Revoke">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
             </button>
           </div>
@@ -135,16 +163,16 @@ a{color:inherit;text-decoration:none}
             <div class="card-token">mki_••••••••••••f2e8</div>
           </div>
           <div class="card-actions">
-            <button class="card-action" title="Copy link">
+            <button class="card-action is-active-only" title="Copy link">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
             </button>
-            <button class="card-action danger" title="Revoke">
+            <button class="card-action is-active-only danger" title="Revoke">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
             </button>
           </div>
         </div>
 
-        <!-- Used -->
+        <!-- Used (delete on hover) -->
         <div class="card is-state-used is-terminal">
           <div class="card-icon">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M14.431 3.323l-8.47 10-.79-.036-3.35-4.77.818-.574 2.978 4.24L13.668 2.681l.763.642z"/></svg>
@@ -155,9 +183,14 @@ a{color:inherit;text-decoration:none}
               <span>Created 5 days ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Used 3 days ago by marco@studio.io</span>
             </div>
           </div>
+          <div class="card-actions">
+            <button class="card-action is-terminal-only danger" title="Remove from list">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+            </button>
+          </div>
         </div>
 
-        <!-- Expired -->
+        <!-- Expired (delete on hover) -->
         <div class="card is-state-expired is-terminal">
           <div class="card-icon">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>
@@ -168,9 +201,14 @@ a{color:inherit;text-decoration:none}
               <span>Created 10 days ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Expired 3 days ago</span>
             </div>
           </div>
+          <div class="card-actions">
+            <button class="card-action is-terminal-only danger" title="Remove from list">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+            </button>
+          </div>
         </div>
 
-        <!-- Revoked -->
+        <!-- Revoked (delete on hover) -->
         <div class="card is-state-revoked is-terminal">
           <div class="card-icon">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>
@@ -180,6 +218,11 @@ a{color:inherit;text-decoration:none}
             <div class="card-meta">
               <span>Created 2 weeks ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Revoked yesterday</span>
             </div>
+          </div>
+          <div class="card-actions">
+            <button class="card-action is-terminal-only danger" title="Remove from list">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+            </button>
           </div>
         </div>
 
@@ -195,10 +238,15 @@ a{color:inherit;text-decoration:none}
 
       <div class="list-header">
         <span class="count">0 invites</span>
-        <button class="btn-action">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-          New Invite
-        </button>
+        <div class="header-actions">
+          <button class="btn-action">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+            New Invite
+          </button>
+          <button class="kebab-btn" title="Bulk actions">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+          </button>
+        </div>
       </div>
 
       <div class="empty-onboarding">
@@ -228,10 +276,15 @@ a{color:inherit;text-decoration:none}
 
       <div class="list-header">
         <span class="count">0 invites</span>
-        <button class="btn-action">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-          New Invite
-        </button>
+        <div class="header-actions">
+          <button class="btn-action">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+            New Invite
+          </button>
+          <button class="kebab-btn" title="Bulk actions">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+          </button>
+        </div>
       </div>
 
       <div class="empty-terse">
@@ -241,6 +294,55 @@ a{color:inherit;text-decoration:none}
         <div class="empty-terse-title">No invites yet</div>
         <div class="empty-terse-line">Generate a link to invite a teammate.</div>
       </div>
+    </section>
+
+    <!-- ─── STATE 04 · Bulk-actions popover ────────────────────── -->
+    <section class="state-frame is-wide">
+      <div class="state-label"><span class="num">04</span><span>Bulk-actions popover (anchored to kebab)</span><span class="rule"></span></div>
+
+      <div class="kebab-stage">
+        <div class="kebab-anchor">
+          <button class="btn-action">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+            New Invite
+          </button>
+          <button class="kebab-btn" title="Bulk actions">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+          </button>
+        </div>
+
+        <div class="kebab-menu" role="menu">
+          <button class="kebab-item" role="menuitem">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28z"/></svg>
+            Revoke all open invites
+            <span class="count-chip">2</span>
+          </button>
+          <div class="kebab-divider"></div>
+          <button class="kebab-item" role="menuitem">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+            Clear all history
+            <span class="count-chip">3</span>
+          </button>
+        </div>
+
+        <div class="kebab-menu" role="menu" style="opacity:0.55" aria-label="zero-state preview">
+          <button class="kebab-item is-disabled" role="menuitem">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28z"/></svg>
+            Revoke all open invites
+            <span class="count-chip">0</span>
+          </button>
+          <div class="kebab-divider"></div>
+          <button class="kebab-item is-disabled" role="menuitem">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+            Clear all history
+            <span class="count-chip">0</span>
+          </button>
+        </div>
+      </div>
+
+      <p style="margin-top:16px;font-size:12px;color:var(--text-muted);line-height:1.6">
+        Both items render with the live count of affected invites — when the count is zero the item is disabled (right preview), not hidden, so the menu shape stays consistent regardless of list state. Each action opens a confirm dialog before firing.
+      </p>
     </section>
 
   </div>
