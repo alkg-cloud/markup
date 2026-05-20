@@ -35,7 +35,10 @@ async function bumpFailedAttempts(inviteId: string) {
   }
 }
 
-export async function POST(req: Request, ctx: { params: Promise<{ token: string }> }) {
+// URL segment is named `[id]` (not `[token]`) because Next.js requires
+// a single dynamic-segment name per folder. The value here is the plaintext
+// invite token; `params.id` is destructured into `token` below.
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
 
@@ -48,7 +51,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ token: string 
     );
   }
 
-  const { token } = await ctx.params;
+  const { id: token } = await ctx.params;
   const invite = await findInviteByPresentedToken(token);
   if (!invite) {
     return NextResponse.json({ error: 'invalid_token' }, { status: 400 });

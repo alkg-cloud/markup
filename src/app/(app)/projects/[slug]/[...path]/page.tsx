@@ -102,6 +102,7 @@ export default function ProjectPathPage() {
         breadcrumbs={resolution.breadcrumbs}
         userName={identity?.name}
         userEmail={identity?.email}
+        userRole={identity?.role}
       />
     );
   }
@@ -120,6 +121,7 @@ export default function ProjectPathPage() {
       breadcrumbs={resolution.breadcrumbs}
       userName={identity?.name}
       userEmail={identity?.email}
+      userRole={identity?.role}
     />
   );
 }

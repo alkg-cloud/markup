@@ -89,6 +89,7 @@ export default function ProjectPage() {
       breadcrumbs={data.breadcrumbs}
       userName={identity?.name}
       userEmail={identity?.email}
+      userRole={identity?.role}
     />
   );
 }
