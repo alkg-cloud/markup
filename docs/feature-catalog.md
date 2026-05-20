@@ -44,7 +44,7 @@ Global 52 px top bar (`Topbar.tsx`). Present on all authenticated pages. Margin-
 
 ## sidebar
 
-Collapsible sidebar shell (`Sidebar.tsx`). Present on every authenticated workspace route — the `all-projects` grid at `/`, `/projects/<slug>` (and nested folders / mockups), `/annotations/[id]`, and `/settings/agents`. The sidebar morphs into a floating pill when collapsed.
+Collapsible sidebar shell (`Sidebar.tsx`). Present on every authenticated workspace route — the `home` dashboard at `/`, `/projects/<slug>` (and nested folders / mockups), `/annotations/[id]`, and `/settings/agents`. The sidebar morphs into a floating pill when collapsed.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
@@ -190,26 +190,27 @@ Tabbed icon picker popover (`IconPicker.tsx`). Reusable in "New Project" dialog 
 | `icon-picker-cell` | Individual icon cell | default, hover (surface-hover), selected (accent border + accent-overlay-soft bg) |
 | `icon-picker-footer` | Mono-font preview of selected icon token string (e.g. `vsc:VscFile`) | shows current selection |
 
-## all-projects
+## home
 
-Workspace landing surface at `/` (`AllProjectsPage` under `src/app/(app)/page.tsx`). The legacy `/projects` route redirects here client-side. Lists every project the current identity can see as a card grid, with a primary "New project" CTA and per-card kebab actions.
+Workspace home at `/` (`AllProjectsPage` under `src/app/(app)/page.tsx`). The legacy `/projects` route redirects here client-side. Fetches `GET /api/home` and renders four stacked sections — Hero (greeting + counts), Recents (cross-project mockup grid), Projects (the existing project-card grid), Orphans (mockups with no project). The home is the only `(app)` surface using full-bleed width.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `all-projects-page` | Page container under the in-shell layout. Renders `Topbar` (breadcrumbs empty) above an `AppMain` scroll variant that hosts a header strip + card grid | loading (skeleton placeholders), error (`http_*` banner), empty (centered `empty-state` clone), populated |
-| `all-projects-header` | Page header with `<h1>` "Projects", item count (`{N} projects` / `1 project`), and trailing accent "New project" button | item count uses tabular numerics; CTA opens `new-project-dialog` |
-| `all-projects-grid` | Responsive CSS grid of `project-card` tiles in stable `position` order. Min cell width 240 px, max columns fill available width | populated, loading (3 skeleton cards), empty (CTA-centered) |
-| `all-projects-new-cta` | Primary `+ New project` button in the header. Opens `new-project-dialog`; on save navigates to the new project's `/projects/<slug>` | default, hover (`--accent-bright`), focus-visible, active |
-| `all-projects-empty-cta` | Centered "Create your first project" CTA inside the empty state | only visible when zero projects |
-| `all-projects-redirect` | `/projects` page is now a client-side redirect to `/` (no fetch, no UI surface) | redirect on mount via `router.replace('/')` |
+| `home-page` | Page container under the in-shell layout. Full-bleed (no centered max-width). Stacks Hero → Recents → Projects → Orphans. | loading (skeleton), error (`http_*` banner), populated. Empty workspace shows Hero + Projects empty state only. |
+| `home-hero` | Greeting `{Good morning|afternoon|evening}, {firstName}` (display 28 px, `--text-bright`) + sub-line `{long date} · {N} mockups updated since yesterday` (mono 13 px). Sub-line hidden when count is 0. | morning/afternoon/evening; with-count / no-count |
+| `home-recents-section` | "Continue working" header + count chip + grid of up to 6 recent mockups using `mockup-card` with the breadcrumb shown as the new `subtitle` prop. Cross-project (includes orphans). Hidden when zero recents. | hidden, populated |
+| `home-projects-section` | "Projects" header + count + `+ New project` accent CTA + grid of `project-card`. Empty state lives inside this section when `projects.length === 0`. | populated, empty (centered SVG stack + CTA inline within the section) |
+| `home-orphans-section` | "No project" header + count + grid of `mockup-card`. Hidden when zero orphans. | hidden, populated |
+| `home-section-gap` | Vertical spacing between sections is `--space-2xl`. | n/a |
+| `home-full-bleed-layout` | `/` is the only authenticated surface using full-bleed width. Other pages (`/projects/<slug>`, `/projects/<slug>/<...path>`, `/annotations/[id]`, `/settings/*`) remain centered. | n/a |
 
 ## project-card
 
-Card tile for a single project on the `all-projects` grid (`ProjectCard.tsx`).
+Card tile for a single project on the `home-projects-section` grid (`ProjectCard.tsx`).
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `project-card` | Card with resolved project icon, name, mockup count, folder count. Border-radius: `--radius-card`. Whole card is a `<Link>` to `/projects/<slug>`; kebab button absolutely positioned top-right. | default, hover (border → `--border-strong`, bg → `--bg-card-active`, translateY(-1px)), focus-visible, active (translateY(1px)) |
+| `project-card` | Card with resolved project icon, name, mockup count, folder count. Default visual: `--accent-overlay-soft` background, 1 px `--accent` border, `--shadow-glow` shadow. Border-radius: `--radius-card`. Whole card is a `<Link>` to `/projects/<slug>`; kebab button absolutely positioned top-right. | default, hover (border → `--border-strong`, bg → `--bg-card-active`, translateY(-1px)), focus-visible, active (translateY(1px)) |
 | `project-card-icon` | Resolved icon from `Project.icon` token (same resolver as `sidebar-tree-project-item`). Falls back to a default project glyph when icon is null/unknown | static, `--text-bright` color |
 | `project-card-name` | Project name as `<h2>`. Truncated with `text-overflow: ellipsis` | full name in `title` tooltip |
 | `project-card-meta` | Mockup count + folder count line in mono font (`{M} mockups · {F} folders`). Singular/plural handled. | `--text-dim`, tabular numerics |
@@ -248,6 +249,7 @@ Mockup card in the content grid (`MockupCard.tsx`). Cards have thumbnail with gr
 | `mockup-card-thumb` | Thumbnail image (PNG from `/api/mockups/[id]/thumbnail`) with gradient overlay | loaded, fallback (deterministic monogram with palette-cycled hue from 6-entry list keyed on mockup id) |
 | `mockup-card-badge` | Status badge: `open` (default accent), `resolved` (success), `archived` (warning) | pill-shaped, uppercase label |
 | `mockup-card-name` | Mockup name text | truncated if long |
+| `mockup-card-subtitle` | Optional context line rendered between name and meta when the `subtitle` prop is set (used by `home-recents-section` to show the breadcrumb `Project · Folder · Subfolder` or `Ungrouped`). Mono 11 px, `--text-muted`, single-line with `text-overflow: ellipsis`. | present, absent |
 
 ## empty-state
 
@@ -548,7 +550,7 @@ Cross-cutting visual and interaction surfaces defined in `globals.css` and `toke
 | `global-reduced-motion` | `prefers-reduced-motion: reduce` safety net: all `animation-duration`, `animation-iteration-count`, `transition-duration`, `scroll-behavior` zeroed via `!important` | global override in `globals.css` |
 | `global-typography-manrope` | Manrope font family (body + display), weights 400-800. Display: 700 weight, tracking -0.02em. Body: 400/500/600, 13-14 px. Labels: 600, 10 px, uppercase, tracking 0.12em | via `next/font/google` |
 | `global-typography-jetbrains` | JetBrains Mono (code/tabular), 400/500, 10-12 px | tabular-nums for timestamps, token strings |
-| `global-routing-path-based` | All in-shell URLs are human-readable path segments resolved by the `GET /api/projects/by-slug/[slug]/resolve?path=…` aggregator. `/` = `all-projects` landing (card grid of every project the identity can see). The legacy `/projects` route is a thin client-side redirect to `/` so external bookmarks still work. `/projects/<slug>` = project view (calls `/view`). `/projects/<slug>/<...folders>/<mockup-slug>` = mockup viewer (`[...path]` resolved by `resolveProjectPath` to either a folder or a mockup; mockups render `MockupViewerPage` after fetching `/api/mockups/[id]/viewer`, folders render the folder view). `/projects/unsorted/<mockup-slug>` covers orphan mockups. `/annotations/[id]` and `/settings/agents` retain stable single-segment routes. The legacy `/mockups/[id]` viewer route redirects to `/`; `/api/mockups/[id]/*` API endpoints continue to use the mockup id. | path resolution server-side via the API aggregator; canonical paths produced client-side by `routes.ts` helpers (`projectsHref` returns `/`, `projectHref`, `folderHref`, `mockupSlugHref`) |
+| `global-routing-path-based` | All in-shell URLs are human-readable path segments resolved by the `GET /api/projects/by-slug/[slug]/resolve?path=…` aggregator. `/` = `home` dashboard (Hero + Recents + Projects + Orphans, full-bleed). The legacy `/projects` route is a thin client-side redirect to `/` so external bookmarks still work. `/projects/<slug>` = project view (calls `/view`). `/projects/<slug>/<...folders>/<mockup-slug>` = mockup viewer (`[...path]` resolved by `resolveProjectPath` to either a folder or a mockup; mockups render `MockupViewerPage` after fetching `/api/mockups/[id]/viewer`, folders render the folder view). `/projects/unsorted/<mockup-slug>` covers orphan mockups. `/annotations/[id]` and `/settings/agents` retain stable single-segment routes. The legacy `/mockups/[id]` viewer route redirects to `/`; `/api/mockups/[id]/*` API endpoints continue to use the mockup id. | path resolution server-side via the API aggregator; canonical paths produced client-side by `routes.ts` helpers (`projectsHref` returns `/`, `projectHref`, `folderHref`, `mockupSlugHref`) |
 | `global-sidebar-collapse-persisted` | Sidebar collapse state survives reload. The shell reads `markup-sidebar-collapsed` from the `GET /api/shell` payload (which inspects the cookie) and passes `defaultCollapsed` to `Sidebar`. The client persists subsequent changes to the cookie + `localStorage` in the same write. Because the page is client-rendered, a short loading state precedes the first paint of the sidebar; the collapsed/expanded resolution is correct on first render after that. | cookie-driven default + client persistence — no flicker between renders |
 | `global-favicon` | App favicon at `src/app/icon.svg` — Next.js 16 auto-serves it at `/icon.svg` and `<link rel="icon">` is injected at build time. The SVG is a 256 × 256 dark rounded square with a white serif **M** and an accent-green square as the period (matches `sidebar-logo`'s "Markup." typography). | rendered in all browsers; no separate raster ico shipped |
 | `global-name-validation` | Single source of truth for URL-safe names: `src/lib/validation/url-safe-name.ts`. Pattern `/^[A-Za-z0-9_-]+$/` is exported as `URL_SAFE_NAME_PATTERN`; `validateUrlSafeName(value)` returns `{ offendingChar, message }` or `null`. Used client-side by `new-project-dialog`, `edit-project-dialog`, `sidebar-inline-folder-create`, and the tree rename input — same `URL_SAFE_NAME_HINT` copy everywhere. Used server-side by `POST /api/projects`, `PATCH /api/projects/[id]`, `POST /api/projects/[id]/folders`, `PATCH /api/folders/[id]`, `POST /api/mockups`, and `PATCH /api/mockups/[id]` — invalid names return `400 name_not_url_safe`. | client error: inline danger message below input; server error: `400 name_not_url_safe` |
