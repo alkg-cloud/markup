@@ -8,15 +8,24 @@
 <style>
 :root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--sidebar-collapsed-width:52px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0% 0 0/0.45);--shadow-md:0 6px 16px oklch(0% 0 0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
 @media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
 body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+input,textarea{font-family:inherit;color:inherit}
 a{color:inherit;text-decoration:none}
 :focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
 .demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
-.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px}
+.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
+.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:600px}
 
+.state-label{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.state-label .num{color:var(--accent)}
+.state-label .rule{flex:1;height:1px;background:linear-gradient(to right,var(--border-subtle),transparent)}
+
+.page-title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
+.page-subtitle{font-size:13px;color:var(--text-dim);margin-bottom:20px}
 .list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .count{font-size:13px;color:var(--text-dim)}
 .btn-action{display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);border-radius:var(--radius-sm);color:var(--accent);font-size:13px;font-weight:600;transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast)}
@@ -42,106 +51,197 @@ a{color:inherit;text-decoration:none}
 .card-action:hover{background:var(--surface-hover);color:var(--text)}
 .card-action.danger:hover{background:var(--danger-soft);color:var(--danger)}
 .card.is-terminal .card-action{display:none}
+
+/* Empty — first-visit onboarding card */
+.empty-onboarding{border:1px dashed var(--border);border-radius:var(--radius-card);padding:24px;background:rgba(255,255,255,0.015);position:relative}
+.empty-onboarding-eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.empty-onboarding-title{font-size:15px;font-weight:600;color:var(--text-bright);margin-bottom:16px}
+.empty-onboarding-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.empty-onboarding-step{display:flex;gap:10px;font-size:12px;color:var(--text-dim);align-items:flex-start}
+.empty-onboarding-stepnum{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);font-weight:600;background:var(--bg-elevated);border:1px solid var(--border-subtle);width:18px;height:18px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.empty-onboarding-dismiss{position:absolute;top:12px;right:12px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);border-radius:var(--radius-xs)}
+.empty-onboarding-dismiss:hover{background:var(--surface-hover);color:var(--text)}
+
+/* Empty — post-activity terse */
+.empty-terse{padding:48px 24px;text-align:center}
+.empty-terse-icon{width:48px;height:48px;border-radius:var(--radius-md);background:var(--accent-overlay-soft);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px}
+.empty-terse-title{font-size:16px;font-weight:600;color:var(--text-bright);margin-bottom:4px}
+.empty-terse-line{font-size:13px;color:var(--text-dim)}
+
+/* Page layout */
+.page-wrap{display:flex;flex-direction:column;gap:56px;padding:32px}
+.state-frame{max-width:600px}
 </style>
 </head>
 <body>
 
-<div class="demo" style="padding:32px;max-width:600px">
-  <div class="title">Invites</div>
-  <div class="subtitle">Generate invite links for new teammates.</div>
-
-  <div class="list-header">
-    <span class="count">5 invites</span>
-    <button class="btn-action">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-      New Invite
-    </button>
+<div class="demo">
+  <div style="padding:32px 32px 0 32px;max-width:600px">
+    <div class="title">Invites</div>
+    <div class="subtitle">Generate invite links for new teammates. Three canonical states below: the populated list, the first-visit empty state with the onboarding card, and the post-activity empty state. The transition first-visit → post-activity happens on either of two events (admin creates the first invite OR dismisses the onboarding card) and is one-way.</div>
   </div>
 
-  <div class="list">
+  <div class="page-wrap">
 
-    <!-- Unused, email-bound -->
-    <div class="card is-state-unused">
-      <div class="card-icon">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
-      </div>
-      <div class="card-info">
-        <div class="card-title">Invite for bea@studio.io</div>
-        <div class="card-meta">
-          <span>Created 2 hours ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Expires in 6d 22h</span>
-        </div>
-        <div class="card-token">mki_••••••••••••a7b3</div>
-      </div>
-      <div class="card-actions">
-        <button class="card-action" title="Copy link">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
-        </button>
-        <button class="card-action danger" title="Revoke">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+    <!-- ─── STATE 01 · Populated ────────────────────── -->
+    <section class="state-frame">
+      <div class="state-label"><span class="num">01</span><span>Populated</span><span class="rule"></span></div>
+
+      <h1 class="page-title">Invites</h1>
+      <p class="page-subtitle">Generate invite links for new teammates.</p>
+
+      <div class="list-header">
+        <span class="count">5 invites</span>
+        <button class="btn-action">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+          New Invite
         </button>
       </div>
-    </div>
 
-    <!-- Unused, open -->
-    <div class="card is-state-unused">
-      <div class="card-icon">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
-      </div>
-      <div class="card-info">
-        <div class="card-title">Open invite</div>
-        <div class="card-meta">
-          <span>Created yesterday</span><span class="sep">·</span><span>Admin</span><span class="sep">·</span><span class="meta-state">Expires in 29d</span>
+      <div class="list">
+
+        <!-- Unused, email-bound -->
+        <div class="card is-state-unused">
+          <div class="card-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Invite for bea@studio.io</div>
+            <div class="card-meta">
+              <span>Created 2 hours ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Expires in 6d 22h</span>
+            </div>
+            <div class="card-token">mki_••••••••••••a7b3</div>
+          </div>
+          <div class="card-actions">
+            <button class="card-action" title="Copy link">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
+            </button>
+            <button class="card-action danger" title="Revoke">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+            </button>
+          </div>
         </div>
-        <div class="card-token">mki_••••••••••••f2e8</div>
+
+        <!-- Unused, open -->
+        <div class="card is-state-unused">
+          <div class="card-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Open invite</div>
+            <div class="card-meta">
+              <span>Created yesterday</span><span class="sep">·</span><span>Admin</span><span class="sep">·</span><span class="meta-state">Expires in 29d</span>
+            </div>
+            <div class="card-token">mki_••••••••••••f2e8</div>
+          </div>
+          <div class="card-actions">
+            <button class="card-action" title="Copy link">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
+            </button>
+            <button class="card-action danger" title="Revoke">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Used -->
+        <div class="card is-state-used is-terminal">
+          <div class="card-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M14.431 3.323l-8.47 10-.79-.036-3.35-4.77.818-.574 2.978 4.24L13.668 2.681l.763.642z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Invite for marco@studio.io</div>
+            <div class="card-meta">
+              <span>Created 5 days ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Used 3 days ago by marco@studio.io</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Expired -->
+        <div class="card is-state-expired is-terminal">
+          <div class="card-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Open invite</div>
+            <div class="card-meta">
+              <span>Created 10 days ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Expired 3 days ago</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Revoked -->
+        <div class="card is-state-revoked is-terminal">
+          <div class="card-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Invite for sam@studio.io</div>
+            <div class="card-meta">
+              <span>Created 2 weeks ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Revoked yesterday</span>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <div class="card-actions">
-        <button class="card-action" title="Copy link">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
+    </section>
+
+    <!-- ─── STATE 02 · First-visit (onboarding) ────────────────────── -->
+    <section class="state-frame">
+      <div class="state-label"><span class="num">02</span><span>First-visit · onboarding</span><span class="rule"></span></div>
+
+      <h1 class="page-title">Invites</h1>
+      <p class="page-subtitle">Generate invite links for new teammates.</p>
+
+      <div class="list-header">
+        <span class="count">0 invites</span>
+        <button class="btn-action">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+          New Invite
         </button>
-        <button class="card-action danger" title="Revoke">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+      </div>
+
+      <div class="empty-onboarding">
+        <button class="empty-onboarding-dismiss" title="Dismiss">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.646 3.646.707.708L8 8.707z"/></svg>
+        </button>
+        <div class="empty-onboarding-eyebrow">Getting started</div>
+        <div class="empty-onboarding-title">Onboard your first teammate</div>
+        <div class="empty-onboarding-steps">
+          <div class="empty-onboarding-step"><span class="empty-onboarding-stepnum">1</span><span>Click <strong style="color:var(--text-bright);font-weight:600">New Invite</strong> in the header.</span></div>
+          <div class="empty-onboarding-step"><span class="empty-onboarding-stepnum">2</span><span>Pick a role, expiry, and optionally bind to an email.</span></div>
+          <div class="empty-onboarding-step"><span class="empty-onboarding-stepnum">3</span><span>Copy the link and send it to your teammate.</span></div>
+        </div>
+        <button class="btn-action">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+          Create your first invite
         </button>
       </div>
-    </div>
+    </section>
 
-    <!-- Used -->
-    <div class="card is-state-used is-terminal">
-      <div class="card-icon">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M14.431 3.323l-8.47 10-.79-.036-3.35-4.77.818-.574 2.978 4.24L13.668 2.681l.763.642z"/></svg>
-      </div>
-      <div class="card-info">
-        <div class="card-title">Invite for marco@studio.io</div>
-        <div class="card-meta">
-          <span>Created 5 days ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Used 3 days ago by marco@studio.io</span>
-        </div>
-      </div>
-    </div>
+    <!-- ─── STATE 03 · Post-activity (terse) ────────────────────── -->
+    <section class="state-frame">
+      <div class="state-label"><span class="num">03</span><span>Post-activity · terse</span><span class="rule"></span></div>
 
-    <!-- Expired -->
-    <div class="card is-state-expired is-terminal">
-      <div class="card-icon">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>
-      </div>
-      <div class="card-info">
-        <div class="card-title">Open invite</div>
-        <div class="card-meta">
-          <span>Created 10 days ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Expired 3 days ago</span>
-        </div>
-      </div>
-    </div>
+      <h1 class="page-title">Invites</h1>
+      <p class="page-subtitle">Generate invite links for new teammates.</p>
 
-    <!-- Revoked -->
-    <div class="card is-state-revoked is-terminal">
-      <div class="card-icon">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>
+      <div class="list-header">
+        <span class="count">0 invites</span>
+        <button class="btn-action">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+          New Invite
+        </button>
       </div>
-      <div class="card-info">
-        <div class="card-title">Invite for sam@studio.io</div>
-        <div class="card-meta">
-          <span>Created 2 weeks ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Revoked yesterday</span>
+
+      <div class="empty-terse">
+        <div class="empty-terse-icon">
+          <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
         </div>
+        <div class="empty-terse-title">No invites yet</div>
+        <div class="empty-terse-line">Generate a link to invite a teammate.</div>
       </div>
-    </div>
+    </section>
 
   </div>
 </div>
