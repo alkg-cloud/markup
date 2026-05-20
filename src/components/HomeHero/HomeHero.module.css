@@ -1,0 +1,27 @@
+/* `home-hero` — minimal greeting variant for the workspace landing.
+   Greeting is the display voice (28 px Manrope bold, --text-bright);
+   the sub-line is mono tabular-nums so the count + date sit on a single
+   typographic rhythm. */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.greeting {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: 28px;
+  color: var(--text-bright);
+  letter-spacing: var(--tracking-tight);
+}
+
+.sub {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
