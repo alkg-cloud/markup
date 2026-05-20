@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { VscAdd, VscClose, VscEdit, VscLocation } from 'react-icons/vsc';
 import type { Anchor } from '@/lib/anchoring';
 import styles from './AnnotationComposer.module.css';
 
@@ -113,9 +114,7 @@ export function AnnotationComposer({
             data-tooltip="Close (Esc)"
             aria-label="Close"
           >
-            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.646 3.646.707.708L8 8.707z" />
-            </svg>
+            <VscClose aria-hidden="true" />
           </button>
         </header>
 
@@ -134,9 +133,7 @@ export function AnnotationComposer({
                 .filter(Boolean)
                 .join(' ')}
             >
-              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                <path d="M8 1a4 4 0 0 0-4 4c0 2.5 4 9 4 9s4-6.5 4-9a4 4 0 0 0-4-4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" />
-              </svg>
+              <VscLocation aria-hidden="true" />
               {pinCountLabel}
             </span>
             <button
@@ -148,22 +145,8 @@ export function AnnotationComposer({
               data-tooltip={morphTooltip}
               aria-label={morphLabel}
             >
-              <svg
-                className={styles.addIcon}
-                viewBox="0 0 16 16"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
-              </svg>
-              <svg
-                className={styles.editIcon}
-                viewBox="0 0 16 16"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M13.23 1h-1.46L3.52 9.25l-.16.22L1 13.59 2.41 15l4.12-2.36.22-.16L15 4.23V2.77L13.23 1zM13 4l-7 7L5 10l7-7 1 1z" />
-              </svg>
+              <VscAdd className={styles.addIcon} aria-hidden="true" />
+              <VscEdit className={styles.editIcon} aria-hidden="true" />
               <span>{morphLabel}</span>
             </button>
           </div>

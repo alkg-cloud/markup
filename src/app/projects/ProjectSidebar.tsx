@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { VscAdd, VscThreeBars } from 'react-icons/vsc';
 import { flattenProjectTree } from '@/components/CommandPalette/flatten';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { NewProjectDialog } from '@/components/NewProjectDialog/NewProjectDialog';
@@ -218,9 +219,7 @@ export function ProjectSidebar({
       aria-label="New project"
       onClick={() => setNewProjectOpen(true)}
     >
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-        <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
-      </svg>
+      <VscAdd size={14} aria-hidden="true" />
       New Project
     </button>
   );
@@ -268,14 +267,7 @@ export function ProjectSidebar({
           cursor: 'pointer',
         }}
       >
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-          <path
-            d="M3 5h12M3 9h12M3 13h12"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
+        <VscThreeBars size={18} aria-hidden="true" />
       </button>
 
       {/* Mobile drawer */}

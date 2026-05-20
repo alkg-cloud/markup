@@ -90,6 +90,7 @@ export function ReadOnlyAnnotation({ annotationId, screenshotUrl, width, height,
             letterSpacing: 'var(--tracking-wide)',
           }}
         >
+          {/* custom: "no drawing" — pencil with diagonal strike-through; no codicon matches this composed glyph. */}
           <svg
             width="13"
             height="13"

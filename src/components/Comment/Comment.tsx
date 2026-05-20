@@ -1,6 +1,6 @@
 'use client';
 import { type KeyboardEvent, useEffect, useRef, useState } from 'react';
-import { VscReply } from 'react-icons/vsc';
+import { VscEdit, VscKebabVertical, VscReply, VscTrash } from 'react-icons/vsc';
 import { EmojiPicker } from '@/components/EmojiPicker/EmojiPicker';
 import { formatReactorList, ReactionPill } from '@/components/ReactionPill/ReactionPill';
 import { initialsForName } from '@/lib/avatar';
@@ -142,11 +142,7 @@ export function Comment({
                   aria-haspopup="menu"
                   {...kebabPopover.triggerProps}
                 >
-                  <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                    <circle cx="8" cy="3.5" r="1.2" />
-                    <circle cx="8" cy="8" r="1.2" />
-                    <circle cx="8" cy="12.5" r="1.2" />
-                  </svg>
+                  <VscKebabVertical aria-hidden="true" />
                 </button>
                 <div {...kebabPopover.popoverProps} className={styles.menu} role="menu">
                   <button
@@ -170,9 +166,7 @@ export function Comment({
                       onEdit?.();
                     }}
                   >
-                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                      <path d="M13.23 1h-1.46L3.52 9.25l-.16.22L1 13.59 2.41 15l4.12-2.36.22-.16L15 4.23V2.77L13.23 1zM13 4l-7 7L5 10l7-7 1 1z" />
-                    </svg>
+                    <VscEdit aria-hidden="true" />
                     Edit
                   </button>
                   <button
@@ -184,9 +178,7 @@ export function Comment({
                       onDelete?.();
                     }}
                   >
-                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                      <path d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9z" />
-                    </svg>
+                    <VscTrash aria-hidden="true" />
                     Delete
                   </button>
                 </div>

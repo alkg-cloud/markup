@@ -1,4 +1,11 @@
 'use client';
+import {
+  VscArrowUp,
+  VscHistory,
+  VscKebabVertical,
+  VscTrash,
+  VscTriangleDown,
+} from 'react-icons/vsc';
 import { usePopover } from '@/lib/popover/usePopover';
 import styles from './VersionChip.module.css';
 
@@ -45,13 +52,9 @@ export function VersionChip({ versions, onSelect, onPromote, onDelete }: Version
         aria-haspopup="menu"
         {...chip.triggerProps}
       >
-        <svg className={styles.history} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-          <path d="M13.507 12.324a7 7 0 0 0 .065-8.56A7 7 0 0 0 2 4.393V2H1v3.5l.5.5H5V5H2.811a6.008 6.008 0 1 1-.135 5.77l-.887.462a7 7 0 0 0 11.718 1.092zm-3.361-.97l.708-.707L8 7.792V4H7v4l.146.354 3 3z" />
-        </svg>
+        <VscHistory className={styles.history} aria-hidden="true" />
         {label}
-        <svg className={styles.chev} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-          <path d="M3.2 5.8h9.6L8 11.4z" />
-        </svg>
+        <VscTriangleDown className={styles.chev} aria-hidden="true" />
       </button>
 
       <div {...chip.popoverProps} className={styles.popover} role="menu">
@@ -126,11 +129,7 @@ function VersionListRow({ row, onSelect, onPromote, onDelete }: VersionListRowPr
         {...kebab.triggerProps}
         onClick={(e) => e.stopPropagation()}
       >
-        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-          <circle cx="8" cy="3.5" r="1.2" />
-          <circle cx="8" cy="8" r="1.2" />
-          <circle cx="8" cy="12.5" r="1.2" />
-        </svg>
+        <VscKebabVertical aria-hidden="true" />
       </button>
       <div {...kebab.popoverProps} className={styles.actions} role="menu">
         <button
@@ -144,9 +143,7 @@ function VersionListRow({ row, onSelect, onPromote, onDelete }: VersionListRowPr
             if (!row.current) onPromote();
           }}
         >
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path fillRule="evenodd" d="M8 1.5 14 7l-.7.7L8.5 3v9.5h-1V3L2.7 7.7 2 7l6-5.5z" />
-          </svg>
+          <VscArrowUp aria-hidden="true" />
           {row.current ? 'Already current' : 'Promote'}
         </button>
         <button
@@ -158,9 +155,7 @@ function VersionListRow({ row, onSelect, onPromote, onDelete }: VersionListRowPr
             onDelete();
           }}
         >
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9z" />
-          </svg>
+          <VscTrash aria-hidden="true" />
           Delete
         </button>
       </div>

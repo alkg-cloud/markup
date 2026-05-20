@@ -1,7 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { VscCircleSlash } from 'react-icons/vsc';
+import {
+  VscAdd,
+  VscCheck,
+  VscCircleSlash,
+  VscClose,
+  VscCopy,
+  VscKebabVertical,
+  VscMail,
+  VscTrash,
+  VscWarning,
+} from 'react-icons/vsc';
 import { AppMain } from '@/components/AppMain/AppMain';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { Dialog, DialogButton, DialogField, DialogInput } from '@/components/Dialog/Dialog';
@@ -106,92 +116,20 @@ function roleHint(role: RoleOpt): string {
     : 'Full access, including creating new invites and tokens.';
 }
 
-// --- icons (inlined from DS 21 + DS 22) -----------------------------------
-
-function PlusIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
-    </svg>
-  );
-}
-function KebabIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" />
-    </svg>
-  );
-}
-function EnvelopeIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z" />
-    </svg>
-  );
-}
-function EnvelopeLarge() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z" />
-    </svg>
-  );
-}
-function CheckIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M14.431 3.323l-8.47 10-.79-.036-3.35-4.77.818-.574 2.978 4.24L13.668 2.681l.763.642z" />
-    </svg>
-  );
-}
-function WarningIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"
-      />
-    </svg>
-  );
-}
-function CopyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"
-      />
-      <path fillRule="evenodd" clipRule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z" />
-    </svg>
-  );
-}
-function TrashIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M10 6H9V12H10V6Z" />
-      <path d="M7 6H6V12H7V6Z" />
-      <path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z" />
-    </svg>
-  );
-}
+// --- icons -----------------------------------------------------------------
+// Most glyphs come from `react-icons/vsc` (imported at the top of the file).
+// MemberIcon and AdminIcon stay inline because the closest VSCode codicons
+// (`VscAccount`, `VscShield`) diverge meaningfully from the DS pair: the inline
+// MemberIcon is a tight bust silhouette (VscAccount is a much more detailed
+// account portrait) and the inline AdminIcon is a shield with a checkmark
+// inside (VscShield draws a question-mark shape inside the shield).
+//
 // Revoke (unused → revoked) uses `VscCircleSlash`, NOT trash, because the row
 // stays in the list as a revoked entry. Trash is reserved for the terminal-
 // state Delete affordance that actually removes the row.
-function CloseIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.646 3.646.707.708L8 8.707z" />
-    </svg>
-  );
-}
-function MemberIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M8 0a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM5.5 3.5a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0zM3 16h10v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1z" />
-    </svg>
-  );
-}
+
+// custom: shield-with-check has no react-icons/vsc equivalent (VscShield draws
+// a question-mark inside the shield).
 function AdminIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -199,13 +137,24 @@ function AdminIcon() {
     </svg>
   );
 }
+// custom: simple bust silhouette to pair visually with AdminIcon; VscAccount
+// is a much more detailed portrait that doesn't sit well at 12px next to the
+// inline shield.
+function MemberIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M8 0a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM5.5 3.5a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0zM3 16h10v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1z" />
+    </svg>
+  );
+}
 
 // --- card icon by status ---------------------------------------------------
 
 function CardStateIcon({ status }: { status: InviteRow['status'] }) {
-  if (status === 'used') return <CheckIcon />;
-  if (status === 'expired' || status === 'revoked' || status === 'disabled') return <WarningIcon />;
-  return <EnvelopeIcon />;
+  if (status === 'used') return <VscCheck size={16} aria-hidden="true" />;
+  if (status === 'expired' || status === 'revoked' || status === 'disabled')
+    return <VscWarning size={16} aria-hidden="true" />;
+  return <VscMail size={16} aria-hidden="true" />;
 }
 
 // --- New Invite dialog -----------------------------------------------------
@@ -483,7 +432,7 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
         <span className={styles.count}>{countLabel}</span>
         <div className={styles.headerActions}>
           <button type="button" className={styles.btnAction} onClick={() => setShowDialog(true)}>
-            <PlusIcon />
+            <VscAdd size={14} aria-hidden="true" />
             New Invite
           </button>
           <button
@@ -495,7 +444,7 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
             aria-haspopup="menu"
             {...bulkMenu.triggerProps}
           >
-            <KebabIcon />
+            <VscKebabVertical size={14} aria-hidden="true" />
           </button>
           <div {...bulkMenu.popoverProps} className={styles.kebabMenu} role="menu">
             <button
@@ -517,7 +466,7 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
               disabled={historyCount === 0}
               onClick={onClearHistory}
             >
-              <TrashIcon />
+              <VscTrash size={14} aria-hidden="true" />
               Clear all history
               <span className={styles.countChip}>{historyCount}</span>
             </button>
@@ -534,7 +483,7 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
             aria-label="Dismiss onboarding"
             onClick={dismissOnboarding}
           >
-            <CloseIcon />
+            <VscClose size={14} aria-hidden="true" />
           </button>
           <div className={styles.emptyOnboardingEyebrow}>Getting started</div>
           <div className={styles.emptyOnboardingTitle}>Onboard your first teammate</div>
@@ -556,7 +505,7 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
             </div>
           </div>
           <button type="button" className={styles.btnAction} onClick={() => setShowDialog(true)}>
-            <PlusIcon />
+            <VscAdd size={14} aria-hidden="true" />
             Create your first invite
           </button>
         </div>
@@ -565,7 +514,7 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
       {showTerse && (
         <div className={styles.emptyTerse}>
           <div className={styles.emptyTerseIcon}>
-            <EnvelopeLarge />
+            <VscMail size={22} aria-hidden="true" />
           </div>
           <div className={styles.emptyTerseTitle}>No invites yet</div>
           <div className={styles.emptyTerseLine}>Generate a link to invite a teammate.</div>
@@ -620,7 +569,7 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
                         disabled={!hasPlaintext}
                         onClick={() => copyExisting(row)}
                       >
-                        <CopyIcon />
+                        <VscCopy size={14} aria-hidden="true" />
                       </button>
                       <button
                         type="button"
@@ -641,7 +590,7 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
                       aria-label="Delete invite"
                       onClick={() => onDeleteOne(row)}
                     >
-                      <TrashIcon />
+                      <VscTrash size={14} aria-hidden="true" />
                     </button>
                   )}
                 </div>
