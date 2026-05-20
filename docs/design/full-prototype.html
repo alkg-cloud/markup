@@ -2228,25 +2228,62 @@ function renderInvites(el) {
   function terminalCard(state, title, meta) {
     const icon = state === 'used' ? checkSvg : warnSvg;
     const iconBg = state === 'used' ? 'rgba(255,255,255,0.04);color:var(--text-muted)' : 'var(--danger-soft);color:var(--danger)';
-    const stateColor = state === 'used' ? 'var(--text-dim)' : 'var(--danger)';
-    return `<div style="${cardBase};opacity:0.65">
+    return `<div class="invite-card terminal" style="${cardBase};opacity:0.65;position:relative">
       <div style="${iconBase};background:${iconBg.split(';')[0]};color:${iconBg.split(':')[1]}">${icon}</div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:600;font-size:14px;color:var(--text-bright)">${title}</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${meta.replace(/__STATE__/, `<span style="color:${stateColor}">${meta.match(/__STATE__/) ? '' : ''}</span>`)}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${meta}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button class="invite-delete-btn" style="${actionBtn};opacity:0;pointer-events:none;transition:opacity .15s,background .15s,color .15s" onmouseover="this.style.background='var(--danger-soft)';this.style.color='var(--danger)'" onmouseout="this.style.background='';this.style.color='var(--text-muted)'" onclick="showToast('Removed from list')" title="Remove from list">${trashSvg}</button>
       </div>
     </div>`;
   }
 
+  const kebabSvg = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>';
+
   el.innerHTML = `
+    <style>
+      .invite-card.terminal:hover .invite-delete-btn { opacity:1 !important; pointer-events:auto !important; }
+      #invites-bulk-menu {
+        position:absolute; top:calc(100% + 6px); right:0; min-width:240px;
+        background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md);
+        box-shadow:var(--shadow-popover); padding:4px 0; z-index:10;
+        opacity:0; transform:scale(0.95) translateY(-4px); pointer-events:none;
+        transition:opacity .12s,transform .12s;
+      }
+      #invites-bulk-menu.open { opacity:1; transform:scale(1) translateY(0); pointer-events:auto; }
+      .invites-bulk-item { display:flex; align-items:center; gap:10px; padding:10px 14px; color:var(--danger); font-size:13px; font-weight:500; cursor:pointer; width:100%; text-align:left; transition:background .15s; }
+      .invites-bulk-item:hover { background:var(--danger-soft); }
+      .invites-bulk-item.is-disabled { color:var(--text-muted); opacity:0.4; cursor:not-allowed; }
+      .invites-bulk-item.is-disabled:hover { background:transparent; }
+      .invites-bulk-item .chip { margin-left:auto; font-family:var(--font-mono); font-size:11px; font-weight:600; color:var(--text-muted); background:var(--bg-elevated); border:1px solid var(--border-subtle); padding:1px 6px; border-radius:var(--radius-xs); }
+      .invites-bulk-divider { height:1px; background:var(--border-subtle); margin:4px 8px; }
+    </style>
     <h1 class="page-title">Invites</h1>
     <p class="page-subtitle">Generate invite links for new teammates.</p>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;max-width:600px">
       <span style="font-size:13px;color:var(--text-dim)">5 invites</span>
-      <button class="btn-new-project" style="width:auto;display:inline-flex" onclick="showToast('Invite dialog (demo)')">
-        ${plusSvg}
-        New Invite
-      </button>
+      <div style="display:flex;align-items:center;gap:6px;position:relative">
+        <button class="btn-new-project" style="width:auto;display:inline-flex" onclick="showToast('Invite dialog (demo)')">
+          ${plusSvg}
+          New Invite
+        </button>
+        <button id="invites-bulk-trigger" style="width:32px;height:32px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background .15s,color .15s" onmouseover="this.style.background='var(--surface-hover)';this.style.color='var(--text)'" onmouseout="this.style.background='';this.style.color='var(--text-muted)'" onclick="event.stopPropagation();document.getElementById('invites-bulk-menu').classList.toggle('open')" title="Bulk actions">${kebabSvg}</button>
+        <div id="invites-bulk-menu" role="menu">
+          <button class="invites-bulk-item" role="menuitem" onclick="document.getElementById('invites-bulk-menu').classList.remove('open');showToast('Revoked all 2 open invites')">
+            ${warnSvg}
+            Revoke all open invites
+            <span class="chip">2</span>
+          </button>
+          <div class="invites-bulk-divider"></div>
+          <button class="invites-bulk-item" role="menuitem" onclick="document.getElementById('invites-bulk-menu').classList.remove('open');showToast('Cleared 3 completed invites')">
+            ${trashSvg}
+            Clear all history
+            <span class="chip">3</span>
+          </button>
+        </div>
+      </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;max-width:600px">
       ${unusedCard('Invite for bea@studio.io', 'Created 2 hours ago · Member · <span style="color:var(--text-dim)">Expires in 6d 22h</span>', 'mki_••••••••••••a7b3')}
@@ -2256,6 +2293,18 @@ function renderInvites(el) {
       ${terminalCard('revoked', 'Invite for sam@studio.io',    'Created 2 weeks ago · Member · <span style="color:var(--danger)">Revoked yesterday</span>')}
     </div>
   `;
+
+  // Close bulk menu on outside click
+  setTimeout(() => {
+    const onDocClick = (e) => {
+      const menu = document.getElementById('invites-bulk-menu');
+      const trigger = document.getElementById('invites-bulk-trigger');
+      if (menu && trigger && !menu.contains(e.target) && e.target !== trigger && !trigger.contains(e.target)) {
+        menu.classList.remove('open');
+      }
+    };
+    document.addEventListener('click', onDocClick, { once: false });
+  }, 0);
 }
 
 // ══════════════════════════════════════
