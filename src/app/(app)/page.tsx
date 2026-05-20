@@ -3,27 +3,25 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
-import type { ProjectCardData } from '@/components/ProjectCard/ProjectCard';
+import type { HomeData } from '@/lib/home/types';
 import { AllProjectsPage } from './AllProjectsPage';
 
-interface ProjectsListResponse {
-  projects: ProjectCardData[];
-}
-
 /**
- * Workspace landing at `/` — the `all-projects` grid. Fetches the
- * project list with counts and forwards it to `AllProjectsPage`, which
- * owns the grid + dialog UI.
+ * Workspace landing at `/` — the redesigned home dashboard. Fetches
+ * the workspace aggregator (`GET /api/home`) in a single round-trip
+ * and forwards the resolved `HomeData` to `AllProjectsPage`, which
+ * renders the 4 stacked sections (Hero → Recents → Projects → Orphans)
+ * and owns the dialog UI.
  */
 export default function Root() {
-  const [projects, setProjects] = useState<ProjectCardData[] | null>(null);
+  const [data, setData] = useState<HomeData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     setError(null);
     const controller = new AbortController();
-    fetch('/api/projects', { credentials: 'include', signal: controller.signal })
+    fetch('/api/home', { credentials: 'include', signal: controller.signal })
       .then(async (res) => {
         if (res.status === 401) {
           window.location.replace('/login');
@@ -33,8 +31,8 @@ export default function Root() {
           setError(`http_${res.status}`);
           return;
         }
-        const json: ProjectsListResponse = await res.json();
-        setProjects(json.projects);
+        const json: HomeData = await res.json();
+        setData(json);
       })
       .catch((e) => {
         if (e?.name === 'AbortError') return;
@@ -46,12 +44,12 @@ export default function Root() {
   const reload = useCallback(() => setReloadToken((n) => n + 1), []);
 
   if (error) {
-    return <ErrorState error={`Failed to load projects (${error}).`} onRetry={reload} />;
+    return <ErrorState error={`Failed to load home (${error}).`} onRetry={reload} />;
   }
 
-  if (!projects) {
+  if (!data) {
     return <LoadingState />;
   }
 
-  return <AllProjectsPage projects={projects} onMutated={reload} />;
+  return <AllProjectsPage data={data} onMutated={reload} />;
 }
