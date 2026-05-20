@@ -3,28 +3,32 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { HomeHero } from '@/components/HomeHero/HomeHero';
+import { HomeOrphans } from '@/components/HomeOrphans/HomeOrphans';
+import { HomeProjects } from '@/components/HomeProjects/HomeProjects';
+import { HomeRecents } from '@/components/HomeRecents/HomeRecents';
 import { NewProjectDialog } from '@/components/NewProjectDialog/NewProjectDialog';
-import { ProjectCard, type ProjectCardData } from '@/components/ProjectCard/ProjectCard';
+import type { ProjectCardData } from '@/components/ProjectCard/ProjectCard';
 import { Topbar } from '@/components/Topbar/Topbar';
-import { useIdentity } from '@/lib/hooks/use-require-auth';
+import type { HomeData } from '@/lib/home/types';
 import { projectHref } from '@/lib/project/routes';
 import styles from './AllProjectsPage.module.css';
 
 interface AllProjectsPageProps {
-  projects: ProjectCardData[];
+  data: HomeData;
   /** Triggered after a mutation so the parent can refetch + rerender. */
   onMutated: () => void;
 }
 
 /**
- * `all-projects` — workspace landing. Renders the project-card grid +
- * "New project" CTA, owns the project create/edit dialog state and
- * delete-confirm flow. The fetch lives in the page shell so this
- * component stays a pure renderer of the resolved payload.
+ * `home-page` — workspace landing. Renders the 4-section dashboard
+ * (HomeHero → HomeRecents → HomeProjects → HomeOrphans) full-bleed and
+ * owns the project create/edit dialog state plus the delete-confirm
+ * flow. The fetch lives in the page shell so this component stays a
+ * pure renderer of the resolved `HomeData` payload.
  */
-export function AllProjectsPage({ projects, onMutated }: AllProjectsPageProps) {
+export function AllProjectsPage({ data, onMutated }: AllProjectsPageProps) {
   const router = useRouter();
-  const identity = useIdentity();
   const { confirm, dialog: confirmDialog } = useConfirm();
 
   const [newOpen, setNewOpen] = useState(false);
@@ -32,7 +36,7 @@ export function AllProjectsPage({ projects, onMutated }: AllProjectsPageProps) {
 
   // n is tiny (project count, never paginated) — inline find is fine
   // and skips a useMemo identity dance for every parent rerender.
-  const editingMatch = editingId ? projects.find((p) => p.id === editingId) : undefined;
+  const editingMatch = editingId ? data.projects.find((p) => p.id === editingId) : undefined;
   const editingProject = editingMatch
     ? {
         id: editingMatch.id,
@@ -85,8 +89,6 @@ export function AllProjectsPage({ projects, onMutated }: AllProjectsPageProps) {
     [confirm, onMutated],
   );
 
-  const isEmpty = projects.length === 0;
-
   return (
     <div className={styles.page}>
       {confirmDialog}
@@ -98,105 +100,28 @@ export function AllProjectsPage({ projects, onMutated }: AllProjectsPageProps) {
         project={editingProject}
       />
 
-      <Topbar breadcrumbs={[]} userName={identity?.name} userEmail={identity?.email} />
+      <Topbar
+        breadcrumbs={[]}
+        userName={data.identity.name ?? undefined}
+        userEmail={data.identity.email ?? undefined}
+      />
 
-      <main className={styles.main} aria-label="All projects">
-        <header className={styles.header}>
-          <div className={styles.heading}>
-            <h1 className={styles.title}>Projects</h1>
-            <span className={styles.count}>
-              {projects.length} {projects.length === 1 ? 'project' : 'projects'}
-            </span>
-          </div>
-          {!isEmpty && (
-            <button
-              type="button"
-              className={styles.cta}
-              onClick={() => setNewOpen(true)}
-              aria-label="Create a new project"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
-              </svg>
-              New project
-            </button>
-          )}
-        </header>
-
-        {isEmpty ? (
-          <div className={styles.empty}>
-            <svg
-              width="64"
-              height="64"
-              viewBox="0 0 64 64"
-              fill="none"
-              aria-hidden="true"
-              className={styles.emptyIcon}
-            >
-              <rect
-                x="9"
-                y="18"
-                width="46"
-                height="34"
-                rx="6"
-                stroke="var(--border-strong)"
-                strokeWidth="2"
-              />
-              <rect
-                x="6"
-                y="14"
-                width="46"
-                height="34"
-                rx="6"
-                stroke="var(--border)"
-                strokeWidth="1.5"
-              />
-              <rect
-                x="3"
-                y="10"
-                width="46"
-                height="34"
-                rx="6"
-                stroke="var(--border-subtle)"
-                strokeWidth="1"
-              />
-            </svg>
-            <h2 className={styles.emptyTitle}>No projects yet</h2>
-            <p className={styles.emptyDesc}>
-              Create your first project to start organising mockups, folders, and annotations.
-            </p>
-            <button type="button" className={styles.cta} onClick={() => setNewOpen(true)}>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z" />
-              </svg>
-              Create your first project
-            </button>
-          </div>
-        ) : (
-          <div className={styles.grid}>
-            {projects.map((p) => (
-              <ProjectCard
-                key={p.id}
-                project={p}
-                onOpen={() => router.push(projectHref(p.slug))}
-                onEdit={() => setEditingId(p.id)}
-                onDelete={() => handleDelete(p)}
-              />
-            ))}
-          </div>
-        )}
+      <main className={styles.main} aria-label="Home">
+        <HomeHero
+          timeOfDay={data.greeting.timeOfDay}
+          identityName={data.identity.name}
+          identityEmail={data.identity.email}
+          updatedSinceYesterdayCount={data.greeting.updatedSinceYesterdayCount}
+        />
+        <HomeRecents items={data.recents} />
+        <HomeProjects
+          projects={data.projects}
+          onNewProject={() => setNewOpen(true)}
+          onOpen={(p) => router.push(projectHref(p.slug))}
+          onEdit={(p) => setEditingId(p.id)}
+          onDelete={(p) => handleDelete(p)}
+        />
+        <HomeOrphans items={data.orphans} />
       </main>
     </div>
   );
