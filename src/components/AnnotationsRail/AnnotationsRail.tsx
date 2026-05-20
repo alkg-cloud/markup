@@ -95,10 +95,16 @@ export function AnnotationsRail({
       leaveTimerRef.current = null;
     }
   }, []);
+  // Suppress hover-expand while a drag is in flight. Letting the rail
+  // morph 60→300px mid-drag would change `r.width`, which the move
+  // handler's clamp uses — pulling the rail leftwards by up to 240 px
+  // away from the cursor. After the drag ends, the user's next gesture
+  // (any mouseenter on a sub-region) re-arms hover-expand normally.
   const enter = useCallback(() => {
+    if (drag) return;
     cancelLeave();
     if (!pinned) setHover(true);
-  }, [pinned, cancelLeave]);
+  }, [drag, pinned, cancelLeave]);
   const leave = useCallback(() => {
     if (pinned) return;
     cancelLeave();
@@ -119,6 +125,12 @@ export function AnnotationsRail({
     if (!rail) return;
     e.preventDefault();
     e.stopPropagation();
+    // Capture the pointer so fast cursor movement past the 28 px handle
+    // can't let the browser escalate the gesture (text selection across
+    // rail body, native HTML5 drag of the inner svg) and fire
+    // pointercancel — which would otherwise pin `drag` at true because
+    // only pointerup releases it. Auto-released on pointerup / pointercancel.
+    e.currentTarget.setPointerCapture(e.pointerId);
     const r = rail.getBoundingClientRect();
     dragState.current = {
       ox: r.left,
@@ -153,15 +165,18 @@ export function AnnotationsRail({
         top: screenTop - (bounds?.top ?? 0),
       });
     };
-    const onUp = () => {
+    const onEnd = () => {
       setDrag(false);
       dragState.current = null;
     };
     window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointerup', onEnd);
+    // pointercancel: reset `drag` if the browser drops the pointer mid-gesture.
+    window.addEventListener('pointercancel', onEnd);
     return () => {
       window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointerup', onEnd);
+      window.removeEventListener('pointercancel', onEnd);
     };
   }, [drag, boundsRef]);
 

@@ -12,9 +12,12 @@ import { env } from '@/lib/env';
  * is the second lock for cookie-authed mutations.
  *
  * Same-origin is "Origin matches `env.APP_URL` host:port" or any value
- * listed in `MARKUP_ALLOWED_ORIGINS` (comma-separated). Local dev tunnels
- * (cloudflared / ngrok) join the list via env, not via wildcard, so
- * prod is always closed by default.
+ * listed in `MARKUP_ALLOWED_ORIGINS` (comma-separated). In `NODE_ENV=
+ * development` only, common quick-tunnel hostnames (`*.trycloudflare.com`,
+ * `*.ngrok.io`, `*.ngrok-free.app`) are auto-allowed so QA-via-tunnel
+ * doesn't require re-editing `.env.local` on every `cloudflared` restart
+ * (the tunnel URL is fresh each run). Production never auto-allows —
+ * `NODE_ENV=production` evaluates the strict allow-list only.
  *
  * `Origin` absent → treated as **same-origin OK**. Two cases that arrive
  * without Origin: (a) non-browser automation (curl, agents) that already
@@ -26,7 +29,15 @@ import { env } from '@/lib/env';
 export function isSameOrigin(req: Request): boolean {
   const presented = req.headers.get('origin');
   if (!presented) return true; // no Origin → not a forgeable cross-site request
-  return getAllowedOrigins().has(canonicalOrigin(presented) ?? '');
+  let url: URL;
+  try {
+    url = new URL(presented);
+  } catch {
+    return false;
+  }
+  if (getAllowedOrigins().has(url.origin)) return true;
+  if (isDevTunnelOrigin(url.hostname)) return true;
+  return false;
 }
 
 /**
@@ -50,6 +61,18 @@ function canonicalOrigin(s: string): string | null {
   } catch {
     return null;
   }
+}
+
+// Mirrors `allowedDevOrigins` in `next.config.mjs`. Kept in lockstep so a
+// tunnel host that Next dev's HMR accepts is the same one the CSRF check
+// accepts — without this divergence, dev hydration works but POSTs fail
+// with `forbidden_origin`, which is the exact split that broke `/login`
+// from the cloudflared tunnel.
+const DEV_TUNNEL_SUFFIXES = ['.trycloudflare.com', '.ngrok.io', '.ngrok-free.app'];
+
+function isDevTunnelOrigin(hostname: string): boolean {
+  if (process.env.NODE_ENV !== 'development') return false;
+  return DEV_TUNNEL_SUFFIXES.some((suffix) => hostname.endsWith(suffix));
 }
 
 let cachedAllowed: Set<string> | null = null;
