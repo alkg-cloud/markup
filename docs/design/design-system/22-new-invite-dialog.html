@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>22 — New Invite Dialog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--motion-fast:160ms;--motion-base:220ms;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.10), transparent 50%);background-attachment:fixed}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+input,textarea{font-family:inherit;color:inherit}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
+.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
+.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px}
+.stage{position:relative;background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);border:1px solid var(--border-subtle);border-radius:var(--radius-md);min-height:420px;padding:48px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.scrim{position:absolute;inset:0;background:var(--scrim-strong);display:flex;align-items:center;justify-content:center}
+
+.dialog{position:relative;width:440px;max-width:calc(100% - 32px);padding:18px 18px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-popover);display:flex;flex-direction:column;gap:14px;animation:dialogIn var(--motion-base) var(--ease-spring)}
+@keyframes dialogIn{from{opacity:0;transform:scale(0.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+.dialog-head{display:flex;align-items:center;justify-content:space-between}
+.dialog-title{font-size:13px;font-weight:700;letter-spacing:0.01em;color:var(--text-bright)}
+.dialog-close{width:24px;height:24px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast)}
+.dialog-close:hover{background:var(--surface-hover);color:var(--text-bright)}
+
+.field{display:block}
+.field-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;display:block}
+.input{width:100%;height:34px;padding:0 12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;color:var(--text-bright);outline:none;transition:border-color var(--motion-fast),box-shadow var(--motion-fast)}
+.input::placeholder{color:var(--text-muted)}
+.input:focus{border-color:var(--accent-bright);box-shadow:0 0 0 3px var(--accent-soft)}
+.field-hint{display:block;margin-top:6px;font-size:11px;line-height:1.4;color:var(--text-muted)}
+
+.segmented{display:grid;gap:2px;height:32px;padding:2px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-sm)}
+.segmented.cols-2{grid-template-columns:1fr 1fr}
+.segmented.cols-4{grid-template-columns:1fr 1fr 1fr 1fr}
+.seg{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-dim);border-radius:var(--radius-xs);transition:background var(--motion-fast),color var(--motion-fast)}
+.seg:hover{color:var(--text)}
+.seg.is-active{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent-overlay-mid)}
+
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.btn-secondary{height:30px;padding:0 14px;font-size:12px;font-weight:700;letter-spacing:0.02em;color:var(--text-muted);border-radius:var(--radius-xs);transition:background var(--motion-fast),color var(--motion-fast)}
+.btn-secondary:hover{background:var(--surface-hover);color:var(--text-bright)}
+.btn-accent{height:30px;padding:0 14px;font-size:12px;font-weight:700;letter-spacing:0.02em;background:var(--accent-soft);color:var(--accent-bright);border:1px solid var(--accent-overlay-mid);border-radius:var(--radius-xs);transition:background var(--motion-fast),color var(--motion-fast)}
+.btn-accent:hover{background:var(--accent-overlay-mid);color:var(--text-bright)}
+</style>
+</head>
+<body>
+
+<div class="demo" style="padding:32px;max-width:680px">
+  <div class="title">New Invite Dialog</div>
+  <div class="subtitle">Composes DS 14-dialog. Three fields: email (optional bind), role (Member default), expiry (7d default). On submit, the link is auto-copied.</div>
+
+  <div class="stage">
+    <div class="scrim"></div>
+
+    <div class="dialog">
+      <div class="dialog-head">
+        <div class="dialog-title">Create invite</div>
+        <button class="dialog-close" title="Close">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.646 3.646.707.708L8 8.707z"/></svg>
+        </button>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="email">Bind to email (optional)</label>
+        <input class="input" id="email" type="text" placeholder="name@example.com">
+        <span class="field-hint">If set, signup requires this exact email.</span>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Role</label>
+        <div class="segmented cols-2">
+          <button class="seg is-active">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM5.5 3.5a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0zM3 16h10v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1z"/></svg>
+            Member
+          </button>
+          <button class="seg">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0L2 2v4.5C2 10.36 4.56 13.97 8 15c3.44-1.03 6-4.64 6-8.5V2L8 0zm-.5 11l-3-3 .707-.707L7.5 9.586l3.293-3.293.707.707-4 4z"/></svg>
+            Admin
+          </button>
+        </div>
+        <span class="field-hint">Can view projects and comment. No settings access.</span>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Expires in</label>
+        <div class="segmented cols-4">
+          <button class="seg">24h</button>
+          <button class="seg is-active">7d</button>
+          <button class="seg">30d</button>
+          <button class="seg">Never</button>
+        </div>
+        <span class="field-hint">Link dies on May 27, 5:42 PM.</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary">Cancel</button>
+        <button class="btn-accent">Create invite</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="demo-label">22 — New Invite Dialog</div>
+</body>
+</html>
