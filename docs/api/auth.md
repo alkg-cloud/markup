@@ -73,6 +73,10 @@ Sessions live 30 days, refreshed on every request that succeeds in cookie auth. 
 
 To force a logout, delete the `Session` row — the JWT will still verify until expiry but `identify()` checks the row exists.
 
+## Stale-cookie self-heal on `/api/auth/me`
+
+`GET /api/auth/me` is the only auth-status endpoint the SPA polls (`useRequireAuth` calls it on every shell mount). When the request carries an `mk_session` cookie that `identify()` rejects (bad signature after `AUTH_SECRET` rotation, deleted user, expired `Session` row), the 401 response includes a `Set-Cookie: mk_session=; Max-Age=0` directive to expire the bad cookie. This is required because the edge proxy in `src/proxy.ts` can't validate the JWT (no `jose` at edge) — it only checks cookie presence. Without the self-heal, a stale cookie traps the client in a loop: `/api/auth/me` returns 401 → client redirects to `/login` → proxy sees the cookie and bounces `/login` back to `/` → `/api/auth/me` 401 again. Clearing the cookie at the source breaks the loop without bloating proxy code.
+
 ## CSRF guard
 
 Every state-changing route (POST/PUT/PATCH/DELETE) calls `assertSameOrigin(req)` at the top of the handler:
@@ -88,6 +92,8 @@ export async function POST(req: Request) {
 ```
 
 The helper validates the `Origin` header against `env.APP_URL` plus a comma-separated `MARKUP_ALLOWED_ORIGINS` allow-list. Cross-origin requests get `{ error: 'forbidden_origin' }` with status 403. Requests **without** `Origin` (curl, automation tools, Bearer-authed agents) pass through — the CSRF threat model targets cookie-authed browser requests, which always carry an Origin.
+
+Under `NODE_ENV=development` only, the helper additionally auto-allows quick-tunnel hostnames matching `*.trycloudflare.com`, `*.ngrok.io`, or `*.ngrok-free.app`. This pairs with `allowedDevOrigins` in `next.config.mjs` (which keeps the Turbopack HMR client happy on tunnel hosts) so QA-via-tunnel doesn't fail on the first POST with `forbidden_origin`. Production never auto-allows — `NODE_ENV=production` falls back to the strict allow-list and tunnels must be added to `MARKUP_ALLOWED_ORIGINS` explicitly. The suffix list lives in `src/lib/auth/origin.ts` (`DEV_TUNNEL_SUFFIXES`) and must stay in lockstep with `next.config.mjs`.
 
 `SameSite=Lax` on the session cookie blocks most cross-site cookie sends; the Origin check is the second lock for redirect/legacy paths that leak. The auth/login, auth/setup, and auth/logout endpoints also run the guard (a CSRF could otherwise log a victim into an attacker-controlled account or wipe their session).
 
