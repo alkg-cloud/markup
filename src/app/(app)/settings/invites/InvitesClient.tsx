@@ -174,6 +174,20 @@ function TrashIcon() {
     </svg>
   );
 }
+// Revoke (unused → revoked) uses circle-slash, NOT trash, because the row
+// stays in the list as a revoked entry. Trash is reserved for the terminal-
+// state Delete affordance that actually removes the row.
+function CircleSlashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM2 8a6 6 0 0 1 10.74-3.67l-8.41 8.41A5.98 5.98 0 0 1 2 8zm6 6a5.98 5.98 0 0 1-3.74-1.33l8.41-8.41A5.98 5.98 0 0 1 8 14z"
+      />
+    </svg>
+  );
+}
 function CloseIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -501,7 +515,7 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
               disabled={unusedCount === 0}
               onClick={onRevokeAll}
             >
-              <WarningIcon />
+              <CircleSlashIcon />
               Revoke all open invites
               <span className={styles.countChip}>{unusedCount}</span>
             </button>
@@ -625,7 +639,7 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
                         aria-label="Revoke invite"
                         onClick={() => onRevokeOne(row)}
                       >
-                        <TrashIcon />
+                        <CircleSlashIcon />
                       </button>
                     </>
                   )}
