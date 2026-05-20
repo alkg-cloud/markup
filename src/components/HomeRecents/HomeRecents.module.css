@@ -1,0 +1,38 @@
+/* `home-recents-section` — section header + grid wrapper. Grid uses
+   the same `auto-fill, minmax(280px, 1fr)` rhythm as `home-projects-
+   section` and `home-orphans-section` so the three blocks share a
+   single column metric on every viewport. */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: 20px;
+  color: var(--text-bright);
+  letter-spacing: var(--tracking-tight);
+}
+
+.count {
+  font-family: var(--font-mono);
+  font-size: var(--type-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
