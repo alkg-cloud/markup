@@ -23,7 +23,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
   try {
-    requireAdmin(await identify(req));
+    await requireAdmin(await identify(req));
   } catch (e) {
     return handleAuthError(e);
   }
@@ -39,7 +39,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
   try {
-    requireAdmin(await identify(req));
+    await requireAdmin(await identify(req));
   } catch (e) {
     return handleAuthError(e);
   }

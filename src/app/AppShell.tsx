@@ -10,7 +10,7 @@ import styles from './projects/layout.module.css';
 import { ProjectSidebar } from './projects/ProjectSidebar';
 
 interface ShellPayload {
-  identity: { kind: 'user' | 'agent'; name?: string; email?: string };
+  identity: { kind: 'user' | 'agent'; name?: string; email?: string; role?: 'admin' | 'member' };
   projects: TreeProject[];
   orphanMockups: TreeMockup[];
   mockupNames: Record<string, string>;
@@ -80,6 +80,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     id: identity.id,
     name: shell.identity.name ?? identity.name,
     email: shell.identity.email ?? identity.email,
+    role: shell.identity.role ?? identity.role,
   };
 
   return (

@@ -10,7 +10,7 @@ const createSchema = z.object({ name: z.string().regex(nameRe).min(1).max(64) })
 
 export async function GET(req: Request) {
   try {
-    requireAdmin(await identify(req));
+    await requireAdmin(await identify(req));
   } catch (e) {
     return handleAuthError(e);
   }
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
   try {
-    requireAdmin(await identify(req));
+    await requireAdmin(await identify(req));
   } catch (e) {
     return handleAuthError(e);
   }

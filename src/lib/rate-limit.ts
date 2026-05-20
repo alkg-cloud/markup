@@ -54,6 +54,14 @@ export const loginLimiter = createRateLimiter({ capacity: 10, refillPerSecond: 1
 // need to swap this for a Redis-backed limiter.
 export const setupLimiter = createRateLimiter({ capacity: 5, refillPerSecond: 5 / 60 });
 
+// 5 redeem attempts per 15 min per IP. The invite-redeem route is public
+// (no session), so this is the only IP-side guard — partnered with the
+// per-token `failedAttempts` column for distributed attackers.
+export const inviteRedeemIpLimiter = createRateLimiter({
+  capacity: 5,
+  refillPerSecond: 5 / (15 * 60),
+});
+
 export function clientIp(req: Request): string {
   const xff = req.headers.get('x-forwarded-for');
   if (xff) return xff.split(',')[0].trim();
