@@ -88,17 +88,36 @@ export function useFilePreview(file: File | null): PreviewState {
     iframe.style.border = '0';
     iframe.src = url;
 
-    const timeoutId: ReturnType<typeof setTimeout> = setTimeout(() => {
-      if (signal.aborted) return;
+    // Single teardown for every terminal branch (timeout, ready, error,
+    // unmount). Idempotent: `clearTimeout` on an expired id, `iframe.remove`
+    // on a detached node, and `URL.revokeObjectURL` on an already-revoked
+    // URL are all harmless, so re-entering `cleanup` from the effect's
+    // return is safe.
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const cleanup = () => {
       controller.abort();
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
       iframe.remove();
       URL.revokeObjectURL(url);
+    };
+
+    timeoutId = setTimeout(() => {
+      if (signal.aborted) return;
+      cleanup();
       setState({ state: 'fallback', dataUrl: null, reason: 'timeout' });
     }, IFRAME_LOAD_TIMEOUT_MS);
 
     const onLoad = () => {
       if (signal.aborted) return;
-      clearTimeout(timeoutId);
+      // Iframe loaded — defuse the load-timeout so html2canvas can take
+      // whatever time it needs without us flipping to `fallback`.
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
       const target = iframe.contentDocument?.body ?? iframe;
       html2canvas(target as HTMLElement, {
         scale: HTML2CANVAS_SCALE,
@@ -108,16 +127,12 @@ export function useFilePreview(file: File | null): PreviewState {
         .then((canvas) => {
           if (signal.aborted) return;
           const dataUrl = canvas.toDataURL('image/png');
-          controller.abort();
-          iframe.remove();
-          URL.revokeObjectURL(url);
+          cleanup();
           setState({ state: 'ready', dataUrl });
         })
         .catch(() => {
           if (signal.aborted) return;
-          controller.abort();
-          iframe.remove();
-          URL.revokeObjectURL(url);
+          cleanup();
           setState({ state: 'fallback', dataUrl: null, reason: 'error' });
         });
     };
@@ -125,17 +140,7 @@ export function useFilePreview(file: File | null): PreviewState {
     iframe.addEventListener('load', onLoad, { signal });
     document.body.appendChild(iframe);
 
-    return () => {
-      // Idempotent: if a terminal branch (timeout / ready / error)
-      // already aborted + cleaned up, the second pass is a no-op.
-      // `clearTimeout` on an expired id is harmless, `iframe.remove()`
-      // on a detached node is harmless, and `URL.revokeObjectURL` on
-      // an already-revoked URL is harmless.
-      controller.abort();
-      clearTimeout(timeoutId);
-      iframe.remove();
-      URL.revokeObjectURL(url);
-    };
+    return cleanup;
   }, [file]);
 
   return state;
