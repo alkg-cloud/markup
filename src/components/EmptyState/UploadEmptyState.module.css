@@ -1,0 +1,93 @@
+/* UploadEmptyState — port of DS 26 (empty-state) verbatim. The
+   drop-zone-gigante that replaces the view content when an
+   all-projects / project / folder view has zero mockups. Doubles as a
+   drop target AND a click-to-pick file affordance via a wrapping
+   <label> over a visually-hidden native <input type="file">.
+
+   Styles match DS 26 §"empty-state — drop-zone-gigante" verbatim:
+     - 360px tall dropzone, 2px dashed --accent-overlay-mid border
+     - --surface-glass-bg + 8px backdrop blur
+     - hover/focus-visible brightens border to --accent + soft overlay
+     - 56×56 icon circle (--accent-overlay-soft fill, --accent stroke)
+     - 18px/700 title (--text-bright); 12px mono sub (--text-dim) */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md, 12px);
+  padding: 40px 0;
+  width: 100%;
+  min-height: 420px;
+}
+
+.drop {
+  width: 100%;
+  height: 360px;
+  border: 2px dashed var(--accent-overlay-mid);
+  border-radius: var(--radius-md);
+  background: var(--surface-glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-base) var(--ease-standard),
+    background var(--motion-base) var(--ease-standard);
+}
+
+.drop:hover,
+.drop:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent-overlay-soft);
+  outline: none;
+}
+
+.icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-overlay-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon svg {
+  width: 28px;
+  height: 28px;
+  color: var(--accent);
+}
+
+.title {
+  color: var(--text-bright);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
+.sub {
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* Hidden file input — keyboard-accessible via the dropzone's tabIndex.
+   Standard "visually hidden" recipe so it stays focusable for assistive
+   tech but invisible to sighted users. */
+.input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
