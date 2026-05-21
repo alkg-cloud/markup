@@ -77,6 +77,23 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => controller.abort();
   }, [authLoading, identity, refreshTick]);
 
+  // Breadcrumb is derived from the URL + the already-loaded shell so
+  // navigation updates the trail instantly — no page-level resolver
+  // round-trip needed before the breadcrumb refreshes. Hooks must be
+  // declared in stable order, so the memo runs unconditionally and
+  // gracefully degrades to an empty trail when the shell is still
+  // loading; the conditional `<ShellSkeleton />` early-return below
+  // ignores the value in that case.
+  const breadcrumbs = useMemo(
+    () =>
+      buildBreadcrumbsFromPath({
+        pathname,
+        projects: shell?.projects ?? [],
+        recentMockups: shell?.recentMockups ?? {},
+      }),
+    [pathname, shell?.projects, shell?.recentMockups],
+  );
+
   if (authLoading || !identity || !shell) {
     if (shellError) {
       return (
@@ -99,19 +116,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     }
     return <ShellSkeleton />;
   }
-
-  // Breadcrumb is derived from the URL + the already-loaded shell so
-  // navigation updates the trail instantly — no page-level resolver
-  // round-trip needed before the breadcrumb refreshes.
-  const breadcrumbs = useMemo(
-    () =>
-      buildBreadcrumbsFromPath({
-        pathname,
-        projects: shell.projects,
-        recentMockups: shell.recentMockups,
-      }),
-    [pathname, shell.projects, shell.recentMockups],
-  );
 
   // Prefer the shell payload's name/email (it falls back to the user
   // row), but keep the identity `kind` and `id` from the auth check.
