@@ -103,6 +103,24 @@ vi.mock('@/components/NewMockupDialog/useUploadMockup', () => ({
   }),
 }));
 
+// Mock useFolders so the dialog renders against a controllable folder
+// list per projectId — no fetch is involved.
+type FoldersByProject = Record<string, FolderPickerFolder[]>;
+let foldersByProject: FoldersByProject = {};
+let lastUseFoldersCallProjectId: string | null | undefined;
+const useFoldersCalls: Array<string | null> = [];
+
+vi.mock('@/components/NewMockupDialog/useFolders', () => ({
+  useFolders: (projectId: string | null) => {
+    useFoldersCalls.push(projectId);
+    lastUseFoldersCallProjectId = projectId;
+    return {
+      folders: projectId === null ? [] : (foldersByProject[projectId] ?? []),
+      loading: false,
+    };
+  },
+}));
+
 import { useState } from 'react';
 import type { FolderPickerFolder } from '@/components/FolderPicker';
 import {
@@ -124,6 +142,21 @@ beforeEach(() => {
   resetSpy.mockReset();
   uploadState = { status: 'idle' };
   previewState = { state: 'ready', dataUrl: 'data:image/png;base64,FAKE' };
+  // Seed per-test folder map: p1 gets the test fixture; p2 gets a
+  // distinct list so we can prove the picker re-keys on project switch.
+  foldersByProject = {
+    p1: [
+      { id: 'hero', name: 'Hero', parentId: null },
+      { id: 'hero-section', name: 'Section', parentId: 'hero' },
+      { id: 'pricing', name: 'Pricing', parentId: null },
+    ],
+    p2: [
+      { id: 'helio-landing', name: 'Landing', parentId: null },
+      { id: 'helio-docs', name: 'Docs', parentId: null },
+    ],
+  };
+  useFoldersCalls.length = 0;
+  lastUseFoldersCallProjectId = undefined;
 });
 
 afterEach(() => {
@@ -137,12 +170,6 @@ afterEach(() => {
 const PROJECTS: NewMockupDialogProject[] = [
   { id: 'p1', slug: 'lumen-coffee', name: 'Lumen Coffee', icon: '☕' },
   { id: 'p2', slug: 'helio', name: 'Helio', icon: '📐' },
-];
-
-const FOLDERS: FolderPickerFolder[] = [
-  { id: 'hero', name: 'Hero', parentId: null },
-  { id: 'hero-section', name: 'Section', parentId: 'hero' },
-  { id: 'pricing', name: 'Pricing', parentId: null },
 ];
 
 const DEFAULT_TARGET: NewMockupDialogTarget = {
@@ -165,6 +192,8 @@ function Harness(props: {
   mode?: 'add' | 'replace';
   currentMockup?: { id: string; name: string };
   onOpenChange?: (open: boolean) => void;
+  target?: NewMockupDialogTarget;
+  projects?: NewMockupDialogProject[];
 }) {
   const [open, setOpen] = useState(props.initialOpen);
   const [, force] = useState(0);
@@ -177,11 +206,10 @@ function Harness(props: {
         setOpen(next);
       }}
       file={props.file}
-      target={DEFAULT_TARGET}
+      target={props.target ?? DEFAULT_TARGET}
       mode={props.mode}
       currentMockup={props.currentMockup}
-      folders={FOLDERS}
-      projects={PROJECTS}
+      projects={props.projects ?? PROJECTS}
     />
   );
 }
@@ -395,5 +423,40 @@ describe('NewMockupDialog', () => {
       forceRender?.();
     });
     expect(document.body.textContent).toContain('uploading 64%');
+  });
+
+  it('project switch: changing the project <select> refetches folders for the new project', () => {
+    renderHarness(<Harness initialOpen={true} file={htmlFile('pricing-v3.html')} />);
+
+    // Initial mount: dialog asked for p1's folders.
+    expect(useFoldersCalls).toContain('p1');
+    expect(lastUseFoldersCallProjectId).toBe('p1');
+
+    // FolderPicker reflects the p1 fixture (Hero is pre-selected).
+    let folderTrigger = document.querySelector('[data-folder-picker-trigger]') as HTMLButtonElement;
+    expect(folderTrigger.textContent).toContain('Hero');
+
+    // User switches the project select to p2.
+    const select = document.querySelector('select') as HTMLSelectElement;
+    act(() => {
+      select.value = 'p2';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    // The hook saw the new projectId — it re-keyed on the new project.
+    expect(lastUseFoldersCallProjectId).toBe('p2');
+
+    // Folder selection is cleared on project switch (the p1 folder is
+    // no longer reachable). The picker now shows the project-root
+    // placeholder.
+    folderTrigger = document.querySelector('[data-folder-picker-trigger]') as HTMLButtonElement;
+    expect(folderTrigger.textContent).not.toContain('Hero');
+
+    // Open the popover and confirm the p2-specific folders are rendered.
+    act(() => folderTrigger.click());
+    const body = document.body.textContent ?? '';
+    expect(body).toContain('Landing');
+    expect(body).toContain('Docs');
+    expect(body).not.toContain('Pricing'); // a p1-only folder
   });
 });

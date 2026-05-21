@@ -128,14 +128,15 @@ src/components/
     UploadEmptyState.tsx        # 'use client' — drop-zone-gigante for empty all-projects/project/folder views; combines drop handler + visually-hidden file input
     UploadEmptyState.module.css # dropzone, label, copy, focus ring styles
   NewMockupDialog/
-    NewMockupDialog.tsx          # 'use client' — composes RadixDialog + AlertBanner + InputField + FolderPicker + FileChip + PreviewBox + ReplaceToggle; runs `useUploadMockup` + `useFilePreview`
+    NewMockupDialog.tsx          # 'use client' — composes RadixDialog + AlertBanner + InputField + FolderPicker + FileChip + PreviewBox + ReplaceToggle; runs `useUploadMockup` + `useFilePreview` + `useFolders`; resolves `target.projectSlug` → `projectId` and `target.folderPath` → `folderId` against the projects/folders that land
     NewMockupDialog.module.css   # dialog body grid, file-chip row, picker row, progress bar, actions row
-    NewMockupDialogProvider.tsx  # 'use client' — context provider exposing `useNewMockupDialog().openDialog({ file, target, mode? })`; mounted in (app)/layout.tsx
+    NewMockupDialogProvider.tsx  # 'use client' — context provider exposing `useNewMockupDialog().openDialog({ file, target, mode? })`; lazy-fetches the project list, mounted in (app)/layout.tsx
     FileChip.tsx / .module.css   # HTML/ZIP badge + filename pill
     PreviewBox.tsx / .module.css # mockup preview iframe with loading/ready/fallback states
     ReplaceToggle.tsx / .module.css # mode switch ("Replace" vs "Add as new mockup") when an existing mockup is targeted
     useUploadMockup.ts           # XHR-backed upload hook with progress + idle|uploading|success|error state machine
     useFilePreview.ts            # builds an inline preview URL for the dropped file; loading|ready|fallback states
+    useFolders.ts                # per-project folder tree fetch keyed on `projectId`; module-level Map cache + AbortController so in-dialog project switches re-fetch (and re-flips back are free)
   Toast/
     useToast.ts             # 'use client' — ToastProvider (context + reducer) + useToast() hook; show(message, duration?)
     Toast.tsx               # re-exports ToastProvider + useToast
