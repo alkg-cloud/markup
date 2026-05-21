@@ -132,6 +132,76 @@ A 409 means the agent's context is stale — it should refetch `/agent/context/[
 
 See [Patch format](patch-format.md) for the diff conventions.
 
+## `PATCH /api/mockups/[id]`
+
+Mutate mockup-level metadata: status, placement, or name. The optional "close-out" step that completes the agent fix cycle.
+
+**Auth:** cookie OR Bearer; CSRF-guarded via `assertSameOrigin`.
+
+**Request body (JSON):**
+
+```jsonc
+{
+  "status":    "resolved",        // optional — "open" | "resolved" | "archived"
+  "projectId": "cmox…" | null,   // optional — null to orphan the mockup
+  "folderId":  "cmox…" | null,   // optional — null to move to project root
+  "position":  3,                 // optional int >= 0; only honoured when projectId/folderId present
+  "name":      "lumen-final"     // optional — admin-only (URL-safe ^[A-Za-z0-9_-]+$, max 200 chars)
+}
+```
+
+All fields optional; at least one MUST be present. The schema is strict — unknown fields return `invalid_body`.
+
+Field-level gating: `name` is admin-only. Agents (Bearer) writing `name` receive 403 `forbidden_field`. Cookie callers still require `user.role === 'admin'` for `name`. All other fields are writable by any authenticated identity.
+
+**Response 200:** the full mockup row.
+
+```jsonc
+{
+  "id":               "cmox…",
+  "name":             "lumen-final",
+  "slug":             "lumen-final",
+  "status":           "resolved",
+  "currentVersionId": "cmox…",
+  "projectId":        "cmox…",
+  "folderId":         "cmox…",
+  "position":         3,
+  "createdAt":        "2026-05-08T19:19:56.939Z",
+  "updatedAt":        "2026-05-21T14:30:00.000Z"
+}
+```
+
+**Errors:**
+
+| Status | `error` | When |
+|---|---|---|
+| 400 | `invalid_body` | Body fails Zod (unknown field, wrong type, bad status, non-URL-safe name, name > 200 chars, position < 0) |
+| 400 | `no_fields` | All optional fields absent |
+| 400 | `project_not_found` | `projectId` supplied but row missing |
+| 400 | `folder_not_found` | `folderId` supplied but row missing |
+| 400 | `folder_project_mismatch` | `folderId` belongs to a different project than `projectId` (when both present) |
+| 401 | `unauthorized` | No identity |
+| 403 | `forbidden_origin` | CSRF guard fired |
+| 403 | `forbidden_field` | Agent tried to mutate an admin-only field (`name`). Carries `field: "name"`. |
+| 404 | `not_found` | Mockup row missing |
+
+**Concurrency:** last-write-wins; no optimistic concurrency (`If-Match` / ETag) yet. Patching `status: "resolved"` twice is a no-op at the DB level.
+
+**Mockup `status` is independent of thread `status`.** A resolved mockup can still have open annotation threads; a re-opened mockup inherits no thread state change. Orchestrators decide when to close out; the endpoint does not auto-resolve.
+
+**Composition with the fix cycle:**
+
+```
+1. GET  /api/agent/context/[annotationId]    # read current state
+2. PATCH /api/mockups/[id]/version-patch      # ship the fix
+3. POST  /api/threads/[id]/reply              # explain the fix
+4. PATCH /api/mockups/[id]  { "status": "resolved" }   # optional — close out when applicable
+```
+
+Step 4 is orchestrator-decided. Most fix cycles do not close the mockup (more annotations may arrive). Only call this when the orchestrator's policy says the annotation is fully addressed.
+
+**Rename caveat:** `name` changes the slug (the canonical URL). Agents cannot rename — that's why the field is admin-only. If the slug changes, existing orchestrator bookmarks to `/projects/<slug>/…` break.
+
 ## `GET /api/annotations/[id]/region`
 
 Bbox-cropped PNG of the annotation's screenshot. Sidecar-cached.
