@@ -2,82 +2,408 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>05-project-card</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>05 — Project Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--sidebar-collapsed-width:52px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0%,0,0/0.45);--shadow-md:0 6px 16px oklch(0%,0,0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0%,0,0/0.6),0 6px 12px oklch(0%,0,0/0.45),inset 0 1px 0 oklch(100%,0,0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
+  --font-display:"Manrope",system-ui,sans-serif;
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;
+  --space-2xs:4px;--space-xs:8px;--space-sm:12px;--space-md:16px;
+  --type-2xs:11px;--type-xs:12px;--type-sm:13px;--type-md:16px;
+  --weight-medium:500;--weight-semibold:600;--weight-bold:700;
+  --tracking-tight:-0.015em;
+  --shadow-sm:0 2px 6px oklch(0% 0 0/0.45);
+  --shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
 @media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
 a{color:inherit;text-decoration:none}
-:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
-mark{background:var(--accent-overlay-mid);color:var(--accent-bright);border-radius:2px;padding:0 1px}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
-.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-card)}
 
-html,body{overflow:auto}
-.demo{padding:32px;max-width:900px;margin:0 auto}
-.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
-.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px}
-.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
-.project-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-card);overflow:hidden;transition:border-color var(--motion-fast),box-shadow var(--motion-fast);cursor:pointer}
-.project-card:hover{border-color:var(--border);box-shadow:var(--shadow-sm)}
-.card-thumb{height:140px;background:var(--bg-elevated);border-bottom:1px solid var(--border-subtle);position:relative}
-.card-thumb::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,0.15))}
-.card-body{display:flex;align-items:center;gap:8px;padding:12px}
-.card-icon{font-size:18px;flex-shrink:0}
-.card-info{flex:1;min-width:0}
-.card-name{font-size:13px;font-weight:600;color:var(--text-bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-meta{font-size:11px;color:var(--text-muted);margin-top:2px}
-.card-kebab{width:28px;height:28px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;color:var(--text-muted);opacity:0;transition:opacity var(--motion-fast),background var(--motion-fast);flex-shrink:0}
-.project-card:hover .card-kebab{opacity:1}
-.card-kebab:hover{background:var(--surface-active);color:var(--text)}
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:1080px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  min-height:180px;padding:32px;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.stage + .stage{margin-top:24px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
 
+/* ─── Project card — ProjectCard.module.css verbatim ─── */
+.card-wrap{position:relative;display:flex;width:100%;max-width:360px}
+.card{
+  flex:1;display:flex;align-items:center;gap:var(--space-md);
+  padding:var(--space-md);min-height:88px;
+  background:var(--accent-overlay-soft);
+  border:1px solid var(--accent);
+  border-radius:var(--radius-card);
+  box-shadow:var(--shadow-glow);
+  color:inherit;text-decoration:none;cursor:pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+.card:hover,.card[data-state="hover"]{
+  border-color:var(--accent-bright);
+  box-shadow:var(--shadow-glow),0 0 16px var(--accent-overlay-soft);
+  transform:translateY(-1px);
+}
+.card[data-state="focused"]{
+  box-shadow:var(--shadow-glow),0 0 0 3px var(--accent-soft);
+}
+.icon-tile{
+  flex-shrink:0;width:48px;height:48px;display:grid;place-items:center;
+  border-radius:var(--radius-md);
+  background:oklch(20% 0.06 165);
+  border:1px solid var(--accent-soft);
+  color:var(--text-bright);font-size:22px;line-height:1;
+}
+.icon-tile svg{width:22px;height:22px}
+.info{flex:1;min-width:0}
+.card-name{
+  margin:0;font-family:var(--font-display);font-weight:var(--weight-semibold);
+  font-size:var(--type-md);color:var(--text-bright);letter-spacing:var(--tracking-tight);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.card-meta{
+  margin-top:4px;font-family:var(--font-mono);font-size:var(--type-2xs);
+  color:var(--text-dim);font-variant-numeric:tabular-nums;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.card-meta-dot{margin:0 6px;opacity:0.6}
+
+.kebab{
+  position:absolute;top:var(--space-xs);right:var(--space-xs);
+  width:28px;height:28px;display:grid;place-items:center;
+  background:transparent;border:none;color:var(--text-dim);
+  border-radius:var(--radius-xs);cursor:pointer;opacity:0;
+  transition:opacity var(--motion-fast) var(--ease-standard),background var(--motion-fast) var(--ease-standard),color var(--motion-fast) var(--ease-standard);
+}
+.card-wrap:hover .kebab,
+.card-wrap[data-state="hover"] .kebab,
+.card-wrap[data-state="menu-open"] .kebab{opacity:1}
+.kebab:hover{background:var(--surface-hover);color:var(--text-bright)}
+
+/* Static popover preview for menu-open state */
+.kebab-menu{
+  position:absolute;top:44px;right:var(--space-xs);
+  min-width:180px;padding:6px;
+  background:var(--bg-elevated);border:1px solid var(--border);
+  border-radius:var(--radius-sm);box-shadow:var(--shadow-popover);
+  z-index:5;
+}
+.kebab-menu-item{
+  display:block;width:100%;padding:8px 12px;
+  background:none;border:none;color:var(--text);
+  font-family:var(--font-body);font-size:var(--type-sm);
+  text-align:left;cursor:pointer;border-radius:var(--radius-xs);
+}
+.kebab-menu-item:hover{background:var(--surface-hover)}
+.kebab-menu-divider{height:1px;background:var(--border-subtle);margin:4px 2px}
+.kebab-menu-item-danger{color:var(--danger)}
+.kebab-menu-item-danger:hover{background:var(--danger-soft);color:var(--text-bright)}
+
+/* All-states grid */
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;width:100%}
+.state{display:flex;flex-direction:column;gap:8px}
+.state .state-label{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted)}
+.state .state-row{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);padding:18px;display:flex;align-items:center;justify-content:center;min-height:120px;position:relative;overflow:visible}
+
+/* Card grid context */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;width:100%;max-width:880px}
+
+/* Anatomy + matrix + API */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
 
-<div class="demo">
-  <div class="title">Project Card</div>
-  <div class="subtitle">Card with thumbnail, title, item count and kebab menu.</div>
-  <div class="card-grid">
-    <div class="project-card">
-      <div class="card-thumb"></div>
-      <div class="card-body">
-        <span class="card-icon">🎨</span>
-        <div class="card-info">
-          <div class="card-name">Project Alpha</div>
-          <div class="card-meta">8 mockups &middot; Updated 2h ago</div>
+<div class="page" data-ds-component="project-card">
+  <h1 class="h1">05 — Project Card</h1>
+  <p class="lede">Tile that represents a project in the <code>all-projects</code> grid (<code>/projects</code>). Ships at <code>src/components/ProjectCard/ProjectCard.tsx</code> as a custom compound — no Radix primitive backs the card surface itself; the kebab menu rides on the project's <code>usePopover</code> hook (HTML native <code>popover</code> attribute, anchored via <code>anchor-name</code>). The card is one big <code>next/link</code>; the kebab is a sibling absolutely-positioned <code>&lt;button&gt;</code> so opening the menu never navigates. Glass treatment matches the projects-home tweaker exploration: accent-tinted fill (<code>--accent-overlay-soft</code>), <code>--accent</code> border, <code>--shadow-glow</code> halo, 14 px radius.</p>
+
+  <section class="section">
+    <div class="section-title">All states</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">Resting</div>
+        <div class="state-row">
+          <div class="card-wrap">
+            <a class="card">
+              <span class="icon-tile">&#x1F3A8;</span>
+              <div class="info">
+                <h2 class="card-name">lumen-coffee</h2>
+                <div class="card-meta">8 mockups<span class="card-meta-dot">·</span>3 folders</div>
+              </div>
+            </a>
+            <button type="button" class="kebab" aria-label="Menu for lumen-coffee">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+            </button>
+          </div>
         </div>
-        <button class="card-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></button>
+      </div>
+      <div class="state">
+        <div class="state-label">Hover (kebab revealed)</div>
+        <div class="state-row">
+          <div class="card-wrap" data-state="hover">
+            <a class="card" data-state="hover">
+              <span class="icon-tile">&#x1F4D0;</span>
+              <div class="info">
+                <h2 class="card-name">helio-pricing</h2>
+                <div class="card-meta">1 mockup<span class="card-meta-dot">·</span>0 folders</div>
+              </div>
+            </a>
+            <button type="button" class="kebab" aria-label="Menu for helio-pricing">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">Focused (keyboard)</div>
+        <div class="state-row">
+          <div class="card-wrap">
+            <a class="card" data-state="focused">
+              <span class="icon-tile">&#x1F680;</span>
+              <div class="info">
+                <h2 class="card-name">drone-console</h2>
+                <div class="card-meta">12 mockups<span class="card-meta-dot">·</span>4 folders</div>
+              </div>
+            </a>
+            <button type="button" class="kebab" aria-label="Menu for drone-console">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">Menu open</div>
+        <div class="state-row">
+          <div class="card-wrap" data-state="menu-open">
+            <a class="card">
+              <span class="icon-tile">&#x1F4C1;</span>
+              <div class="info">
+                <h2 class="card-name">design-system</h2>
+                <div class="card-meta">28 mockups<span class="card-meta-dot">·</span>2 folders</div>
+              </div>
+            </a>
+            <button type="button" class="kebab" aria-expanded="true" aria-label="Menu for design-system">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+            </button>
+            <div class="kebab-menu" role="menu">
+              <button class="kebab-menu-item" role="menuitem">Open</button>
+              <button class="kebab-menu-item" role="menuitem">Edit</button>
+              <div class="kebab-menu-divider"></div>
+              <button class="kebab-menu-item kebab-menu-item-danger" role="menuitem">Delete</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="project-card">
-      <div class="card-thumb"></div>
-      <div class="card-body">
-        <span class="card-icon">📐</span>
-        <div class="card-info">
-          <div class="card-name">Project Beta</div>
-          <div class="card-meta">1 mockup &middot; Updated 1d ago</div>
-        </div>
-        <button class="card-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></button>
+    <div class="caption">Kebab opacity is <code>0</code> at rest and <code>1</code> on card hover, focus-within, or while its menu is open. The glow halo (<code>--shadow-glow</code>) is always on — the card is a hero surface in the projects grid, not a quiet list item.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">In context — projects grid</div>
+    <div class="stage" style="align-items:flex-start;min-height:240px;padding:24px">
+      <div class="card-grid">
+        <div class="card-wrap"><a class="card"><span class="icon-tile">&#x1F3A8;</span><div class="info"><h2 class="card-name">lumen-coffee</h2><div class="card-meta">8 mockups<span class="card-meta-dot">·</span>3 folders</div></div></a><button type="button" class="kebab"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></button></div>
+        <div class="card-wrap"><a class="card"><span class="icon-tile">&#x1F4D0;</span><div class="info"><h2 class="card-name">helio-pricing</h2><div class="card-meta">1 mockup<span class="card-meta-dot">·</span>0 folders</div></div></a><button type="button" class="kebab"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></button></div>
+        <div class="card-wrap"><a class="card"><span class="icon-tile">&#x1F680;</span><div class="info"><h2 class="card-name">drone-console with very long name</h2><div class="card-meta">12 mockups<span class="card-meta-dot">·</span>4 folders</div></div></a><button type="button" class="kebab"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></button></div>
       </div>
     </div>
-    <div class="project-card">
-      <div class="card-thumb"></div>
-      <div class="card-body">
-        <span class="card-icon">🚀</span>
-        <div class="card-info">
-          <div class="card-name">Project Gamma with a Longer Name</div>
-          <div class="card-meta">3 mockups &middot; Updated 5d ago</div>
-        </div>
-        <button class="card-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></button>
-      </div>
-    </div>
-  </div>
+    <div class="caption">Auto-fill grid at <code>minmax(280px, 1fr)</code> with 16 px gap. Long names truncate via <code>white-space:nowrap; overflow:hidden; text-overflow:ellipsis</code> on both <code>.card-name</code> and <code>.card-meta</code>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — custom compound + usePopover for the menu</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">No Radix primitive backs the card. The icon resolver (<code>resolveIconToken</code>) covers tokens emitted by the <a href="./06-icon-picker.html" style="color:var(--accent)"><code>icon-picker</code></a> (<code>vsc:VscFile</code>, <code>brand:react</code>, <code>ui:layers</code>, <code>emoji:🎨</code>); when the icon is <code>null</code> or points at an unknown token, a custom stroked window-tile glyph renders as the default. The kebab menu uses the project's <code>usePopover</code> hook (HTML native popover + anchor positioning) — the same hook that powers the sidebar tree kebab and the avatar menu.</p>
+    <pre class="api"><span class="k">import</span> { ProjectCard, <span class="k">type</span> ProjectCardData } <span class="k">from</span> <span class="s">'@/components/ProjectCard/ProjectCard'</span>;
+
+&lt;<span class="t">ProjectCard</span>
+  project={{
+    id: <span class="s">'p_01'</span>,
+    name: <span class="s">'lumen-coffee'</span>,
+    slug: <span class="s">'lumen-coffee'</span>,
+    icon: <span class="s">'emoji:&#x1F3A8;'</span>,                              <span class="c">// from icon-picker</span>
+    mockupCount: 8,
+    folderCount: 3,
+  }}
+  onOpen={() =&gt; router.push(<span class="s">'/projects/lumen-coffee'</span>)}
+  onEdit={() =&gt; setEditing(project)}
+  onDelete={async () =&gt; (<span class="k">await</span> confirm({ danger: <span class="k">true</span> })) &amp;&amp; deleteProject()}
+/&gt;</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Card is a <code>next/link</code>.</strong> The entire surface is one anchor — clicking anywhere except the kebab navigates to <code>projectHref(slug)</code>. The kebab is a sibling absolutely-positioned <code>&lt;button&gt;</code> so its click doesn't bubble into the link.</li>
+      <li><strong>Kebab via <code>usePopover</code> (custom).</strong> The hook returns <code>triggerRef</code>, <code>triggerProps</code>, <code>popoverProps</code>, and <code>close()</code>. It uses the HTML native <code>popover</code> attribute and CSS <code>anchor-name</code> for positioning. No Radix Dropdown/Menu primitive — the hook predates the Radix Dropdown adoption in this codebase and keeps the same surface for every kebab menu (sidebar, project card, folder card, avatar).</li>
+      <li><strong>Icon resolution (custom).</strong> <code>resolveIconToken(token)</code> returns either an emoji or an SVG markup string. SVGs render via <code>dangerouslySetInnerHTML</code> (the picker only emits the project's pre-bundled vsc/brand/ui sets — no user-supplied SVG ever reaches this path). Unknown tokens fall back to <code>DefaultProjectIcon</code>.</li>
+      <li><strong>Default glyph.</strong> A lightweight stroked window-tile shape (1.3 px rect + single header rule) — must stay in lockstep with the sidebar's default project glyph for visual coherence.</li>
+      <li><strong>Pluralisation.</strong> <code>pluralize(8, 'mockup', 'mockups')</code> renders <code>"8 mockups"</code>; <code>pluralize(1, ...)</code> renders <code>"1 mockup"</code>. Folders use the same helper.</li>
+      <li><strong>Delete is destructive.</strong> <code>onDelete</code> is wired by the consumer to <code>useConfirm({ danger: true })</code> — Radix AlertDialog enforces an explicit Cancel/Delete choice. See <a href="./14-dialog.html" style="color:var(--accent)"><code>14-dialog</code></a>.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>resting</code></td>
+          <td>Default.</td>
+          <td>Accent-tinted fill, accent border, glow halo. Kebab opacity 0.</td>
+          <td><code>aria-label="Open project ${name}"</code> on the link.</td>
+        </tr>
+        <tr>
+          <td><code>hover</code></td>
+          <td>Pointer over card surface or kebab.</td>
+          <td>Border brightens to <code>--accent-bright</code>; extra <code>0 0 16px --accent-overlay-soft</code> glow; lifts <code>−1 px</code>. Kebab fades in.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>focused</code></td>
+          <td>Keyboard tab onto the card link.</td>
+          <td><code>:focus-visible</code> ring (2 px <code>--bg</code> + 4 px <code>--accent</code>) wraps the 14 px-rounded card.</td>
+          <td>Native link semantics.</td>
+        </tr>
+        <tr>
+          <td><code>active</code></td>
+          <td>Click pressed.</td>
+          <td>Lifts back down <code>+1 px</code> (transform translateY).</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>menu-open</code> (custom)</td>
+          <td>Kebab clicked or activated by <code>Enter</code>/<code>Space</code>.</td>
+          <td>Kebab stays opacity 1; popover renders below the kebab at top:44 px, anchored via <code>anchor-name</code>.</td>
+          <td><code>aria-haspopup="menu"</code>, <code>aria-expanded="true"</code> on kebab.</td>
+        </tr>
+        <tr>
+          <td><code>truncated</code></td>
+          <td>Project name or meta exceeds card width.</td>
+          <td>Ellipsis tail; full name surfaced via <code>title</code> attribute on the <code>&lt;h2&gt;</code> + native browser tooltip.</td>
+          <td><code>title={name}</code> for assistive tech.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Surface</th><th>Use for</th><th>Backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>project-card</code></td>
+          <td>Top-level project tile in the all-projects grid. Hero treatment — glow halo + tinted fill.</td>
+          <td>Custom (this file) + <code>usePopover</code> for menu</td>
+        </tr>
+        <tr>
+          <td><code>folder-card</code></td>
+          <td>Folder tile inside a project's view. Quieter surface (no glow), same kebab pattern.</td>
+          <td>Custom — <code>src/components/FolderCard</code></td>
+        </tr>
+        <tr>
+          <td><a href="./01-sidebar.html" style="color:var(--accent)"><code>sidebar-tree-project-item</code></a></td>
+          <td>Compact project row inside the sidebar tree (no thumbnail / kebab on hover only).</td>
+          <td>Custom — <code>ProjectTree</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Rule of thumb: in a wide canvas (Projects home), use the card. In a narrow rail (Sidebar), use the tree row.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>min-height<dd>88px
+      <dt>padding<dd>var(--space-md) = 16px
+      <dt>gap (tile · info)<dd>var(--space-md) = 16px
+      <dt>radius<dd>var(--radius-card) = 14px
+      <dt>background<dd>var(--accent-overlay-soft)
+      <dt>border<dd>1px var(--accent) → var(--accent-bright) hover
+      <dt>shadow<dd>var(--shadow-glow) + 0 0 16px var(--accent-overlay-soft) hover
+      <dt>icon-tile<dd>48×48 / oklch(20% 0.06 165) bg / 1px var(--accent-soft) / radius-md
+      <dt>icon glyph<dd>22px
+      <dt>card-name<dd>var(--font-display) 16px / weight-semibold / tracking-tight / --text-bright
+      <dt>card-meta<dd>var(--font-mono) 11px / --text-dim / tabular-nums
+      <dt>kebab<dd>28×28 / opacity 0 → 1 on hover/focus/menu-open
+      <dt>kebab menu<dd>min-width 180px / --bg-elevated / --border / --radius-sm / --shadow-popover
+      <dt>kebab menu item<dd>8px 12px padding / 13px / --text → --text-bright hover
+      <dt>danger menu item<dd>--danger → --danger-soft bg hover
+      <dt>transition<dd>border + bg + shadow + transform over --motion-fast / --ease-standard
+      <dt>focus ring<dd>2px --bg + 4px --accent
+    </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Whole card navigates.</strong> The link wrapping the icon + info pair routes to <code>projectHref(slug)</code> via <code>next/link</code>. Prefetch on hover is automatic.</li>
+      <li><strong>Kebab doesn't navigate.</strong> The kebab is a sibling button, not nested inside the link — clicking it opens the popover and leaves the route untouched.</li>
+      <li><strong>Kebab reveal.</strong> Opacity <code>0</code> by default; <code>1</code> on card hover / focus-within / while its own menu is open. Pointer-events stay enabled so it's still keyboard-tabbable (focus-visible brings it back).</li>
+      <li><strong>Menu actions.</strong> Three items — Open (router push), Edit (consumer-controlled, typically opens <a href="./07-new-project-dialog.html" style="color:var(--accent)"><code>new-project-dialog</code></a> in edit mode), Delete (consumer wires through <code>useConfirm({ danger: true })</code>).</li>
+      <li><strong>Icon resolution fallback.</strong> Unknown or null tokens render the stroked window-tile glyph — the same default used by the sidebar tree.</li>
+      <li><strong>Truncation.</strong> Long names ellipsis-truncate; the <code>title</code> attribute carries the full string for native browser tooltips.</li>
+      <li><strong>Hover lift.</strong> Card translates <code>−1 px</code> on hover and back <code>+1 px</code> on active. Both collapse to <code>none</code> under <code>prefers-reduced-motion: reduce</code>.</li>
+      <li><strong>Focus restoration.</strong> Closing the kebab menu (Escape / outside click) returns focus to the kebab button via <code>usePopover</code>'s built-in restore logic.</li>
+    </ul>
+  </section>
 </div>
-<div class="demo-label">05-project-card</div>
 
 </body>
 </html>
