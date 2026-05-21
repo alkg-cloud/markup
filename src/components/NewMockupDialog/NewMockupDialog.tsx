@@ -340,10 +340,6 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
     [projects],
   );
 
-  // `useFolders(selectedProjectId)` already returns `[]` for a null
-  // project, so `folders` itself is the visible list.
-  const visibleFolders = folders;
-
   const isUploading = state.status === 'uploading';
   const submitDisabled = isUploading || fieldError !== null || file === null;
   const submitLabel = isUploading ? 'Uploading…' : globalError ? 'Retry' : 'Add mockup';
@@ -495,7 +491,7 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
               // signal. The override is purely cosmetic — selectedProjectId
               // itself is unchanged, so the submit payload stays correct.
               projectId={foldersLoading ? null : selectedProjectId}
-              folders={visibleFolders}
+              folders={folders}
               value={selectedFolderId}
               onChange={setSelectedFolderId}
               triggerLabel={foldersLoading ? 'Loading folders…' : undefined}
