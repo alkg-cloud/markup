@@ -206,30 +206,6 @@
   word-break: break-all;
 }
 
-.revealCopyBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 12px;
-  background: var(--btn-bg);
-  color: var(--accent);
-  border: 0;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 600;
-  font-family: inherit;
-  flex-shrink: 0;
-}
-
-.revealCopyBtn:hover {
-  background: var(--btn-bg-hover);
-}
-
-.revealCopyBtn.copied {
-  color: var(--success);
-}
-
 /* Inline new-token form */
 .form {
   background: var(--bg-card);

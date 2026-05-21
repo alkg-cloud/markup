@@ -137,6 +137,11 @@ src/components/
     useUploadMockup.ts           # XHR-backed upload hook with progress + idle|uploading|success|error state machine
     useFilePreview.ts            # builds an inline preview URL for the dropped file; loading|ready|fallback states
     useFolders.ts                # per-project folder tree fetch keyed on `projectId`; module-level Map cache + AbortController so in-dialog project switches re-fetch (and re-flips back are free)
+  CopyButton/
+    CopyButton.tsx          # 'use client' — copy-to-clipboard button; 4 variants (icon/ghost/secondary/accent); custom copied/error states; icon-only always fires toast. DS source: docs/design/design-system/30-copy-button.html
+    CopyButton.module.css   # .root (28×28 icon default), variant overrides, data-state="copied" (iconPop anim), data-state="error" (copyShake anim), prefers-reduced-motion
+    useCopy.ts              # 'use client' — hook: copied/error boolean state + copy(value) → Promise<boolean>; delegates SR announcement to useToast
+    index.ts                # re-exports CopyButton, useCopy, CopyButtonProps, UseCopyOptions, UseCopyReturn
   Kbd/
     Kbd.tsx                 # 'use client' — OS-aware keyboard-shortcut indicator; `<Kbd keys={[...]} />` for combos; `Kbd.Group` / `Kbd.Key` / `Kbd.Plus` for escape-hatch single chips. No Radix primitive. DS source: docs/design/design-system/29-kbd.html
     Kbd.module.css          # .group (inline-flex, gap 3px, disabled opacity), .key (keycap chip: bg-elevated, border, mono 10.5px/600), .plus ("+" separator, non-mac only)

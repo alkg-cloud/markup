@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>30 — CopyButton</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);
+  --bg-card-active:oklch(15% 0.025 165);
+  --btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);
+  --surface-hover:rgba(255,255,255,0.04);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-dim:oklch(66% 0.18 165);
+  --accent-soft:oklch(28% 0.08 165);--accent-overlay-mid:oklch(74.4% 0.193 165 / 0.35);
+  --danger:oklch(70% 0.2 25);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --type-sm:13px;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;--motion-slow:320ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;
+  --weight-medium:500;--weight-semibold:600;
+}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms;--motion-slow:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:920px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
+.lede a{color:var(--accent);text-decoration:none}
+.lede a:hover{text-decoration:underline}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  padding:32px;
+}
+.stage+.stage{margin-top:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+
+/* Demo helpers */
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px}
+.state{display:flex;flex-direction:column;gap:6px}
+.state .state-label{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim)}
+
+/* Row for inline-flex items with gap */
+.row-inline{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+
+/* Simulated code surface for in-context preview */
+.code-surface{
+  background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  padding:10px 14px;font-family:var(--font-mono);font-size:12px;color:var(--text-dim);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;max-width:360px;
+}
+.code-surface code{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+
+/* Simulated reveal banner for in-context preview */
+.reveal-banner{
+  background:oklch(30% 0.07 80 / 0.25);border-left:4px solid var(--warning, oklch(80% 0.15 80));
+  padding:12px 16px;border-radius:var(--radius-sm);display:grid;gap:6px;max-width:480px;
+  --warning:oklch(80% 0.15 80);
+}
+.reveal-label{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--warning)}
+.reveal-row{display:flex;align-items:center;gap:8px}
+.reveal-code{font-family:var(--font-mono);font-size:12px;color:var(--text-bright);flex:1;word-break:break-all}
+
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
+
+/* ── CopyButton component CSS ─────────────────────────────────────────────── */
+
+.copy-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  /* icon variant default: 28×28 icon-only button */
+  width:28px;
+  height:28px;
+  padding:0;
+  background:none;
+  border:none;
+  border-radius:var(--radius-xs);
+  color:var(--text-muted);
+  cursor:pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+  flex-shrink:0;
+}
+.copy-btn:hover{background:var(--surface-hover);color:var(--text)}
+.copy-btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.copy-btn:disabled,.copy-btn[aria-disabled="true"]{opacity:0.4;cursor:not-allowed;pointer-events:none}
+
+/* ─── Ghost variant ──────────────────────────────────────────────────────── */
+.copy-btn[data-variant="ghost"]{
+  width:auto;height:auto;padding:2px 6px;font-size:12px;color:var(--text-dim);
+}
+
+/* ─── Secondary variant ──────────────────────────────────────────────────── */
+.copy-btn[data-variant="secondary"]{
+  width:auto;height:28px;padding:0 10px;
+  background:var(--btn-bg);color:var(--text);
+  border:1px solid var(--border);border-radius:var(--radius-xs);
+  font-family:var(--font-body);font-size:var(--type-sm);font-weight:var(--weight-medium);
+}
+.copy-btn[data-variant="secondary"]:hover{
+  background:var(--btn-bg-hover);border-color:var(--border-strong);color:var(--text-bright);
+}
+
+/* ─── Accent variant ─────────────────────────────────────────────────────── */
+.copy-btn[data-variant="accent"]{
+  width:auto;height:28px;padding:0 10px;
+  background:var(--accent-soft);color:var(--accent-bright);
+  border:1px solid var(--accent-overlay-mid);border-radius:var(--radius-xs);
+  font-family:var(--font-body);font-size:var(--type-sm);font-weight:var(--weight-medium);
+}
+.copy-btn[data-variant="accent"]:hover{
+  background:var(--accent-overlay-mid);color:var(--accent-bright);
+}
+
+/* ─── Icons ──────────────────────────────────────────────────────────────── */
+.icon-copy{flex-shrink:0}
+.icon-copied{flex-shrink:0;display:none}
+.btn-label{flex-shrink:0}
+
+/* ─── Copied state (CUSTOM — no Radix primitive) ─────────────────────────── */
+/* data-state="copied" set for inlineDurationMs ms after successful copy.     */
+/* Flagged at three places: this comment + DS matrix row + React API bullet.  */
+.copy-btn[data-state="copied"]{color:var(--accent-bright);background:var(--accent-soft)}
+.copy-btn[data-variant="secondary"][data-state="copied"],
+.copy-btn[data-variant="accent"][data-state="copied"]{
+  background:var(--accent-soft);border-color:var(--accent-overlay-mid);color:var(--accent-bright);
+}
+.copy-btn[data-state="copied"] .icon-copy{display:none}
+.copy-btn[data-state="copied"] .icon-copied{
+  display:inline-flex;
+  animation:iconPop var(--motion-fast) var(--ease-spring);
+}
+.copy-btn[data-state="copied"] .btn-label{color:var(--accent-bright)}
+
+@keyframes iconPop{
+  from{opacity:0;transform:scale(0.75)}
+  to{opacity:1;transform:scale(1)}
+}
+
+/* ─── Error state (CUSTOM — no Radix primitive) ──────────────────────────── */
+/* data-state="error" set for inlineDurationMs ms when clipboard write fails. */
+/* Flagged at three places: this comment + DS matrix row + React API bullet.  */
+.copy-btn[data-state="error"]{
+  color:var(--danger);
+  animation:copyShake var(--motion-base) var(--ease-spring);
+}
+
+@keyframes copyShake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-3px)}
+  40%{transform:translateX(3px)}
+  60%{transform:translateX(-2px)}
+  80%{transform:translateX(2px)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .copy-btn{transition:none;animation:none}
+  .copy-btn[data-state="copied"] .icon-copied{animation:none}
+  .copy-btn[data-state="error"]{animation:none}
+}
+
+/* Replay button in demos */
+.replay-btn{
+  font-size:11px;font-family:var(--font-mono);color:var(--accent);border:1px solid var(--accent-overlay-mid);
+  border-radius:var(--radius-xs);padding:4px 10px;cursor:pointer;background:var(--accent-soft);
+  margin-top:16px;
+}
+.replay-btn:hover{background:var(--accent-overlay-mid)}
+</style>
+</head>
+<body>
+
+<div class="page" data-ds-component="copy-button">
+
+  <h1 class="h1">CopyButton</h1>
+  <p class="lede">
+    Copy-to-clipboard button with inline feedback and screen-reader announcement via
+    <a href="./17-toast.html"><code>toast</code></a>.
+    Four visual variants share a single recipe: icon (default 28×28), ghost, secondary, and accent.
+    Two custom states — <code>copied</code> and <code>error</code> — are not Radix primitives.
+    The hook <code>useCopy</code> is also exported for non-button affordances (kebab-menu "Copy link",
+    click-on-code).
+  </p>
+
+  <!-- ────────────────────────────────── All states ── -->
+  <section class="section">
+    <div class="section-title">All states — icon variant</div>
+    <div class="stage">
+      <div class="row-states">
+        <div class="state">
+          <div class="state-label">Default</div>
+          <button type="button" class="copy-btn" aria-label="Copy">
+            <span class="icon-copy" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-1.5H4V1.5zM13 0H6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h7v2H6a0 0 0 0 0 0 0v8a0 0 0 0 0 0 0h7a0 0 0 0 0 0 0V2a0 0 0 0 0 0 0z"/><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/></svg>
+            </span>
+            <span class="icon-copied" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            </span>
+          </button>
+        </div>
+        <div class="state">
+          <div class="state-label">Hover</div>
+          <button type="button" class="copy-btn" aria-label="Copy" style="background:var(--surface-hover);color:var(--text)">
+            <span class="icon-copy" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-1.5H4V1.5z"/></svg>
+            </span>
+            <span class="icon-copied" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            </span>
+          </button>
+        </div>
+        <div class="state">
+          <div class="state-label">Copied (custom)</div>
+          <button type="button" class="copy-btn" aria-label="Copy" data-state="copied">
+            <span class="icon-copy" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/></svg>
+            </span>
+            <span class="icon-copied" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            </span>
+          </button>
+        </div>
+        <div class="state">
+          <div class="state-label">Error (custom)</div>
+          <button type="button" class="copy-btn" aria-label="Copy" data-state="error" id="demo-error-icon">
+            <span class="icon-copy" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/></svg>
+            </span>
+            <span class="icon-copied" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            </span>
+          </button>
+        </div>
+        <div class="state">
+          <div class="state-label">Disabled</div>
+          <button type="button" class="copy-btn" aria-label="Copy" disabled>
+            <span class="icon-copy" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/></svg>
+            </span>
+            <span class="icon-copied" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Icon variant (28×28). Copied and error are CUSTOM states — not Radix primitives. Each lasts for inlineDurationMs (default 1200 ms).</div>
+  </section>
+
+  <!-- ────────────────────── All states — labelled variants ── -->
+  <section class="section">
+    <div class="section-title">All states — labelled variants (ghost / secondary / accent)</div>
+    <div class="stage">
+      <div class="row-states">
+        <div class="state">
+          <div class="state-label">Ghost — default</div>
+          <button type="button" class="copy-btn" data-variant="ghost" aria-label="Copy">
+            <span class="icon-copy" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/></svg>
+            </span>
+            <span class="icon-copied" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            </span>
+            <span class="btn-label">Copy</span>
+          </button>
+        </div>
+        <div class="state">
+          <div class="state-label">Secondary — default</div>
+          <button type="button" class="copy-btn" data-variant="secondary" aria-label="Copy">
+            <span class="icon-copy" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/></svg>
+            </span>
+            <span class="icon-copied" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            </span>
+            <span class="btn-label">Copy</span>
+          </button>
+        </div>
+        <div class="state">
+          <div class="state-label">Accent — default</div>
+          <button type="button" class="copy-btn" data-variant="accent" aria-label="Copy">
+            <span class="icon-copy" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/></svg>
+            </span>
+            <span class="icon-copied" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            </span>
+            <span class="btn-label">Copy</span>
+          </button>
+        </div>
+        <div class="state">
+          <div class="state-label">Secondary — copied</div>
+          <button type="button" class="copy-btn" data-variant="secondary" data-state="copied" aria-label="Copy">
+            <span class="icon-copy" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/></svg>
+            </span>
+            <span class="icon-copied" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            </span>
+            <span class="btn-label">Copied!</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Labelled variants. All share the same copy/copied icon swap. Label text is controlled by the consumer ("Copied!" replaces children when copied state is active).</div>
+  </section>
+
+  <!-- ────────────────────────────── Error state deep dive ── -->
+  <section class="section">
+    <div class="section-title">Error state — driven by [data-state="error"] (custom)</div>
+    <div class="stage">
+      <button type="button" class="copy-btn" aria-label="Copy" id="demo-error" data-state="error">
+        <span class="icon-copy" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/></svg>
+        </span>
+        <span class="icon-copied" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+        </span>
+      </button>
+      <button id="replay-error" type="button" class="replay-btn">Replay error shake</button>
+    </div>
+    <div class="caption">Error state fires when navigator.clipboard.writeText rejects (non-HTTPS context or permission denied). Shake animation runs once via @keyframes copyShake. A "Copy failed" toast is always fired regardless of the feedback prop.</div>
+  </section>
+
+  <!-- ────────────────────── In-context preview ── -->
+  <section class="section">
+    <div class="section-title">In context — agent-token reveal banner</div>
+    <div class="stage">
+      <div class="reveal-banner">
+        <span class="reveal-label">Token created — copy now, it won't be shown again</span>
+        <div class="reveal-row">
+          <code class="reveal-code">mk_live_a1b2c3d4e5f6g7h8i9j0k1l2m3</code>
+          <button type="button" class="copy-btn" data-variant="secondary" aria-label="Copy token claude-code-prod">
+            <span class="icon-copy" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/></svg>
+            </span>
+            <span class="icon-copied" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            </span>
+            <span class="btn-label">Copy</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Secondary variant in the agent-token reveal banner. feedback="both" is enforced so the "Token copied — keep it safe" toast fires alongside the inline copied state.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">In context — agent-token row icon button</div>
+    <div class="stage">
+      <div class="code-surface">
+        <code>mk_live_a1b2••••••••••••c3d4</code>
+        <div class="row-inline">
+          <button type="button" class="copy-btn" aria-label="Copy token claude-code-prod" title="Copy preview">
+            <span class="icon-copy" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/></svg>
+            </span>
+            <span class="icon-copied" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Icon variant (no children) in the agent-token list row. feedback is coerced to 'both' regardless of what the consumer passes — icon-only copy buttons always fire a toast so SR users are informed.</div>
+  </section>
+
+  <!-- ────────────────────────── React API ── -->
+  <section class="section">
+    <div class="section-title">React API — CopyButton + useCopy</div>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px">
+      Radix Primitives does NOT ship a Button or clipboard primitive.
+      <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">CopyButton</code>
+      is a custom compound at
+      <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">src/components/CopyButton/</code>
+      that wraps a native <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">&lt;button&gt;</code>
+      around the <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">useCopy</code> hook.
+      The <a href="./17-toast.html" style="color:var(--accent)"><code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">Toast</code></a>
+      channel provides the SR announcement.
+    </p>
+<pre class="api"><span class="c">// Primary usage — icon-only (default variant)</span>
+<span class="k">import</span> { <span class="t">CopyButton</span> } <span class="k">from</span> <span class="s">'@/components/CopyButton'</span>;
+
+&lt;<span class="t">CopyButton</span> ariaLabel=<span class="s">"Copy token"</span> value={token} /&gt;
+
+<span class="c">// Labelled secondary button in a reveal banner</span>
+&lt;<span class="t">CopyButton</span>
+  variant=<span class="s">"secondary"</span>
+  feedback=<span class="s">"both"</span>
+  value={plaintextToken}
+  ariaLabel=<span class="s">{`Copy token ${name}`}</span>
+  message=<span class="s">"Token copied — keep it safe"</span>
+&gt;Copy&lt;/<span class="t">CopyButton</span>&gt;
+
+<span class="c">// Hook only — for kebab-menu items, click-on-code, etc.</span>
+<span class="k">import</span> { <span class="t">useCopy</span> } <span class="k">from</span> <span class="s">'@/components/CopyButton'</span>;
+
+<span class="k">const</span> { copy, copied } = <span class="t">useCopy</span>({ message: <span class="s">'Invite link copied'</span> });
+<span class="k">await</span> copy(link); <span class="c">// returns true on success, false on failure</span>
+</pre>
+    <ul style="font-size:13px;color:var(--text-dim);margin-top:12px;padding-left:20px;display:flex;flex-direction:column;gap:6px;line-height:1.6">
+      <li>No Radix primitive backs this component — custom compound, no <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">@radix-ui/react-button</code>.</li>
+      <li><strong>Icon-only rule:</strong> when <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">children</code> is absent, <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">feedback</code> is coerced to <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">'both'</code> (even if <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">'inline'</code> is passed) so SR users always receive a toast announcement — a silent icon swap is invisible to screen readers.</li>
+      <li><strong>copied state (CUSTOM)</strong> — not a Radix primitive. Set for <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">inlineDurationMs</code> (default 1200 ms) after a successful clipboard write. Triggers the icon swap + accent tint + <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">iconPop</code> animation. Wired via <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">data-state="copied"</code> on the root button.</li>
+      <li><strong>error state (CUSTOM)</strong> — not a Radix primitive. Set for <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">inlineDurationMs</code> when <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">navigator.clipboard.writeText</code> rejects (non-HTTPS or permission denied). Fires a "Copy failed" toast unconditionally. Wired via <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">data-state="error"</code> on the root button.</li>
+      <li><code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">feedback</code> controls channels: <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">'inline'</code> (icon swap only), <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">'toast'</code> (SR only), <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">'both'</code> (default — both). Icon-only always overrides to <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">'both'</code>.</li>
+      <li>Label text: when <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">copied</code> is true and <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">children</code> is present, the label renders "Copied!" instead of the original children text.</li>
+    </ul>
+  </section>
+
+  <!-- ────────────────────────── State decision matrix ── -->
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th>State</th>
+          <th>How it triggers</th>
+          <th>Visual</th>
+          <th>SR</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>default</code></td>
+          <td>Resting state</td>
+          <td>Icon color: <code>--text-muted</code>; bg: transparent</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>hover</code></td>
+          <td>Mouse / keyboard focus</td>
+          <td>bg: <code>--surface-hover</code>; color: <code>--text</code></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>copied</code></td>
+          <td>Our <code>[data-state="copied"]</code> (CUSTOM) — set by useCopy after successful navigator.clipboard.writeText, cleared after inlineDurationMs</td>
+          <td>Accent tint bg + icon swap to check; labelled buttons show "Copied!"; <code>iconPop</code> animation</td>
+          <td>Toast fires if feedback is 'toast' or 'both'</td>
+        </tr>
+        <tr>
+          <td><code>error</code></td>
+          <td>Our <code>[data-state="error"]</code> (CUSTOM) — set by useCopy on clipboard rejection, cleared after inlineDurationMs</td>
+          <td>Danger color; <code>copyShake</code> animation; icon stays as copy (no swap)</td>
+          <td>Toast fires unconditionally ("Copy failed")</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>disabled prop or aria-disabled="true"</td>
+          <td>opacity: 0.4; pointer-events: none</td>
+          <td>Button is inert to AT</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ────────────────────── When to use which ── -->
+  <section class="section">
+    <div class="section-title">When to use which — CopyButton vs useCopy</div>
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th>Use CopyButton when…</th>
+          <th>Use useCopy directly when…</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>You need a standalone copy affordance (icon button, labelled button)</td>
+          <td>The copy trigger is embedded in a non-button element (kebab-menu item, code block click, table cell)</td>
+        </tr>
+        <tr>
+          <td>The DS variant (icon / ghost / secondary / accent) covers your shell</td>
+          <td>You need a bespoke button shell not covered by the four variants</td>
+        </tr>
+        <tr>
+          <td>You want icon swap + toast with zero configuration</td>
+          <td>You manage the copied/error state display yourself</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ────────────────────────── Anatomy ── -->
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>root width (icon)</dt><dd>28px × 28px; auto-width for all labelled variants</dd>
+      <dt>root height</dt><dd>28px (icon + secondary + accent); auto (ghost)</dd>
+      <dt>padding</dt><dd>0 (icon); 2px 6px (ghost); 0 10px (secondary + accent)</dd>
+      <dt>bg (resting)</dt><dd>transparent (icon + ghost); <code>--btn-bg</code> (secondary); <code>--accent-soft</code> (accent)</dd>
+      <dt>border</dt><dd>none (icon + ghost); 1px solid <code>--border</code> (secondary); 1px solid <code>--accent-overlay-mid</code> (accent)</dd>
+      <dt>radius</dt><dd><code>--radius-xs</code> (4 px)</dd>
+      <dt>color (resting)</dt><dd><code>--text-muted</code> (icon); <code>--text-dim</code> (ghost); <code>--text</code> (secondary); <code>--accent-bright</code> (accent)</dd>
+      <dt>font-size</dt><dd>12px (ghost); <code>--type-sm</code> / 13px (secondary + accent)</dd>
+      <dt>font-weight</dt><dd><code>--weight-medium</code> (500) for secondary + accent</dd>
+      <dt>gap</dt><dd>6px (between icon and label)</dd>
+      <dt>transition</dt><dd>background + color over <code>--motion-fast</code> / <code>--ease-standard</code></dd>
+      <dt>copied bg</dt><dd><code>--accent-soft</code></dd>
+      <dt>copied color</dt><dd><code>--accent-bright</code></dd>
+      <dt>copied animation</dt><dd><code>iconPop</code> over <code>--motion-fast</code> / <code>--ease-spring</code> (scale 0.75 → 1, opacity 0 → 1)</dd>
+      <dt>error color</dt><dd><code>--danger</code></dd>
+      <dt>error animation</dt><dd><code>copyShake</code> over <code>--motion-base</code> / <code>--ease-spring</code> (±3 px horizontal oscillation)</dd>
+      <dt>focus ring</dt><dd><code>--focus-ring</code> (2 px bg gap + 2 px accent outline)</dd>
+      <dt>disabled opacity</dt><dd>0.4; pointer-events: none</dd>
+    </dl>
+  </section>
+
+  <!-- ────────────────────────── Behavior ── -->
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="font-size:13px;color:var(--text-dim);padding-left:20px;display:flex;flex-direction:column;gap:6px;line-height:1.6">
+      <li>Click fires <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">navigator.clipboard.writeText(value)</code>. On success: <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">copied=true</code> for <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">inlineDurationMs</code>, toast fires if feedback includes toast.</li>
+      <li>On failure (non-HTTPS / permission denied): <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">error=true</code> for <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">inlineDurationMs</code>, shake animation, "Copy failed" toast always fires.</li>
+      <li>Icon-only buttons always fire a toast on success regardless of the <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">feedback</code> prop — a silent icon swap is invisible to screen reader users.</li>
+      <li>The inline feedback duration is controlled by <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">inlineDurationMs</code> (default 1200 ms). The toast duration is controlled by <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">toastDurationMs</code> (default 3000 ms, matches <a href="./17-toast.html" style="color:var(--accent)">DS 17</a> default).</li>
+      <li><code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">copied</code> and <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">error</code> are mutually exclusive. <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">error</code> overrides <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">copied</code> if a write fails immediately after a success (unlikely, but guarded).</li>
+      <li>Animations are state-attribute-driven — consumer sets <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">data-state</code>, CSS fires the keyframes. <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">@media (prefers-reduced-motion: reduce)</code> zeros all animation durations.</li>
+      <li>The component is a native <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">&lt;button type="button"&gt;</code> — keyboard-accessible without any ARIA additions. <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">ariaLabel</code> is required and passed as <code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">aria-label</code>; no silent SR usage.</li>
+      <li>Custom icons override the copy (<code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">icon</code> prop) and check (<code style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">copiedIcon</code> prop) slots. Both default to VSC codicons (VscCopy / VscCheck at 14 px).</li>
+    </ul>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var errorBtn = document.getElementById('demo-error');
+  var replayBtn = document.getElementById('replay-error');
+  if (!errorBtn || !replayBtn) return;
+  replayBtn.addEventListener('click', function(){
+    errorBtn.removeAttribute('data-state');
+    void errorBtn.offsetWidth; // force reflow so animation restarts
+    errorBtn.setAttribute('data-state', 'error');
+  });
+})();
+</script>
+
+</body>
+</html>
