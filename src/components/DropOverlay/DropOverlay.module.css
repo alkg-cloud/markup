@@ -1,0 +1,141 @@
+/* DropOverlay — port of DS 24 (drop-overlay) verbatim. Scrim-leve + subtle
+   feedback recipe: 40% --bg tint + 4px blur scrim, dashed --accent-overlay-mid
+   border, 0.94 opacity panel. Mounted via @radix-ui/react-portal at body
+   level; sits above topbar + dialog scrim, below tweaker (z-index 90). */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  animation: dropIn var(--motion-slow) var(--ease-standard);
+}
+
+@keyframes dropIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Scrim — light dim + light blur (40% --bg tint, 4px blur). */
+.overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: oklch(7% 0.02 165 / 0.40);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    animation: none;
+  }
+}
+
+/* Drop panel — centred glass card with dashed accent border. */
+.panel {
+  position: relative;
+  width: min(480px, 90vw);
+  padding: 32px 28px;
+  background: var(--surface-glass-bg);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 2px dashed var(--accent-overlay-mid);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  opacity: 0.94;
+}
+
+.iconCircle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-overlay-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconCircle svg {
+  width: 28px;
+  height: 28px;
+  color: var(--accent);
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: -0.01em;
+}
+
+/* Path preview pill */
+.pathPreview {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.projIcon {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: var(--bg-tinted);
+  border: 1px solid var(--border-subtle);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.fullPath {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.segProj {
+  color: var(--text-bright);
+  font-weight: 600;
+}
+
+.segFolder {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sep {
+  color: var(--text-muted);
+}
+
+.disclaimer {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-style: italic;
+}
