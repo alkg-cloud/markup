@@ -334,6 +334,7 @@ export function ProjectTree({
                     aria-selected={active}
                     className={cx(styles.treeItem, styles.indent1, active && styles.active)}
                     tabIndex={-1}
+                    // title= is the canonical overflow-disclosure primitive for truncated display text — see Tooltip.tsx docstring; icon-button hints use data-tooltip
                     title={m.name}
                     onClick={() => router.push(href)}
                     onKeyDown={(e) => {

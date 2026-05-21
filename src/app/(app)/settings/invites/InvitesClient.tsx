@@ -444,7 +444,8 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
             ref={bulkMenu.triggerRef}
             type="button"
             className={styles.kebabBtn}
-            title="Bulk actions"
+            data-tooltip="Bulk actions"
+            data-tooltip-align="right"
             aria-label="Bulk actions"
             aria-haspopup="menu"
             {...bulkMenu.triggerProps}
@@ -484,7 +485,7 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
           <button
             type="button"
             className={styles.emptyOnboardingDismiss}
-            title="Dismiss"
+            data-tooltip="Dismiss"
             aria-label="Dismiss onboarding"
             onClick={dismissOnboarding}
           >
@@ -565,11 +566,12 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
                       <CopyButton
                         variant="icon"
                         ariaLabel="Copy invite link"
-                        title={
+                        data-tooltip={
                           hasPlaintext
                             ? 'Copy link'
                             : 'Copy unavailable — only available right after creation'
                         }
+                        data-tooltip-align="right"
                         disabled={!hasPlaintext}
                         value={
                           hasPlaintext
@@ -581,7 +583,8 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
                       <button
                         type="button"
                         className={`${styles.cardAction} ${styles.danger}`}
-                        title="Revoke"
+                        data-tooltip="Revoke"
+                        data-tooltip-align="right"
                         aria-label="Revoke invite"
                         onClick={() => onRevokeOne(row)}
                       >
@@ -593,7 +596,8 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
                     <button
                       type="button"
                       className={`${styles.cardAction} ${styles.cardActionTerminalOnly} ${styles.danger}`}
-                      title="Remove from list"
+                      data-tooltip="Remove from list"
+                      data-tooltip-align="right"
                       aria-label="Delete invite"
                       onClick={() => onDeleteOne(row)}
                     >

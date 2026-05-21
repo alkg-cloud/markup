@@ -153,7 +153,7 @@ The tooltip system is a **single** `<div popover="hint" id="markup-tooltip">` re
 Every interactive surface that needs a hover/focus hint MUST use the `data-tooltip="text"` attribute. The CanvasToolbar's `Zoom in` / `Zoom out` / `Fullscreen` buttons are the reference; rail tooltips, kebab tooltips, comment kebab tooltips, the emoji-picker `Add reaction` tooltip — all route through the same `TooltipPortal`.
 
 Forbidden:
-- `title="…"` attributes on buttons or links (use `data-tooltip` instead; keep `aria-label` for accessibility).
+- `title="…"` attributes on buttons, links, or any interactive role (use `data-tooltip` instead; keep `aria-label` for accessibility). `title` is permitted on **non-interactive display elements** when the visible text is truncated by `text-overflow: ellipsis` — it serves as the overflow-disclosure primitive for screen readers and keyboard users who tab to a non-focusable element. Examples: `<h2 title={project.name}>` (ProjectCard), `<div title={displayLabel}>` (TreeNode). Every such site must carry a one-line inline comment acknowledging the exception.
 - JSX tooltip components (no `<Tooltip>…</Tooltip>` wrappers, no portal-based one-off implementations).
 - `aria-describedby` paired with a visually-hidden element used as a tooltip.
 
