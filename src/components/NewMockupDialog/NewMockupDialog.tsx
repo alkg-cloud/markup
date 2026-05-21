@@ -58,11 +58,21 @@ import { type UploadError, type UploadState, useUploadMockup } from './useUpload
 
 /** Navigation target hydrated from the route the drop/click came from. */
 export type NewMockupDialogTarget = {
+  /** Resolved project id, when known up-front. `null` ⇒ try `projectSlug`. */
   projectId: string | null;
+  /** Resolved folder id, when known up-front. `null` ⇒ try `folderPath`. */
   folderId: string | null;
-  /** Slug used to compose the success-redirect URL. `null` ⇒ falls back to `/`. */
+  /**
+   * Project slug from the URL (`/projects/<slug>/…`). The URL resolver
+   * (`resolveTargetFromPath`) can only produce a slug — the projects
+   * list lookup turns it into an id once the projects fetch resolves.
+   */
   projectSlug: string | null;
-  /** Ancestor-to-self folder names for the success redirect. */
+  /**
+   * Ancestor-to-self folder names from the URL. Used for both (a) the
+   * success-redirect URL and (b) resolving `folderId` against the
+   * folder tree once it has loaded.
+   */
   folderPath: string[];
 };
 
@@ -178,11 +188,23 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
   } = props;
   const router = useRouter();
 
+  // Resolve `projectId` from `projectSlug` once the projects list has
+  // landed. The URL resolver (`resolveTargetFromPath`) can only set the
+  // slug; this is where we promote it to a canonical id so the project
+  // <select> + folder fetch line up with the user's view.
+  const resolvedTargetProjectId = useMemo<string | null>(() => {
+    if (target.projectId !== null) return target.projectId;
+    if (target.projectSlug === null) return null;
+    return projects.find((p) => p.slug === target.projectSlug)?.id ?? null;
+  }, [target.projectId, target.projectSlug, projects]);
+
   // Local form state — re-seeded each time the dialog opens. We key
   // these against `open` + `file` identity so closing/reopening with a
   // fresh file picks up the new suggested name etc.
   const [name, setName] = useState<string>(() => suggestNameFromFile(file));
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(target.projectId);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    resolvedTargetProjectId,
+  );
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(target.folderId);
   const [selectedMode, setSelectedMode] = useState<ReplaceMode>(modeProp);
   const [fieldError, setFieldError] = useState<string | null>(null);
@@ -210,7 +232,7 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
       return;
     }
     setName(suggestNameFromFile(file));
-    setSelectedProjectId(target.projectId);
+    setSelectedProjectId(resolvedTargetProjectId);
     setSelectedFolderId(target.folderId);
     setSelectedMode(modeProp);
     setFieldError(null);
@@ -219,7 +241,50 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
     // seed initial state. The mode prop is the source of truth on open;
     // changes after that come from `setSelectedMode`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, file, target.projectId, target.folderId, modeProp]);
+  }, [open, file, resolvedTargetProjectId, target.folderId, modeProp]);
+
+  // Late-resolution of `selectedFolderId` from `target.folderPath`:
+  // when the URL only carries folder *names* (e.g. `/projects/<slug>/hero`),
+  // we can't pre-select the folder until the project's folder tree has
+  // loaded. Once it does, find the deepest folder whose ancestor chain
+  // matches the URL path and pre-select it. Skipped once the user has
+  // changed projects in the dialog — at that point the URL folder path
+  // is no longer meaningful for the new project's tree.
+  useEffect(() => {
+    if (!open) return;
+    if (selectedFolderId !== null) return;
+    if (target.folderId !== null) return;
+    if (target.folderPath.length === 0) return;
+    if (folders.length === 0) return;
+    // Only auto-resolve while the dialog's project still matches the
+    // target the dialog was opened with. A manual project change
+    // detaches us from the URL's folder semantics.
+    if (selectedProjectId !== resolvedTargetProjectId) return;
+    // Resolve segment-by-segment: each step picks the folder whose
+    // name matches AND whose parentId equals the previous step's id.
+    let parentId: string | null = null;
+    let resolvedId: string | null = null;
+    for (const segment of target.folderPath) {
+      const match = folders.find((f) => f.parentId === parentId && f.name === segment);
+      if (!match) {
+        resolvedId = null;
+        break;
+      }
+      resolvedId = match.id;
+      parentId = match.id;
+    }
+    if (resolvedId !== null) setSelectedFolderId(resolvedId);
+    // selectedFolderId intentionally NOT in deps — once the user picks
+    // a folder we stop trying to auto-resolve.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    open,
+    folders,
+    target.folderId,
+    target.folderPath,
+    selectedProjectId,
+    resolvedTargetProjectId,
+  ]);
 
   // Route upload-state side-effects: navigate on success, populate the
   // error slots on failure. Deps are intentionally narrow — we react to

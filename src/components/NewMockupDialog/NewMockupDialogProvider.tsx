@@ -81,12 +81,20 @@ function dragTargetToDialogTarget(target: DragTarget | null): NewMockupDialogTar
   if (!target) {
     return { projectId: null, folderId: null, projectSlug: null, folderPath: [] };
   }
+  // When the caller resolved a `projectId` up-front (sidebar dropzone,
+  // project-view empty state) we trust it and ignore the label. When
+  // it didn't (the URL resolver, which can't map slug→id without an
+  // async lookup), `projectLabel` is the URL slug — surface it as
+  // `projectSlug` so the dialog can resolve the id once `/api/projects`
+  // lands.
+  const projectSlug =
+    target.projectId === null && target.projectLabel && target.projectLabel !== 'Unsorted'
+      ? target.projectLabel
+      : null;
   return {
     projectId: target.projectId,
     folderId: target.folderId,
-    projectSlug: null, // the dialog only needs the slug for the redirect; the
-    //                  upload response carries the canonical slug, so leave
-    //                  this null and let the response win.
+    projectSlug,
     folderPath: target.folderPath,
   };
 }
