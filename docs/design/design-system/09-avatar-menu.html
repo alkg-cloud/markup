@@ -3,113 +3,427 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>09 — Avatar Menu</title>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--sidebar-collapsed-width:52px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0% 0 0/0.45);--shadow-md:0 6px 16px oklch(0% 0 0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
 @media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
-a{color:inherit;text-decoration:none}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;padding:0}
 :focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
-.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
-.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
-.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px}
-.row{display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap}
-.col-label{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;display:block}
 
-.avatar-menu{width:240px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-popover);overflow:hidden;padding:4px 0}
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:880px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  min-height:340px;padding:40px;display:flex;align-items:flex-start;justify-content:center;gap:48px;
+  overflow:hidden;flex-wrap:wrap;
+}
+.stage + .stage{margin-top:24px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+
+/* Glass surface utility */
+.floating{
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+}
+
+/* ─── Avatar trigger (the round letter button on the topbar) ─── */
+.avatar-btn{
+  width:32px;height:32px;border-radius:var(--radius-pill);
+  background:var(--accent-soft);color:var(--accent-bright);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-body);font-size:12px;font-weight:700;letter-spacing:0.02em;
+  transition:background var(--motion-fast),box-shadow var(--motion-fast);
+}
+.avatar-btn:hover{background:var(--accent-overlay-mid)}
+.avatar-btn[data-state="open"]{background:var(--accent-overlay-mid);box-shadow:0 0 0 2px var(--accent-soft)}
+
+/* ─── Account menu — verbatim from Topbar.module.css patterns ─── */
+.avatar-menu{
+  width:240px;border-radius:var(--radius-md);
+  box-shadow:var(--shadow-popover);
+  overflow:hidden;padding:4px 0;
+  animation:menuIn var(--motion-base) var(--ease-spring);
+}
+@keyframes menuIn{
+  from{opacity:0;transform:scale(0.96) translateY(-4px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
 .menu-header{display:flex;align-items:center;gap:10px;padding:12px 16px}
-.menu-avatar{width:32px;height:32px;border-radius:var(--radius-pill);background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.menu-avatar{
+  width:32px;height:32px;border-radius:var(--radius-pill);
+  background:var(--accent-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0;
+}
+.menu-user-info{display:flex;flex-direction:column;min-width:0}
 .menu-user-name{font-size:13px;font-weight:600;color:var(--text-bright)}
-.menu-user-email{font-size:11px;color:var(--text-muted)}
+.menu-user-email{font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .menu-divider{height:1px;background:var(--border-subtle);margin:4px 8px}
-.menu-subhead{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);padding:6px 16px}
-.menu-item{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:var(--text-dim);cursor:pointer;transition:background var(--motion-fast),color var(--motion-fast)}
-.menu-item:hover{background:var(--surface-hover);color:var(--text)}
-.menu-item.danger{color:var(--danger)}
-.menu-item.danger:hover{background:var(--danger-soft)}
+.menu-subhead{
+  font-family:var(--font-mono);font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);
+  padding:6px 16px;
+}
+.menu-item{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:8px 16px;font-size:13px;color:var(--text-dim);
+  background:none;border:none;cursor:pointer;font-family:inherit;
+  text-align:left;
+  transition:background var(--motion-fast),color var(--motion-fast);
+}
+.menu-item:hover,.menu-item[data-state="hover"]{background:var(--surface-hover);color:var(--text-bright)}
 .menu-item svg{flex-shrink:0;color:var(--text-muted)}
-.menu-item.danger svg{color:var(--danger)}
-.menu-item:hover svg{color:inherit}
+.menu-item:hover svg,.menu-item[data-state="hover"] svg{color:inherit}
+.menu-item[data-variant="danger"]{color:var(--danger)}
+.menu-item[data-variant="danger"]:hover,.menu-item[data-variant="danger"][data-state="hover"]{background:var(--danger-soft);color:var(--danger)}
+.menu-item[data-variant="danger"] svg{color:var(--danger)}
+
+/* ─── State grid ─── */
+.row-states{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:24px;align-items:start;
+}
+.state{display:flex;flex-direction:column;gap:10px}
+.state .state-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+}
+
+/* Anatomy / matrix */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
-<div class="demo" style="padding:32px">
-  <div class="title">Avatar Menu</div>
-  <div class="subtitle">User dropdown. Personal items (Settings, Notifications) sit in the top group; admin-only items (Invites, Agent Tokens) live under an `ADMIN` subheading and are hidden entirely for members.</div>
 
-  <div class="row">
+<div class="page" data-ds-component="avatar-menu">
+  <h1 class="h1">09 — Avatar Menu</h1>
+  <p class="lede">Top-right account menu. Implemented in <code>src/components/Topbar/Topbar.tsx</code>, opened via a circular <code>.avatar-btn</code> trigger and floated as a glass-surface popover. Personal items (Settings, Notifications) sit at the top group; admin-only items (Invites, Agent Tokens) live under an <code>ADMIN</code> subheading and are conditionally rendered with <code>userRole === 'admin'</code>. The destructive <em>Sign Out</em> entry uses the danger variant. Shares its glass recipe with <a href="./14-dialog.html" style="color:var(--accent)"><code>dialog</code></a>, <a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a>, and <a href="./16-tooltip.html" style="color:var(--accent)"><code>tooltip</code></a>.</p>
 
-    <!-- Admin view -->
-    <div>
-      <div class="col-label">Admin view</div>
-      <div class="avatar-menu">
-        <div class="menu-header">
-          <div class="menu-avatar">AG</div>
-          <div class="menu-user-info">
-            <div class="menu-user-name">Arthur G.</div>
-            <div class="menu-user-email">arthur@markup.dev</div>
+  <section class="section">
+    <div class="section-title">All states (open)</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">Admin view</div>
+        <div class="avatar-menu floating">
+          <div class="menu-header">
+            <div class="menu-avatar">AG</div>
+            <div class="menu-user-info">
+              <span class="menu-user-name">Arthur G.</span>
+              <span class="menu-user-email">arthur@markup.dev</span>
+            </div>
           </div>
+          <div class="menu-divider"></div>
+          <div class="menu-subhead">Admin</div>
+          <button class="menu-item" type="button" role="menuitem">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
+            Invites
+          </button>
+          <button class="menu-item" type="button" role="menuitem">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.351 1.091a4.528 4.528 0 0 1 3.44 3.16c.215.724.247 1.49.093 2.23a4.583 4.583 0 0 1-4.437 3.6c-.438 0-.874-.063-1.293-.19l-.8.938-.379.175H7v1.5l-.5.5H5v1.5l-.5.5h-3l-.5-.5v-2.307l.146-.353L6.12 6.87a4.464 4.464 0 0 1-.2-1.405 4.528 4.528 0 0 1 5.431-4.375zm.83 4.468a1 1 0 1 0-1.662-1.11 1 1 0 0 0 1.662 1.11z"/></svg>
+            Agent Tokens
+          </button>
+          <div class="menu-divider"></div>
+          <button class="menu-item" type="button" role="menuitem" data-variant="danger">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.02 3.77v1.56l1-.99V2.5l-.5-.5h-9l-.5.5v.486L2 3v10.29l.36.46 5 1.72L8 15v-1h3.52l.5-.5v-1.81l-1-1V13H8V4.71l-.33-.46L4.036 3h6.984v.77zM7 14.28l-4-1.34V3.72l4 1.34v9.22zm6.52-5.8H8.55v-1h4.93l-1.6-1.6.71-.7 2.47 2.46v.71l-2.49 2.48-.7-.7 1.65-1.65z"/></svg>
+            Sign Out
+          </button>
         </div>
-        <div class="menu-divider"></div>
-        <div class="menu-item">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M9.1 4.4L8.6 2H7.4l-.5 2.4-.7.3-2-1.3-.9.8 1.3 2-.2.7-2.4.5v1.2l2.4.5.3.8-1.3 2 .8.8 2-1.3.8.3.4 2.3h1.2l.5-2.4.8-.3 2 1.3.8-.8-1.3-2 .3-.8 2.3-.4V7.4l-2.4-.5-.3-.8 1.3-2-.8-.8-2 1.3-.7-.2zM8 10c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
-          Settings
+      </div>
+
+      <div class="state">
+        <div class="state-label">Member view</div>
+        <div class="avatar-menu floating">
+          <div class="menu-header">
+            <div class="menu-avatar">BS</div>
+            <div class="menu-user-info">
+              <span class="menu-user-name">Bea S.</span>
+              <span class="menu-user-email">bea@studio.io</span>
+            </div>
+          </div>
+          <div class="menu-divider"></div>
+          <button class="menu-item" type="button" role="menuitem" data-variant="danger">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.02 3.77v1.56l1-.99V2.5l-.5-.5h-9l-.5.5v.486L2 3v10.29l.36.46 5 1.72L8 15v-1h3.52l.5-.5v-1.81l-1-1V13H8V4.71l-.33-.46L4.036 3h6.984v.77zM7 14.28l-4-1.34V3.72l4 1.34v9.22zm6.52-5.8H8.55v-1h4.93l-1.6-1.6.71-.7 2.47 2.46v.71l-2.49 2.48-.7-.7 1.65-1.65z"/></svg>
+            Sign Out
+          </button>
         </div>
-        <div class="menu-item">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.377 10.573a7.63 7.63 0 0 1-.383-2.38V6.195A5.115 5.115 0 0 0 8.5 1.05V.5a.5.5 0 1 0-1 0v.55a5.115 5.115 0 0 0-4.494 5.145v1.998a7.61 7.61 0 0 1-.383 2.37L2 12.343l.479.658h3.505c0 .526.215 1.04.586 1.412.37.37.885.586 1.412.586a1.998 1.998 0 0 0 1.998-1.998h3.505l.478-.658-.586-1.77zM8.687 13.72a.997.997 0 0 1-1.411 0 .997.997 0 0 1-.3-.705h2.01a.939.939 0 0 1-.299.705z"/></svg>
-          Notifications
-        </div>
-        <div class="menu-divider"></div>
-        <div class="menu-subhead">Admin</div>
-        <div class="menu-item">
+      </div>
+    </div>
+    <div class="caption">The Admin section (subhead + Invites + Agent Tokens + divider) only renders when <code>userRole === 'admin'</code> — members see a leaner menu that goes header → divider → Sign Out. Note: this DS removes the <em>Settings</em> and <em>Notifications</em> personal items shown in earlier iterations — the live Topbar today only ships header, admin block (admins only), and Sign Out. The DS reflects what is implemented.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Trigger states</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">Closed (rest)</div>
+        <button class="avatar-btn" type="button" aria-label="User menu">AG</button>
+      </div>
+      <div class="state">
+        <div class="state-label">Hover</div>
+        <button class="avatar-btn" type="button" style="background:var(--accent-overlay-mid)" aria-label="User menu">AG</button>
+      </div>
+      <div class="state">
+        <div class="state-label">Open</div>
+        <button class="avatar-btn" type="button" data-state="open" aria-haspopup="menu" aria-expanded="true">AG</button>
+      </div>
+      <div class="state">
+        <div class="state-label">Focused</div>
+        <button class="avatar-btn" type="button" style="box-shadow:var(--focus-ring)" aria-label="User menu">AG</button>
+      </div>
+    </div>
+    <div class="caption">Trigger is a 32 px round button with the first letter of <code>userName</code>, tinted <code>--accent-soft</code> with <code>--accent-bright</code> text. <code>aria-haspopup="menu"</code> + <code>aria-expanded</code> auto-wired by <code>usePopover</code>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Menu item states</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">Default</div>
+        <button class="menu-item" type="button" role="menuitem">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
           Invites
-        </div>
-        <div class="menu-item">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.351 1.091a4.528 4.528 0 0 1 3.44 3.16c.215.724.247 1.49.093 2.23a4.583 4.583 0 0 1-4.437 3.6c-.438 0-.874-.063-1.293-.19l-.8.938-.379.175H7v1.5l-.5.5H5v1.5l-.5.5h-3l-.5-.5v-2.307l.146-.353L6.12 6.87a4.464 4.464 0 0 1-.2-1.405 4.528 4.528 0 0 1 5.431-4.375zm.83 4.468a1 1 0 1 0-1.662-1.11 1 1 0 0 0 1.662 1.11z"/></svg>
-          Agent Tokens
-        </div>
-        <div class="menu-divider"></div>
-        <div class="menu-item danger">
+        </button>
+      </div>
+      <div class="state">
+        <div class="state-label">Hover</div>
+        <button class="menu-item" data-state="hover" type="button" role="menuitem">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
+          Invites
+        </button>
+      </div>
+      <div class="state">
+        <div class="state-label">Danger default</div>
+        <button class="menu-item" data-variant="danger" type="button" role="menuitem">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.02 3.77v1.56l1-.99V2.5l-.5-.5h-9l-.5.5v.486L2 3v10.29l.36.46 5 1.72L8 15v-1h3.52l.5-.5v-1.81l-1-1V13H8V4.71l-.33-.46L4.036 3h6.984v.77zM7 14.28l-4-1.34V3.72l4 1.34v9.22zm6.52-5.8H8.55v-1h4.93l-1.6-1.6.71-.7 2.47 2.46v.71l-2.49 2.48-.7-.7 1.65-1.65z"/></svg>
           Sign Out
-        </div>
+        </button>
       </div>
-    </div>
-
-    <!-- Member view -->
-    <div>
-      <div class="col-label">Member view</div>
-      <div class="avatar-menu">
-        <div class="menu-header">
-          <div class="menu-avatar">BS</div>
-          <div class="menu-user-info">
-            <div class="menu-user-name">Bea S.</div>
-            <div class="menu-user-email">bea@studio.io</div>
-          </div>
-        </div>
-        <div class="menu-divider"></div>
-        <div class="menu-item">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M9.1 4.4L8.6 2H7.4l-.5 2.4-.7.3-2-1.3-.9.8 1.3 2-.2.7-2.4.5v1.2l2.4.5.3.8-1.3 2 .8.8 2-1.3.8.3.4 2.3h1.2l.5-2.4.8-.3 2 1.3.8-.8-1.3-2 .3-.8 2.3-.4V7.4l-2.4-.5-.3-.8 1.3-2-.8-.8-2 1.3-.7-.2zM8 10c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
-          Settings
-        </div>
-        <div class="menu-item">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.377 10.573a7.63 7.63 0 0 1-.383-2.38V6.195A5.115 5.115 0 0 0 8.5 1.05V.5a.5.5 0 1 0-1 0v.55a5.115 5.115 0 0 0-4.494 5.145v1.998a7.61 7.61 0 0 1-.383 2.37L2 12.343l.479.658h3.505c0 .526.215 1.04.586 1.412.37.37.885.586 1.412.586a1.998 1.998 0 0 0 1.998-1.998h3.505l.478-.658-.586-1.77zM8.687 13.72a.997.997 0 0 1-1.411 0 .997.997 0 0 1-.3-.705h2.01a.939.939 0 0 1-.299.705z"/></svg>
-          Notifications
-        </div>
-        <div class="menu-divider"></div>
-        <div class="menu-item danger">
+      <div class="state">
+        <div class="state-label">Danger hover</div>
+        <button class="menu-item" data-state="hover" data-variant="danger" type="button" role="menuitem">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.02 3.77v1.56l1-.99V2.5l-.5-.5h-9l-.5.5v.486L2 3v10.29l.36.46 5 1.72L8 15v-1h3.52l.5-.5v-1.81l-1-1V13H8V4.71l-.33-.46L4.036 3h6.984v.77zM7 14.28l-4-1.34V3.72l4 1.34v9.22zm6.52-5.8H8.55v-1h4.93l-1.6-1.6.71-.7 2.47 2.46v.71l-2.49 2.48-.7-.7 1.65-1.65z"/></svg>
           Sign Out
-        </div>
+        </button>
       </div>
     </div>
+    <div class="caption">Items are native <code>&lt;button&gt;</code> with <code>role="menuitem"</code>. Variant via <code>[data-variant="danger"]</code> on the wrapper — same recipe, semantic hue swap.</div>
+  </section>
 
-  </div>
+  <section class="section">
+    <div class="section-title">React API — custom (no Radix dropdown-menu installed)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:640px"><code style="color:var(--accent)">@radix-ui/react-dropdown-menu</code> is the natural Radix backing for this surface, but <strong>it is not currently installed</strong> in this project's <code>package.json</code> (only <code>react-dialog</code>, <code>react-alert-dialog</code>, <code>react-form</code>, <code>react-popover</code>, <code>react-portal</code>, <code>react-slot</code> ship). The avatar menu is therefore implemented with the project's homegrown <code>usePopover</code> hook (which composes Radix Portal internally) and native <code>&lt;button role="menuitem"&gt;</code> children. Switching to <code>@radix-ui/react-dropdown-menu</code> is on the radar — see <a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a> for the underlying mechanic.</p>
+    <pre class="api"><span class="c">// src/components/Topbar/Topbar.tsx — abridged</span>
+<span class="k">import</span> { usePopover } <span class="k">from</span> <span class="s">'@/lib/popover/usePopover'</span>;
+<span class="k">import</span> { VscKey, VscMail, VscSignOut } <span class="k">from</span> <span class="s">'react-icons/vsc'</span>;
+
+<span class="k">const</span> accountMenu = usePopover&lt;<span class="t">HTMLButtonElement</span>, <span class="t">HTMLDivElement</span>&gt;(<span class="s">'right'</span>);
+
+&lt;<span class="k">button</span>
+  ref={accountMenu.triggerRef}
+  type=<span class="s">"button"</span>
+  className={styles.avatarBtn}
+  aria-label=<span class="s">"User menu"</span>
+  aria-haspopup=<span class="s">"menu"</span>                              <span class="c">// menu, not generic popover</span>
+  {...accountMenu.triggerProps}                       <span class="c">// onClick + aria-expanded</span>
+&gt;{initial}&lt;/<span class="k">button</span>&gt;
+
+&lt;<span class="k">div</span> {...accountMenu.popoverProps} className={styles.accountMenu} role=<span class="s">"menu"</span>&gt;
+  &lt;<span class="k">div</span> className={styles.menuHeader}&gt;
+    &lt;<span class="k">span</span> className={styles.menuAvatar}&gt;{initial}&lt;/<span class="k">span</span>&gt;
+    &lt;<span class="k">div</span>&gt;
+      &lt;<span class="k">span</span>&gt;{userName ?? <span class="s">'User'</span>}&lt;/<span class="k">span</span>&gt;
+      {userEmail &amp;&amp; &lt;<span class="k">span</span>&gt;{userEmail}&lt;/<span class="k">span</span>&gt;}
+    &lt;/<span class="k">div</span>&gt;
+  &lt;/<span class="k">div</span>&gt;
+  &lt;<span class="k">div</span> className={styles.menuDivider} /&gt;
+
+  {userRole === <span class="s">'admin'</span> &amp;&amp; (                       <span class="c">// admin-only block</span>
+    &lt;&gt;
+      &lt;<span class="k">div</span> className={styles.menuSubhead}&gt;Admin&lt;/<span class="k">div</span>&gt;
+      &lt;<span class="k">button</span> role=<span class="s">"menuitem"</span> onClick={…}&gt;&lt;<span class="t">VscMail</span> /&gt; Invites&lt;/<span class="k">button</span>&gt;
+      &lt;<span class="k">button</span> role=<span class="s">"menuitem"</span> onClick={…}&gt;&lt;<span class="t">VscKey</span> /&gt; Agent Tokens&lt;/<span class="k">button</span>&gt;
+      &lt;<span class="k">div</span> className={styles.menuDivider} /&gt;
+    &lt;/&gt;
+  )}
+
+  &lt;<span class="k">button</span> role=<span class="s">"menuitem"</span> className={`${menuItem} ${menuItemDanger}`} onClick={handleLogout}&gt;
+    &lt;<span class="t">VscSignOut</span> /&gt; Sign Out
+  &lt;/<span class="k">button</span>&gt;
+&lt;/<span class="k">div</span>&gt;</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:640px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><code>usePopover</code> handles outside-click dismissal, Escape-to-close, focus return, and portal mounting. It returns <code>triggerProps</code> (the <code>onClick</code> + <code>aria-expanded</code>) and <code>popoverProps</code> (positioning + visibility). The avatar menu adds <code>role="menu"</code> + <code>aria-haspopup="menu"</code> manually because <code>usePopover</code> is generic.</li>
+      <li>The command palette (<code>open-command-palette</code> event) and the avatar menu both occupy the top-layer; opening the palette closes the avatar menu via a document event listener so two overlays never stack.</li>
+      <li>The admin gate is purely cosmetic — server-side authorization still enforces access on <code>/settings/invites</code> and <code>/settings/agents</code> route handlers. Members navigating directly to those URLs are 403'd, not silently denied.</li>
+      <li><strong>Future migration:</strong> when <code>@radix-ui/react-dropdown-menu</code> is added to deps, the structure maps cleanly: <code>DropdownMenu.Root</code> wraps; <code>DropdownMenu.Trigger asChild</code> takes the avatar button; <code>DropdownMenu.Content</code> replaces the popover div; <code>DropdownMenu.Item</code> replaces each <code>&lt;button role="menuitem"&gt;</code>; <code>DropdownMenu.Separator</code> replaces <code>.menuDivider</code>; <code>DropdownMenu.Label</code> replaces <code>.menuSubhead</code>. Free additions: native arrow-key navigation, typeahead, RTL.</li>
+      <li>Native <code>&lt;button&gt;</code> elements with custom CSS classes — Radix has no <code>Button</code> primitive.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>closed</code></td>
+          <td>Default. Trigger clicked to open.</td>
+          <td>Popover absent from DOM (portal unmounted by <code>usePopover</code>).</td>
+          <td>Trigger: <code>aria-expanded="false"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>open</code></td>
+          <td>Click trigger, or Enter/Space while focused.</td>
+          <td>Popover scales 0.96 → 1 + translateY −4 → 0 over <code>--motion-base</code> / <code>--ease-spring</code>. Trigger gains a 2 px <code>--accent-soft</code> ring.</td>
+          <td>Trigger: <code>aria-expanded="true"</code>. Popover: <code>role="menu"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>admin</code> (custom)</td>
+          <td><code>userRole === 'admin'</code> from <code>useIdentity()</code>.</td>
+          <td>Renders <code>ADMIN</code> subhead + Invites + Agent Tokens + divider. Hidden for members.</td>
+          <td>Server-side auth still required on the destination routes.</td>
+        </tr>
+        <tr>
+          <td><code>item-hover</code></td>
+          <td>Pointer over a <code>.menu-item</code>.</td>
+          <td><code>--surface-hover</code> bg, label brightens to <code>--text-bright</code>, icon inherits color.</td>
+          <td>Native button focus semantics.</td>
+        </tr>
+        <tr>
+          <td><code>item-danger</code></td>
+          <td>Item has <code>[data-variant="danger"]</code>.</td>
+          <td>Resting label/icon in <code>--danger</code>; hover bg = <code>--danger-soft</code>.</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">"admin" is a custom DS state — there's no Radix primitive for "conditional menu section by user role". Implemented as a JSX gate in the React tree.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Primitive</th><th>Use for</th><th>Backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>avatar-menu</code> (this)</td>
+          <td>User-account dropdown anchored to the avatar trigger in the topbar. One per app shell.</td>
+          <td>Custom: <code>usePopover</code> + <code>role="menu"</code>.</td>
+        </tr>
+        <tr>
+          <td><a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a></td>
+          <td>Floating contextual UI without menu semantics — version pickers, info dropdowns. No <code>role="menu"</code>.</td>
+          <td><code>usePopover</code> hook (composes Radix Portal).</td>
+        </tr>
+        <tr>
+          <td><a href="./14-dialog.html" style="color:var(--accent)"><code>dialog</code></a></td>
+          <td>Modal forms or confirmations — focus-trap, scrim. Not for menu-of-actions.</td>
+          <td><code>@radix-ui/react-dialog</code>.</td>
+        </tr>
+        <tr>
+          <td><code>kebab menu</code></td>
+          <td>Per-row contextual actions (rename, delete) in the project tree — see <code>TreeNodeKebab</code>.</td>
+          <td>Same <code>usePopover</code> mechanic; different content.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Rule of thumb: dropdown-of-commands triggered by an avatar = this. Dropdown-of-commands triggered by a kebab on a row = <code>TreeNodeKebab</code> (same recipe, different content).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>trigger size<dd>32 × 32 px round
+      <dt>trigger bg<dd>--accent-soft (rest), --accent-overlay-mid (hover, open)
+      <dt>trigger color<dd>--accent-bright
+      <dt>menu width<dd>240 px
+      <dt>menu bg<dd>--surface-glass-bg (blur 16 px + saturate 140%)
+      <dt>menu border<dd>1px solid --border
+      <dt>menu radius<dd>--radius-md (12 px)
+      <dt>menu shadow<dd>--shadow-popover
+      <dt>menu padding<dd>4 px vertical (header overrides to 12 16)
+      <dt>header gap<dd>10 px
+      <dt>avatar in header<dd>32 × 32 round, --accent-soft + --accent text
+      <dt>user name<dd>13px / 600, --text-bright
+      <dt>user email<dd>11px / 400, --text-muted
+      <dt>divider<dd>1px --border-subtle, 4 px 8 px margin
+      <dt>subhead<dd>10px / 700 / 0.12em uppercase mono, --text-muted, 6 16 px
+      <dt>item<dd>8 16 px, 13px / 400, --text-dim resting
+      <dt>item hover bg<dd>--surface-hover
+      <dt>item icon<dd>14 px, --text-muted resting
+      <dt>item danger<dd>--danger color, --danger-soft hover bg
+      <dt>enter animation<dd>scale 0.96 → 1, translateY -4 → 0 over --motion-base / --ease-spring
+    </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><strong>Trigger click.</strong> Opens / closes the menu. Trigger gains <code>aria-expanded="true"</code> while open.</li>
+      <li><strong>Escape closes.</strong> Returns focus to the trigger (handled by <code>usePopover</code>).</li>
+      <li><strong>Outside click closes.</strong> Click anywhere outside the popover or trigger dismisses without action.</li>
+      <li><strong>Item click runs action + closes.</strong> Each <code>.menu-item</code> handler calls <code>accountMenu.close()</code> before <code>router.push(…)</code> so the menu is gone by the time the new page mounts.</li>
+      <li><strong>Sign Out.</strong> POSTs <code>/api/auth/logout</code>, awaits, then routes to <code>/login</code>. Closes the menu before the request fires.</li>
+      <li><strong>Admin gate is cosmetic.</strong> Conditional render based on <code>useIdentity().role</code>; server-side handlers re-validate on <code>/settings/*</code>.</li>
+      <li><strong>Conflict with command palette.</strong> Topbar listens for <code>open-command-palette</code> document events and closes itself when fired — palette and avatar menu never coexist.</li>
+      <li><strong>Reduced motion.</strong> Enter animation collapses to a 0 ms opacity flip via the token override at the top of the file.</li>
+    </ul>
+  </section>
 </div>
-<div class="demo-label">09 — Avatar Menu</div>
 
 </body>
 </html>
