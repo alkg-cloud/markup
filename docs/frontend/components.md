@@ -110,8 +110,32 @@ src/components/
     Dropdown.tsx            # 'use client' — positioned popover menu with items, divider, danger variant
     Dropdown.module.css     # menu, item, itemDanger, divider styles + spring animation
   Dialog/
-    Dialog.tsx              # 'use client' — modal dialog with scrim, title, field/input helpers, actions row
-    Dialog.module.css       # scrim, dialog card, title, field, label, input, actions styles + scale-in animation
+    RadixDialog.tsx         # 'use client' — Radix-Dialog compound (Root/Trigger/Portal/Overlay/Content/Title/Description/Close)
+    RadixDialog.module.css  # scrim, dialog card, title, description, scale-in animation (ported from the legacy Dialog primitive)
+  InputField/
+    InputField.tsx          # 'use client' — Radix-Form compound (Root/Label/Control/Message/Help) with `data-state="error"|"success"` for server-driven feedback
+    InputField.module.css   # field, label, input, message, help styles; hooks both [data-invalid] (Radix sync) and [data-state="error"] (consumer-set async)
+  AlertBanner/
+    AlertBanner.tsx         # 'use client' — inline-notice compound (Root/Icon/Body/Title/Description/Action/Close); status: error|warning|success|info
+    AlertBanner.module.css  # banner, icon ring, body, action/close slots per status palette
+  FolderPicker/
+    FolderPicker.tsx        # 'use client' — Radix-Popover trigger with recursive folder tree; emits folder id | null ("project root")
+    FolderPicker.module.css # trigger pill, popover panel, tree-row indentation, [data-state="open"] accent
+  DropOverlay/
+    DropOverlay.tsx         # 'use client' — Radix-Portal scrim that mirrors the current `useDragTarget()` target while a drag is over the window
+    DropOverlay.module.css  # full-viewport scrim, path-preview pill, prefers-reduced-motion override
+  EmptyState/
+    UploadEmptyState.tsx        # 'use client' — drop-zone-gigante for empty all-projects/project/folder views; combines drop handler + visually-hidden file input
+    UploadEmptyState.module.css # dropzone, label, copy, focus ring styles
+  NewMockupDialog/
+    NewMockupDialog.tsx          # 'use client' — composes RadixDialog + AlertBanner + InputField + FolderPicker + FileChip + PreviewBox + ReplaceToggle; runs `useUploadMockup` + `useFilePreview`
+    NewMockupDialog.module.css   # dialog body grid, file-chip row, picker row, progress bar, actions row
+    NewMockupDialogProvider.tsx  # 'use client' — context provider exposing `useNewMockupDialog().openDialog({ file, target, mode? })`; mounted in (app)/layout.tsx
+    FileChip.tsx / .module.css   # HTML/ZIP badge + filename pill
+    PreviewBox.tsx / .module.css # mockup preview iframe with loading/ready/fallback states
+    ReplaceToggle.tsx / .module.css # mode switch ("Replace" vs "Add as new mockup") when an existing mockup is targeted
+    useUploadMockup.ts           # XHR-backed upload hook with progress + idle|uploading|success|error state machine
+    useFilePreview.ts            # builds an inline preview URL for the dropped file; loading|ready|fallback states
   Toast/
     useToast.ts             # 'use client' — ToastProvider (context + reducer) + useToast() hook; show(message, duration?)
     Toast.tsx               # re-exports ToastProvider + useToast
