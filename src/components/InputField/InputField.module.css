@@ -1,0 +1,226 @@
+/*
+ * InputField — DS 28 verbatim port.
+ *
+ * Visual contract:
+ *   - Single canonical surface (34px height, 8px radius, mono uppercase label).
+ *   - Error visual fires on `.field[data-state="error"]` OR `.field[data-invalid]`
+ *     (Radix Form auto-stamps the latter when ValidityState fails).
+ *   - Success visual fires on `.field[data-state="success"]` only — there is no
+ *     Radix primitive for success; consumers set it after async confirmation.
+ *   - Resting "valid" (Radix `[data-valid]`) has no visual treatment by design.
+ *
+ * Ported from docs/design/design-system/28-input-field.html style block. All
+ * tokens used (--danger, --danger-soft, --success, --success-soft,
+ * --accent-overlay-soft, --motion-fast, --ease-spring, --radius-sm, etc.)
+ * are defined in src/styles/tokens.css.
+ */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.fieldControl {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field input {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-bright);
+  font-size: 13.5px;
+  transition:
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    background var(--motion-fast);
+}
+
+.field input::placeholder {
+  color: var(--text-muted);
+}
+
+.field input:hover:not(:focus):not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-overlay-soft);
+}
+
+.field input:disabled {
+  background: transparent;
+  color: var(--text-muted);
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+/* ── Leading icon ── */
+.hasLeadingIcon input {
+  padding-left: 32px;
+}
+
+.leadingIcon {
+  position: absolute;
+  left: 10px;
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leadingIcon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Trailing icon (used by success state for ✓) ── */
+.hasTrailingIcon input {
+  padding-right: 32px;
+}
+
+.trailingIcon {
+  position: absolute;
+  right: 10px;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.trailingIcon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Help text ── */
+.help {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* ── ERROR STATE — driven by [data-state="error"] OR Radix's [data-invalid]. ── */
+.field[data-state="error"] input,
+.field[data-invalid] input {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px var(--danger-soft);
+  animation: errorShake 320ms var(--ease-spring);
+}
+
+.field[data-state="error"] input:focus,
+.field[data-invalid] input:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px var(--danger-soft);
+}
+
+.field[data-state="error"] .help,
+.field[data-invalid] .help {
+  color: var(--danger);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.field[data-state="error"] .help::before,
+.field[data-invalid] .help::before {
+  content: "⚠";
+  font-size: 11px;
+}
+
+@keyframes errorShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+/* ── SUCCESS STATE — driven by [data-state="success"] only. ── */
+.field[data-state="success"] input {
+  border-color: var(--success);
+  box-shadow: 0 0 0 3px var(--success-soft);
+}
+
+.field[data-state="success"] input:focus {
+  border-color: var(--success);
+  box-shadow: 0 0 0 3px var(--success-soft);
+}
+
+.field[data-state="success"] .help {
+  color: var(--success);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.field[data-state="success"] .help::before {
+  content: "✓";
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.field[data-state="success"] .trailingIcon {
+  color: var(--success);
+  animation: successPop 320ms var(--ease-spring);
+}
+
+@keyframes successPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field[data-state="error"] input,
+  .field[data-invalid] input,
+  .field[data-state="success"] .trailingIcon {
+    animation: none;
+  }
+}
