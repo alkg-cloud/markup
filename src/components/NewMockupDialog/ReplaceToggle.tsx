@@ -8,26 +8,23 @@
  * and handles `onChange`. Default in the parent is `'add'` (locked design
  * decision — adding is the safer + more common path).
  *
- * The two rows follow the ARIA radiogroup pattern:
- *   - Container has `role="radiogroup"`.
- *   - Each row has `role="radio"` + `aria-checked` + `tabIndex` + a
- *     keyboard handler that fires `onChange` on Space / Enter.
- *   - Only the active row sits in the natural tab sequence (`tabIndex=0`);
- *     the inactive one is programmatically focusable (`tabIndex=-1`) so
- *     screen-reader arrow-key navigation still reaches it.
+ * The two rows use native `<input type="radio">` inputs wrapped in a
+ * `<label>`, grouped by a shared `name`. This gives us free keyboard
+ * support (arrow keys, Space, Tab) and screen-reader semantics without
+ * an explicit handler. The native input is visually hidden but remains
+ * focusable; the visible `.radio` swatch is purely presentational.
  *
  * Visual structure (DS 25):
  *   .replace-toggle
  *     .replace-label  ("Send as")
  *     .opts
- *       .opt-row[.is-active]  (radio + label)
- *       .opt-row[.is-active]  (radio + label)
+ *       label.opt-row[.is-active]  (hidden radio + swatch + label)
+ *       label.opt-row[.is-active]  (hidden radio + swatch + label)
  *
  * The replace label quotes the current mockup name in `--accent` via the
  * `.nameQuote` span.
  */
 
-import type { KeyboardEvent } from 'react';
 import styles from './ReplaceToggle.module.css';
 
 export type ReplaceMode = 'add' | 'replace';
@@ -57,13 +54,6 @@ export function ReplaceToggle({ currentMockupName, value, onChange }: ReplaceTog
     },
   ];
 
-  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>, mode: ReplaceMode) {
-    if (event.key === ' ' || event.key === 'Enter') {
-      event.preventDefault();
-      onChange(mode);
-    }
-  }
-
   return (
     <div className={styles.replaceToggle} role="radiogroup" aria-label="Send as">
       <span className={styles.replaceLabel}>Send as</span>
@@ -71,19 +61,22 @@ export function ReplaceToggle({ currentMockupName, value, onChange }: ReplaceTog
         {rows.map((row) => {
           const isActive = value === row.mode;
           return (
-            <div
+            <label
               key={row.mode}
-              role="radio"
-              aria-checked={isActive}
-              tabIndex={isActive ? 0 : -1}
               data-active={isActive}
-              className={`${styles.optRow}${isActive ? ` ${styles.isActive}` : ''}`}
-              onClick={() => onChange(row.mode)}
-              onKeyDown={(event) => handleKeyDown(event, row.mode)}
+              className={[styles.optRow, isActive && styles.isActive].filter(Boolean).join(' ')}
             >
+              <input
+                type="radio"
+                name="mockup-replace-mode"
+                value={row.mode}
+                checked={isActive}
+                onChange={() => onChange(row.mode)}
+                className={styles.hiddenRadio}
+              />
               <span className={styles.radio} aria-hidden="true" />
               {row.render()}
-            </div>
+            </label>
           );
         })}
       </div>

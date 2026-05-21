@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
 import { DropOverlay } from '@/components/DropOverlay';
-import { DragTargetProvider, type DragTarget } from '@/hooks/useDragTarget';
+import { type DragTarget, DragTargetProvider } from '@/hooks/useDragTarget';
 
 let container: HTMLDivElement;
 let root: Root;
@@ -86,7 +86,10 @@ function makeFileList(files: File[]): FileList {
   return list;
 }
 
-function renderWithTarget(target: DragTarget | null, children: ReactNode = createElement(DropOverlay)) {
+function renderWithTarget(
+  target: DragTarget | null,
+  children: ReactNode = createElement(DropOverlay),
+) {
   act(() => {
     root.render(createElement(DragTargetProvider, { resolveTarget: () => target }, children));
   });

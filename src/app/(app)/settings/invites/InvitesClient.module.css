@@ -245,11 +245,6 @@
   flex-wrap: wrap;
 }
 
-.cardMeta .sep {
-  color: var(--text-muted);
-  opacity: 0.5;
-}
-
 .sep {
   color: var(--text-muted);
   opacity: 0.5;
