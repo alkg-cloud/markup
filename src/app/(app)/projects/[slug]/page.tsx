@@ -4,6 +4,7 @@ import { notFound, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { FadeIn } from '@/components/FadeIn';
 import { ProjectSkeleton } from '@/components/Skeleton';
 import { useIdentity } from '@/lib/hooks/use-require-auth';
 import { ProjectContent } from '../../../projects/[slug]/ProjectContent';
@@ -79,17 +80,19 @@ export default function ProjectPage() {
   }
 
   return (
-    <ProjectContent
-      projectName={data.projectName}
-      projectSlug={data.projectSlug}
-      projectId={data.projectId}
-      projectIcon={data.projectIcon}
-      folders={data.folders}
-      mockups={data.mockups}
-      breadcrumbs={data.breadcrumbs}
-      userName={identity?.name}
-      userEmail={identity?.email}
-      userRole={identity?.role}
-    />
+    <FadeIn>
+      <ProjectContent
+        projectName={data.projectName}
+        projectSlug={data.projectSlug}
+        projectId={data.projectId}
+        projectIcon={data.projectIcon}
+        folders={data.folders}
+        mockups={data.mockups}
+        breadcrumbs={data.breadcrumbs}
+        userName={identity?.name}
+        userEmail={identity?.email}
+        userRole={identity?.role}
+      />
+    </FadeIn>
   );
 }

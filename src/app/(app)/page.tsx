@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { FadeIn } from '@/components/FadeIn';
 import { ProjectSkeleton } from '@/components/Skeleton';
 import type { HomeData } from '@/lib/home/types';
 import { AllProjectsPage } from './AllProjectsPage';
@@ -51,5 +52,9 @@ export default function Root() {
     return <ProjectSkeleton />;
   }
 
-  return <AllProjectsPage data={data} onMutated={reload} />;
+  return (
+    <FadeIn>
+      <AllProjectsPage data={data} onMutated={reload} />
+    </FadeIn>
+  );
 }
