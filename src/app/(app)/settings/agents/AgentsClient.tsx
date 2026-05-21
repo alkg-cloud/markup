@@ -204,14 +204,16 @@ export function AgentsClient({
                   <CopyButton
                     variant="icon"
                     ariaLabel={`Copy token ${t.name}`}
-                    title="Copy preview"
+                    data-tooltip="Copy"
+                    data-tooltip-align="right"
                     value={masked}
                     message="Token preview copied"
                   />
                   <button
                     type="button"
                     aria-label={`Revoke token ${t.name}`}
-                    title="Revoke"
+                    data-tooltip="Revoke"
+                    data-tooltip-align="right"
                     onClick={() => onRevoke(t.id, t.name)}
                     className={styles.danger}
                   >

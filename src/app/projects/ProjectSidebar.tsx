@@ -240,7 +240,8 @@ export function ProjectSidebar({
         type="button"
         className={sidebarStyles.inlinePlusBtn}
         aria-label="New project"
-        title="New project"
+        data-tooltip="New project"
+        data-tooltip-align="right"
         onClick={() => setNewProjectOpen(true)}
       >
         <VscAdd size={11} aria-hidden="true" />
@@ -283,7 +284,8 @@ export function ProjectSidebar({
       type="button"
       className={sidebarStyles.btnNewMockup}
       aria-label="New mockup"
-      title="Upload mockup"
+      data-tooltip="Upload mockup"
+      data-tooltip-align="center"
       onClick={handleOpenFilePicker}
     >
       <VscNewFile size={14} aria-hidden="true" />

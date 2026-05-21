@@ -91,7 +91,7 @@ function IconCell({
       type="button"
       role="option"
       aria-selected={selected}
-      title={icon.token}
+      data-tooltip={icon.token}
       className={selected ? `${styles.cell} ${styles.cellSelected}` : styles.cell}
       onClick={() => onSelect(icon.token)}
     >
