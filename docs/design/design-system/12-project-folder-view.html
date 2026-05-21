@@ -2,97 +2,477 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>12-project-folder-view</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>12 — Project / Folder View</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--sidebar-collapsed-width:52px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0%,0,0/0.45);--shadow-md:0 6px 16px oklch(0%,0,0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0%,0,0/0.6),0 6px 12px oklch(0%,0,0/0.45),inset 0 1px 0 oklch(100%,0,0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);
+  --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;
+  --shadow-sm:0 2px 6px oklch(0% 0 0/0.45);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
 @media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;padding:0}
 a{color:inherit;text-decoration:none}
 :focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
-.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
-.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px}
 
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:880px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  min-height:340px;padding:32px;display:flex;align-items:flex-start;justify-content:center;
+  overflow:hidden;
+}
+.stage + .stage{margin-top:24px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+
+/* ─── View recipe ─── */
+.view{width:700px;max-width:100%}
 .view-header{margin-bottom:20px}
 .view-title-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .view-icon{font-size:20px}
 .view-name{font-size:18px;font-weight:700;color:var(--text-bright)}
 .view-count{font-size:12px;color:var(--text-muted);margin-left:auto}
 .view-actions{display:flex;gap:8px}
-.btn-action{display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);border-radius:var(--radius-sm);color:var(--accent);font-size:13px;font-weight:600;transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast)}
+.btn-action{
+  display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;
+  background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);
+  border-radius:var(--radius-sm);color:var(--accent);
+  font-size:13px;font-weight:600;
+  transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast);
+}
 .btn-action:hover{background:var(--accent-overlay-mid);border-color:var(--accent);color:var(--accent-bright)}
-.btn-action-secondary{display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;background:var(--btn-bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-dim);font-size:13px;font-weight:500;transition:background var(--motion-fast),color var(--motion-fast),border-color var(--motion-fast)}
+.btn-action-secondary{
+  display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;
+  background:var(--btn-bg);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text-dim);
+  font-size:13px;font-weight:500;
+  transition:background var(--motion-fast),color var(--motion-fast),border-color var(--motion-fast);
+}
 .btn-action-secondary:hover{background:var(--btn-bg-hover);color:var(--text);border-color:var(--border-strong)}
+
 .item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
-.item-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-card);overflow:hidden;cursor:pointer;transition:border-color var(--motion-fast),box-shadow var(--motion-fast)}
+.item-card{
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-card);overflow:hidden;cursor:pointer;
+  transition:border-color var(--motion-fast),box-shadow var(--motion-fast);
+}
 .item-card:hover{border-color:var(--border);box-shadow:var(--shadow-sm)}
+.item-card[data-state="active"]{border-color:var(--accent-overlay-mid)}
 .item-thumb{height:100px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--border-subtle)}
-.folder-thumb{background:var(--accent-overlay-soft)}
-.folder-icon{color:var(--accent);display:flex}
-.mockup-thumb{background:var(--bg-elevated)}
+.item-card[data-kind="folder"] .item-thumb{background:var(--accent-overlay-soft)}
+.item-card[data-kind="folder"] .item-thumb svg{color:var(--accent)}
+.item-card[data-kind="mockup"] .item-thumb{background:var(--bg-elevated)}
 .item-body{padding:10px 12px}
-.item-name{font-size:13px;font-weight:600;color:var(--text-bright);display:block}
+.item-name{font-size:13px;font-weight:600;color:var(--text-bright);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item-meta{font-size:11px;color:var(--text-muted);margin-top:2px;display:block}
 
+/* States grid */
+.row-states{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:24px;align-items:start;
+}
+.state{display:flex;flex-direction:column;gap:10px}
+.state .state-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+}
+
+/* Anatomy / matrix */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
 
-<div class="demo" style="padding:32px;max-width:700px">
-  <div class="title">Project / Folder View</div>
-  <div class="subtitle">Grid of mockups and subfolders within a project.</div>
+<div class="page" data-ds-component="project-folder-view">
+  <h1 class="h1">12 — Project / Folder View</h1>
+  <p class="lede">The browse surface for project roots and any folder within. Implemented as <code>src/app/(app)/projects/[slug]/page.tsx</code> (project root) and <code>src/app/(app)/projects/[slug]/[...path]/page.tsx</code> (nested folders) — both share the same <code>ProjectContent</code> client component at <code>src/app/projects/[slug]/ProjectContent.tsx</code>. Header (<a href="#"><code>FolderHeader</code></a>) shows project/folder name + item count; body is a responsive grid of folders + mockups; <a href="./26-empty-state.html" style="color:var(--accent)"><code>empty-state</code></a> replaces the grid when there are no items. Cards compose <a href="./05-project-card.html" style="color:var(--accent)"><code>project-card</code></a>-style hover and link semantics.</p>
 
-  <div class="view-header">
-    <div class="view-title-row">
-      <span class="view-icon">🎨</span>
-      <span class="view-name">Project Alpha</span>
-      <span class="view-count">8 items</span>
+  <section class="section">
+    <div class="section-title">A — Populated view (root)</div>
+    <div class="stage">
+      <div class="view">
+        <div class="view-header">
+          <div class="view-title-row">
+            <span class="view-icon">🎨</span>
+            <span class="view-name">Project Alpha</span>
+            <span class="view-count">4 items</span>
+          </div>
+          <div class="view-actions">
+            <button class="btn-action" type="button">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+              New Mockup
+            </button>
+            <button class="btn-action-secondary" type="button">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 2H7.71l-.85-.85L6.51 1h-5l-.5.5v11l.5.5H7v-1H1.99V6h4.49l.35-.15.86-.86H14v1.5l-.001.51h1.011V2.5L14.5 2zm-.51 2h-6.5l-.35.15-.86.86H2v-3h4.29l.85.85.36.15H14l-.01.99zM13 16h-1v-3H9v-1h3V9h1v3h3v1h-3v3z"/></svg>
+              New Folder
+            </button>
+          </div>
+        </div>
+        <div class="item-grid">
+          <a class="item-card" data-kind="folder" href="#">
+            <div class="item-thumb">
+              <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4a1 1 0 011-1h3.5l1.5 1.5H13a1 1 0 011 1V12a1 1 0 01-1 1H3a1 1 0 01-1-1V4z" stroke="currentColor" stroke-width="1.3"/></svg>
+            </div>
+            <div class="item-body">
+              <span class="item-name">Landing</span>
+              <span class="item-meta">3 itens</span>
+            </div>
+          </a>
+          <a class="item-card" data-kind="folder" href="#">
+            <div class="item-thumb">
+              <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4a1 1 0 011-1h3.5l1.5 1.5H13a1 1 0 011 1V12a1 1 0 01-1 1H3a1 1 0 01-1-1V4z" stroke="currentColor" stroke-width="1.3"/></svg>
+            </div>
+            <div class="item-body">
+              <span class="item-name">Pricing</span>
+              <span class="item-meta">1 item</span>
+            </div>
+          </a>
+          <a class="item-card" data-kind="mockup" href="#">
+            <div class="item-thumb"></div>
+            <div class="item-body">
+              <span class="item-name">Hero Banner</span>
+              <span class="item-meta">v3 · Updated 2h ago</span>
+            </div>
+          </a>
+          <a class="item-card" data-kind="mockup" href="#">
+            <div class="item-thumb"></div>
+            <div class="item-body">
+              <span class="item-name">Presentation</span>
+              <span class="item-meta">v1 · Updated 1d ago</span>
+            </div>
+          </a>
+        </div>
+      </div>
     </div>
-    <div class="view-actions">
-      <button class="btn-action"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New Mockup</button>
-      <button class="btn-action-secondary"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 2H7.71l-.85-.85L6.51 1h-5l-.5.5v11l.5.5H7v-1H1.99V6h4.49l.35-.15.86-.86H14v1.5l-.001.51h1.011V2.5L14.5 2zm-.51 2h-6.5l-.35.15-.86.86H2v-3h4.29l.85.85.36.15H14l-.01.99zM13 16h-1v-3H9v-1h3V9h1v3h3v1h-3v3z"/></svg> New Folder</button>
-    </div>
-  </div>
+    <div class="caption">Project root (<code>/projects/[slug]</code>). Header shows the project's icon + name + total item count. Grid mixes folders and mockups; folders come first when both kinds exist. Card href targets use the path-based URL builder <code>folderHref</code> / <code>mockupSlugHref</code> from <code>@/lib/project/routes</code>.</div>
+  </section>
 
-  <div class="item-grid">
-    <div class="item-card folder">
-      <div class="item-thumb folder-thumb">
-        <span class="folder-icon"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 14h11l.48-.37 2.63-7-.48-.63H14V3.5l-.5-.5H7.71l-.86-.85L6.5 2h-5l-.5.5v11l.5.5zM2 3h4.29l.86.85.35.15H13v2H8.5l-.35.15-.86.85H3.5l-.47.34-1 3.08L2 3zm10.13 10H2.19l1.67-5H7.5l.35-.15.86-.85h5.79l-2.37 6z"/></svg></span>
-      </div>
-      <div class="item-body">
-        <span class="item-name">Landing</span>
-        <span class="item-meta">3 mockups</span>
+  <section class="section">
+    <div class="section-title">B — Nested folder view</div>
+    <div class="stage">
+      <div class="view">
+        <div class="view-header">
+          <div class="view-title-row">
+            <span class="view-icon"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4a1 1 0 011-1h3.5l1.5 1.5H13a1 1 0 011 1V12a1 1 0 01-1 1H3a1 1 0 01-1-1V4z" stroke="currentColor" stroke-width="1.3"/></svg></span>
+            <span class="view-name">Landing</span>
+            <span class="view-count">3 items</span>
+          </div>
+          <div class="view-actions">
+            <button class="btn-action" type="button">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+              New Mockup
+            </button>
+            <button class="btn-action-secondary" type="button">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 2H7.71l-.85-.85L6.51 1h-5l-.5.5v11l.5.5H7v-1H1.99V6h4.49l.35-.15.86-.86H14v1.5l-.001.51h1.011V2.5L14.5 2zm-.51 2h-6.5l-.35.15-.86.86H2v-3h4.29l.85.85.36.15H14l-.01.99zM13 16h-1v-3H9v-1h3V9h1v3h3v1h-3v3z"/></svg>
+              New Folder
+            </button>
+          </div>
+        </div>
+        <div class="item-grid">
+          <a class="item-card" data-kind="mockup" href="#">
+            <div class="item-thumb"></div>
+            <div class="item-body">
+              <span class="item-name">Hero v1</span>
+              <span class="item-meta">v2 · Updated 5m ago</span>
+            </div>
+          </a>
+          <a class="item-card" data-kind="mockup" href="#">
+            <div class="item-thumb"></div>
+            <div class="item-body">
+              <span class="item-name">Hero v2 (dark)</span>
+              <span class="item-meta">v1 · Updated 4h ago</span>
+            </div>
+          </a>
+          <a class="item-card" data-kind="mockup" href="#">
+            <div class="item-thumb"></div>
+            <div class="item-body">
+              <span class="item-name">Hero v3 (light)</span>
+              <span class="item-meta">v1 · Updated 1d ago</span>
+            </div>
+          </a>
+        </div>
       </div>
     </div>
-    <div class="item-card folder">
-      <div class="item-thumb folder-thumb">
-        <span class="folder-icon"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 3H7.71l-.85-.85L6.51 2h-5l-.5.5v11l.5.5h13l.5-.5v-10L14.5 3zm-.51 8.49V13h-12V7h4.49l.35-.15.86-.86H14v1.5l-.01 4zm0-6.49h-6.5l-.35.15-.86.86H2v-3h4.29l.85.85.36.15H14l-.01.99z"/></svg></span>
-      </div>
-      <div class="item-body">
-        <span class="item-name">Pricing</span>
-        <span class="item-meta">1 mockup</span>
+    <div class="caption">Sub-folder view (<code>/projects/[slug]/[...path]</code>). The "current" folder takes the title slot; ancestors live in the topbar <a href="./02-breadcrumb.html" style="color:var(--accent)"><code>breadcrumb</code></a>, not here. <code>FolderHeader</code> swaps the project emoji for the stroked folder glyph when <code>folderName</code> is set.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">C — Empty state</div>
+    <div class="stage">
+      <div class="view">
+        <div class="view-header">
+          <div class="view-title-row">
+            <span class="view-icon">🎨</span>
+            <span class="view-name">Project Alpha</span>
+            <span class="view-count">0 items</span>
+          </div>
+          <div class="view-actions">
+            <button class="btn-action" type="button">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+              New Mockup
+            </button>
+            <button class="btn-action-secondary" type="button">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 2H7.71l-.85-.85L6.51 1h-5l-.5.5v11l.5.5H7v-1H1.99V6h4.49l.35-.15.86-.86H14v1.5l-.001.51h1.011V2.5L14.5 2zm-.51 2h-6.5l-.35.15-.86.86H2v-3h4.29l.85.85.36.15H14l-.01.99zM13 16h-1v-3H9v-1h3V9h1v3h3v1h-3v3z"/></svg>
+              New Folder
+            </button>
+          </div>
+        </div>
+        <div style="padding:32px;background:var(--bg-card);border:1px dashed var(--border);border-radius:var(--radius-card);color:var(--text-muted);font-size:13px;text-align:center">
+          Drag a .zip mockup here, or click "New Mockup" to upload.
+        </div>
       </div>
     </div>
-    <div class="item-card mockup">
-      <div class="item-thumb mockup-thumb"></div>
-      <div class="item-body">
-        <span class="item-name">Hero Banner</span>
-        <span class="item-meta">v3 &middot; Updated 2h ago</span>
+    <div class="caption">When <code>folders.length === 0 &amp;&amp; mockups.length === 0</code>, <code>ProjectContent</code> mounts <code>UploadEmptyState</code> (see <a href="./26-empty-state.html" style="color:var(--accent)"><code>empty-state</code></a>) which accepts file drops and forwards them to <a href="./25-new-mockup-dialog.html" style="color:var(--accent)"><code>new-mockup-dialog</code></a>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Card states</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">Folder rest</div>
+        <a class="item-card" data-kind="folder" href="#">
+          <div class="item-thumb">
+            <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4a1 1 0 011-1h3.5l1.5 1.5H13a1 1 0 011 1V12a1 1 0 01-1 1H3a1 1 0 01-1-1V4z" stroke="currentColor" stroke-width="1.3"/></svg>
+          </div>
+          <div class="item-body"><span class="item-name">Landing</span><span class="item-meta">3 itens</span></div>
+        </a>
+      </div>
+      <div class="state">
+        <div class="state-label">Folder hover</div>
+        <a class="item-card" data-kind="folder" href="#" style="border-color:var(--border);box-shadow:var(--shadow-sm)">
+          <div class="item-thumb">
+            <svg width="24" height="24" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4a1 1 0 011-1h3.5l1.5 1.5H13a1 1 0 011 1V12a1 1 0 01-1 1H3a1 1 0 01-1-1V4z" stroke="currentColor" stroke-width="1.3"/></svg>
+          </div>
+          <div class="item-body"><span class="item-name">Landing</span><span class="item-meta">3 itens</span></div>
+        </a>
+      </div>
+      <div class="state">
+        <div class="state-label">Mockup rest</div>
+        <a class="item-card" data-kind="mockup" href="#">
+          <div class="item-thumb"></div>
+          <div class="item-body"><span class="item-name">Hero Banner</span><span class="item-meta">v3 · 2h ago</span></div>
+        </a>
+      </div>
+      <div class="state">
+        <div class="state-label">Mockup focused</div>
+        <a class="item-card" data-kind="mockup" href="#" style="box-shadow:var(--focus-ring)">
+          <div class="item-thumb"></div>
+          <div class="item-body"><span class="item-name">Hero Banner</span><span class="item-meta">v3 · 2h ago</span></div>
+        </a>
       </div>
     </div>
-    <div class="item-card mockup">
-      <div class="item-thumb mockup-thumb"></div>
-      <div class="item-body">
-        <span class="item-name">Presentation</span>
-        <span class="item-meta">v1 &middot; Updated 1d ago</span>
-      </div>
-    </div>
-  </div>
+    <div class="caption">Folder cards use <code>--accent-overlay-soft</code> thumb bg with <code>--accent</code> glyph. Mockup cards use <code>--bg-elevated</code> thumb bg (the screenshot fills it in production). Hover lifts the border to <code>--border</code> and adds <code>--shadow-sm</code>; focused cards get the standard <code>--focus-ring</code>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — composition page (no Radix primitive)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:640px">Page-level composition. Both routes (<code>page.tsx</code> root + <code>[...path]/page.tsx</code> nested) are client components that fetch a payload from <code>GET /api/projects/by-slug/[slug]/view</code> and forward it to the shared <code>ProjectContent</code> component. No Radix primitive backs the layout itself — it composes <code>AppMain</code>, <code>Topbar</code> (which embeds the <a href="./09-avatar-menu.html" style="color:var(--accent)"><code>avatar-menu</code></a>), <code>FolderHeader</code>, <code>FolderCard</code>, and <code>MockupCard</code>.</p>
+    <pre class="api"><span class="c">// src/app/projects/[slug]/ProjectContent.tsx — abridged</span>
+<span class="k">import</span> { AppMain } <span class="k">from</span> <span class="s">'@/components/AppMain/AppMain'</span>;
+<span class="k">import</span> { Topbar } <span class="k">from</span> <span class="s">'@/components/Topbar/Topbar'</span>;
+<span class="k">import</span> { FolderHeader } <span class="k">from</span> <span class="s">'@/components/FolderHeader/FolderHeader'</span>;
+<span class="k">import</span> { FolderCard } <span class="k">from</span> <span class="s">'@/components/FolderCard/FolderCard'</span>;
+<span class="k">import</span> MockupCard <span class="k">from</span> <span class="s">'@/app/mockups/MockupCard'</span>;
+<span class="k">import</span> { UploadEmptyState } <span class="k">from</span> <span class="s">'@/components/EmptyState/UploadEmptyState'</span>;
+<span class="k">import</span> { useNewMockupDialog } <span class="k">from</span> <span class="s">'@/components/NewMockupDialog'</span>;
+
+<span class="k">const</span> isEmpty = folders.length === 0 &amp;&amp; mockups.length === 0;
+<span class="k">const</span> { openDialog } = useNewMockupDialog();
+
+<span class="k">return</span> (
+  &lt;<span class="k">div</span> style={{ display: <span class="s">'flex'</span>, flexDirection: <span class="s">'column'</span>, flex: 1 }}&gt;
+    &lt;<span class="t">Topbar</span> breadcrumbs={breadcrumbs} userName={…} userRole={…} /&gt;
+    &lt;<span class="t">AppMain</span> variant=<span class="s">"scroll"</span> ariaLabel=<span class="s">"Project workspace"</span>&gt;
+      &lt;<span class="t">FolderHeader</span>
+        icon={folderName ? <span class="k">null</span> : projectIcon}                  <span class="c">// emoji or null</span>
+        name={folderName ?? projectName}
+        count={folders.length + mockups.length}
+      /&gt;
+      {isEmpty ? (
+        &lt;<span class="t">UploadEmptyState</span> context={folderName ? <span class="s">'folder'</span> : <span class="s">'project'</span>} … /&gt;
+      ) : (
+        &lt;<span class="k">div</span> style={gridStyle}&gt;
+          {folders.map((f) =&gt; &lt;<span class="t">FolderCard</span> key={f.id} folder={f} projectSlug={…} folderPath={…} /&gt;)}
+          {mockups.map((m) =&gt; &lt;<span class="t">MockupCard</span> key={m.id} {...m} href={mockupSlugHref(…)} /&gt;)}
+        &lt;/<span class="k">div</span>&gt;
+      )}
+    &lt;/<span class="t">AppMain</span>&gt;
+  &lt;/<span class="k">div</span>&gt;
+);</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:640px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><strong>One <code>ProjectContent</code>, two routes.</strong> The project-root and nested-folder pages differ only in the payload they fetch (<code>/view</code> at root vs <code>/view?path=…</code> nested). The view layer is unified — folder-name vs project-name is just a prop swap.</li>
+      <li><strong>Client-side rendering.</strong> Per <code>CLAUDE.md</code> the entire page tree is <code>'use client'</code>. Data is fetched in <code>useEffect</code>; 401 → <code>window.location.replace('/login')</code>, 404 → <code>notFound()</code>, error → <code>&lt;ErrorState /&gt;</code>, loading → <code>&lt;LoadingState /&gt;</code>.</li>
+      <li><strong>Card hrefs.</strong> Folders use <code>folderHref(projectSlug, folderPath)</code>; mockups use <code>mockupSlugHref(projectSlug, folderPathNames, slug)</code> — both from <code>@/lib/project/routes</code>. Path-based, not ID-based, so URLs are human-readable and survive renames.</li>
+      <li><strong>New Mockup button.</strong> Wired to <code>useNewMockupDialog().openDialog({ file?, target })</code> — opens <a href="./25-new-mockup-dialog.html" style="color:var(--accent)"><code>new-mockup-dialog</code></a> with the resolved <code>{projectId, folderId}</code> pre-filled.</li>
+      <li><strong>New Folder button.</strong> Wired to <code>useNewFolderDialog()</code> (similar pattern). At the empty-state, file-drop bypasses the dialog and opens it directly with the file pre-attached.</li>
+      <li><strong>Topbar embedding.</strong> The page is responsible for mounting <code>Topbar</code>, including passing <code>userRole</code> so the avatar menu can conditionally show admin items.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>loading</code></td>
+          <td>Mount; fetch in flight.</td>
+          <td><code>&lt;LoadingState /&gt;</code> (spinner).</td>
+          <td>Loading region announced via role/aria on <code>LoadingState</code>.</td>
+        </tr>
+        <tr>
+          <td><code>populated</code></td>
+          <td>Fetch returned ≥1 folder or mockup.</td>
+          <td>Header + grid of <code>FolderCard</code> + <code>MockupCard</code>.</td>
+          <td><code>AppMain</code> has <code>ariaLabel="Project workspace"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>empty</code></td>
+          <td>Fetch returned 0 folders + 0 mockups.</td>
+          <td><code>UploadEmptyState</code> in place of the grid; accepts file-drop.</td>
+          <td>Drop-zone has <code>aria-label</code>.</td>
+        </tr>
+        <tr>
+          <td><code>not_found</code></td>
+          <td>404 from API (project slug doesn't exist or no access).</td>
+          <td><code>notFound()</code> → Next.js renders <code>not-found.tsx</code>.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>error</code></td>
+          <td>Non-2xx, non-404, non-401 response.</td>
+          <td><code>&lt;ErrorState error="Failed to load project." /&gt;</code>.</td>
+          <td><code>role="alert"</code> on the error component.</td>
+        </tr>
+        <tr>
+          <td><code>unauthorized</code></td>
+          <td>401 response.</td>
+          <td>Immediate redirect to <code>/login</code> via <code>window.location.replace</code>.</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">The page itself owns all five states. <code>ProjectContent</code> never sees <code>loading</code>, <code>not_found</code>, <code>error</code>, or <code>unauthorized</code> — the route file gatekeeps and only mounts <code>ProjectContent</code> on the <code>ok</code> branch.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Surface</th><th>Use for</th><th>Backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>project-folder-view</code> (this)</td>
+          <td>The browse surface — project root, any folder within. Card grid.</td>
+          <td>Custom <code>ProjectContent</code>.</td>
+        </tr>
+        <tr>
+          <td><a href="./05-project-card.html" style="color:var(--accent)"><code>project-card</code></a></td>
+          <td>The card used on <code>/projects</code> (all-projects index) — taller, with project metadata. Distinct from the folder/mockup cards here.</td>
+          <td>Custom.</td>
+        </tr>
+        <tr>
+          <td><a href="./11-mockup-view.html" style="color:var(--accent)"><code>mockup-view</code></a></td>
+          <td>Single-mockup pane — annotation surface. Links from <code>MockupCard</code>.</td>
+          <td>Custom.</td>
+        </tr>
+        <tr>
+          <td><a href="./26-empty-state.html" style="color:var(--accent)"><code>empty-state</code></a></td>
+          <td>Replaces the grid when there's nothing to show.</td>
+          <td>Custom (<code>UploadEmptyState</code>).</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Rule of thumb: project root + any nested folder both use this view. Top-level "all projects" is a different surface (<code>project-card</code>).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>page padding<dd>via AppMain variant="scroll" (handled centrally)
+      <dt>header margin-bottom<dd>20 px
+      <dt>title-row gap<dd>8 px
+      <dt>icon size<dd>20 px (emoji or stroked SVG)
+      <dt>name<dd>18px / 700, --text-bright
+      <dt>count<dd>12px / 400, --text-muted, margin-left:auto
+      <dt>actions gap<dd>8 px
+      <dt>btn-action<dd>32 px tall, --accent-soft bg, --accent text
+      <dt>btn-action-secondary<dd>32 px tall, --btn-bg, --text-dim
+      <dt>grid<dd>auto-fill, minmax(160px, 1fr), gap 12 px
+      <dt>card bg<dd>--bg-card
+      <dt>card border<dd>1 px --border-subtle (rest), --border (hover)
+      <dt>card radius<dd>--radius-card (14 px)
+      <dt>card hover shadow<dd>--shadow-sm
+      <dt>thumb height<dd>100 px
+      <dt>folder thumb<dd>--accent-overlay-soft bg, --accent glyph
+      <dt>mockup thumb<dd>--bg-elevated bg (live: screenshot)
+      <dt>body padding<dd>10 12 px
+      <dt>item-name<dd>13px / 600, --text-bright
+      <dt>item-meta<dd>11px / 400, --text-muted
+    </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><strong>Ordering.</strong> Folders are rendered before mockups in the grid; within each group the API returns its native order (folders alphabetical, mockups by <code>updatedAt</code> desc).</li>
+      <li><strong>URL stability.</strong> Folder URLs are path-based (<code>/projects/lumen-coffee/landing/hero</code>) not ID-based, so renames break links — by design, since folder slugs are url-safe-name validated.</li>
+      <li><strong>Drop target.</strong> The empty state accepts file-drop (a .zip) and hands the file to <code>useNewMockupDialog().openDialog({ file, target })</code> with <code>{projectId, folderId}</code> pre-filled. Non-empty views currently do not accept drops — uploads go through "New Mockup".</li>
+      <li><strong>Per-card actions.</strong> Folder and mockup cards expose a kebab menu on hover with rename/move/delete; see <a href="./01-sidebar.html" style="color:var(--accent)"><code>sidebar</code></a> for the kebab pattern. Deleting a folder cascades to its descendants and prompts via <a href="./14-dialog.html" style="color:var(--accent)"><code>useConfirm</code></a>.</li>
+      <li><strong>Breadcrumbs.</strong> The topbar's <a href="./02-breadcrumb.html" style="color:var(--accent)"><code>breadcrumb</code></a> reflects the full path from project root to current folder; the in-view header only shows the current folder name. No duplication.</li>
+      <li><strong>Auth.</strong> Pages are wrapped by middleware cookie-check + a client-side <code>useIdentity()</code> call inside the page. 401 → redirect to <code>/login</code>; the page never tries to render unauthenticated content.</li>
+      <li><strong>Reduced motion.</strong> No bespoke animations beyond color/border transitions on cards, which collapse to 0 ms via the token override.</li>
+    </ul>
+  </section>
 </div>
 
-<div class="demo-label">12 &mdash; Project / Folder View</div>
 </body>
 </html>
