@@ -11,6 +11,34 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
   const ident = await identify(req);
   if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { slug } = await ctx.params;
+
+  // Synthetic "unsorted" view — lists every orphan mockup (projectId=null)
+  // as if it were the root of a virtual "Ungrouped" project. No folders
+  // are surfaced because orphans cannot live in folders.
+  if (slug === 'unsorted') {
+    const orphans = await prisma.mockup.findMany({
+      where: { projectId: null, status: { not: 'archived' } },
+      orderBy: { position: 'asc' },
+      include: { _count: { select: { annotations: true } } },
+    });
+    return NextResponse.json({
+      projectName: 'Ungrouped',
+      projectSlug: 'unsorted',
+      projectId: '',
+      projectIcon: null,
+      folders: [],
+      mockups: orphans.map((m) => ({
+        id: m.id,
+        name: m.name,
+        slug: m.slug,
+        status: m.status,
+        updatedAt: m.updatedAt.toISOString(),
+        annotationCount: m._count.annotations,
+      })),
+      breadcrumbs: [{ label: 'Ungrouped', href: '/projects/unsorted' }],
+    });
+  }
+
   const project = await prisma.project.findUnique({
     where: { slug },
     include: {
