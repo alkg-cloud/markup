@@ -106,6 +106,26 @@ The project **"Markup dev"** on `markup.alego.cloud` is the living visual mirror
 
 **Invariant:** at any point in time, markup.alego.cloud reflects the current design state of the project. Stale mockups are a bug.
 
+## DS authoring rule (STRICT — non-negotiable)
+
+Every file under `docs/design/design-system/*.html` follows the canonical pattern documented in [`docs/design/design-system/AUTHORING.md`](docs/design/design-system/AUTHORING.md). The agent reads that guide **end-to-end before adding or modifying any DS file**. No exceptions.
+
+Concretely, any DS file the agent touches:
+
+1. Has `data-ds-component="<slug>"` on the `.page` wrapper.
+2. Copies `:root` tokens verbatim from `src/styles/tokens.css` (no drift, no literal colour values in body CSS).
+3. Includes the `@media (prefers-reduced-motion: reduce)` override that zeros every motion-duration token.
+4. Has all required sections in order: **All states grid** → (per-state deep dive) → (in-context preview) → **React API section** → (state decision matrix) → (when-to-use vs sibling) → **Anatomy** → **Behavior**.
+5. The **React API section** is non-negotiable. It states honestly which Radix primitive backs the component or that none does; it includes a `pre.api` code block with the canonical usage; any custom (non-Radix) state is flagged at three places (matrix row + API bullet + CSS comment).
+6. Uses the project's demo helpers verbatim (`.row-states`, `.state`, `dl.tokens`, `table.matrix`, `pre.api` with `.k`/`.s`/`.c`/`.t` syntax classes).
+7. Cross-links to sibling DS files via relative paths.
+8. Is uploaded to `markup.alego.cloud` as a new version in the same change-set (per the Mockup-sync rule above).
+9. Triggers a DS cascade — dependent DS files and the full-prototype are updated in the same change-set.
+
+The pre-commit checklist at the end of `AUTHORING.md` is run before every commit that touches a DS file.
+
+When this rule and an existing DS file disagree, the rule wins — open a migration PR to bring the file into compliance. When the rule needs an extension, propose an amendment to `AUTHORING.md` **before** writing the new DS file; get explicit user approval; document the amendment in declarative present tense (no changelog band).
+
 ## Design pipeline rule (STRICT — non-negotiable)
 
 Mockups on "Markup dev" are the **source of truth for design**. The flow is **unidirectional: mockup → code**. The agent never modifies mockups on its own initiative — only when explicitly asked by the user.
@@ -141,5 +161,6 @@ Eyeballing the fixture and writing code without enumerating its surface produces
 - **Frontend:** [`docs/frontend/INDEX.md`](docs/frontend/INDEX.md)
 - **Schema + migrations:** [`docs/data/schema.md`](docs/data/schema.md)
 - **Git conventions:** [`docs/git/conventions.md`](docs/git/conventions.md)
+- **DS authoring guide (mandatory for any DS file change):** [`docs/design/design-system/AUTHORING.md`](docs/design/design-system/AUTHORING.md)
 - **Feature catalog (visual-QA source of truth):** [`docs/feature-catalog.md`](docs/feature-catalog.md)
 - **Backlog (parked features):** [`docs/future-features.md`](docs/future-features.md)
