@@ -23,7 +23,9 @@
   --motion-fast:160ms;--motion-base:220ms;
   --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
   --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
 }
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
@@ -34,11 +36,15 @@ body{
   background-attachment:fixed;
 }
 button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
-.page{padding:48px 32px 96px}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:960px;margin:0 auto}
 .h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
 .lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
-.section{margin-bottom:56px}
+.section{margin-bottom:48px}
 .section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px}
 .stage{
   background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
@@ -103,18 +109,53 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
 .anchor-col{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
 .align-label{font-family:var(--font-mono);font-size:9px;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase}
 
-/* Tokens table */
-.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
-.tokens dt{color:var(--text-dim)}
-.tokens dt::before{content:'--'}
-.tokens dd{color:var(--text-bright)}
+/* ─── All-states grid helpers ─── */
+.row-states{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:24px;
+}
+.state{display:flex;flex-direction:column;gap:8px}
+.state .state-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+}
+.state .state-row{
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:18px;display:flex;align-items:center;justify-content:center;
+  min-height:60px;
+}
+
+/* Anatomy / matrix tables */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;
+  background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  color:var(--text-dim);
+  overflow-x:auto;
+  white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
 
-<div class="page">
+<div class="page" data-ds-component="popover">
   <h1 class="h1">15 — Popover</h1>
-  <p class="lede">The single popover primitive (<code>src/lib/popover/usePopover.ts</code>). Wraps the native HTML popover API (<code>popover="auto"</code> + <code>popovertarget</code>) plus <code>positionPopover</code> which anchors to the trigger via <code>getBoundingClientRect</code>, flips above when there's no room below, and clamps to the viewport with a 4 px gutter. Paints in the browser top-layer — escapes every overflow ancestor and stacking context. Browser owns light-dismiss, ESC, and the single-popover-auto invariant.</p>
+  <p class="lede">Anchored overlay primitive — every kebab menu, status toggle, version row, picker, and avatar dropdown. Two implementations coexist: <code>src/lib/popover/usePopover.ts</code> wraps the <strong>native HTML popover API</strong> (<code>popover="auto"</code> + <code>popovertarget</code>) and is the default for in-tree kebabs (project tree, annotation card, comment, version row, topbar avatar); <a href="./25-folder-picker.html" style="color:var(--accent)"><code>FolderPicker</code></a> uses <code>@radix-ui/react-popover</code> when it needs trigger-width matching (<code>--radix-popover-trigger-width</code>) and React-controlled state. Both paint in the browser top-layer / portal, escaping every overflow ancestor. Shares the glass-surface standard with <a href="./14-dialog.html" style="color:var(--accent)"><code>dialog</code></a>, <a href="./16-tooltip.html" style="color:var(--accent)"><code>tooltip</code></a>, and rail/toolbar: <code>--surface-glass-bg</code>, blur 16 px / saturate 140%, <code>--border</code>, <code>--radius-sm</code>, <code>--shadow-popover</code>.</p>
 
   <section class="section">
     <div class="section-title">A — Project tree kebab (3 row variants)</div>
@@ -152,6 +193,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         </div>
       </div>
     </div>
+    <div class="caption">All three rendered via <code>usePopover</code> from <code>TreeNodeKebab.tsx</code>. The trigger sets <code>popovertarget</code>; the browser handles open/close, ESC, light-dismiss, and the single-popover-auto invariant for free.</div>
   </section>
 
   <section class="section">
@@ -170,6 +212,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         <button class="item danger"><span class="ico">⌫</span> Delete</button>
       </div>
     </div>
+    <div class="caption">Top section is a <code>radiogroup</code> of three status buttons; the active one carries an inset 1 px ring in the status hue. Bottom items are regular menu rows. Tooltips on the status buttons use <a href="./16-tooltip.html" style="color:var(--accent)"><code>tooltip</code></a>.</div>
   </section>
 
   <section class="section">
@@ -187,6 +230,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         </div>
       </div>
     </div>
+    <div class="caption">The <code>align="right"</code> position calculator pins the popover's right edge to the trigger's right edge. See <code>src/lib/popover/position.ts</code>.</div>
   </section>
 
   <section class="section">
@@ -212,6 +256,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         </div>
       </div>
     </div>
+    <div class="caption">Nested triggers (a kebab sitting inside an already-open list row) still work because each popover is its own top-layer paint — the native <code>popover="auto"</code> single-active invariant only collapses sibling popovers when a new one opens.</div>
   </section>
 
   <section class="section">
@@ -235,6 +280,173 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         </div>
       </div>
     </div>
+    <div class="caption">Three alignment options on <code>usePopover(align)</code>. Vertical placement always tries "below the trigger" first and flips to "above" if the viewport gutter (4 px) would be violated.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">All popover surfaces — one table</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">Kebab menu (resting)</div>
+        <div class="state-row" style="background:transparent;border:none;padding:0">
+          <div class="popover" style="position:relative">
+            <button class="item"><span class="ico">↗</span> Open</button>
+            <button class="item"><span class="ico">✎</span> Edit</button>
+            <div class="divider"></div>
+            <button class="item danger"><span class="ico">⌫</span> Delete</button>
+          </div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">Picker (Radix popover)</div>
+        <div class="state-row" style="background:transparent;border:none;padding:0">
+          <div class="popover large" style="position:relative">
+            <button class="item"><span class="ico">·</span> Project root</button>
+            <button class="item" style="background:var(--accent-soft);color:var(--accent-bright)"><span class="ico">▾</span> Marketing</button>
+            <button class="item" style="padding-left:26px"><span class="ico">·</span> 2026</button>
+          </div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">Status toggle group</div>
+        <div class="state-row" style="background:transparent;border:none;padding:0">
+          <div class="popover" style="position:relative">
+            <div class="status-group" style="border-bottom:none;margin-bottom:0">
+              <button class="status-opt info active"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
+              <button class="status-opt warning"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6"/></svg></button>
+              <button class="status-opt success"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14.43 4.43L13 3l-7 7-3-3L1.57 8.43 6 12.86l8.43-8.43z"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Every popover surface uses the same recipe: glass background, blur 16 px, <code>--border</code>, <code>--radius-sm</code>, <code>--shadow-popover</code>, 4 px container padding. Items, dividers, and status groups are composable children — no separate "menu popover" vs "picker popover" components.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — usePopover (default) + Radix Popover (FolderPicker)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">Two implementations live in the project. <strong>Default kebabs</strong> use the in-project <code style="color:var(--accent)">usePopover</code> hook (<code>src/lib/popover/usePopover.ts</code>) which wraps the native HTML popover API. <strong>Folder pickers and other trigger-width-matching anchors</strong> use <code style="color:var(--accent)">@radix-ui/react-popover</code> for its CSS variable <code>--radix-popover-trigger-width</code> and React-controlled open state.</p>
+    <pre class="api"><span class="c">// 1) Default kebab menu — usePopover wraps native popover="auto"</span>
+<span class="k">import</span> { usePopover } <span class="k">from</span> <span class="s">'@/lib/popover/usePopover'</span>;
+
+<span class="k">function</span> KebabMenu() {
+  <span class="k">const</span> { triggerRef, popoverProps, close } =
+    usePopover&lt;<span class="t">HTMLButtonElement</span>, <span class="t">HTMLDivElement</span>&gt;(<span class="s">'right'</span>);
+
+  <span class="k">return</span> (
+    &lt;&gt;
+      &lt;<span class="k">button</span> ref={triggerRef} className={styles.kebab}
+              aria-haspopup=<span class="s">"menu"</span> /&gt;          <span class="c">// popovertarget wired by triggerProps</span>
+      &lt;<span class="k">div</span> {...popoverProps} className={styles.popover} role=<span class="s">"menu"</span>&gt;
+        &lt;<span class="k">button</span> className={styles.item}
+                onClick={() =&gt; { close(); doEdit(); }}&gt;Edit&lt;/<span class="k">button</span>&gt;
+        &lt;<span class="k">div</span> className={styles.divider} /&gt;
+        &lt;<span class="k">button</span> className={`${styles.item} ${styles.danger}`}
+                onClick={() =&gt; { close(); doDelete(); }}&gt;Delete&lt;/<span class="k">button</span>&gt;
+      &lt;/<span class="k">div</span>&gt;
+    &lt;/&gt;
+  );
+}
+
+<span class="c">// 2) Trigger-width-matching popover — @radix-ui/react-popover (FolderPicker)</span>
+<span class="k">import</span> * <span class="k">as</span> Popover <span class="k">from</span> <span class="s">'@radix-ui/react-popover'</span>;
+
+&lt;<span class="t">Popover.Root</span> open={open} onOpenChange={setOpen}&gt;
+  &lt;<span class="t">Popover.Trigger</span> asChild&gt;                          <span class="c">// Slot — caller owns the button</span>
+    &lt;<span class="k">button</span> className={styles.trigger}&gt;…&lt;/<span class="k">button</span>&gt;     <span class="c">// gets [data-state="open"]</span>
+  &lt;/<span class="t">Popover.Trigger</span>&gt;
+  &lt;<span class="t">Popover.Portal</span>&gt;
+    &lt;<span class="t">Popover.Content</span>
+       align=<span class="s">"start"</span> sideOffset={6}
+       className={styles.popover}
+       style={{ width: <span class="s">'var(--radix-popover-trigger-width)'</span> }}&gt;   <span class="c">// match trigger width</span>
+      …
+    &lt;/<span class="t">Popover.Content</span>&gt;
+  &lt;/<span class="t">Popover.Portal</span>&gt;
+&lt;/<span class="t">Popover.Root</span>&gt;</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><code>usePopover</code> is the canonical hook. Reach for it for every kebab, status toggle, version row, comment menu, and topbar avatar — anything that's a simple "anchored list of actions".</li>
+      <li><code>@radix-ui/react-popover</code> is reserved for two niches: (a) trigger-width matching via <code>--radix-popover-trigger-width</code> (FolderPicker), (b) when you need React-controlled <code>open</code> tied to outer state (form fields whose popover snaps shut on submit).</li>
+      <li>Both render in the top-layer / portal — never trapped in transformed ancestors. The CSS must set <code>position: fixed; inset: auto; margin: 0</code> on the popover so the JS-written <code>top</code> / <code>left</code> win over the browser-default centring.</li>
+      <li>Menu items are native <code>&lt;button&gt;</code> — Radix has no <code>Button</code> primitive. Pair each <code>onClick</code> with <code>close()</code> so the action fires and the popover closes in the same gesture.</li>
+      <li><code>role="menu"</code> on the container + <code>role="menuitem"</code> on items is correct for kebabs; <code>role="radiogroup"</code> applies to the status toggle group at the top of annotation-card kebab.</li>
+      <li>Light-dismiss (click-outside) and ESC are <strong>browser-native</strong> for <code>usePopover</code> (via <code>popover="auto"</code>) and <strong>Radix-driven</strong> for <code>Popover.Root</code>. Both arrive without extra wiring.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>closed</code></td>
+          <td>Default. Trigger has <code>popovertarget</code> set but the popover is hidden.</td>
+          <td>Nothing in the top-layer.</td>
+          <td>Trigger: <code>aria-haspopup="menu"</code>, <code>aria-expanded="false"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>open</code></td>
+          <td>Click trigger or invoke <code>showPopover()</code> programmatically (Radix: <code>open={true}</code>).</td>
+          <td>Popover paints in the top-layer at calculated position. Glass surface, 16 px blur, <code>--shadow-popover</code>. Trigger gets <code>.active</code> / <code>[data-state="open"]</code> for accent border.</td>
+          <td>Trigger: <code>aria-expanded="true"</code>. Container: <code>role="menu"</code>. First menuitem gets focus.</td>
+        </tr>
+        <tr>
+          <td><code>flipped</code> (auto)</td>
+          <td>Default-below placement would overflow the viewport gutter (4 px).</td>
+          <td>Position calculator switches to above-the-trigger. No visual change to surface itself — just the <code>top</code> value.</td>
+          <td>Same as open. Reading order unchanged.</td>
+        </tr>
+        <tr>
+          <td><code>nested-open</code></td>
+          <td>A second popover opens while another is already open (only valid for non-sibling triggers — e.g. tooltip inside an open popover).</td>
+          <td>Both surfaces visible. Top-layer paints them in DOM order — newer-on-top.</td>
+          <td>Each carries its own <code>role</code>; focus is in the most recently opened.</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>Trigger button has <code>disabled</code> attribute (e.g. <code>FolderPicker</code> with <code>projectId === null</code>).</td>
+          <td>Trigger: 0.4 opacity, <code>cursor:not-allowed</code>. Click does nothing — popover never opens.</td>
+          <td>Trigger: <code>aria-disabled="true"</code> (native via <code>disabled</code>).</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">"flipped" and "nested-open" are <em>derived</em> states — the consumer doesn't toggle them. The position calculator and the top-layer rules handle both automatically.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Primitive</th><th>Use for</th><th>Backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>usePopover</code></td>
+          <td>Default kebab menus, status toggles, version row menus, comment menus, topbar avatar — anything that's a simple anchored action list.</td>
+          <td>Native <code>popover="auto"</code> + custom positioner — <code>src/lib/popover/usePopover.ts</code></td>
+        </tr>
+        <tr>
+          <td><code>@radix-ui/react-popover</code></td>
+          <td>Pickers needing trigger-width matching (<code>--radix-popover-trigger-width</code>) or React-controlled <code>open</code> state tied to outer logic. Currently: FolderPicker.</td>
+          <td><code>@radix-ui/react-popover</code> (installed)</td>
+        </tr>
+        <tr>
+          <td><code>tooltip</code></td>
+          <td>Non-interactive hover hints. Smaller, no interactive items, opens on hover/focus only.</td>
+          <td>See <a href="./16-tooltip.html" style="color:var(--accent)"><code>16-tooltip.html</code></a></td>
+        </tr>
+        <tr>
+          <td><code>dialog</code></td>
+          <td>Modal flows that own the user's attention — forms, confirmations. Centred, scrim, focus trap.</td>
+          <td>See <a href="./14-dialog.html" style="color:var(--accent)"><code>14-dialog.html</code></a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Rule of thumb: if the surface anchors to a trigger and the user can dismiss by clicking outside, it's a popover. If it blocks the page until the user makes a choice, it's a dialog. If it appears on hover without interactive content, it's a tooltip.</div>
   </section>
 
   <section class="section">
@@ -242,18 +454,36 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
     <dl class="tokens">
       <dt>surface-glass-bg<dd>rgb(7 12 15 / 80%)
       <dt>backdrop-filter<dd>blur(16px) saturate(140%)
-      <dt>border<dd>1px solid --border
+      <dt>border<dd>1 px solid --border
       <dt>radius<dd>--radius-sm (8 px)
-      <dt>padding<dd>4 px (container)
-      <dt>menu item<dd>6 px 10 px, 12 px / 400, --text
+      <dt>padding (container)<dd>4 px
+      <dt>min-width<dd>180 px (240 px for .large / pickers)
+      <dt>shadow<dd>--shadow-popover
+      <dt>menu item<dd>6 px / 10 px, 12 px / 400, --text
       <dt>menu item hover<dd>--surface-hover bg, --text-bright color
       <dt>menu item danger<dd>--danger text → hover --danger-soft bg
       <dt>divider<dd>1 px --border-subtle, 4 px margin
       <dt>shortcut chip<dd>--font-mono 9 px, --bg-card-active bg, --radius-xs
-      <dt>shadow<dd>--shadow-popover
+      <dt>status-opt<dd>32 × 28 px, --radius-xs, inset 1 px ring in status hue when active
       <dt>position<dd>fixed; inset auto; margin 0 — JS writes top + left
-      <dt>z-paint<dd>browser top-layer (popover="auto")
+      <dt>z-paint<dd>browser top-layer (popover="auto") or Radix Portal
+      <dt>align options<dd>"left" | "center" | "right" (usePopover); "start" | "center" | "end" (Radix)
+      <dt>viewport gutter<dd>4 px (positioner clamps + flips when this would be violated)
     </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Open / close.</strong> <code>usePopover</code>: browser owns it (<code>popover="auto"</code> + <code>popovertarget</code>). Radix: <code>open</code> + <code>onOpenChange</code> on <code>Popover.Root</code>.</li>
+      <li><strong>Light-dismiss.</strong> Click outside the popover closes it (browser-native for <code>popover="auto"</code>, Radix-default for <code>Popover.Root</code>).</li>
+      <li><strong>Escape closes.</strong> Both implementations dismiss on Escape and return focus to the trigger.</li>
+      <li><strong>Single-popover-auto.</strong> <code>popover="auto"</code> auto-closes any other open <code>popover="auto"</code> element when a new one opens. Use <code>popover="manual"</code> only when stacking is required (none of our surfaces need it).</li>
+      <li><strong>Positioning.</strong> Default "below the trigger, align left/center/right"; flips to above when the viewport gutter (4 px) would be violated; clamps horizontally to stay on-screen.</li>
+      <li><strong>Top-layer paint.</strong> Both implementations escape every overflow ancestor and stacking context — the popover is never clipped by a parent <code>overflow: hidden</code> or stacked beneath a sibling.</li>
+      <li><strong>Trigger active state.</strong> <code>usePopover</code> doesn't set a class — consumer toggles <code>.active</code> if visual feedback is needed. Radix sets <code>[data-state="open"]</code> automatically; CSS can hook into it.</li>
+      <li><strong>Reduced motion.</strong> Both implementations respect <code>prefers-reduced-motion: reduce</code> — Radix's enter animation collapses to a 0 ms opacity flip; <code>usePopover</code> has no enter animation by default.</li>
+    </ul>
   </section>
 </div>
 
