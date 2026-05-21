@@ -11,12 +11,14 @@ export interface TreeMockup {
   slug: string;
   status: string;
   position: number;
+  createdById: string | null;
 }
 
 export interface TreeFolder {
   id: string;
   name: string;
   position: number;
+  createdById: string | null;
   children: TreeFolder[];
   mockups: TreeMockup[];
 }
@@ -27,6 +29,7 @@ export interface TreeProject {
   slug: string;
   icon: string | null;
   position: number;
+  createdById: string | null;
   folders: TreeFolder[];
   mockups: TreeMockup[];
 }
@@ -48,6 +51,9 @@ export interface FlatNode {
   projectId: string;
   mockupId?: string;
   childCount?: number;
+  /** cuid of the user who created this node, or null for legacy / agent-created rows.
+   *  Used by `useCanDelete` to gate the Delete action in `TreeNodeKebab`. */
+  createdById: string | null;
 }
 
 export interface ReadonlyURLSearchParamsLike {

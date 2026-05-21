@@ -43,6 +43,7 @@ export async function listProjects() {
       position: true,
       createdAt: true,
       updatedAt: true,
+      createdById: true,
       _count: { select: { mockups: true, folders: true } },
     },
   });
@@ -57,14 +58,20 @@ export async function listProjects() {
   }));
 }
 
-export async function createProject(input: { name: string; icon?: string }) {
+export async function createProject(input: { name: string; icon?: string; createdById?: string }) {
   const slug = await ensureUniqueProjectSlug(input.name);
   const maxPos = await prisma.project.aggregate({
     _max: { position: true },
   });
   const position = (maxPos._max.position ?? 0) + 1024;
   const project = await prisma.project.create({
-    data: { name: input.name, slug, position, icon: input.icon ?? null },
+    data: {
+      name: input.name,
+      slug,
+      position,
+      icon: input.icon ?? null,
+      createdById: input.createdById ?? null,
+    },
   });
   log.info({ projectId: project.id }, 'project_created');
   return project;
@@ -146,6 +153,7 @@ export async function createFolder(input: {
   projectId: string;
   name: string;
   parentId?: string | null;
+  createdById?: string;
 }) {
   const project = await prisma.project.findUnique({
     where: { id: input.projectId },
@@ -191,6 +199,7 @@ export async function createFolder(input: {
       parentId: input.parentId ?? null,
       name: input.name,
       position,
+      createdById: input.createdById ?? null,
     },
   });
   log.info({ folderId: folder.id, projectId: input.projectId }, 'folder_created');
@@ -247,6 +256,7 @@ interface TreeFolder {
   id: string;
   name: string;
   position: number;
+  createdById: string | null;
   children: TreeFolder[];
   mockups: TreeMockup[];
 }
@@ -257,6 +267,7 @@ interface TreeMockup {
   slug: string;
   status: string;
   position: number;
+  createdById: string | null;
 }
 
 export interface ProjectTree {
@@ -265,6 +276,7 @@ export interface ProjectTree {
   slug: string;
   icon: string | null;
   position: number;
+  createdById: string | null;
   folders: TreeFolder[];
   mockups: TreeMockup[];
 }
@@ -278,7 +290,7 @@ export async function getProjectTree(projectId: string): Promise<ProjectTree | n
   const allFolders = await prisma.folder.findMany({
     where: { projectId },
     orderBy: { position: 'asc' },
-    select: { id: true, name: true, parentId: true, position: true },
+    select: { id: true, name: true, parentId: true, position: true, createdById: true },
   });
 
   const allMockups = await prisma.mockup.findMany({
@@ -291,6 +303,7 @@ export async function getProjectTree(projectId: string): Promise<ProjectTree | n
       status: true,
       folderId: true,
       position: true,
+      createdById: true,
     },
   });
 
@@ -315,6 +328,7 @@ export async function getProjectTree(projectId: string): Promise<ProjectTree | n
       id: f.id,
       name: f.name,
       position: f.position,
+      createdById: f.createdById,
       children: childFolders.map(buildFolder),
       mockups: mockups.map(({ folderId: _, ...m }) => m),
     };
@@ -329,6 +343,7 @@ export async function getProjectTree(projectId: string): Promise<ProjectTree | n
     slug: project.slug,
     icon: project.icon,
     position: project.position,
+    createdById: project.createdById,
     folders: rootFolders.map(buildFolder),
     mockups: rootMockups,
   };

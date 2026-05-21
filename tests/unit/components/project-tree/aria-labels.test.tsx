@@ -17,6 +17,7 @@ const project = {
   slug: 'alpha',
   icon: 'emoji:🎨',
   position: 0,
+  createdById: null,
   folders: [],
   mockups: [],
 };

@@ -77,6 +77,7 @@ export async function getHomeData(identity: HomeIdentity): Promise<HomeData> {
         updatedAt: true,
         projectId: true,
         folderId: true,
+        createdById: true,
       },
     }),
     listProjects(),
@@ -112,6 +113,7 @@ export async function getHomeData(identity: HomeIdentity): Promise<HomeData> {
       updatedAt: m.updatedAt.toISOString(),
       href: mockupSlugHref(projectSlug, folderChain, m.slug),
       breadcrumb: buildBreadcrumb(m.projectId, m.folderId),
+      createdById: m.createdById,
     };
   });
 
@@ -124,6 +126,7 @@ export async function getHomeData(identity: HomeIdentity): Promise<HomeData> {
       status: m.status as StatusLiteral,
       updatedAt: m.updatedAt.toISOString(),
       href: mockupSlugHref('unsorted', [], m.slug),
+      createdById: m.createdById,
     }));
 
   const projectsOut: ProjectListEntry[] = projects.map((p) => ({
@@ -136,6 +139,7 @@ export async function getHomeData(identity: HomeIdentity): Promise<HomeData> {
     updatedAt: p.updatedAt.toISOString(),
     mockupCount: p.mockupCount,
     folderCount: p.folderCount,
+    createdById: p.createdById,
   }));
 
   return {

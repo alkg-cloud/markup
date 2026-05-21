@@ -21,6 +21,8 @@ export interface AppMainViewerWiredProps {
   currentUserColorIndex: number;
   versions: VersionRow[];
   initialAnnotations: AppMainAnnotation[];
+  /** Whether the current viewer is an admin — widens delete access on annotations/comments. */
+  viewerIsAdmin?: boolean;
 }
 
 export function AppMainViewerWired(props: AppMainViewerWiredProps) {
@@ -256,6 +258,7 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
         onVersionSelect={onVersionSelect}
         onVersionPromote={onVersionPromote}
         onVersionDelete={onVersionDelete}
+        viewerIsAdmin={props.viewerIsAdmin}
       />
       {confirmDialog}
     </>

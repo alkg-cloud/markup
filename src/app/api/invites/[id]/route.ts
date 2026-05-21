@@ -4,6 +4,8 @@ import { effectiveStatus } from '@/lib/auth/invite-token';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { prisma } from '@/lib/prisma';
 
+// Admin-only — invites are an org-level surface. See docs/api/authz.md.
+
 export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;

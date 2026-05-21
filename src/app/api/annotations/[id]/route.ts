@@ -5,8 +5,9 @@ import { z } from 'zod';
 import { parsePinCoords } from '@/lib/annotation/pin-coords';
 import { getAnnotation } from '@/lib/annotation/service';
 import { ANNOTATION_STATUSES } from '@/lib/annotation/status';
-import { identify } from '@/lib/auth/identify';
+import { handleAuthError, identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
+import { requireOwnerOrAdmin } from '@/lib/auth/require-owner-or-admin';
 import { env } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
@@ -82,13 +83,23 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
   const ident = await identify(req);
-  if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id } = await ctx.params;
   const existing = await prisma.annotation.findUnique({
     where: { id },
     include: { thread: true },
   });
   if (!existing) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+
+  try {
+    await requireOwnerOrAdmin(ident, {
+      kind: 'annotation',
+      createdBy: existing.createdBy,
+      createdByType: existing.createdByType as 'user' | 'agent',
+    });
+  } catch (e) {
+    return handleAuthError(e);
+  }
+
   // Reactions → messages → thread → annotation. The schema doesn't have
   // ON DELETE CASCADE on every edge, so unwind in order.
   if (existing.thread) {
@@ -108,7 +119,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
       event: 'annotation_deleted',
       annotationId: id,
       mockupId: existing.mockupId,
-      identityKind: ident.kind,
+      identityKind: ident?.kind,
     },
     'annotation deleted',
   );

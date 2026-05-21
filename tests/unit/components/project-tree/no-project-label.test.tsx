@@ -30,7 +30,14 @@ describe('orphan group label', () => {
   it("does not render 'Ungrouped' or 'Unsorted' anywhere in the tree", async () => {
     const { ProjectTree } = await import('@/components/ProjectTree/ProjectTree');
     const orphanMockups = [
-      { id: 'm1', name: 'Draft sketch', slug: 'draft-sketch', status: 'active', position: 1 },
+      {
+        id: 'm1',
+        name: 'Draft sketch',
+        slug: 'draft-sketch',
+        status: 'active',
+        position: 1,
+        createdById: null,
+      },
     ];
 
     await act(async () => {
@@ -56,12 +63,20 @@ describe('orphan group label', () => {
         slug: 'my-app',
         icon: null,
         position: 1,
+        createdById: null,
         folders: [],
         mockups: [],
       },
     ];
     const orphanMockups = [
-      { id: 'm1', name: 'Draft sketch', slug: 'draft-sketch', status: 'active', position: 1 },
+      {
+        id: 'm1',
+        name: 'Draft sketch',
+        slug: 'draft-sketch',
+        status: 'active',
+        position: 1,
+        createdById: null,
+      },
     ];
 
     await act(async () => {
