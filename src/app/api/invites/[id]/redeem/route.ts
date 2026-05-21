@@ -106,13 +106,18 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       return user;
     })
     .catch((err) => {
-      if (err?.message === 'invite_unusable_race') return null;
+      if (err?.message === 'invite_unusable_race') {
+        return { kind: 'race' as const };
+      }
       logger.error({ event: 'invite_redeem_failed', err: String(err) }, 'redeem');
-      throw err;
+      return { kind: 'error' as const };
     });
 
-  if (!newUser) {
-    return NextResponse.json({ error: 'invite_unusable' }, { status: 410 });
+  if (newUser && 'kind' in newUser) {
+    if (newUser.kind === 'race') {
+      return NextResponse.json({ error: 'invite_unusable' }, { status: 410 });
+    }
+    return NextResponse.json({ error: 'invite_redeem_failed' }, { status: 500 });
   }
 
   const { token: sessionToken } = await createSession(newUser.id);
