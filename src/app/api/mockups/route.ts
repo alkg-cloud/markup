@@ -5,8 +5,9 @@ import { NextResponse } from 'next/server';
 import { identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { env } from '@/lib/env';
-import { createMockupFromZip, listMockups } from '@/lib/mockup/service';
+import { createMockupFromZip, listMockups, wrapHtmlAsZip } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
+import { MAX_UPLOAD_BYTES } from '@/lib/upload/constants';
 import { URL_SAFE_NAME_PATTERN } from '@/lib/validation/url-safe-name';
 
 const VALID_STATUSES = ['open', 'resolved', 'archived'] as const;
@@ -18,6 +19,15 @@ export async function POST(req: Request) {
   const id = await identify(req);
   if (!id) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  // Defense in depth: the client already validates against
+  // MAX_UPLOAD_BYTES before sending, but a hostile or buggy client can
+  // still hand us multi-GB bodies. Reject by content-length before
+  // buffering anything into memory.
+  const contentLength = req.headers.get('content-length');
+  if (contentLength && Number(contentLength) > MAX_UPLOAD_BYTES) {
+    return NextResponse.json({ error: 'file_too_large', limit: MAX_UPLOAD_BYTES }, { status: 413 });
   }
 
   const fd = await req.formData();
@@ -54,10 +64,34 @@ export async function POST(req: Request) {
     }
   }
 
+  const buffer = Buffer.from(await file.arrayBuffer());
+  // Secondary guard: a client can send chunked transfer-encoding with
+  // no content-length, so the header check above can be bypassed by
+  // streaming. Re-check the actual buffered size before we touch disk.
+  if (buffer.byteLength > MAX_UPLOAD_BYTES) {
+    return NextResponse.json({ error: 'file_too_large', limit: MAX_UPLOAD_BYTES }, { status: 413 });
+  }
+
+  // The `build` field can be either a full zip (existing path used by
+  // agents + the legacy upload UI) or a raw HTML document (used by the
+  // new drag-drop flow so the browser doesn't have to depend on JSZip).
+  // We branch on MIME first, then file extension — some browsers tag
+  // `.html` drops as `application/octet-stream`, so the extension is
+  // the load-bearing hint when the MIME is unhelpful.
+  const filename = file instanceof File ? file.name : '';
+  const mime = file.type.toLowerCase();
+  const lowerName = filename.toLowerCase();
+  const isHtml =
+    mime === 'text/html' || (mime !== 'application/zip' && lowerName.endsWith('.html'));
+
   const tmpDir = path.join(env().DATA_DIR, 'tmp');
   fs.mkdirSync(tmpDir, { recursive: true });
-  const tmp = path.join(tmpDir, `mk-upload-${cuid()}.zip`);
-  fs.writeFileSync(tmp, Buffer.from(await file.arrayBuffer()));
+  let tmp = path.join(tmpDir, `mk-upload-${cuid()}.zip`);
+  if (isHtml) {
+    tmp = await wrapHtmlAsZip(buffer);
+  } else {
+    fs.writeFileSync(tmp, buffer);
+  }
 
   try {
     const result = await createMockupFromZip({

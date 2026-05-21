@@ -2,9 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST as setup } from '@/app/api/auth/setup/route';
+import { POST as createVersion } from '@/app/api/mockups/[id]/version/route';
 import { POST as createMockup, GET as listMockups } from '@/app/api/mockups/route';
 import { GET as getMockupResource } from '@/app/m/[mockupId]/[[...path]]/route';
 import { prisma } from '@/lib/prisma';
+import { MAX_UPLOAD_BYTES } from '@/lib/upload/constants';
 
 vi.mock('next/headers', () => ({
   cookies: () => ({
@@ -170,6 +172,113 @@ describe('POST /api/mockups', () => {
     const body = await res.json();
     expect(body.projectId).toBeNull();
     expect(body.folderId).toBeNull();
+  });
+
+  it('returns 413 when content-length exceeds MAX_UPLOAD_BYTES', async () => {
+    const cookie = await adminCookie();
+    const fd = await multipart(fixture('valid-simple.zip'), 'Too-Big');
+    const res = await createMockup(
+      new Request('http://l/api/mockups', {
+        method: 'POST',
+        headers: {
+          cookie: `mk_session=${cookie}`,
+          'content-length': String(MAX_UPLOAD_BYTES + 1),
+        },
+        body: fd,
+      }),
+    );
+    expect(res.status).toBe(413);
+    const body = await res.json();
+    expect(body.error).toBe('file_too_large');
+    expect(body.limit).toBe(MAX_UPLOAD_BYTES);
+  });
+
+  it('accepts raw HTML in build field (no zip wrapping client-side)', async () => {
+    const cookie = await adminCookie();
+    const fd = new FormData();
+    fd.set('name', 'Raw-Html');
+    fd.set(
+      'build',
+      new Blob(['<html lang="en"><body>raw-html-body</body></html>'], { type: 'text/html' }),
+      'index.html',
+    );
+    const res = await createMockup(
+      new Request('http://l/api/mockups', {
+        method: 'POST',
+        headers: { cookie: `mk_session=${cookie}` },
+        body: fd,
+      }),
+    );
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    // Response shape must match the zip path verbatim — the client
+    // can't tell which branch served it.
+    expect(body.id).toBeDefined();
+    expect(body.currentVersionId).toBeDefined();
+    expect(body.slug).toBeDefined();
+    expect(body.name).toBe('Raw-Html');
+    expect(body.status).toBe('open');
+    expect(body.projectId).toBeNull();
+    expect(body.folderId).toBeNull();
+
+    // The raw HTML must round-trip through the build store — `/m/[slug]/index.html`
+    // serves it as the entrypoint.
+    const served = await getMockupResource(
+      new Request(`http://l/m/${body.slug}/index.html`, {
+        headers: { cookie: `mk_session=${cookie}` },
+      }),
+      { params: Promise.resolve({ mockupId: body.slug, path: ['index.html'] }) },
+    );
+    expect(served.status).toBe(200);
+    const text = await served.text();
+    expect(text).toContain('raw-html-body');
+  });
+});
+
+describe('POST /api/mockups/[id]/version', () => {
+  beforeEach(async () => {
+    await prisma.message.deleteMany();
+    await prisma.thread.deleteMany();
+    await prisma.annotation.deleteMany();
+    await prisma.mockupVersion.deleteMany();
+    await prisma.mockup.deleteMany();
+    await prisma.folder.deleteMany();
+    await prisma.project.deleteMany({ where: { slug: { not: 'unsorted' } } });
+  });
+
+  it('returns 413 when content-length exceeds MAX_UPLOAD_BYTES', async () => {
+    const cookie = await adminCookie();
+    const fd = await multipart(fixture('valid-simple.zip'), 'V-Mockup');
+    const create = await createMockup(
+      new Request('http://l/api/mockups', {
+        method: 'POST',
+        headers: { cookie: `mk_session=${cookie}` },
+        body: fd,
+      }),
+    );
+    const { id } = await create.json();
+
+    const fdv = new FormData();
+    fdv.set(
+      'build',
+      new Blob([fs.readFileSync(fixture('valid-simple.zip'))], { type: 'application/zip' }),
+      'mockup.zip',
+    );
+    const res = await createVersion(
+      new Request(`http://l/api/mockups/${id}/version`, {
+        method: 'POST',
+        headers: {
+          cookie: `mk_session=${cookie}`,
+          'content-length': String(MAX_UPLOAD_BYTES + 1),
+        },
+        body: fdv,
+      }),
+      { params: Promise.resolve({ id }) },
+    );
+    expect(res.status).toBe(413);
+    const body = await res.json();
+    expect(body.error).toBe('file_too_large');
+    expect(body.limit).toBe(MAX_UPLOAD_BYTES);
   });
 });
 
