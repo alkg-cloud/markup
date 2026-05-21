@@ -14,6 +14,7 @@ import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { useToast } from '@/components/Toast/useToast';
 import { projectHref } from '@/lib/project/routes';
 import { ACCEPTED_EXTENSIONS } from '@/lib/upload/constants';
+import { rejectionMessage } from '@/lib/upload/rejection-message';
 import { validateFile } from '@/lib/upload/validate-file';
 import sidebarStyles from './ProjectSidebar.module.css';
 
@@ -37,24 +38,6 @@ interface ProjectSidebarProps {
 }
 
 const FILE_INPUT_ACCEPT = ACCEPTED_EXTENSIONS.join(',');
-
-/**
- * Maps a rejection reason from {@link validateFile} to user-visible
- * toast copy. Strings are kept verbatim with `UploadEmptyState` so the
- * upload contract reads consistently across surfaces.
- */
-function rejectionToast(reason: 'empty' | 'multi' | 'wrong-type' | 'too-large'): string | null {
-  switch (reason) {
-    case 'multi':
-      return 'Drop one file at a time.';
-    case 'wrong-type':
-      return 'Only HTML or ZIP files are supported.';
-    case 'too-large':
-      return 'File too large (limit 10 MB).';
-    case 'empty':
-      return null;
-  }
-}
 
 export function ProjectSidebar({
   projects,
@@ -238,7 +221,7 @@ export function ProjectSidebar({
       if (result.ok) {
         onUploadFile?.(result.file);
       } else {
-        const msg = rejectionToast(result.reason);
+        const msg = rejectionMessage(result.reason);
         if (msg) showToast(msg);
       }
       event.target.value = '';
