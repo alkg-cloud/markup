@@ -55,10 +55,10 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/api/mockups` | List (cursor-paged by status) |
-| `POST` | `/api/mockups` | Create from zip (multipart: `name` + `build`, optional `projectId` + `folderId`) |
+| `POST` | `/api/mockups` | Create from upload (multipart: `name` + `build` — `build` accepts a zip OR a raw HTML doc; optional `projectId` + `folderId`). 413 `file_too_large` when the body exceeds `env().MAX_UPLOAD_MB`. See [agent-loop/uploads](../agent-loop/uploads.md). |
 | `GET` | `/api/mockups/[id]` | Single mockup metadata |
 | `POST` | `/api/mockups/[id]/move` | Move mockup (`projectId`, `folderId`, `position`) |
-| `POST` | `/api/mockups/[id]/version` | Add new version from zip (full upload) |
+| `POST` | `/api/mockups/[id]/version` | Add new version from upload (zip or raw HTML; same 413 cap as `POST /api/mockups`). See [agent-loop/uploads](../agent-loop/uploads.md). |
 | `PATCH` | `/api/mockups/[id]/version-patch` | Add new version from unified diff |
 | `GET` | `/api/mockups/[id]/diff?from=<vid>&to=<vid>&format=unified\|json` | Text-mode diff |
 | `GET` | `/api/mockups/[id]/diff-versions?from=<vid>&to=<vid>` | Aggregator for `/mockups/[id]/diff` — resolves the version pair + viewer href + timestamps |
