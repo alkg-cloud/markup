@@ -16,6 +16,7 @@
   --info:oklch(74% 0.13 200);--info-soft:oklch(26% 0.06 200);
   --warning:oklch(80% 0.15 80);--warning-soft:oklch(30% 0.07 80);
   --success:oklch(76% 0.16 152);--success-soft:oklch(28% 0.07 152);
+  --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
   --surface-glass-bg:rgb(7 12 15 / 80%);
   --rail-width-collapsed:60px;--rail-width-expanded:300px;
   --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
@@ -23,7 +24,9 @@
   --motion-fast:160ms;--motion-base:220ms;
   --radius-xs:4px;--radius-sm:8px;--radius-md:12px;
   --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
 }
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
@@ -33,11 +36,14 @@ body{
   background-attachment:fixed;
 }
 button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+
 .page{padding:48px 32px 96px;max-width:1320px;margin:0 auto}
 .h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
 .lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
 .section{margin-bottom:48px}
 .section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;align-items:start}
 .stage{
   background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
@@ -57,6 +63,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
   border-radius:14px;
   box-shadow:var(--shadow-popover);
   display:flex;flex-direction:column;overflow:visible;
+  transition:width var(--motion-base) var(--ease-spring),border-color var(--motion-fast),box-shadow var(--motion-fast);
 }
 .rail.expanded{width:var(--rail-width-expanded)}
 .rail.pinned{
@@ -143,6 +150,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
   display:flex;align-items:center;height:32px;width:32px;padding:0;
   background:var(--accent-soft);color:var(--accent-bright);
   border:1px solid var(--accent-overlay-mid);border-radius:9999px;overflow:hidden;flex-shrink:0;
+  transition:width var(--motion-base) var(--ease-spring);
 }
 .add-icon{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px}
 .add-label{display:none;align-items:center;justify-content:space-between;gap:8px;flex:1;padding:0 14px 0 4px;font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap}
@@ -152,16 +160,53 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
 .rail.pinned .add-label{display:flex}
 .shortcut{padding:2px 5px;background:var(--bg-card-active);border-radius:var(--radius-xs);font-family:var(--font-mono);font-size:9px;font-weight:600;color:var(--text-dim);letter-spacing:0.02em;text-transform:none}
 
-/* Tokens */
-.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
-.tokens dt{color:var(--text-dim)}.tokens dt::before{content:'--'}.tokens dd{color:var(--text-bright)}
+/* All-states grid helpers */
+.row-states{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:18px;
+}
+.state{display:flex;flex-direction:column;gap:8px}
+.state .state-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+}
+.state .state-row{
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:18px;display:flex;align-items:center;justify-content:center;
+  min-height:60px;
+}
+
+/* Anatomy / matrix tables */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;
+  background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  color:var(--text-dim);
+  overflow-x:auto;
+  white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
 
-<div class="page">
+<div class="page" data-ds-component="annotations-rail">
   <h1 class="h1">18 — Annotations Rail</h1>
-  <p class="lede">Left-side floating panel inside the mockup viewer (<code>src/components/AnnotationsRail</code>). Three states: collapsed (60 px badge column), hover-expanded (300 px transient), pinned-expanded (300 px sticky via lock-open). Glass surface composes <code>floatingSurface</code>. Drag handle (top) uses <code>GoGrabber</code> rotated 90°. Add button morphs from 32 px circle to full-width pill. Capped at 70 vh / 80 vh on mobile.</p>
+  <p class="lede">Left-side floating panel inside the mockup viewer (<code>src/components/AnnotationsRail/AnnotationsRail.tsx</code>). Custom compound — no Radix primitive. Three states: collapsed (60 px badge column), hover-expanded (300 px transient on mouseenter), pinned-expanded (300 px sticky via lock-open). Drag handle (top) uses <code>GoGrabber</code> rotated 90°; add button morphs from 32 px circle to full-width pill on expand. Glass surface composes the same recipe as <a href="./14-dialog.html" style="color:var(--accent)"><code>dialog</code></a>, <a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a>, and <a href="./19-toolbar.html" style="color:var(--accent)"><code>toolbar</code></a> — 16 px blur, <code>--border</code>, 14 px radius, <code>--shadow-popover</code>. Cards in the expanded list are <a href="#" style="color:var(--accent)"><code>AnnotationCard</code></a> instances; the add button fires <code>onCreate</code> on the parent canvas. Capped at 70 vh / 80 vh on mobile.</p>
 
   <section class="section">
     <div class="section-title">A — Collapsed (default state)</div>
@@ -230,6 +275,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         </div>
       </div>
     </div>
+    <div class="caption">Collapsed: 60 px column of coloured badges. Hover-expanded: 300 px transient panel with cards. Transition is <code>width</code> with <code>--motion-base</code> / <code>--ease-spring</code>. Drag handle (top) repositions the entire rail within <code>boundsRef</code>.</div>
   </section>
 
   <section class="section">
@@ -269,6 +315,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         </div>
       </div>
     </div>
+    <div class="caption">Pinned state keeps the panel open after the mouse leaves. The lock button toggles <code>.pressed</code> (accent fill + accent-bright icon); the rail itself gets <code>.pinned</code> with an accent border + 1 px accent overlay ring on top of the standard shadow.</div>
   </section>
 
   <section class="section">
@@ -290,6 +337,166 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         </div>
       </div>
     </div>
+    <div class="caption">Empty state lives in the slot the cards list would otherwise occupy — text muted, shortcut highlighted, add button always reachable. See <a href="./26-empty-state.html" style="color:var(--accent)"><code>26-empty-state.html</code></a> for the empty-state pattern in other surfaces.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">All rail states — one table</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">collapsed</div>
+        <div class="state-row" style="height:200px;align-items:stretch;background:transparent;border:none;padding:0">
+          <div class="rail" style="max-height:200px"><div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div><div class="collapsed"><div class="badge active" data-color="0">1</div><div class="badge" data-color="1">2</div></div></div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">hover-expanded</div>
+        <div class="state-row" style="height:200px;align-items:stretch;background:transparent;border:none;padding:0">
+          <div class="rail expanded" style="max-height:200px"><div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div><div class="expanded-body"><div class="head"><span class="head-title">Annotations <span class="count">2</span></span><button class="lock">📌</button></div></div></div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">pinned</div>
+        <div class="state-row" style="height:200px;align-items:stretch;background:transparent;border:none;padding:0">
+          <div class="rail pinned" style="max-height:200px"><div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div><div class="expanded-body"><div class="head"><span class="head-title">Annotations <span class="count">2</span></span><button class="lock pressed">📌</button></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">A single recipe, three width / border modifiers. The transition between collapsed and expanded animates <code>width</code> with <code>--ease-spring</code>; the pinned state holds the expanded width statically.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — custom compound (no Radix primitive)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">Backed by the custom <code style="color:var(--accent)">&lt;AnnotationsRail&gt;</code> component (<code>src/components/AnnotationsRail/AnnotationsRail.tsx</code>). No matching Radix primitive — the floating, draggable, hover-vs-pin behaviour is too app-specific. Internal state covers <code>hover-expanded</code> (transient on mouseenter), <code>pinned-on</code> (sticky via the lock toggle), and <code>dragging</code> (while the grab handle is held). The parent canvas owns the badge data and renders the expanded card list as <code>children</code> — the rail is a layout shell, not a data store.</p>
+    <pre class="api"><span class="c">// Render at the AppMain level — boundsRef = the mockup canvas container</span>
+<span class="k">import</span> { AnnotationsRail } <span class="k">from</span> <span class="s">'@/components/AnnotationsRail'</span>;
+<span class="k">import</span> { AnnotationCard } <span class="k">from</span> <span class="s">'@/components/AnnotationCard'</span>;
+
+<span class="k">function</span> MockupViewer({ annotations, activeId, setActiveId, canvasRef }) {
+  <span class="k">const</span> badges = annotations.map((a, i) =&gt; ({
+    annotationId: a.id,
+    colorIndex: a.colorIndex,
+    label: i + 1,
+  }));
+
+  <span class="k">return</span> (
+    &lt;<span class="t">AnnotationsRail</span>
+      boundsRef={canvasRef}                            <span class="c">// draggable position clamped to this rect</span>
+      badges={badges}                                  <span class="c">// summary list for collapsed-state column</span>
+      activeAnnotationId={activeId}                    <span class="c">// adds .active on the matching badge + card</span>
+      onBadgeClick={setActiveId}                       <span class="c">// click a badge → activate annotation</span>
+      onCreate={() =&gt; createAnnotation()}              <span class="c">// + button → consumer-owned create flow</span>
+      count={annotations.length}                       <span class="c">// header pill, default = badges.length</span>
+      resetPositionKey={isFullscreen ? <span class="s">'fs'</span> : <span class="s">'win'</span>}    <span class="c">// reset drag offset when bounds change</span>
+      expandSignal={pinFromOutside}                    <span class="c">// bumped from parent to pin programmatically</span>
+    &gt;
+      {annotations.map((a) =&gt; (
+        &lt;<span class="t">AnnotationCard</span>
+          key={a.id}
+          annotation={a}
+          active={a.id === activeId}
+          onClick={() =&gt; setActiveId(a.id)}
+        /&gt;
+      ))}
+    &lt;/<span class="t">AnnotationsRail</span>&gt;
+  );
+}
+
+<span class="c">// Props the rail owns internally — never expose these:</span>
+<span class="c">//   - hover-expanded state (mouseenter / mouseleave on the body)</span>
+<span class="c">//   - pinned state (toggled by the lock button)</span>
+<span class="c">//   - drag state (mousedown on .grab, mousemove on document)</span>
+<span class="c">//   - draggedPosition (top/left after a drag, clamped to boundsRef)</span>
+<span class="c">// The parent only controls semantic data (badges, active id, onCreate).</span></pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>No Radix primitive.</strong> The hover-vs-pin two-mode expand pattern, the integrated drag handle (clamped to a <code>boundsRef</code>), and the morphing add button are too domain-specific for a generic library. Each piece (drag, hover-expand, lock-open) lives inline in the component.</li>
+      <li><strong>Drag handle uses <code>GoGrabber</code></strong> from <code>react-icons/go</code> at 25 × 25 rotated 90° so the dots run horizontally — same affordance as the toolbar (<a href="./19-toolbar.html" style="color:var(--accent)"><code>19-toolbar.html</code></a>).</li>
+      <li><strong><code>expandSignal</code> is a numeric token</strong> that the parent bumps to pin the rail open from outside (e.g. when a new annotation is created, the canvas wants the user to see it in context). The rail watches the value, not its content — passing the same number twice is a no-op.</li>
+      <li><strong><code>resetPositionKey</code> clears the drag offset</strong> when the containing block changes (fullscreen toggle changes the bounds). Without this, a previously-dragged rail can end up off-screen.</li>
+      <li><strong>The expanded card list is a slot</strong> — the parent renders <code>&lt;AnnotationCard&gt;</code> children. The rail doesn't know about the card data shape, so cards can evolve independently.</li>
+      <li><strong>Add button is native <code>&lt;button&gt;</code></strong> with the <code>.add</code> class — no Radix wrapping (Radix has no Button primitive). The collapsed → expanded morph is pure CSS (<code>width</code> + <code>.add-label</code> display).</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>collapsed</code></td>
+          <td>Default. No hover, lock unpinned.</td>
+          <td>60 px column. Badge stack visible. Add button is a 32 px circle.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>hover-expanded</code></td>
+          <td><code>mouseenter</code> on the rail body.</td>
+          <td>Width animates to 300 px (<code>--motion-base</code> / <code>--ease-spring</code>). Cards list replaces the badge column. Add button morphs to full-width pill with label + shortcut.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>pinned-expanded</code></td>
+          <td>Lock-open button clicked, or <code>expandSignal</code> bumped from parent.</td>
+          <td>Same as hover-expanded but border becomes <code>--accent-overlay-mid</code> with an extra 1 px accent overlay ring. Persists after <code>mouseleave</code>.</td>
+          <td>Lock button: <code>aria-pressed="true"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>dragging</code></td>
+          <td><code>mousedown</code> on the grab handle.</td>
+          <td>Document captures <code>mousemove</code>; rail position updates within <code>boundsRef</code>. Cursor changes to <code>grabbing</code>.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>empty</code></td>
+          <td>Zero annotations in the expanded view.</td>
+          <td>Cards list slot becomes a muted "No annotations yet" message + shortcut hint. Add button still present.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>badge-active</code></td>
+          <td><code>activeAnnotationId</code> matches a badge's id.</td>
+          <td>Badge gets a 4 px coloured glow ring + brighter fill; matching card gets <code>.active</code> (accent-overlay bg + 2 px left bar).</td>
+          <td>Matching card: <code>aria-current="true"</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">"hover-expanded", "pinned-expanded", and "dragging" are <em>internal</em> to the rail — the parent only sets <code>expandSignal</code> for programmatic pin. The drag, hover-expand, and lock toggle are all owned by the component.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Primitive</th><th>Use for</th><th>Backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>annotations-rail</code></td>
+          <td>The single canonical sidebar list for annotations on a mockup. One per <code>MockupViewer</code>.</td>
+          <td>Custom — <code>AnnotationsRail.tsx</code></td>
+        </tr>
+        <tr>
+          <td><code>toolbar</code></td>
+          <td>Right-side floating action chrome on the mockup viewer (zoom, fullscreen, etc.). Same glass + drag-handle recipe, different content.</td>
+          <td>See <a href="./19-toolbar.html" style="color:var(--accent)"><code>19-toolbar.html</code></a></td>
+        </tr>
+        <tr>
+          <td><code>sidebar</code></td>
+          <td>Top-level app navigation (project tree / settings). Persistent, not floating. Different surface entirely.</td>
+          <td>See <a href="./01-sidebar.html" style="color:var(--accent)"><code>01-sidebar.html</code></a></td>
+        </tr>
+        <tr>
+          <td><code>popover</code></td>
+          <td>Short-lived anchored lists (kebab menus). The rail differs: it's persistent, draggable, holds rich cards, and switches mode with hover/pin.</td>
+          <td>See <a href="./15-popover.html" style="color:var(--accent)"><code>15-popover.html</code></a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Rule of thumb: anything attached to the mockup canvas as floating chrome is either rail (annotations) or <a href="./19-toolbar.html" style="color:var(--accent)"><code>toolbar</code></a> (canvas actions). App-level nav is the <a href="./01-sidebar.html" style="color:var(--accent)"><code>sidebar</code></a>.</div>
   </section>
 
   <section class="section">
@@ -300,16 +507,39 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
       <dt>max-height<dd>70 vh desktop / 80 vh mobile
       <dt>border-radius<dd>14 px
       <dt>position<dd>absolute (inside AppMain); top calc(50% - 200px); left 24 px
-      <dt>drag handle<dd>GoGrabber 25 × 25 rotated 90°
+      <dt>surface bg<dd>--surface-glass-bg
+      <dt>backdrop-filter<dd>blur(16px) saturate(140%)
+      <dt>border<dd>1 px solid --border (pinned: --accent-overlay-mid)
+      <dt>shadow<dd>--shadow-popover (pinned: + 1 px --accent-overlay-soft ring)
+      <dt>drag handle<dd>GoGrabber 25 × 25 rotated 90°, 28 px tall row
       <dt>add button<dd>32 px circle → full-width pill morph
       <dt>add icon<dd>30 × 30 container, SVG 14 × 14
-      <dt>badge<dd>32 × 32, 50% radius, 16-color palette
+      <dt>badge<dd>32 × 32, 50% radius, 6-color palette (hue 165/195/220/325/50/120)
+      <dt>badge active<dd>4 px glow ring + brighter fill
       <dt>list gap<dd>6 px
-      <dt>card<dd>--bg-card, --border-subtle, --radius-sm
+      <dt>card<dd>--bg-card, --border-subtle, --radius-sm, 10 px padding
       <dt>card active<dd>--accent-overlay-mid border + 2 px accent left bar
       <dt>status pill<dd>9 px / 700 mono, --info / --warning / --success
+      <dt>head<dd>10 px / 700 mono caps, --text-dim
+      <dt>count chip<dd>9999 px radius, --bg-card-active bg, 10 px / 800
+      <dt>lock<dd>24 × 24 → .pressed gets --accent-soft bg + --accent-bright icon
       <dt>transition<dd>width --motion-base / --ease-spring
     </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Hover expand.</strong> <code>mouseenter</code> on the rail body triggers expand; <code>mouseleave</code> collapses back — unless pinned. Width animates with <code>--motion-base</code> / <code>--ease-spring</code>.</li>
+      <li><strong>Lock-open (pin).</strong> The lock button toggles a sticky pin. While pinned, <code>mouseleave</code> doesn't collapse the rail. Border + ring shift to accent.</li>
+      <li><strong>Drag-to-reposition.</strong> <code>mousedown</code> on the grab handle starts a drag. The rail position updates within <code>boundsRef</code> (clamped to keep at least 8 px on every edge).</li>
+      <li><strong>Reset on bounds change.</strong> <code>resetPositionKey</code> change clears the drag offset (rail returns to spec defaults). The canvas bumps this when fullscreen toggles.</li>
+      <li><strong>Programmatic pin.</strong> <code>expandSignal</code> bumps from parent pin the rail open (used after creating a new annotation so the user sees it land in the list).</li>
+      <li><strong>Badge-card sync.</strong> Setting <code>activeAnnotationId</code> highlights both the badge (in the collapsed column) and the card (in the expanded list).</li>
+      <li><strong>Add button.</strong> Native <code>&lt;button&gt;</code>. Morphs from 32 px circle (collapsed) to full-width pill (expanded) — same transition tokens as the rail width.</li>
+      <li><strong>Keyboard.</strong> The Ctrl+⇧+N shortcut (rendered on the add button) fires <code>onCreate</code> from anywhere in the canvas — registered globally by the parent.</li>
+      <li><strong>Reduced motion.</strong> Under <code>prefers-reduced-motion: reduce</code>, both the width transition and the add-button morph collapse to a 0 ms snap via the token override at the top of the file.</li>
+    </ul>
   </section>
 </div>
 
