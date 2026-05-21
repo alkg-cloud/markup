@@ -62,7 +62,9 @@ import {
   NewMockupDialogProvider,
   useNewMockupDialog,
 } from '@/components/NewMockupDialog/NewMockupDialogProvider';
+import { __resetFoldersCacheForTests } from '@/components/NewMockupDialog/useFolders';
 import { ToastProvider } from '@/components/Toast/useToast';
+import type { DragTarget } from '@/hooks/useDragTarget';
 
 let container: HTMLDivElement;
 let root: Root;
@@ -72,6 +74,7 @@ beforeEach(() => {
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
+  __resetFoldersCacheForTests();
   // Mock fetch: /api/projects returns a small project list; /api/projects/<id>/tree
   // returns the tree. Anything else 404s so unexpected calls are loud.
   fetchMock = vi.fn(async (input: RequestInfo | URL) => {
@@ -141,6 +144,7 @@ function Opener(props: {
   file?: File | null;
   mode?: 'add' | 'replace';
   currentMockup?: { id: string; name: string };
+  target?: DragTarget | null;
 }) {
   const { openDialog } = useNewMockupDialog();
   return (
@@ -152,6 +156,7 @@ function Opener(props: {
           file: props.file ?? htmlFile(),
           mode: props.mode,
           currentMockup: props.currentMockup,
+          target: props.target,
         })
       }
     >
@@ -242,6 +247,66 @@ describe('NewMockupDialogProvider', () => {
     });
     await flushAsync();
     expect(findDialog()).toBeNull();
+  });
+
+  it('opening with a resolved-id target fetches the tree for that project', async () => {
+    const target: DragTarget = {
+      projectId: 'p1',
+      folderId: null,
+      projectLabel: 'Lumen Coffee',
+      folderPath: [],
+    };
+    renderWithProvider(<Opener target={target} />);
+    const opener = document.querySelector('[data-testid="open-dialog"]') as HTMLButtonElement;
+    act(() => {
+      opener.click();
+    });
+    await flushAsync();
+    const treeCalls = fetchMock.mock.calls.filter((c) => String(c[0]).endsWith('/p1/tree'));
+    expect(treeCalls.length).toBe(1);
+  });
+
+  it('project switch: changing the project select inside the dialog refetches folders', async () => {
+    renderWithProvider(<Opener />);
+    const opener = document.querySelector('[data-testid="open-dialog"]') as HTMLButtonElement;
+    act(() => {
+      opener.click();
+    });
+    await flushAsync();
+
+    // No project selected at first → no tree calls yet.
+    let treeCalls = fetchMock.mock.calls.filter((c) =>
+      /\/api\/projects\/[^/]+\/tree$/.test(String(c[0])),
+    );
+    expect(treeCalls.length).toBe(0);
+
+    // User picks Lumen Coffee in the in-dialog select.
+    const select = document.querySelector('select') as HTMLSelectElement;
+    act(() => {
+      select.value = 'p1';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await flushAsync();
+    treeCalls = fetchMock.mock.calls.filter((c) => String(c[0]).endsWith('/p1/tree'));
+    expect(treeCalls.length).toBe(1);
+
+    // Then they flip to Helio — the second tree call fires.
+    act(() => {
+      select.value = 'p2';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await flushAsync();
+    const p2TreeCalls = fetchMock.mock.calls.filter((c) => String(c[0]).endsWith('/p2/tree'));
+    expect(p2TreeCalls.length).toBe(1);
+
+    // Flipping back to p1 is a cache hit — no additional /p1/tree call.
+    act(() => {
+      select.value = 'p1';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await flushAsync();
+    const p1TreeAfter = fetchMock.mock.calls.filter((c) => String(c[0]).endsWith('/p1/tree'));
+    expect(p1TreeAfter.length).toBe(1);
   });
 
   it('subsequent openDialog calls swap the active file', async () => {

@@ -15,12 +15,15 @@
  * - Lazily fetches the project list (`GET /api/projects`) on first
  *   `openDialog()` so initial page mounts stay quiet — most users
  *   never open the dialog at all.
- * - Re-fetches the folder tree (`GET /api/projects/<id>/tree`) when the
- *   user picks a different project inside the dialog; folder trees are
- *   memo-cached per project so flipping back is free.
  * - Mounts a `<DropHandler>` that consumes the most-recent drop event
  *   from `DragTargetProvider` and routes valid drops into `openDialog`,
  *   surfacing invalid ones via the toast.
+ *
+ * Folder fetching is *not* a provider concern — the dialog itself owns
+ * `useFolders(selectedProjectId)`, keyed on the project the user is
+ * currently looking at inside the dialog. The provider used to manage
+ * a `foldersByProject` cache, but pushing it down let the in-dialog
+ * project <select> drive the fetch directly (which it didn't before).
  *
  * The hook is intentionally narrow — just `openDialog(params)`. Closing
  * is driven by Radix Dialog's own controls (Esc, overlay click, Cancel
@@ -37,7 +40,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { FolderPickerFolder } from '@/components/FolderPicker';
 import { useToast } from '@/components/Toast/useToast';
 import { type DragTarget, useDragTarget, useDragTargetActions } from '@/hooks/useDragTarget';
 import { validateFile } from '@/lib/upload/validate-file';
@@ -107,29 +109,6 @@ function rejectionToast(reason: 'empty' | 'multi' | 'wrong-type' | 'too-large'):
   }
 }
 
-/**
- * Flatten the nested folder tree returned by `/api/projects/<id>/tree`
- * into the `{ id, name, parentId }` rows the `FolderPicker` expects.
- */
-type TreeFolder = {
-  id: string;
-  name: string;
-  position: number;
-  children: TreeFolder[];
-};
-
-function flattenFolders(
-  folders: TreeFolder[],
-  parentId: string | null = null,
-): FolderPickerFolder[] {
-  const out: FolderPickerFolder[] = [];
-  for (const f of folders) {
-    out.push({ id: f.id, name: f.name, parentId });
-    if (f.children?.length) out.push(...flattenFolders(f.children, f.id));
-  }
-  return out;
-}
-
 // ── DropHandler ───────────────────────────────────────────────────────
 
 /**
@@ -190,15 +169,13 @@ export function NewMockupDialogProvider({ children }: { children?: ReactNode }) 
   // session; mutations elsewhere (project create / delete) re-fetch
   // their own surfaces, so a once-per-session list is fine for the
   // dialog's <select>.
+  //
+  // Folder fetching used to live here too, keyed by projectId. It now
+  // belongs to the dialog itself via `useFolders(selectedProjectId)`
+  // — re-fetching on every in-dialog project switch was the bug that
+  // motivated this refactor.
   const [projects, setProjects] = useState<NewMockupDialogProject[]>([]);
   const projectsFetchedRef = useRef(false);
-
-  // Folder tree per project — keyed by projectId. Filled on demand
-  // each time the dialog's selected project changes. We cache so
-  // flipping back to a previously-loaded project is free.
-  const [foldersByProject, setFoldersByProject] = useState<Record<string, FolderPickerFolder[]>>(
-    {},
-  );
 
   const ensureProjects = useCallback(async () => {
     if (projectsFetchedRef.current) return;
@@ -219,26 +196,6 @@ export function NewMockupDialogProvider({ children }: { children?: ReactNode }) 
     }
   }, []);
 
-  const ensureFoldersFor = useCallback(
-    async (projectId: string | null) => {
-      if (!projectId) return;
-      if (foldersByProject[projectId]) return;
-      try {
-        const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/tree`, {
-          credentials: 'include',
-        });
-        if (!res.ok) return;
-        const json = (await res.json()) as { folders: TreeFolder[] };
-        const flat = flattenFolders(json.folders ?? []);
-        setFoldersByProject((prev) => (prev[projectId] ? prev : { ...prev, [projectId]: flat }));
-      } catch {
-        // Network errors fall back to an empty folder list — the user
-        // can still submit (FolderPicker will be empty).
-      }
-    },
-    [foldersByProject],
-  );
-
   const openDialog = useCallback(
     (params: OpenDialogParams) => {
       setFile(params.file);
@@ -247,28 +204,13 @@ export function NewMockupDialogProvider({ children }: { children?: ReactNode }) 
       setMode(params.mode ?? 'add');
       setCurrentMockup(params.currentMockup);
       setOpen(true);
-      // Kick off data fetches in the background — the dialog can
-      // render immediately with empty selectors and fill in once the
-      // requests resolve.
+      // Kick off the projects fetch in the background — the dialog can
+      // render immediately and fill in once the request resolves. Folder
+      // fetching happens inside the dialog (per selected project).
       void ensureProjects();
-      void ensureFoldersFor(nextTarget.projectId);
     },
-    [ensureProjects, ensureFoldersFor],
+    [ensureProjects],
   );
-
-  // Whenever the bound target (re)points at a project, make sure we
-  // have its folder tree. The dialog itself drives subsequent
-  // project-switch fetches via the same hook — see `currentFolders`.
-  useEffect(() => {
-    if (open) void ensureFoldersFor(target.projectId);
-  }, [open, target.projectId, ensureFoldersFor]);
-
-  const currentFolders = useMemo<FolderPickerFolder[]>(() => {
-    if (target.projectId && foldersByProject[target.projectId]) {
-      return foldersByProject[target.projectId];
-    }
-    return [];
-  }, [foldersByProject, target.projectId]);
 
   const api = useMemo<NewMockupDialogApi>(() => ({ openDialog }), [openDialog]);
 
@@ -293,7 +235,6 @@ export function NewMockupDialogProvider({ children }: { children?: ReactNode }) 
         target={target}
         mode={mode}
         currentMockup={currentMockup}
-        folders={currentFolders}
         projects={projects}
       />
     </Context.Provider>
