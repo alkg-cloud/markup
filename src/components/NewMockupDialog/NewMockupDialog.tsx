@@ -34,15 +34,8 @@
 
 import * as Form from '@radix-ui/react-form';
 import { useRouter } from 'next/navigation';
-import {
-  type FormEvent,
-  type JSX,
-  type ReactNode,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { type FormEvent, type JSX, useEffect, useMemo, useRef, useState } from 'react';
+import { VscClose } from 'react-icons/vsc';
 import { AlertBanner } from '@/components/AlertBanner';
 import { RadixDialog } from '@/components/Dialog/RadixDialog';
 import { FolderPicker } from '@/components/FolderPicker';
@@ -168,14 +161,6 @@ function errorToFieldMessage(error: UploadError): string {
   if (error.kind === 'invalid_name') return error.detail;
   if (error.kind === 'duplicate_name') return error.detail;
   return 'Please correct this field.';
-}
-
-function CloseGlyph(): ReactNode {
-  return (
-    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z" />
-    </svg>
-  );
 }
 
 export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
@@ -411,7 +396,7 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
           </AlertBanner.Body>
           <AlertBanner.Close asChild>
             <button type="button" onClick={() => setGlobalError(null)} aria-label="Dismiss">
-              <CloseGlyph />
+              <VscClose aria-hidden="true" />
             </button>
           </AlertBanner.Close>
         </AlertBanner.Root>
