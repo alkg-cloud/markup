@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { VscAdd, VscThreeBars } from 'react-icons/vsc';
+import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { VscAdd, VscNewFile, VscThreeBars } from 'react-icons/vsc';
 import { flattenProjectTree } from '@/components/CommandPalette/flatten';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { NewProjectDialog } from '@/components/NewProjectDialog/NewProjectDialog';
@@ -11,7 +11,10 @@ import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
 import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
 import { RecentsSection } from '@/components/ProjectTree/RecentsSection';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
+import { useToast } from '@/components/Toast/useToast';
 import { projectHref } from '@/lib/project/routes';
+import { ACCEPTED_EXTENSIONS } from '@/lib/upload/constants';
+import { validateFile } from '@/lib/upload/validate-file';
 import sidebarStyles from './ProjectSidebar.module.css';
 
 interface ProjectSidebarProps {
@@ -22,6 +25,35 @@ interface ProjectSidebarProps {
   /** Read from the cookie on the server so SSR matches the user's
    *  persisted choice on first paint. */
   defaultCollapsed?: boolean;
+  /**
+   * Invoked once the footer "New mockup" picker yields a single,
+   * type-and-size-valid file. T18 wires this into the
+   * `NewMockupDialogProvider`; until then a missing callback simply
+   * means the picker no-ops on selection (validation toasts still
+   * fire). Kept optional so the sidebar can be rendered standalone
+   * (tests, storybook-style harnesses) without the provider.
+   */
+  onUploadFile?: (file: File) => void;
+}
+
+const FILE_INPUT_ACCEPT = ACCEPTED_EXTENSIONS.join(',');
+
+/**
+ * Maps a rejection reason from {@link validateFile} to user-visible
+ * toast copy. Strings are kept verbatim with `UploadEmptyState` so the
+ * upload contract reads consistently across surfaces.
+ */
+function rejectionToast(reason: 'empty' | 'multi' | 'wrong-type' | 'too-large'): string | null {
+  switch (reason) {
+    case 'multi':
+      return 'Drop one file at a time.';
+    case 'wrong-type':
+      return 'Only HTML or ZIP files are supported.';
+    case 'too-large':
+      return 'File too large (limit 10 MB).';
+    case 'empty':
+      return null;
+  }
 }
 
 export function ProjectSidebar({
@@ -30,14 +62,17 @@ export function ProjectSidebar({
   mockupNames,
   recentMockups,
   defaultCollapsed = false,
+  onUploadFile,
 }: ProjectSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const { confirm, dialog: confirmDialog } = useConfirm();
+  const { show: showToast } = useToast();
 
   // Flat id → name lookup so the delete confirm dialog can quote the
   // target row's display name. Reuses `flattenProjectTree` (the same
@@ -187,8 +222,52 @@ export function ProjectSidebar({
     return () => dialog.removeEventListener('close', onClose);
   }, []);
 
+  // Files chosen via the hidden picker flow through `validateFile`
+  // before reaching the parent. Invalid files toast; valid ones invoke
+  // the upload callback (mounted by T18). The input is reset
+  // unconditionally so picking the same file twice in a row still
+  // fires `change`.
+  const handleFileInputChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files;
+      if (!files || files.length === 0) {
+        event.target.value = '';
+        return;
+      }
+      const result = validateFile(files);
+      if (result.ok) {
+        onUploadFile?.(result.file);
+      } else {
+        const msg = rejectionToast(result.reason);
+        if (msg) showToast(msg);
+      }
+      event.target.value = '';
+    },
+    [onUploadFile, showToast],
+  );
+
+  const handleOpenFilePicker = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const projectsInlineLabel = (
+    <div className={sidebarStyles.projectsInlineLabel}>
+      <span>Projects</span>
+      <button
+        type="button"
+        className={sidebarStyles.inlinePlusBtn}
+        aria-label="New project"
+        title="New project"
+        onClick={() => setNewProjectOpen(true)}
+      >
+        <VscAdd size={11} aria-hidden="true" />
+      </button>
+    </div>
+  );
+
   const treeContent = (
     <>
+      {projectsInlineLabel}
       <ProjectTree
         projects={projects}
         orphanMockups={orphanMockups}
@@ -212,15 +291,20 @@ export function ProjectSidebar({
     </>
   );
 
+  // The footer is rendered twice (desktop Sidebar + mobile drawer)
+  // so the hidden `<input type="file">` is hoisted to a single,
+  // top-level mount below to keep `fileInputRef` pointing at exactly
+  // one element across both view modes.
   const footerContent = (
     <button
       type="button"
-      className={sidebarStyles.btnNewProject}
-      aria-label="New project"
-      onClick={() => setNewProjectOpen(true)}
+      className={sidebarStyles.btnNewMockup}
+      aria-label="New mockup"
+      title="Upload mockup"
+      onClick={handleOpenFilePicker}
     >
-      <VscAdd size={14} aria-hidden="true" />
-      New Project
+      <VscNewFile size={14} aria-hidden="true" />
+      New mockup
     </button>
   );
 
@@ -237,6 +321,18 @@ export function ProjectSidebar({
         onClose={() => setEditingProjectId(null)}
         onSaved={handleProjectSaved}
         project={projects.find((project) => project.id === editingProjectId)}
+      />
+      {/* Single hidden file picker shared by desktop + mobile footer
+          buttons (the picker is route-agnostic, so one mount suffices
+          and `fileInputRef.current` resolves unambiguously). */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={FILE_INPUT_ACCEPT}
+        className={sidebarStyles.hiddenFileInput}
+        tabIndex={-1}
+        aria-hidden="true"
+        onChange={handleFileInputChange}
       />
       {/* Desktop: pill-morph sidebar */}
       <Sidebar footer={footerContent} defaultCollapsed={defaultCollapsed}>
@@ -337,35 +433,17 @@ export function ProjectSidebar({
           >
             ✕
           </button>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: 'var(--space-xs) var(--space-sm) var(--space-xs) var(--space-md)',
-              borderBottom: '1px solid var(--border-subtle)',
-              flexShrink: 0,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 'var(--type-xs)',
-                fontWeight: 'var(--weight-bold)',
-                letterSpacing: 'var(--tracking-wide)',
-                textTransform: 'uppercase',
-                color: 'var(--text-muted)',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
-              Projects
-            </span>
-          </div>
+          {/* The mobile drawer no longer hosts a fixed "Projects" header
+              — the label has moved inline into the scroll content
+              (`projectsInlineLabel`) so both desktop and mobile share
+              the same singular DS-01 recipe. */}
           <div
             style={{
               flex: 1,
               overflowY: 'auto',
               scrollbarWidth: 'thin',
               scrollbarColor: 'var(--border) transparent',
+              paddingTop: 'var(--space-md)',
             }}
           >
             {treeContent}
