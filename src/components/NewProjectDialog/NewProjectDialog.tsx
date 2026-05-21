@@ -1,10 +1,46 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Dialog, DialogButton, DialogField, DialogInput } from '@/components/Dialog/Dialog';
+/**
+ * `NewProjectDialog` — create or edit a project.
+ *
+ * Migrated from the legacy `Dialog` / `DialogField` / `DialogInput` /
+ * `DialogButton` primitives to the Radix-backed compound stack:
+ *
+ *   <RadixDialog.Root>
+ *     <RadixDialog.Portal>
+ *       <RadixDialog.Overlay />
+ *       <RadixDialog.Content>
+ *         <RadixDialog.Title>…</RadixDialog.Title>
+ *         <Form.Root>
+ *           <InputField.Root> ← name (sync + server error)
+ *           <div>             ← icon-picker slot
+ *           <div.actions>     ← cancel + submit
+ *         </Form.Root>
+ *       </RadixDialog.Content>
+ *     </RadixDialog.Portal>
+ *   </RadixDialog.Root>
+ *
+ * Behaviour preserved verbatim:
+ *   - Props API (`open` / `onClose` / `onSaved` / `project`).
+ *   - URL_SAFE_NAME validation via `validateUrlSafeName` (allows
+ *     letters, digits, hyphens, underscores).
+ *   - POST `/api/projects` on create, PATCH `/api/projects/:id` on edit.
+ *   - Toast on success and failure.
+ *   - Submit disabled while loading or when the name is invalid.
+ *
+ * Visual lineage: title, name field, icon picker, and action buttons
+ * are laid out in the same order as the legacy dialog — only the
+ * underlying primitives changed.
+ */
+
+import * as Form from '@radix-ui/react-form';
+import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { RadixDialog } from '@/components/Dialog/RadixDialog';
 import { IconPicker } from '@/components/IconPicker/IconPicker';
+import { InputField } from '@/components/InputField';
 import { useToast } from '@/components/Toast/useToast';
-import { validateUrlSafeName } from '@/lib/validation/url-safe-name';
+import { URL_SAFE_NAME_PATTERN, validateUrlSafeName } from '@/lib/validation/url-safe-name';
+import styles from './NewProjectDialog.module.css';
 
 interface NewProjectDialogProps {
   open: boolean;
@@ -12,6 +48,12 @@ interface NewProjectDialogProps {
   onSaved: (project: { id: string; slug: string }) => void;
   project?: { id: string; name: string; slug: string; icon: string | null };
 }
+
+// Bare-pattern form (no `^…$` anchors) for the native `pattern` attribute —
+// Radix Form's `patternMismatch` matcher relies on browser ValidityState
+// which already anchors the pattern. Keeps the source of truth in
+// `URL_SAFE_NAME_PATTERN`.
+const NAME_PATTERN = URL_SAFE_NAME_PATTERN.source.replace(/^\^|\$$/g, '');
 
 export function NewProjectDialog({ open, onClose, onSaved, project }: NewProjectDialogProps) {
   const [name, setName] = useState('');
@@ -58,38 +100,71 @@ export function NewProjectDialog({ open, onClose, onSaved, project }: NewProject
     }
   }
 
+  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    handleSubmit();
+  };
+
+  const handleOpenChange = (next: boolean) => {
+    if (!next) handleClose();
+  };
+
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      title={isEdit ? 'Edit Project' : 'New Project'}
-      actions={
-        <>
-          <DialogButton onClick={handleClose}>Cancel</DialogButton>
-          <DialogButton variant="accent" disabled={!canSubmit || loading} onClick={handleSubmit}>
-            {isEdit ? 'Update' : 'Create'}
-          </DialogButton>
-        </>
-      }
-    >
-      <DialogField
-        label="Project name"
-        hint="Letters, digits, hyphens, or underscores."
-        error={nameError?.message ?? null}
-      >
-        <DialogInput
-          autoFocus
-          placeholder="My-Project"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSubmit();
-          }}
-        />
-      </DialogField>
-      <DialogField label="Icon">
-        <IconPicker value={icon} onSelect={setIcon} />
-      </DialogField>
-    </Dialog>
+    <RadixDialog.Root open={open} onOpenChange={handleOpenChange}>
+      <RadixDialog.Portal>
+        <RadixDialog.Overlay />
+        <RadixDialog.Content aria-describedby={undefined}>
+          <RadixDialog.Title>{isEdit ? 'Edit Project' : 'New Project'}</RadixDialog.Title>
+
+          <Form.Root className={styles.form} onSubmit={handleFormSubmit}>
+            <InputField.Root name="name" data-state={nameError ? 'error' : undefined}>
+              <InputField.Label>Project name</InputField.Label>
+              <InputField.Control asChild>
+                {/* RadixDialog auto-focuses the first focusable element
+                    inside its Content on open, so we don't need `autoFocus`
+                    on the input itself (and Biome's a11y rule forbids it). */}
+                <input
+                  type="text"
+                  required
+                  pattern={NAME_PATTERN}
+                  placeholder="My-Project"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </InputField.Control>
+              {nameError ? (
+                <InputField.Message forceMatch>{nameError.message}</InputField.Message>
+              ) : (
+                <InputField.Help>Letters, digits, hyphens, or underscores.</InputField.Help>
+              )}
+              <InputField.Message match="patternMismatch">
+                Use letters, digits, hyphens, or underscores only.
+              </InputField.Message>
+              <InputField.Message match="valueMissing">
+                A project name is required.
+              </InputField.Message>
+            </InputField.Root>
+
+            <div className={styles.iconField}>
+              <span className={styles.iconLabel}>Icon</span>
+              <IconPicker value={icon} onSelect={setIcon} />
+            </div>
+
+            <div className={styles.actions}>
+              <RadixDialog.Close asChild>
+                <button type="button" className={styles.btnSecondary} disabled={loading}>
+                  Cancel
+                </button>
+              </RadixDialog.Close>
+              <Form.Submit asChild>
+                <button type="submit" className={styles.btnAccent} disabled={!canSubmit || loading}>
+                  {isEdit ? 'Update' : 'Create'}
+                </button>
+              </Form.Submit>
+            </div>
+          </Form.Root>
+        </RadixDialog.Content>
+      </RadixDialog.Portal>
+    </RadixDialog.Root>
   );
 }
