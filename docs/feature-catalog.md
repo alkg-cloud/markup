@@ -70,6 +70,7 @@ Fixed-top "Projects" pill header inside the sidebar — replaces the prior inlin
 | `sidebar-projects-header-plus-button` | 22 × 22 `+` icon button on the right of the pill. `--text-dim` idle, `--accent` on hover. Tooltip `New project · Ctrl+Shift+P`. Opens `new-project-dialog` in the `footer-button` and `sticky-top` variants; opens a 2-item action menu in the `header-plus` and `both` CTA placements | default, hover (`--surface-hover` bg + `--accent` text), focus-visible, active, menu-open (sticky `--accent-overlay-soft` bg) |
 | `sidebar-projects-header-sempre-visivel` | Header rendered outside the scroll container — truly fixed via the sidebar's flex layout. The scroll never overlays the header | always visible; no sticky behaviour |
 | `sidebar-projects-header-sticky-pill` | Variant — header is a floating glass pill (`--surface-glass-bg` + `blur(16px) saturate(140%)`, `--border` border) layered over the scroll area; scroll content slides under it | float over scroll; glass surface |
+| `sidebar-projects-inline-label` | Current implementation — `Projects` label rendered inline inside the sidebar scroll content (not sticky, not floating), paired with an inline `+` button (`inlinePlusBtn`) that opens `new-project-dialog`. The inline placement is what ships today; the sticky/pill placements above remain documented variants. | idle, hover (on `+` opens `new-project-dialog`), focused |
 
 ## sidebar-new-mockup-cta
 
@@ -77,6 +78,7 @@ The "+ New Mockup" affordance — the upload entry point reachable from the side
 
 | ID | Surface / Interaction | States |
 |---|---|---|
+| `sidebar-new-mockup-cta` | Footer button in `ProjectSidebar` that opens the OS file picker; on selection routes to `new-mockup-dialog`. Three placement variants below decide where (footer / header `+` / both). | idle, hover, focused, file-picker-open |
 | `sidebar-new-mockup-cta-footer` | Default — footer pill button (`sidebar-new-mockup-btn`). Opens the OS file picker; on selection routes to `new-mockup-dialog`. Shortcut `Ctrl+U` (or `⌘U` on Apple). The footer is the canonical home of the CTA | default, hover, focus-visible, active |
 | `sidebar-new-mockup-cta-header-plus` | The Projects pill `+` opens a 2-item action menu — **New project** (opens `new-project-dialog`) and **New mockup** (opens the file picker). The footer pill is hidden in this placement | menu closed, menu open (popover) |
 | `sidebar-new-mockup-cta-both` | The footer pill is present AND the header `+` opens the 2-item menu — redundant, both paths shipped | both visible |
@@ -609,6 +611,45 @@ Public signup landing at `/invite/<token>` (DS 23-invite-signup). No auth requir
 | `invite-signup-already-signed-in` | If a logged-in user opens `/invite/<token>`, the route immediately redirects to `/` with a DS 17 toast `You're already signed in.` No card rendered. | redirect-on-mount |
 | `invite-signup-token-auto-revoke` | Per-token limit: > 20 failed attempts (across any rolling window) auto-revokes the token. Failed = 400 validation / 401 mismatch. Successful redemption resets the counter. On next page load the route resolves to the `disabled` terminal state. | counter ticking, threshold breached (token auto-revoked + state flip) |
 
+## input-field
+
+Reusable text-input primitive (`src/components/InputField/`) consumed by every form surface that grew during the upload work — `new-mockup-dialog`, `new-project-dialog`, and inline rename inputs. Wraps a native `<input>` with leading/trailing icon slots, a label, a hint row that flips to a danger row on error, and a Radix-driven `[data-invalid]` attribute that consumer code can drive via a `[data-state]` contract. Matches DS 28-input-field.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `input-field` | Field shell: 34 px tall, `--bg-card` background, `--border-subtle`, `--radius-xs`. Focus flips border to `--accent-bright` + 3 px `--accent-soft` ring. Disabled state at 0.4 opacity. | resting, focused, disabled |
+| `input-field-error-state` | Error visual (DS 28). Border flips to `--danger`, the hint row swaps to the danger copy, and the input triggers `anim-input-error-shake` once on transition into error. Two ways to enter the state: Radix `[data-invalid]` (form-validation primitive) and a consumer-driven `[data-state="error"]` attribute the parent sets imperatively (used by `new-mockup-dialog`'s URL-safe validator). | resting, `[data-invalid]` (Radix), `[data-state="error"]` (consumer) |
+| `input-field-success-state` | Success visual (DS 28). Border flips to `--success-overlay-mid`, the trailing-icon slot shows a check glyph (`VscCheck`, `--success`) that triggers `anim-input-success-pop` on transition. Driven exclusively by `[data-state="success"]` from the consumer; never auto-derived. | resting, `[data-state="success"]` |
+
+## alert-banner
+
+Inline status banner (`src/components/AlertBanner/`). One component, four `status` variants. Used inline above forms (`new-mockup-dialog` global error / success) and inside page content (warnings, info hints). Matches the DS spec.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `alert-banner` | Banner shell: 100% width within its container, 10 px / 12 px padding, `--radius-xs`, leading icon + body + optional dismiss `×`. Enters with `anim-banner-enter` (opacity 0 → 1 + translateY -4 px → 0). Dismiss button always rendered as the trailing slot; `success` and `info` variants also schedule an auto-dismiss timer. | mounted, dismissed |
+| `alert-banner-error` | `status="error"`. Background `--danger-soft`, border `--danger-overlay-mid`, icon `VscError` in `--danger`. No auto-dismiss — error stays until the user dismisses or the consumer unmounts it. | mounted, dismissed |
+| `alert-banner-warning` | `status="warning"`. Background `--warning-soft`, border `--warning-overlay-mid`, icon `VscWarning` in `--warning`. No auto-dismiss. | mounted, dismissed |
+| `alert-banner-success` | `status="success"`. Background `--success-soft`, border `--success-overlay-mid`, icon `VscPass` in `--success`. Auto-dismisses after 4 s unless the user hovers (timer pauses on hover, resumes on mouseleave). | mounted, auto-dismiss, dismissed |
+| `alert-banner-info` | `status="info"`. Background `--info-soft`, border `--info-overlay-mid`, icon `VscInfo` in `--info`. Auto-dismisses after 6 s (same pause-on-hover behaviour as success). | mounted, auto-dismiss, dismissed |
+
+## folder-picker-tree-popover
+
+Folder selector (`src/components/FolderPicker/`) used by `new-mockup-dialog-folder-picker` when the dialog ships the tree-popover layout variant. Composes a Radix `Popover` with a recursive tree of the current project's folder hierarchy.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `folder-picker-tree-popover` | Trigger button shows the selected folder breadcrumb (`Hero / Section`). Click opens a Radix `Popover` with a recursive folder tree underneath the project root. Each node is a row with an expand chevron + `VscFolder` icon + name; selecting a leaf or branch resolves the picker and closes the popover. Empty projects show a single `Root` row. | closed, open, selected (chip displays breadcrumb) |
+
+## preview-box
+
+Mockup preview surface (`src/components/NewMockupDialog/PreviewBox.tsx`) used inside `new-mockup-dialog`. Renders a sandboxed iframe of the dropped HTML once it's been generated, with a skeleton shimmer while the preview is generating and an icon fallback if generation fails.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `preview-box` | 320 × 180 surface in the dialog's preview slot. `--bg-elevated` background, `--border-subtle`, `--radius-xs`. Owns the data-state contract `loading` → `ready` → `fallback`. | loading, ready, fallback |
+| `preview-box-skeleton` | Shimmer skeleton rendered while `[data-state="loading"]`. Two stacked rectangles + a top bar, all tinted `--surface-hover`, animated by `anim-skeleton-shimmer`. Dismissed on transition to `ready` or `fallback`. | loading (shimmer), ready (img), fallback (icon) |
+
 ## dialog
 
 Reusable modal dialog (`Dialog.tsx`). Shares the **glass-surface standard** with `confirm-dialog`, the rail, toolbar, composer, and every popover — same `--surface-glass-bg`, blur 16px / saturate 140%, glass border, `--shadow-popover`, 14 px radius. The two dialog kinds (generic `Dialog` for forms, Radix `AlertDialog` for confirms) read as one design system on screen.
@@ -704,6 +745,11 @@ All motion tokens and keyframe animations.
 | `mockup-viewer-zoom` | `transform: scale` on the iframe wrapper when zoom changes | instantaneous (no transition) | N/A | N/A |
 | `sidebar-tree-active-scroll` | Smooth `scrollIntoView` on the active tree node when the URL changes | browser default smooth scroll | smooth | zeroed |
 | `anim-invite-card-ring` | New invite card ring fade-in on mint (1 px `--accent-overlay-mid` + 24 px `--accent-overlay-soft` glow → transparent) | `--motion-base` (220 ms) | `--ease-spring` | zeroed |
+| `anim-skeleton-shimmer` | Shimmer skeleton — translates a diagonal `--surface-hover` highlight across the placeholder. Used in `preview-box[data-state=loading]`. | 1.4 s infinite | `ease-in-out` | zeroed |
+| `anim-input-error-shake` | Error shake — `translateX(-4px → 4px → -2px → 2px → 0)`. Used in `input-field[data-state="error"] input` on the resting → error transition. | 320 ms | `--ease-spring` | zeroed |
+| `anim-input-success-pop` | Success pop — `scale(0.6 → 1.1 → 1) + opacity(0 → 1)`. Used in `input-field[data-state="success"] .trailingIcon`. | 320 ms | `--ease-spring` | zeroed |
+| `anim-banner-enter` | Banner enter — `opacity(0 → 1) + translateY(-4px → 0)`. Used in `alert-banner` on mount. | `--motion-base` (220 ms) | `--ease-standard` | zeroed |
+| `anim-drop-overlay-fade-in` | Drop-overlay fade-in — `opacity(0 → 1)` as the overlay mounts on `dragenter`. Paired with a 120 ms fade-out on `dragleave` / drop. Used in `drop-overlay`. | 320 ms | `--ease-standard` | zeroed |
 
 ---
 
