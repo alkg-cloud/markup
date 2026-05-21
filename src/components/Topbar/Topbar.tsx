@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
 import { VscKey, VscMail, VscSearch, VscSignOut } from 'react-icons/vsc';
 import { type BreadcrumbSegment, Breadcrumbs } from '@/components/Breadcrumbs/Breadcrumbs';
+import { Kbd } from '@/components/Kbd/Kbd';
 import { usePopover } from '@/lib/popover/usePopover';
 import { formatShortcut } from '@/lib/shortcuts/platform';
 import styles from './Topbar.module.css';
@@ -60,7 +61,7 @@ export function Topbar({ breadcrumbs, userName, userEmail, userRole, onSearchCli
       >
         <VscSearch size={16} aria-hidden="true" />
         <span className={styles.pillText}>Search...</span>
-        <span className={styles.pillKbd}>{kbdLabel}</span>
+        <Kbd keys={['mod', 'k']} />
       </button>
 
       <div className={styles.topbarRight}>

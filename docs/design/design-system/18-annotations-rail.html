@@ -158,7 +158,10 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
 .rail.pinned .add{width:100%}
 .rail.expanded .add-label,
 .rail.pinned .add-label{display:flex}
-.shortcut{padding:2px 5px;background:var(--bg-card-active);border-radius:var(--radius-xs);font-family:var(--font-mono);font-size:9px;font-weight:600;color:var(--text-dim);letter-spacing:0.02em;text-transform:none}
+/* Keycap chips — mirrors Kbd.module.css (DS 29-kbd.html) */
+.kbd-group{display:inline-flex;align-items:center;gap:2px}
+.kbd-key{display:inline-flex;align-items:center;justify-content:center;min-width:16px;padding:1px 4px;background:var(--bg-elevated);border:1px solid var(--border);border-bottom:1px solid var(--border-strong);border-radius:var(--radius-xs);font-family:var(--font-mono);font-size:9px;font-weight:600;line-height:1;color:var(--text-dim);white-space:nowrap}
+.kbd-plus{font-family:var(--font-mono);font-size:9px;color:var(--text-muted);margin:0 1px;line-height:1;user-select:none}
 
 /* All-states grid helpers */
 .row-states{
@@ -226,7 +229,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
             <div class="badge" data-color="5">6</div>
           </div>
           <div class="foot-area">
-            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New<span class="shortcut">Ctrl+⇧+N</span></span></button>
+            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New<span class="kbd-group"><kbd class="kbd-key">Ctrl</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">⇧</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">N</kbd></span></span></button>
           </div>
         </div>
       </div>
@@ -269,7 +272,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
               </li>
             </ul>
             <div class="foot-area">
-              <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="shortcut">Ctrl+⇧+N</span></span></button>
+              <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="kbd-group"><kbd class="kbd-key">Ctrl</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">⇧</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">N</kbd></span></span></button>
             </div>
           </div>
         </div>
@@ -310,7 +313,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
             </li>
           </ul>
           <div class="foot-area">
-            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="shortcut">Ctrl+⇧+N</span></span></button>
+            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="kbd-group"><kbd class="kbd-key">Ctrl</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">⇧</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">N</kbd></span></span></button>
           </div>
         </div>
       </div>
@@ -332,7 +335,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
             No annotations yet. Use <strong style="color:var(--text-dim)">Ctrl+⇧+N</strong> or the button below to add the first.
           </div>
           <div class="foot-area">
-            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="shortcut">Ctrl+⇧+N</span></span></button>
+            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="kbd-group"><kbd class="kbd-key">Ctrl</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">⇧</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">N</kbd></span></span></button>
           </div>
         </div>
       </div>
@@ -416,6 +419,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
       <li><strong><code>resetPositionKey</code> clears the drag offset</strong> when the containing block changes (fullscreen toggle changes the bounds). Without this, a previously-dragged rail can end up off-screen.</li>
       <li><strong>The expanded card list is a slot</strong> — the parent renders <code>&lt;AnnotationCard&gt;</code> children. The rail doesn't know about the card data shape, so cards can evolve independently.</li>
       <li><strong>Add button is native <code>&lt;button&gt;</code></strong> with the <code>.add</code> class — no Radix wrapping (Radix has no Button primitive). The collapsed → expanded morph is pure CSS (<code>width</code> + <code>.add-label</code> display).</li>
+      <li><strong>Shortcut chip via <code>&lt;Kbd&gt;</code>.</strong> The add button label renders <code>&lt;Kbd keys={['mod','shift','n']} /&gt;</code> from <a href="./29-kbd.html" style="color:var(--accent)">DS 29 — Kbd</a>. The old <code>.shortcut</code> span is removed; <code>aria-label</code> on the button uses <code>formatShortcut(['shift','n'])</code> for a plain-text SR announcement.</li>
     </ul>
   </section>
 

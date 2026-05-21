@@ -291,18 +291,6 @@
   opacity: 1;
   transform: translateX(0);
 }
-.shortcut {
-  padding: 2px 5px;
-  background: var(--bg-card-active);
-  border-radius: var(--radius-xs);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--text-dim);
-  letter-spacing: 0.02em;
-  text-transform: none;
-}
-
 /* Collapsed badge — circular numbered pip for each annotation */
 .badge {
   --pin-h: 165;

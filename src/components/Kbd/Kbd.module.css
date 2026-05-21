@@ -1,0 +1,65 @@
+/**
+ * Kbd — keycap chip recipe.
+ *
+ * DS source: docs/design/design-system/29-kbd.html
+ * Tokens: all from src/styles/tokens.css — no literal colours.
+ *
+ * .group    — flex row of keycaps (the combo wrapper)
+ * .key      — single keycap chip
+ * .plus     — "+" separator between caps on non-mac
+ *
+ * CUSTOM — no Radix primitive backs this component.
+ * Custom state: disabled (data-state="disabled" on .group) — no consumer yet.
+ */
+
+/* Combo wrapper: flex row, 3 px gap on mac; on non-mac the + glyph provides
+   visual separation so gap is tighter. */
+.group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  /* CUSTOM: disabled state — no consumer yet; hook is here for future use.
+     Flagged at three places per AUTHORING: matrix row + API bullet + here. */
+  &[data-state="disabled"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 2px 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-strong); /* one-pixel depth */
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-dim);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* "+" separator between caps — renders only on non-mac via conditional JSX */
+.plus {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  margin: 0 1px;
+  line-height: 1;
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No animations in this component — block is present for parity with
+     sibling DS files that zero their motion tokens here. */
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+  }
+}
