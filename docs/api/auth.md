@@ -99,6 +99,36 @@ Under `NODE_ENV=development` only, the helper additionally auto-allows quick-tun
 
 `SameSite=Lax` on the session cookie blocks most cross-site cookie sends; the Origin check is the second lock for redirect/legacy paths that leak. The auth/login, auth/setup, and auth/logout endpoints also run the guard (a CSRF could otherwise log a victim into an attacker-controlled account or wipe their session).
 
+## Invite lifecycle
+
+An invite row in `Invite` has five lifecycle states; four are persisted in `status` (`'unused' | 'used' | 'revoked' | 'disabled'`) and the fifth, `'expired'`, is **derived** at read time as `status='unused' AND expiresAt <= now()` (see `effectiveStatus()` in `src/lib/auth/invite-token.ts`).
+
+### Redemption contract
+
+`POST /api/invites/[token]/redeem` is the only path that can flip a row from `'unused'` to `'used'`. The route opens a single Prisma `$transaction` containing **both** the `User.create` and the `Invite.updateMany({ where: { id, status: 'unused' }, data: { status: 'used', usedAt, usedById } })`. If the conditional `updateMany` returns `count: 0` — i.e. another transaction beat us to the row — the transaction throws and Prisma rolls back the `User.create`. The response is 410 `invite_unusable`.
+
+After a 201 response, three invariants hold simultaneously:
+
+1. A `User` row exists with the requested email and the invite's role.
+2. The `Invite` row has `status='used'`, `usedAt = now`, and `usedById = newUser.id`.
+3. A session cookie is set on the response.
+
+A DB-level partial-unique index on `Invite.usedById` (where `usedById IS NOT NULL`) is the second lock that enforces invariant (2) physically: at most one invite row in the database can reference any given user.
+
+### Error codes
+
+| Status | `error` | When |
+|---|---|---|
+| 201 | _none_ | Success; row is now `'used'`, session cookie set |
+| 400 | `invalid_token` | Token doesn't match `mki_…` shape |
+| 400 | `invalid_body` | Zod parse failed (email format, password < 12, name length) |
+| 401 | `email_mismatch` | Bound-email mismatch **or** existing-user silent collision |
+| 410 | `invite_unusable` | Row is no longer in effective `'unused'` (incl. raced concurrent redeem) |
+| 429 | `rate_limited` | Per-IP limiter; `retry-after` header populated |
+| 500 | `invite_redeem_failed` | Unexpected transaction failure (logged with stack) |
+
+The `email_mismatch` code intentionally covers both the bound-email case and the existing-user collision case so a public caller cannot enumerate registered emails.
+
 ## Agent token lifecycle
 
 | Step | What happens |
