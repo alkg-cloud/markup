@@ -147,6 +147,14 @@ export function filterIcons(tab: string, query: string): IconEntry[] {
 
 export type ResolvedIcon = { kind: 'icon'; Icon: IconComponent } | { kind: 'emoji'; glyph: string };
 
+// Token → entry lookup map, built once at module load. Resolution runs
+// once per tree node render, so a Map saves repeated linear scans across
+// the ~70 entries in PICKER_ICONS.
+const TOKEN_INDEX: Map<string, IconEntry> = new Map();
+for (const group of Object.values(PICKER_ICONS)) {
+  for (const entry of group) TOKEN_INDEX.set(entry.token, entry);
+}
+
 /**
  * Resolve a stored icon token (e.g. `vsc:VscFile`, `emoji:🚀`) to a
  * typed descriptor. Returns `null` for unknown tokens so the caller can
@@ -159,10 +167,8 @@ export function resolveIconToken(token: string): ResolvedIcon | null {
   if (token.startsWith('emoji:')) {
     return { kind: 'emoji', glyph: token.slice(6) };
   }
-  for (const group of Object.values(PICKER_ICONS)) {
-    const entry = group.find((e) => e.token === token);
-    if (entry?.Icon) return { kind: 'icon', Icon: entry.Icon };
-    if (entry?.label) return { kind: 'emoji', glyph: entry.label };
-  }
+  const entry = TOKEN_INDEX.get(token);
+  if (entry?.Icon) return { kind: 'icon', Icon: entry.Icon };
+  if (entry?.label) return { kind: 'emoji', glyph: entry.label };
   return null;
 }
