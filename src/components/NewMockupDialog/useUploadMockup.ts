@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { MAX_UPLOAD_BYTES } from '@/lib/upload/constants';
 
 /**
  * Imperative upload API consumed by `NewMockupDialog` (and any future
@@ -303,7 +304,8 @@ function routeErrorResponse(status: number, body: unknown): UploadState {
   }
 
   if (status === 413) {
-    const limit = isRecord(body) && typeof body.limit === 'number' ? body.limit : 10 * 1024 * 1024;
+    const limit =
+      isRecord(body) && typeof body.limit === 'number' ? body.limit : MAX_UPLOAD_BYTES;
     return {
       status: 'error',
       route: 'global',
