@@ -434,6 +434,14 @@
 
 /* ─── New Invite dialog (composes DS 22) ───────────────────────────── */
 
+/* Form.Root stack — matches the 10px vertical rhythm used by
+   NewProjectDialog / NewMockupDialog so dialog bodies feel consistent. */
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .dialogField {
   display: block;
 }
@@ -500,6 +508,66 @@
   background: var(--accent-soft);
   color: var(--accent);
   box-shadow: inset 0 0 0 1px var(--accent-overlay-mid);
+}
+
+/* Action row — port of legacy Dialog.module.css `.actions` + buttons,
+   trimmed to the two variants this dialog uses (secondary + accent). */
+.dialogActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.dialogBtnSecondary,
+.dialogBtnAccent {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: var(--radius-xs);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast),
+    border-color var(--motion-fast);
+}
+
+.dialogBtnSecondary {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.dialogBtnSecondary:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text-bright);
+}
+
+.dialogBtnAccent {
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+  border-color: var(--accent-overlay-mid);
+}
+
+.dialogBtnAccent:hover:not(:disabled) {
+  background: var(--accent-overlay-mid);
+  color: var(--text-bright);
+}
+
+.dialogBtnSecondary:focus-visible,
+.dialogBtnAccent:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.dialogBtnSecondary:disabled,
+.dialogBtnAccent:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 @media (prefers-reduced-motion: reduce) {
