@@ -1,11 +1,14 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
+import { useNewMockupDialog } from '@/components/NewMockupDialog';
 import type { TreeMockup, TreeProject } from '@/components/ProjectTree/ProjectTree';
 import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
 import { type AuthMe, IdentityContext, useRequireAuth } from '@/lib/hooks/use-require-auth';
+import { resolveTargetFromPath } from '@/lib/upload/resolve-target';
 import styles from './projects/layout.module.css';
 import { ProjectSidebar } from './projects/ProjectSidebar';
 
@@ -29,6 +32,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { identity, loading: authLoading } = useRequireAuth();
   const [shell, setShell] = useState<ShellPayload | null>(null);
   const [shellError, setShellError] = useState<string | null>(null);
+  // Footer "New mockup" button: pop the upload dialog with the picked
+  // file. The provider lives at `(app)/layout.tsx` so this hook always
+  // resolves; we re-resolve the current route's target here (mirroring
+  // the layout's URL-only resolver) so the dialog prefills project /
+  // folder consistently with a drag-drop on the same view.
+  const { openDialog } = useNewMockupDialog();
+  const pathname = usePathname();
+  const handleSidebarUpload = (file: File) => {
+    openDialog({ file, target: resolveTargetFromPath(pathname) });
+  };
 
   useEffect(() => {
     if (authLoading || !identity) return;
@@ -92,6 +105,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           mockupNames={shell.mockupNames}
           recentMockups={shell.recentMockups}
           defaultCollapsed={shell.sidebarCollapsed}
+          onUploadFile={handleSidebarUpload}
         />
         <main className={styles.main}>{children}</main>
         <CommandPalette projects={shell.projects} />
