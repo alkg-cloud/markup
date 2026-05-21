@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import type { ThreadComment } from '@/components/AnnotationCard';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { AppMainViewerWired } from '@/components/MockupViewer/AppMainViewerWired';
-import { MockupViewerSkeleton } from '@/components/Skeleton';
+import { ProjectSkeleton } from '@/components/Skeleton';
 import type { VersionRow } from '@/components/VersionChip';
 import type { Anchor } from '@/lib/anchoring';
 import type { AppMainAnnotation } from './AppMainViewer';
@@ -93,10 +93,10 @@ export function MockupViewerPage({ mockupId, userRole }: MockupViewerPageProps) 
     return <main style={{ padding: 24, color: 'var(--danger)' }}>Failed to load mockup.</main>;
   }
   if (status === 'loading' || !data) {
-    // No FadeIn wrap here — this surface is always rendered inside a
-    // parent FadeIn (`/projects/[slug]/[...path]/page.tsx`'s mockup
-    // branch). Adding a second FadeIn would double-animate.
-    return <MockupViewerSkeleton />;
+    // Project / folder / mockup all share the same skeleton — the URL
+    // can't always disambiguate them, and a unified placeholder is
+    // less jarring than the body cross-swapping shapes mid-load.
+    return <ProjectSkeleton />;
   }
 
   return (

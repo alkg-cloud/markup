@@ -11,6 +11,7 @@ import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
 import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
 import { RecentsSection } from '@/components/ProjectTree/RecentsSection';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
+import { SidebarTreeSkeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast/useToast';
 import { useShellRefresh } from '@/lib/hooks/use-shell-refresh';
 import { projectHref } from '@/lib/project/routes';
@@ -36,6 +37,10 @@ interface ProjectSidebarProps {
    * (tests, storybook-style harnesses) without the provider.
    */
   onUploadFile?: (file: File) => void;
+  /** True while `/api/shell` is in flight. Renders skeleton tree rows
+   *  inside the real sidebar scaffold (logo + collapse + footer all stay
+   *  visible) instead of mounting `<ProjectTree>` with empty data. */
+  loading?: boolean;
 }
 
 const FILE_INPUT_ACCEPT = ACCEPTED_EXTENSIONS.join(',');
@@ -47,6 +52,7 @@ export function ProjectSidebar({
   recentMockups,
   defaultCollapsed = false,
   onUploadFile,
+  loading = false,
 }: ProjectSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [newProjectOpen, setNewProjectOpen] = useState(false);
@@ -288,7 +294,9 @@ export function ProjectSidebar({
     </div>
   );
 
-  const treeContent = (
+  const treeContent = loading ? (
+    <SidebarTreeSkeleton />
+  ) : (
     <>
       {projectsInlineLabel}
       <ProjectTree
