@@ -42,8 +42,9 @@ function ProjectIconResolved({ token }: { token: string | null }) {
   if (!token) return <DefaultProjectIcon />;
   const resolved = resolveIconToken(token);
   if (!resolved) return <DefaultProjectIcon />;
-  if (resolved.type === 'emoji') return <span aria-hidden="true">{resolved.content}</span>;
-  return <span aria-hidden="true" dangerouslySetInnerHTML={{ __html: resolved.content }} />;
+  if (resolved.kind === 'emoji') return <span aria-hidden="true">{resolved.glyph}</span>;
+  const { Icon } = resolved;
+  return <Icon aria-hidden="true" />;
 }
 
 /* ── Component ──────────────────────────────────────────────────────────── */
