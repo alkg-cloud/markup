@@ -146,7 +146,7 @@ Mutate mockup-level metadata: status, placement, or name. The optional "close-ou
   "projectId": "cmox…" | null,   // optional — null to orphan the mockup
   "folderId":  "cmox…" | null,   // optional — null to move to project root
   "position":  3,                 // optional int >= 0; only honoured when projectId/folderId present
-  "name":      "lumen-final"     // optional — admin-only (URL-safe ^[A-Za-z0-9_-]+$, max 200 chars)
+  "name":      "lumen-final"     // optional — admin-only (URL-safe ^[A-Za-z0-9_-]+$, max 64 chars)
 }
 ```
 
@@ -175,7 +175,10 @@ Field-level gating: `name` is admin-only. Agents (Bearer) writing `name` receive
 
 | Status | `error` | When |
 |---|---|---|
-| 400 | `invalid_body` | Body fails Zod (unknown field, wrong type, bad status, non-URL-safe name, name > 200 chars, position < 0) |
+| 400 | `invalid_body` | Body fails Zod (unknown field, wrong type, bad status, position < 0) |
+| 400 | `name_required` | `name` present but empty after coercion |
+| 400 | `name_too_long` | `name` exceeds 64 characters |
+| 400 | `name_not_url_safe` | `name` violates `^[A-Za-z0-9_-]+$` |
 | 400 | `no_fields` | All optional fields absent |
 | 400 | `project_not_found` | `projectId` supplied but row missing |
 | 400 | `folder_not_found` | `folderId` supplied but row missing |
