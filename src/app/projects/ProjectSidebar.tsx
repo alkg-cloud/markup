@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VscAdd, VscNewFile, VscThreeBars } from 'react-icons/vsc';
 import { flattenProjectTree } from '@/components/CommandPalette/flatten';
@@ -12,6 +12,7 @@ import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
 import { RecentsSection } from '@/components/ProjectTree/RecentsSection';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { useToast } from '@/components/Toast/useToast';
+import { useShellRefresh } from '@/lib/hooks/use-shell-refresh';
 import { projectHref } from '@/lib/project/routes';
 import { ACCEPTED_EXTENSIONS } from '@/lib/upload/constants';
 import { rejectionMessage } from '@/lib/upload/rejection-message';
@@ -54,6 +55,8 @@ export function ProjectSidebar({
   const hamburgerRef = useRef<HTMLButtonElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
+  const refreshShell = useShellRefresh();
   const { confirm, dialog: confirmDialog } = useConfirm();
   const { show: showToast } = useToast();
 
@@ -71,9 +74,9 @@ export function ProjectSidebar({
   const handleProjectSaved = useCallback(
     (project: { id: string; slug: string }) => {
       router.push(projectHref(project.slug));
-      router.refresh();
+      refreshShell();
     },
-    [router],
+    [router, refreshShell],
   );
 
   const handleCreateFolder = useCallback(
@@ -115,13 +118,16 @@ export function ProjectSidebar({
         const data = await res.json();
         throw new Error(data.error ?? 'Erro ao mover item');
       }
-      router.refresh();
+      refreshShell();
     },
-    [router],
+    [refreshShell],
   );
 
   const handleRename = useCallback(
     async (nodeId: string, nodeType: 'folder' | 'mockup', name: string) => {
+      // Snapshot the old name/slug BEFORE the PATCH so we can swap it
+      // in the current URL if the user is viewing the renamed item.
+      const oldName = nodeNameById.get(nodeId);
       const res = await fetch(
         nodeType === 'folder' ? `/api/folders/${nodeId}` : `/api/mockups/${nodeId}`,
         {
@@ -134,9 +140,32 @@ export function ProjectSidebar({
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? 'Erro ao renomear item');
       }
-      router.refresh();
+      // Mockup PATCH returns the regenerated slug; folder PATCH returns
+      // the updated row (folders don't have slugs — their URL segment
+      // is the literal name). We default to `name` for folders since
+      // the API echoes it back.
+      const updated = (await res.json().catch(() => ({}))) as { name?: string; slug?: string };
+      const nextSegment = nodeType === 'mockup' ? (updated.slug ?? name) : (updated.name ?? name);
+
+      // If the user is currently viewing the renamed item (or any
+      // descendant of a renamed folder), rewrite the URL in place so
+      // the path resolver doesn't 404 against the old segment. Match
+      // on a `/` boundary so substring collisions don't trigger.
+      if (pathname && oldName) {
+        const segments = pathname.split('/');
+        const idx = segments.indexOf(oldName);
+        if (idx >= 0) {
+          segments[idx] = nextSegment;
+          const nextPath = segments.join('/');
+          if (nextPath !== pathname) {
+            router.replace(nextPath);
+          }
+        }
+      }
+
+      refreshShell();
     },
-    [router],
+    [pathname, refreshShell, router, nodeNameById],
   );
 
   // Per-noun copy is centralised so the danger dialog stays consistent
@@ -181,9 +210,19 @@ export function ProjectSidebar({
         });
         return;
       }
-      router.refresh();
+      // If the user is viewing the deleted item, bounce them to home
+      // so they don't sit on a soon-to-404 URL while the sidebar
+      // re-fetches and removes the row.
+      if (
+        pathname &&
+        nodeNameById.get(nodeId) &&
+        pathname.includes(`/${nodeNameById.get(nodeId)}`)
+      ) {
+        router.push('/');
+      }
+      refreshShell();
     },
-    [confirm, nodeNameById, router],
+    [confirm, nodeNameById, pathname, refreshShell, router],
   );
 
   useEffect(() => {
