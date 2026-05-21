@@ -1,0 +1,83 @@
+/* NewProjectDialog — body chrome for the project create/edit dialog.
+   Surface chrome (scrim, dialog frame, glass blur, radius, animation)
+   lives in `RadixDialog.module.css`; this file owns the dialog *body*:
+   form stack, icon-picker field wrapping, and the action row buttons
+   (cancel + accent). Visual lineage matches DS 25's dialog buttons +
+   DS 28's InputField surface so a project dialog sits flush next to a
+   mockup dialog. */
+
+/* The Form.Root collapses to a stack matching the dialog's vertical
+   rhythm (10px gap), same as NewMockupDialog. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Wrapper around the IconPicker field — InputField owns the
+   field/label rhythm for native inputs; the icon picker is a
+   non-input control so it carries its own field-label pair. */
+.iconField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.iconLabel {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Actions row — port of DS 25 `.dialog-actions`. */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btnSecondary {
+  padding: 8px 14px;
+  background: var(--btn-bg);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 12.5px;
+  border-radius: var(--radius-pill);
+  border: none;
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background: var(--btn-bg-hover);
+}
+
+.btnSecondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnAccent {
+  padding: 8px 18px;
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 12.5px;
+  border-radius: var(--radius-pill);
+  border: none;
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+
+.btnAccent:hover:not(:disabled) {
+  background: var(--accent-bright);
+}
+
+.btnAccent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
