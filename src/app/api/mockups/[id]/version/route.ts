@@ -6,7 +6,6 @@ import { identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { env } from '@/lib/env';
 import { addVersion, wrapHtmlAsZip } from '@/lib/mockup/service';
-import { MAX_UPLOAD_BYTES } from '@/lib/upload/constants';
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
@@ -14,11 +13,13 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   if (!id) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   // Mirror the size guard in POST /api/mockups — replace-as-new-version
-  // shares the 10 MB ceiling so a single drop can't smuggle past the
-  // cap by toggling the dialog to "Replace" mode.
+  // shares the same ceiling so a single drop can't smuggle past the cap
+  // by toggling the dialog to "Replace" mode. Source of truth is
+  // `env().MAX_UPLOAD_MB` (see `src/lib/env.ts`).
+  const maxUploadBytes = env().MAX_UPLOAD_MB * 1024 * 1024;
   const contentLength = req.headers.get('content-length');
-  if (contentLength && Number(contentLength) > MAX_UPLOAD_BYTES) {
-    return NextResponse.json({ error: 'file_too_large', limit: MAX_UPLOAD_BYTES }, { status: 413 });
+  if (contentLength && Number(contentLength) > maxUploadBytes) {
+    return NextResponse.json({ error: 'file_too_large', limit: maxUploadBytes }, { status: 413 });
   }
 
   const { id: mockupId } = await ctx.params;
@@ -29,8 +30,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  if (buffer.byteLength > MAX_UPLOAD_BYTES) {
-    return NextResponse.json({ error: 'file_too_large', limit: MAX_UPLOAD_BYTES }, { status: 413 });
+  if (buffer.byteLength > maxUploadBytes) {
+    return NextResponse.json({ error: 'file_too_large', limit: maxUploadBytes }, { status: 413 });
   }
 
   // Same content-type routing as POST /api/mockups (see route.ts) — a

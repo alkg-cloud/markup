@@ -116,7 +116,7 @@ Required vars (validated in `src/lib/env.ts`):
 | `APP_URL` | public URL (used by puppeteer to reach the serve route) | `http://localhost:3000` |
 | `DATABASE_URL` | Prisma connection string | `file:./prisma/dev.db` |
 | `LOG_LEVEL` | pino level | `info` |
-| `MAX_UPLOAD_MB`, `MAX_FILES_PER_UPLOAD`, `MAX_FILE_SIZE_MB` | upload limits | `50` / `1000` / `10` |
+| `MAX_UPLOAD_MB`, `MAX_FILES_PER_UPLOAD`, `MAX_FILE_SIZE_MB` | upload limits | `10` / `1000` / `10` |
 | `AGENT_TOKENS` | seeded boot tokens (`name1:secret1,name2:secret2`) | empty |
 
 Optional:
