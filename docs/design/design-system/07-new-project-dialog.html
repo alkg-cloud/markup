@@ -14,13 +14,15 @@
   --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
   --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
   --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
+  --btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);
   --surface-glass-bg:rgb(7 12 15 / 80%);
   --scrim-glass-bg:oklch(0% 0 0/0.2);
   --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
   --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
   --motion-fast:160ms;--motion-base:220ms;
-  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;
   --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
 }
 @media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -28,12 +30,17 @@ html,body{height:100%}
 body{
   background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
   -webkit-font-smoothing:antialiased;
-  background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
   background-attachment:fixed;
 }
 button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
 input{font-family:inherit;color:inherit;font-size:inherit}
-.page{padding:48px 32px 96px;max-width:1200px;margin:0 auto}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:1080px;margin:0 auto}
 .h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
 .lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
 .section{margin-bottom:48px}
@@ -41,8 +48,12 @@ input{font-family:inherit;color:inherit;font-size:inherit}
 .stage{
   background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
   border:1px solid var(--border-subtle);border-radius:var(--radius-md);
-  min-height:480px;padding:36px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+  min-height:500px;padding:36px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
 }
+.stage + .stage{margin-top:24px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+
+/* Scrim */
 .scrim{
   position:absolute;inset:0;
   background:var(--scrim-glass-bg);
@@ -51,155 +62,205 @@ input{font-family:inherit;color:inherit;font-size:inherit}
   display:flex;align-items:center;justify-content:center;padding:32px;
 }
 
-/* Dialog (Dialog.module.css verbatim) */
+/* Dialog surface (RadixDialog.module.css verbatim) */
 .dialog{
   background:var(--surface-glass-bg);
   backdrop-filter:blur(16px) saturate(140%);
   -webkit-backdrop-filter:blur(16px) saturate(140%);
   border:1px solid var(--border);
-  width:min(440px,calc(100vw - 32px));
+  width:min(460px,calc(100vw - 32px));
   padding:18px 18px 14px;border-radius:14px;
   box-shadow:var(--shadow-popover);
   display:flex;flex-direction:column;gap:8px;
+  animation:dialogIn var(--motion-base) var(--ease-spring);
 }
+@keyframes dialogIn{from{opacity:0;transform:scale(0.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .title{font-size:13px;font-weight:700;letter-spacing:0.01em;color:var(--text-bright);margin:0}
+
+/* Form (NewProjectDialog.module.css verbatim) */
+.form{display:flex;flex-direction:column;gap:10px}
+
+/* InputField (port from 28-input-field) */
 .field{display:block}
-.label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;display:block}
+.label{font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;display:block}
 .input{
   width:100%;height:34px;padding:0 12px;
   background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xs);
   font-size:13px;color:var(--text-bright);outline:none;
+  transition:border-color var(--motion-fast),box-shadow var(--motion-fast);
 }
 .input::placeholder{color:var(--text-muted)}
-.input.focused{border-color:var(--accent-bright);box-shadow:0 0 0 3px var(--accent-soft)}
-.input.error{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-soft)}
-.hint{display:block;margin-top:6px;font-size:11px;line-height:1.4;color:var(--text-muted)}
+.field[data-state="focused"] .input{border-color:var(--accent-bright);box-shadow:0 0 0 3px var(--accent-soft)}
+.field[data-state="error"] .input,
+.field[data-invalid] .input{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-soft)}
+.help{display:block;margin-top:6px;font-size:11px;line-height:1.4;color:var(--text-muted)}
 .error-msg{display:block;margin-top:6px;font-size:11px;line-height:1.4;color:var(--danger)}
 
-/* Embedded icon-picker (mini) */
+/* Icon-field wrapper (NewProjectDialog.module.css) */
+.icon-field{display:flex;flex-direction:column;gap:4px}
+.icon-label{
+  font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:0.08em;
+  text-transform:uppercase;color:var(--text-muted);
+}
+
+/* Embedded mini icon-picker — same recipe as 06-icon-picker, sized down */
 .picker{
   background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);
   overflow:hidden;display:flex;flex-direction:column;max-height:280px;
 }
-.picker-search{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border-subtle)}
-.picker-search-input{flex:1;background:none;border:none;outline:none;font-size:12px;color:var(--text-bright)}
 .picker-tabs{display:flex;border-bottom:1px solid var(--border-subtle);padding:0 4px}
 .picker-tab{flex:1;padding:6px 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);border-bottom:2px solid transparent}
-.picker-tab.active{color:var(--accent-bright);border-bottom-color:var(--accent)}
+.picker-tab.active{color:var(--accent-bright);border-bottom-color:var(--accent-bright)}
+.picker-search{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border-subtle)}
+.picker-search-input{flex:1;background:none;border:none;outline:none;font-size:12px;color:var(--text-bright)}
 .picker-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;padding:6px;overflow-y:auto;flex:1}
-.picker-cell{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-xs);border:1.5px solid transparent;color:var(--text-dim);font-size:14px;cursor:pointer}
+.picker-cell{
+  width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-xs);border:1.5px solid transparent;color:var(--text-dim);
+  font-size:14px;cursor:pointer;
+  transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast);
+}
 .picker-cell:hover{background:var(--surface-hover);color:var(--text)}
 .picker-cell.selected{border-color:var(--accent);background:var(--accent-overlay-soft);color:var(--accent-bright)}
 
-.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
-.btn{
-  height:30px;padding:0 14px;font-size:12px;font-weight:700;letter-spacing:0.02em;
-  border-radius:var(--radius-xs);border:1px solid transparent;background:transparent;color:var(--text-muted);
+/* Actions */
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.btn-secondary{
+  padding:8px 14px;background:var(--btn-bg);color:var(--text);
+  font-weight:600;font-size:12.5px;border-radius:var(--radius-pill);
+  border:none;cursor:pointer;transition:background var(--motion-fast);
 }
-.btn:disabled{opacity:0.4;cursor:not-allowed}
-.btn-secondary:hover{background:var(--surface-hover);color:var(--text-bright)}
-.btn-accent{background:var(--accent-soft);color:var(--accent-bright);border-color:var(--accent-overlay-mid)}
-.btn-accent:hover{background:var(--accent-overlay-mid);color:var(--text-bright)}
+.btn-secondary:hover:not(:disabled){background:var(--btn-bg-hover)}
+.btn-secondary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-accent{
+  padding:8px 18px;background:var(--accent);color:var(--bg);
+  font-weight:700;font-size:12.5px;border-radius:var(--radius-pill);
+  border:none;cursor:pointer;transition:background var(--motion-fast);
+}
+.btn-accent:hover:not(:disabled){background:var(--accent-bright)}
+.btn-accent:disabled{opacity:0.5;cursor:not-allowed}
 
-.cap{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-top:14px;letter-spacing:0.04em;max-width:680px;line-height:1.5}
+/* Tables, anatomy, API */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
 
-<div class="page">
+<div class="page" data-ds-component="new-project-dialog">
   <h1 class="h1">07 — New Project Dialog</h1>
-  <p class="lede">Project creation + edit dialog (<code>src/components/NewProjectDialog/NewProjectDialog.tsx</code>). Same Dialog primitive as every other generic modal (<a href="14-dialog.html">14-dialog</a>) — composes <code>floatingSurface</code> + <code>floatingScrim</code> from <code>glass.module.css</code>. Embeds the icon-picker (<a href="06-icon-picker.html">06-icon-picker</a>) inline. URL-safe validation on every keystroke; submit disabled while error stands.</p>
+  <p class="lede">Project creation + edit dialog (<code>src/components/NewProjectDialog/NewProjectDialog.tsx</code>). Composes three primitives that already ship as their own DS entries: the <a href="./14-dialog.html" style="color:var(--accent)"><code>dialog</code></a> surface (<code>@radix-ui/react-dialog</code> via <code>RadixDialog</code>), <a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a> for the name with <code>@radix-ui/react-form</code> ValidityState validation, and <a href="./06-icon-picker.html" style="color:var(--accent)"><code>icon-picker</code></a> for the project glyph. URL-safe validation runs on every keystroke (via <code>validateUrlSafeName</code>); submit is disabled while the name is empty, invalid, or a request is in flight. Same component renders both <strong>Create</strong> and <strong>Edit</strong> modes — only the title, prefilled values, and primary button label differ.</p>
 
   <section class="section">
-    <div class="section-title">A — Create mode (default state)</div>
+    <div class="section-title">A — Create mode (default)</div>
     <div class="stage">
       <div class="scrim">
         <div class="dialog">
-          <h3 class="title">New project</h3>
-          <div class="field">
-            <span class="label">Project name</span>
-            <input class="input focused" type="text" value="My-Project" />
-            <span class="hint">Use letters, digits, hyphens, or underscores.</span>
-          </div>
-          <div class="field">
-            <span class="label">Icon</span>
-            <div class="picker">
-              <div class="picker-search">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text-muted)"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97ZM2.5 9C2.5 5.416 5.416 2.5 9 2.5C12.584 2.5 15.5 5.416 15.5 9C15.5 12.584 12.584 15.5 9 15.5C5.416 15.5 2.5 12.584 2.5 9Z"/></svg>
-                <input class="picker-search-input" type="text" placeholder="Search icons…" />
-              </div>
-              <div class="picker-tabs">
-                <button class="picker-tab active">Code</button>
-                <button class="picker-tab">Brands</button>
-                <button class="picker-tab">UI</button>
-                <button class="picker-tab">Emoji</button>
-              </div>
-              <div class="picker-grid">
-                <div class="picker-cell selected"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.85 4.44L10.57 1.14L10.22 1H2.5L2 1.5V14.5L2.5 15H13.5L14 14.5V4.8L13.85 4.44Z"/></svg></div>
-                <div class="picker-cell"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 3H7.71l-.85-.85L6.51 2h-5l-.5.5v11l.5.5h13l.5-.5v-10L14.5 3z"/></svg></div>
-                <div class="picker-cell"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M9.1 4.4L8.6 2H7.4l-.5 2.4-.7.3-2-1.3-.9.8 1.3 2-.2.7-2.4.5v1.2l2.4.5.3.8-1.3 2 .8.8 2-1.3.8.3.4 2.3h1.2l.5-2.4.8-.3 2 1.3.8-.8-1.3-2 .3-.8 2.3-.4V7.4l-2.4-.5-.3-.8 1.3-2-.8-.8-2 1.3-.7-.2z"/></svg></div>
-                <div class="picker-cell"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M11.351 1.091a4.528 4.528 0 0 1 3.44 3.16c.215.724.247 1.49.093 2.23a4.583 4.583 0 0 1-4.437 3.6c-.438 0-.874-.063-1.293-.19l-.8.938-.379.175H7v1.5l-.5.5H5v1.5l-.5.5h-3l-.5-.5v-2.307l.146-.353L6.12 6.87a4.464 4.464 0 0 1-.2-1.405 4.528 4.528 0 0 1 5.431-4.375z"/></svg></div>
-                <div class="picker-cell"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.23 1h-1.46L3.52 9.25l-.16.22L1 13.59 2.41 15l4.12-2.36.22-.16L15 4.23V2.77L13.23 1z"/></svg></div>
-                <div class="picker-cell"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14.43 4.43L13 3l-7 7-3-3L1.57 8.43 6 12.86l8.43-8.43z"/></svg></div>
-                <div class="picker-cell"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></div>
-                <div class="picker-cell">🚀</div>
+          <h3 class="title">New Project</h3>
+          <form class="form">
+            <div class="field" data-state="focused">
+              <span class="label">Project name</span>
+              <input class="input" type="text" value="My-Project" placeholder="My-Project" />
+              <span class="help">Letters, digits, hyphens, or underscores.</span>
+            </div>
+            <div class="icon-field">
+              <span class="icon-label">Icon</span>
+              <div class="picker">
+                <div class="picker-tabs">
+                  <button class="picker-tab active">Code</button>
+                  <button class="picker-tab">Brands</button>
+                  <button class="picker-tab">UI</button>
+                  <button class="picker-tab">Emoji</button>
+                </div>
+                <div class="picker-search">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text-muted)"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97Z"/></svg>
+                  <input class="picker-search-input" type="text" placeholder="Search icons…" />
+                </div>
+                <div class="picker-grid">
+                  <div class="picker-cell selected"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.85 4.44L10.57 1.14L10.22 1H2.5L2 1.5V14.5L2.5 15H13.5L14 14.5V4.8L13.85 4.44Z"/></svg></div>
+                  <div class="picker-cell"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 3H7.71l-.85-.85L6.51 2h-5l-.5.5v11l.5.5h13l.5-.5v-10L14.5 3z"/></svg></div>
+                  <div class="picker-cell"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M9.1 4.4L8.6 2H7.4l-.5 2.4-.7.3-2-1.3-.9.8 1.3 2-.2.7-2.4.5v1.2l2.4.5z"/></svg></div>
+                  <div class="picker-cell"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></div>
+                  <div class="picker-cell"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.23 1h-1.46L3.52 9.25l-.16.22L1 13.59 2.41 15l4.12-2.36.22-.16L15 4.23V2.77L13.23 1z"/></svg></div>
+                  <div class="picker-cell"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14.431 3.323l-8.47 10-.79-.036-3.35-4.77.818-.574 2.978 4.24 8.051-9.506.764.646z"/></svg></div>
+                  <div class="picker-cell"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8z"/></svg></div>
+                  <div class="picker-cell">&#x1F680;</div>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="actions">
-            <button class="btn btn-secondary">Cancel</button>
-            <button class="btn btn-accent">Create project</button>
-          </div>
+            <div class="actions">
+              <button type="button" class="btn-secondary">Cancel</button>
+              <button type="submit" class="btn-accent">Create</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
-    <p class="cap">URL-safe validation hint sits under the input at 11 px <code>--text-muted</code>. Primary action label is <strong>Create project</strong> in create mode.</p>
+    <div class="caption">Title <strong>New Project</strong>, primary button <strong>Create</strong>. Help text under the name sits at 11 px <code>--text-muted</code>. Pill-shaped buttons (<code>--radius-pill</code>) — the <strong>NewProjectDialog</strong> uses pill buttons rather than rectangular ones; the same dialog primitive serves both treatments.</div>
   </section>
 
   <section class="section">
-    <div class="section-title">B — Edit mode (existing values)</div>
+    <div class="section-title">B — Edit mode (existing values prefilled)</div>
     <div class="stage">
       <div class="scrim">
         <div class="dialog">
-          <h3 class="title">Edit project</h3>
-          <div class="field">
-            <span class="label">Project name</span>
-            <input class="input" type="text" value="lumen-coffee" />
-            <span class="hint">Use letters, digits, hyphens, or underscores.</span>
-          </div>
-          <div class="field">
-            <span class="label">Icon</span>
-            <div class="picker">
-              <div class="picker-search">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text-muted)"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97Z"/></svg>
-                <input class="picker-search-input" type="text" placeholder="Search icons…" />
-              </div>
-              <div class="picker-tabs">
-                <button class="picker-tab">Code</button>
-                <button class="picker-tab">Brands</button>
-                <button class="picker-tab">UI</button>
-                <button class="picker-tab active">Emoji</button>
-              </div>
-              <div class="picker-grid">
-                <div class="picker-cell selected">🔥</div>
-                <div class="picker-cell">🎨</div>
-                <div class="picker-cell">📐</div>
-                <div class="picker-cell">🎯</div>
-                <div class="picker-cell">⚡</div>
-                <div class="picker-cell">🚀</div>
-                <div class="picker-cell">✨</div>
-                <div class="picker-cell">🔮</div>
+          <h3 class="title">Edit Project</h3>
+          <form class="form">
+            <div class="field">
+              <span class="label">Project name</span>
+              <input class="input" type="text" value="lumen-coffee" />
+              <span class="help">Letters, digits, hyphens, or underscores.</span>
+            </div>
+            <div class="icon-field">
+              <span class="icon-label">Icon</span>
+              <div class="picker">
+                <div class="picker-tabs">
+                  <button class="picker-tab">Code</button>
+                  <button class="picker-tab">Brands</button>
+                  <button class="picker-tab">UI</button>
+                  <button class="picker-tab active">Emoji</button>
+                </div>
+                <div class="picker-search">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text-muted)"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97Z"/></svg>
+                  <input class="picker-search-input" type="text" placeholder="Search icons…" />
+                </div>
+                <div class="picker-grid">
+                  <div class="picker-cell selected">&#x1F525;</div>
+                  <div class="picker-cell">&#x1F3A8;</div>
+                  <div class="picker-cell">&#x1F4D0;</div>
+                  <div class="picker-cell">&#x1F3AF;</div>
+                  <div class="picker-cell">&#x26A1;</div>
+                  <div class="picker-cell">&#x1F680;</div>
+                  <div class="picker-cell">&#x2728;</div>
+                  <div class="picker-cell">&#x1F52E;</div>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="actions">
-            <button class="btn btn-secondary">Cancel</button>
-            <button class="btn btn-accent">Update project</button>
-          </div>
+            <div class="actions">
+              <button type="button" class="btn-secondary">Cancel</button>
+              <button type="submit" class="btn-accent">Update</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
-    <p class="cap">Primary action label flips to <strong>Update project</strong>. Otherwise identical to create mode — same surface, same gap, same animation.</p>
+    <div class="caption">Title becomes <strong>Edit Project</strong> and primary button label flips to <strong>Update</strong>. Otherwise identical surface — same enter animation, same gap, same field rhythm.</div>
   </section>
 
   <section class="section">
@@ -207,35 +268,200 @@ input{font-family:inherit;color:inherit;font-size:inherit}
     <div class="stage">
       <div class="scrim">
         <div class="dialog">
-          <h3 class="title">New project</h3>
-          <div class="field">
-            <span class="label">Project name</span>
-            <input class="input error" type="text" value="My Project" />
-            <span class="error-msg">" " is not allowed. Use only letters (a–z, A–Z), digits, hyphens (-), or underscores (_).</span>
-          </div>
-          <div class="field">
-            <span class="label">Icon</span>
-            <div class="picker" style="max-height:120px">
-              <div class="picker-grid">
-                <div class="picker-cell selected">🎨</div>
-                <div class="picker-cell">📐</div>
-                <div class="picker-cell">🚀</div>
-                <div class="picker-cell">⚡</div>
-                <div class="picker-cell">🔥</div>
-                <div class="picker-cell">✨</div>
-                <div class="picker-cell">🎯</div>
-                <div class="picker-cell">💡</div>
+          <h3 class="title">New Project</h3>
+          <form class="form">
+            <div class="field" data-invalid="true">
+              <span class="label">Project name</span>
+              <input class="input" type="text" value="My Project" />
+              <span class="error-msg">" " is not allowed. Use only letters (a–z, A–Z), digits, hyphens (-), or underscores (_).</span>
+            </div>
+            <div class="icon-field">
+              <span class="icon-label">Icon</span>
+              <div class="picker" style="max-height:120px">
+                <div class="picker-grid">
+                  <div class="picker-cell selected">&#x1F3A8;</div>
+                  <div class="picker-cell">&#x1F4D0;</div>
+                  <div class="picker-cell">&#x1F680;</div>
+                  <div class="picker-cell">&#x26A1;</div>
+                  <div class="picker-cell">&#x1F525;</div>
+                  <div class="picker-cell">&#x2728;</div>
+                  <div class="picker-cell">&#x1F3AF;</div>
+                  <div class="picker-cell">&#x1F4A1;</div>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="actions">
-            <button class="btn btn-secondary">Cancel</button>
-            <button class="btn btn-accent" disabled>Create project</button>
-          </div>
+            <div class="actions">
+              <button type="button" class="btn-secondary">Cancel</button>
+              <button type="submit" class="btn-accent" disabled>Create</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
-    <p class="cap">Input border + ring switch to <code>--danger</code> / <code>--danger-soft</code>. Hint is replaced by the error message at 11 px <code>--danger</code>. Submit disabled (0.4 opacity, not-allowed cursor).</p>
+    <div class="caption">Input border + ring switch to <code>--danger</code> / <code>--danger-soft</code> via <code>[data-invalid]</code> from Radix Form, OR via <code>InputField.Message forceMatch</code> when the project's synchronous validator returns a message. Help text is replaced by the error at 11 px <code>--danger</code>. Submit disabled (0.5 opacity, not-allowed cursor).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — composes RadixDialog + Form.Root + InputField + IconPicker</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">No new primitive — this is a feature dialog that composes four existing pieces. The <code>RadixDialog</code> compound (<code>src/components/Dialog/RadixDialog.tsx</code>) wraps <code>@radix-ui/react-dialog</code> with the project's glass surface. <code>@radix-ui/react-form</code> provides ValidityState-driven validation via <code>[data-invalid]</code>. <code>InputField</code> (DS 28) renders the labelled input with help/error rotation. <code>IconPicker</code> (DS 06) renders the glyph picker.</p>
+    <pre class="api"><span class="k">import</span> * <span class="k">as</span> Form <span class="k">from</span> <span class="s">'@radix-ui/react-form'</span>;
+<span class="k">import</span> { RadixDialog } <span class="k">from</span> <span class="s">'@/components/Dialog/RadixDialog'</span>;
+<span class="k">import</span> { InputField } <span class="k">from</span> <span class="s">'@/components/InputField'</span>;
+<span class="k">import</span> { IconPicker } <span class="k">from</span> <span class="s">'@/components/IconPicker/IconPicker'</span>;
+<span class="k">import</span> { URL_SAFE_NAME_PATTERN, validateUrlSafeName } <span class="k">from</span> <span class="s">'@/lib/validation/url-safe-name'</span>;
+
+<span class="c">// Bare pattern (no ^…$ anchors) — ValidityState anchors automatically.</span>
+<span class="k">const</span> NAME_PATTERN = URL_SAFE_NAME_PATTERN.source.replace(/^\^|\$$/g, <span class="s">''</span>);
+
+&lt;<span class="t">RadixDialog.Root</span> open={open} onOpenChange={handleOpenChange}&gt;
+  &lt;<span class="t">RadixDialog.Portal</span>&gt;
+    &lt;<span class="t">RadixDialog.Overlay</span> /&gt;                            <span class="c">// scrim — blur(16px) + --scrim-glass-bg</span>
+    &lt;<span class="t">RadixDialog.Content</span> aria-describedby={undefined}&gt; <span class="c">// no Description child → suppress warning</span>
+      &lt;<span class="t">RadixDialog.Title</span>&gt;{isEdit ? <span class="s">'Edit Project'</span> : <span class="s">'New Project'</span>}&lt;/<span class="t">RadixDialog.Title</span>&gt;
+
+      &lt;<span class="t">Form.Root</span> className={styles.form} onSubmit={handleFormSubmit}&gt;
+        &lt;<span class="t">InputField.Root</span> name=<span class="s">"name"</span> data-state={nameError ? <span class="s">'error'</span> : undefined}&gt;
+          &lt;<span class="t">InputField.Label</span>&gt;Project name&lt;/<span class="t">InputField.Label</span>&gt;
+          &lt;<span class="t">InputField.Control</span> asChild&gt;                  <span class="c">// Slot — caller owns the &lt;input&gt;</span>
+            &lt;<span class="k">input</span> type=<span class="s">"text"</span> required pattern={NAME_PATTERN}
+                   placeholder=<span class="s">"My-Project"</span>
+                   value={name} onChange={(e) =&gt; setName(e.target.value)} /&gt;
+          &lt;/<span class="t">InputField.Control</span>&gt;
+
+          {nameError
+            ? &lt;<span class="t">InputField.Message</span> forceMatch&gt;{nameError.message}&lt;/<span class="t">InputField.Message</span>&gt;
+            : &lt;<span class="t">InputField.Help</span>&gt;Letters, digits, hyphens, or underscores.&lt;/<span class="t">InputField.Help</span>&gt;}
+
+          &lt;<span class="t">InputField.Message</span> match=<span class="s">"patternMismatch"</span>&gt;
+            Use letters, digits, hyphens, or underscores only.
+          &lt;/<span class="t">InputField.Message</span>&gt;
+          &lt;<span class="t">InputField.Message</span> match=<span class="s">"valueMissing"</span>&gt;
+            A project name is required.
+          &lt;/<span class="t">InputField.Message</span>&gt;
+        &lt;/<span class="t">InputField.Root</span>&gt;
+
+        &lt;<span class="k">div</span> className={styles.iconField}&gt;                <span class="c">// non-input field, no InputField wrapper</span>
+          &lt;<span class="k">span</span> className={styles.iconLabel}&gt;Icon&lt;/<span class="k">span</span>&gt;
+          &lt;<span class="t">IconPicker</span> value={icon} onSelect={setIcon} /&gt;
+        &lt;/<span class="k">div</span>&gt;
+
+        &lt;<span class="k">div</span> className={styles.actions}&gt;
+          &lt;<span class="t">RadixDialog.Close</span> asChild&gt;
+            &lt;<span class="k">button</span> type=<span class="s">"button"</span> className={styles.btnSecondary} disabled={loading}&gt;
+              Cancel
+            &lt;/<span class="k">button</span>&gt;
+          &lt;/<span class="t">RadixDialog.Close</span>&gt;
+          &lt;<span class="t">Form.Submit</span> asChild&gt;
+            &lt;<span class="k">button</span> type=<span class="s">"submit"</span> className={styles.btnAccent}
+                    disabled={!canSubmit || loading}&gt;
+              {isEdit ? <span class="s">'Update'</span> : <span class="s">'Create'</span>}
+            &lt;/<span class="k">button</span>&gt;
+          &lt;/<span class="t">Form.Submit</span>&gt;
+        &lt;/<span class="k">div</span>&gt;
+      &lt;/<span class="t">Form.Root</span>&gt;
+    &lt;/<span class="t">RadixDialog.Content</span>&gt;
+  &lt;/<span class="t">RadixDialog.Portal</span>&gt;
+&lt;/<span class="t">RadixDialog.Root</span>&gt;</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Pattern source of truth.</strong> <code>URL_SAFE_NAME_PATTERN</code> lives in <code>src/lib/validation/url-safe-name.ts</code>. The native <code>pattern</code> attribute uses the bare form (no <code>^…$</code>) because ValidityState anchors automatically.</li>
+      <li><strong>Dual error path.</strong> Synchronous validator output (<code>validateUrlSafeName(trimmedName)</code>) is shown via <code>InputField.Message forceMatch</code>. Browser-driven <code>patternMismatch</code> / <code>valueMissing</code> fire when ValidityState catches an issue the validator missed (e.g. empty submit). Both render at <code>--danger</code> with the shake animation defined in <code>input-field.module.css</code>.</li>
+      <li><strong>aria-describedby suppression (custom).</strong> The dialog has no <code>RadixDialog.Description</code> child (the help line lives inside the InputField), so <code>aria-describedby={undefined}</code> on <code>Content</code> silences Radix's dev warning. This is documented in DS 14.</li>
+      <li><strong>Icon field is non-input.</strong> The picker isn't a <code>&lt;input&gt;</code> so it doesn't compose <code>InputField.Root</code> — it gets its own label/grid wrapper. Selection persists across tab switches; the consumer's <code>icon</code> state is the source of truth.</li>
+      <li><strong>Loading lock.</strong> Both buttons get <code>:disabled</code> (0.5 opacity, not-allowed cursor) while the POST/PATCH is in flight; the dialog stays mounted until the request resolves. On success: close + toast. On failure: keep open + toast.</li>
+      <li><strong>Auto-focus.</strong> <code>RadixDialog</code> auto-focuses the first focusable element inside <code>Content</code> on open — that's the name input. No <code>autoFocus</code> attribute (forbidden by Biome's a11y rule).</li>
+      <li><strong>Same component, two modes.</strong> Pass <code>project</code> for edit mode; omit it for create mode. Title and button label switch automatically.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>closed</code></td>
+          <td><code>open={false}</code></td>
+          <td>Component unmounts via <code>RadixDialog.Portal</code>.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>create</code></td>
+          <td><code>open={true}</code>; <code>project</code> not passed.</td>
+          <td>Title <strong>New Project</strong>, primary button <strong>Create</strong>. Name + icon empty.</td>
+          <td><code>role="dialog"</code>, <code>aria-modal="true"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>edit</code></td>
+          <td><code>open={true}</code>; <code>project</code> passed.</td>
+          <td>Title <strong>Edit Project</strong>, primary button <strong>Update</strong>. Name + icon prefilled from <code>project</code>.</td>
+          <td>Same.</td>
+        </tr>
+        <tr>
+          <td><code>invalid</code></td>
+          <td>Synchronous validator returns a message OR ValidityState catches <code>patternMismatch</code> / <code>valueMissing</code>.</td>
+          <td>Input border + ring switch to <code>--danger</code>; error message replaces help; primary button disabled.</td>
+          <td><code>[data-invalid]</code> on field; error msg announced.</td>
+        </tr>
+        <tr>
+          <td><code>submitting</code> (custom)</td>
+          <td>Form submit handler called <code>setLoading(true)</code>.</td>
+          <td>Both buttons get <code>:disabled</code>; dialog stays mounted.</td>
+          <td>Native button disabled semantics.</td>
+        </tr>
+        <tr>
+          <td><code>success</code> (custom)</td>
+          <td>POST / PATCH 2xx response.</td>
+          <td>Dialog closes via <code>handleClose</code>; <code>useToast().show()</code> announces "Project created" / "Project updated"; <code>onSaved(project)</code> fires.</td>
+          <td>Toast surfaces with <code>role="status"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>error</code> (custom)</td>
+          <td>POST / PATCH non-2xx response.</td>
+          <td>Dialog stays open; toast shows "Failed to create/update project"; <code>loading</code> resets so the user can retry.</td>
+          <td>Toast surfaces error message.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>dialog width<dd>min(460px, calc(100vw - 32px))
+      <dt>dialog padding<dd>18px 18px 14px
+      <dt>dialog gap<dd>8px (between Title / Form / Actions)
+      <dt>form gap<dd>10px (vertical rhythm between fields)
+      <dt>icon-field gap<dd>4px (label → picker)
+      <dt>icon-label<dd>10.5px mono uppercase / --text-muted
+      <dt>picker max-height<dd>280px (inside dialog) / 380px (standalone — DS 06)
+      <dt>actions gap<dd>8px / margin-top 4px / justify-content flex-end
+      <dt>btn-secondary<dd>8px 14px padding / --btn-bg / --radius-pill
+      <dt>btn-accent<dd>8px 18px padding / --accent / --bg colour / --radius-pill
+      <dt>btn-accent hover<dd>--accent-bright
+      <dt>btn disabled<dd>opacity 0.5 / cursor not-allowed
+      <dt>error message<dd>11px / --danger
+      <dt>help message<dd>11px / --text-muted
+      <dt>input height<dd>34px
+      <dt>input focus<dd>border --accent-bright + 3px --accent-soft ring
+      <dt>input error<dd>border --danger + 3px --danger-soft ring
+    </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Open lifecycle.</strong> When <code>open</code> flips true, a <code>useEffect</code> seeds <code>name</code> and <code>icon</code> from <code>project</code> (edit) or empties them (create). <code>RadixDialog</code> auto-focuses the name input.</li>
+      <li><strong>Live validation.</strong> Every keystroke runs <code>validateUrlSafeName(trimmedName)</code> via <code>useMemo</code>. The result is the canonical synchronous error; ValidityState catches the rest on submit.</li>
+      <li><strong>Submit gate.</strong> <code>canSubmit = trimmedName.length &gt; 0 &amp;&amp; !nameError</code>. The submit handler also guards on <code>loading</code> to prevent double-submits.</li>
+      <li><strong>Network.</strong> <code>POST /api/projects</code> for create, <code>PATCH /api/projects/:id</code> for edit. Body is <code>{ name: trimmedName, icon }</code>. On success: close, fire <code>onSaved(saved)</code>, toast. On failure: stay open, toast.</li>
+      <li><strong>Close paths.</strong> Cancel button (<code>RadixDialog.Close asChild</code>), Escape, scrim click — all funnel through <code>handleOpenChange(false)</code> → <code>handleClose</code> which resets local state before calling <code>onClose</code>.</li>
+      <li><strong>Toast feedback.</strong> <code>useToast().show()</code> surfaces both success and failure outside the dialog — see <a href="./17-toast.html" style="color:var(--accent)"><code>17-toast</code></a>.</li>
+      <li><strong>Composes three DS entries.</strong> Dialog surface (<a href="./14-dialog.html" style="color:var(--accent)"><code>dialog</code></a>) + name field (<a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a>) + glyph picker (<a href="./06-icon-picker.html" style="color:var(--accent)"><code>icon-picker</code></a>). Every visual decision in those entries cascades into this one.</li>
+      <li><strong>Reduced motion.</strong> Dialog enter animation collapses to a 0 ms opacity flip via the token override.</li>
+    </ul>
   </section>
 </div>
 
