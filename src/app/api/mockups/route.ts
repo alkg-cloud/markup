@@ -7,7 +7,6 @@ import { assertSameOrigin } from '@/lib/auth/origin';
 import { env } from '@/lib/env';
 import { createMockupFromZip, listMockups, wrapHtmlAsZip } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
-import { MAX_UPLOAD_BYTES } from '@/lib/upload/constants';
 import { URL_SAFE_NAME_PATTERN } from '@/lib/validation/url-safe-name';
 
 const VALID_STATUSES = ['open', 'resolved', 'archived'] as const;
@@ -21,13 +20,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  // Defense in depth: the client already validates against
-  // MAX_UPLOAD_BYTES before sending, but a hostile or buggy client can
-  // still hand us multi-GB bodies. Reject by content-length before
-  // buffering anything into memory.
+  // Defense in depth: the client already validates against the same cap
+  // before sending, but a hostile or buggy client can still hand us
+  // multi-GB bodies. Reject by content-length before buffering anything
+  // into memory. The limit reads from `env().MAX_UPLOAD_MB` so the
+  // route guard, the zip-extractor cap, and the client-side preview cap
+  // all derive from the same source — see `src/lib/env.ts`.
+  const maxUploadBytes = env().MAX_UPLOAD_MB * 1024 * 1024;
   const contentLength = req.headers.get('content-length');
-  if (contentLength && Number(contentLength) > MAX_UPLOAD_BYTES) {
-    return NextResponse.json({ error: 'file_too_large', limit: MAX_UPLOAD_BYTES }, { status: 413 });
+  if (contentLength && Number(contentLength) > maxUploadBytes) {
+    return NextResponse.json({ error: 'file_too_large', limit: maxUploadBytes }, { status: 413 });
   }
 
   const fd = await req.formData();
@@ -68,8 +70,8 @@ export async function POST(req: Request) {
   // Secondary guard: a client can send chunked transfer-encoding with
   // no content-length, so the header check above can be bypassed by
   // streaming. Re-check the actual buffered size before we touch disk.
-  if (buffer.byteLength > MAX_UPLOAD_BYTES) {
-    return NextResponse.json({ error: 'file_too_large', limit: MAX_UPLOAD_BYTES }, { status: 413 });
+  if (buffer.byteLength > maxUploadBytes) {
+    return NextResponse.json({ error: 'file_too_large', limit: maxUploadBytes }, { status: 413 });
   }
 
   // The `build` field can be either a full zip (existing path used by

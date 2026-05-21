@@ -89,9 +89,11 @@ Enforced by `src/lib/mockup/zip-extractor.ts` against the `buildLimits()` helper
 
 | Var | Default | Meaning |
 |---|---|---|
-| `MAX_UPLOAD_MB` | 50 | Total zip size cap |
+| `MAX_UPLOAD_MB` | 10 | Total upload size cap (zip or raw HTML) |
 | `MAX_FILES_PER_UPLOAD` | 1000 | File count cap inside a zip |
 | `MAX_FILE_SIZE_MB` | 10 | Per-file uncompressed cap |
+
+`MAX_UPLOAD_MB` is the single source of truth for the cap. The route handlers (`POST /api/mockups`, `POST /api/mockups/[id]/version`) gate the request body by content-length before buffering; the zip-extractor enforces the same ceiling against the uncompressed total. The client-side preflight in `src/lib/upload/constants.ts` mirrors this default and must be bumped in lockstep when the server cap moves.
 
 Exceeding any of these throws a typed error that the route translates to 413/400.
 
