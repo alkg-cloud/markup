@@ -1,54 +1,405 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>04 — Finder Overlay</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<style>:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0%,0,0/0.45);--shadow-md:0 6px 16px oklch(0%,0,0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0%,0,0/0.6),0 6px 12px oklch(0%,0,0/0.45),inset 0 1px 0 oklch(100%,0,0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>04 — Finder Overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --scrim-glass-bg:oklch(0% 0 0/0.2);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
+  --type-2xs:11px;--type-xs:12px;--type-sm:13px;--type-base:14px;
+  --weight-medium:500;--weight-semibold:600;--weight-bold:700;
+  --tracking-tight:-0.015em;
+  --space-sm:12px;--space-md:16px;
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
 @media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
-a{color:inherit;text-decoration:none}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+input{font-family:inherit;color:inherit}
 :focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
 mark{background:var(--accent-overlay-mid);color:var(--accent-bright);border-radius:2px;padding:0 1px}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
-.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
 
-.demo{display:flex;align-items:center;justify-content:center;height:100vh}
-.open-btn{height:36px;padding:0 16px;background:var(--accent);color:var(--bg);border-radius:var(--radius-sm);font-weight:600;font-size:13px}.open-btn:hover{background:var(--accent-bright)}
-#scrim{position:fixed;inset:0;background:var(--scrim-strong);z-index:900;opacity:0;pointer-events:none;transition:opacity var(--motion-fast) var(--ease-exit)}#scrim.open{opacity:1;pointer-events:auto}
-#pal{position:fixed;top:80px;left:50%;transform:translateX(-50%) scale(0.97);width:min(640px,92vw);background:var(--bg-elevated);backdrop-filter:blur(20px);border:1px solid var(--border-strong);border-radius:var(--radius-md);box-shadow:var(--shadow-glow),var(--shadow-popover);z-index:1000;overflow:hidden;opacity:0;pointer-events:none;transition:opacity 120ms var(--ease-exit),transform 120ms var(--ease-exit)}
-#pal.open{opacity:1;transform:translateX(-50%) scale(1);pointer-events:auto;transition:opacity 180ms var(--ease-spring),transform 180ms var(--ease-spring)}
-.p-row{display:flex;align-items:center;gap:12px;padding:0 16px;height:56px}.p-icon{color:var(--text-muted);flex-shrink:0}
-#pinp{flex:1;background:none;border:none;outline:none;font-weight:700;font-size:18px;color:var(--text-bright);letter-spacing:-0.015em;caret-color:var(--accent)}#pinp::placeholder{color:var(--text-muted);font-weight:500}
-.p-esc{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xs);padding:3px 7px;cursor:pointer}
-.p-div{height:1px;background:var(--border-subtle)}.p-res{max-height:360px;overflow-y:auto;padding:6px 0}
-.p-sec{font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);padding:10px 16px 4px}
-.p-item{display:flex;align-items:center;gap:10px;padding:0 14px;height:44px;cursor:pointer;border-left:2px solid transparent;transition:background var(--motion-fast);animation:pi 200ms var(--ease-spring) backwards}
-@keyframes pi{from{opacity:0;transform:translateX(-6px)}}
-.p-item:hover{background:var(--surface-hover)}.p-item.sel{background:var(--accent-overlay-soft);border-left-color:var(--accent)}
-.p-ico{width:28px;height:28px;border-radius:var(--radius-sm);background:var(--bg-card);border:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.p-info{flex:1;min-width:0}.p-name{font-size:14px;font-weight:500;color:var(--text-bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.p-path{font-size:12px;font-family:var(--font-mono);color:var(--text-muted)}
-.p-foot{padding:10px 16px;border-top:1px solid var(--border-subtle);display:flex;gap:16px}
-.p-hint{display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted)}
-.p-hint kbd{background:var(--bg-card);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;font-family:var(--font-mono);color:var(--text-dim)}
-</style></head><body>
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:880px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  min-height:520px;padding:48px;display:flex;align-items:flex-start;justify-content:center;
+  overflow:hidden;
+}
+.stage + .stage{margin-top:24px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
 
-<div class="demo"><button class="open-btn" onclick="openP()">Open Command Palette (Ctrl+K)</button></div>
-<div id="scrim" onclick="closeP()"></div>
-<div id="pal">
-  <div class="p-row"><svg class="p-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97ZM2.5 9C2.5 5.416 5.416 2.5 9 2.5C12.584 2.5 15.5 5.416 15.5 9C15.5 12.584 12.584 15.5 9 15.5C5.416 15.5 2.5 12.584 2.5 9Z"/></svg>
-  <input id="pinp" type="text" placeholder="Search mockups, projects, folders..." autocomplete="off"/><button class="p-esc" onclick="closeP()">esc</button></div>
-  <div class="p-div"></div>
-  <div class="p-res">
-    <div class="p-sec">PROJECTS</div>
-    <div class="p-item sel" style="animation-delay:0ms"><div class="p-ico">🎨</div><div class="p-info"><div class="p-name">Project Alpha</div></div></div>
-    <div class="p-item" style="animation-delay:20ms"><div class="p-ico">📐</div><div class="p-info"><div class="p-name">Project Beta</div></div></div>
-    <div class="p-sec">MOCKUPS</div>
-    <div class="p-item" style="animation-delay:40ms"><div class="p-ico">🖼</div><div class="p-info"><div class="p-name"><mark>Hero</mark> v3</div><div class="p-path">Alpha / Landing / Hero</div></div></div>
-    <div class="p-item" style="animation-delay:60ms"><div class="p-ico">🖼</div><div class="p-info"><div class="p-name">Banner</div><div class="p-path">Alpha / Landing</div></div></div>
-    <div class="p-item" style="animation-delay:80ms"><div class="p-ico">🖼</div><div class="p-info"><div class="p-name">Dashboard v2</div><div class="p-path">Beta / Mobile</div></div></div>
-  </div>
-  <div class="p-foot"><span class="p-hint"><kbd>↑↓</kbd> navigate</span><span class="p-hint"><kbd>↵</kbd> open</span><span class="p-hint"><kbd>esc</kbd> close</span></div>
+/* Glass utilities */
+.floating{
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+}
+.scrim{
+  position:absolute;inset:0;
+  background:var(--scrim-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+}
+
+/* ─── Finder overlay — CommandPalette.module.css verbatim ─── */
+.pal{
+  position:relative;
+  width:min(640px,92vw);
+  border-radius:var(--radius-md);
+  box-shadow:var(--shadow-glow),var(--shadow-popover);
+  overflow:hidden;
+  animation:palIn 180ms var(--ease-spring);
+  margin-top:32px;
+}
+@keyframes palIn{
+  from{opacity:0;transform:translateY(-8px) scale(0.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.input-row{display:flex;align-items:center;gap:var(--space-sm);padding:0 var(--space-md);height:56px;flex-shrink:0}
+.search-icon{color:var(--text-muted);flex-shrink:0}
+.pal-input{
+  flex:1;background:none;border:none;outline:none;
+  font-family:var(--font-body);font-weight:var(--weight-bold);font-size:18px;
+  color:var(--text-bright);letter-spacing:var(--tracking-tight);caret-color:var(--accent);
+}
+.pal-input::placeholder{color:var(--text-muted);font-weight:var(--weight-medium)}
+.esc-badge{
+  font-family:var(--font-mono);font-size:10px;font-weight:var(--weight-medium);
+  color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-xs);padding:3px 7px;flex-shrink:0;cursor:pointer;
+  transition:color var(--motion-fast),border-color var(--motion-fast);
+}
+.esc-badge:hover{color:var(--text);border-color:var(--border-strong)}
+.divider{height:1px;background:var(--border-subtle)}
+.results{max-height:360px;overflow-y:auto;padding:6px 0}
+.section-label{
+  font-family:var(--font-body);font-weight:var(--weight-semibold);
+  font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);
+  padding:10px var(--space-md) 4px;
+}
+.item{
+  display:flex;align-items:center;gap:10px;padding:0 14px;height:44px;
+  cursor:pointer;border-left:2px solid transparent;background:none;width:100%;text-align:left;font:inherit;
+  transition:background var(--motion-fast),border-color var(--motion-fast);
+  animation:itemIn 200ms var(--ease-spring) backwards;
+}
+@keyframes itemIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+.item:hover{background:var(--surface-hover)}
+.item.sel{background:var(--accent-overlay-soft);border-left-color:var(--accent)}
+.item-icon{
+  width:28px;height:28px;border-radius:var(--radius-sm);
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  display:flex;align-items:center;justify-content:center;
+  font-size:var(--type-base);flex-shrink:0;
+}
+.item-info{flex:1;min-width:0}
+.item-name{
+  font-size:var(--type-base);font-weight:var(--weight-medium);color:var(--text-bright);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.item-path{
+  font-size:var(--type-xs);font-family:var(--font-mono);color:var(--text-muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.footer{
+  padding:10px var(--space-md);border-top:1px solid var(--border-subtle);
+  display:flex;align-items:center;gap:var(--space-md);
+}
+.footer-hint{display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted)}
+.footer-hint kbd{background:var(--bg-card);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;font-family:var(--font-mono);color:var(--text-dim)}
+
+.empty{padding:40px 20px;text-align:center}
+.empty-icon{font-size:32px;margin-bottom:var(--space-sm);opacity:0.4}
+.empty-text{font-size:var(--type-base);font-weight:var(--weight-medium);color:var(--text-dim)}
+
+/* Anatomy + matrix + API */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
+</style>
+</head>
+<body>
+
+<div class="page" data-ds-component="finder-overlay">
+  <h1 class="h1">04 — Finder Overlay</h1>
+  <p class="lede">The "command palette" that opens from the <a href="./03-finder-pill.html" style="color:var(--accent)"><code>finder-pill</code></a> or via <code>⌘K</code>/<code>Ctrl+K</code>. Ships at <code>src/components/CommandPalette/CommandPalette.tsx</code> and renders globally inside <code>AppShell</code>. Built as a custom compound — <strong>no Radix primitive backs this surface</strong>. Radix Primitives intentionally does not ship a Command/Combobox primitive; the cmdk library does, but the project rolls its own to keep zero runtime dependencies for search and to control the project-folder-mockup flattening + filtering pipeline (<code>flatten.ts</code> + <code>filter.ts</code>). Surface uses the glass standard (blur 16 px / saturate 140%, <code>--border</code>, <code>--shadow-popover</code> + <code>--shadow-glow</code>) shared with the rail, toolbar, and tooltips.</p>
+
+  <section class="section">
+    <div class="section-title">A — Open (resting, project selected)</div>
+    <div class="stage">
+      <div class="scrim"></div>
+      <div class="pal floating">
+        <div class="input-row">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97ZM2.5 9C2.5 5.416 5.416 2.5 9 2.5C12.584 2.5 15.5 5.416 15.5 9C15.5 12.584 12.584 15.5 9 15.5C5.416 15.5 2.5 12.584 2.5 9Z"/></svg>
+          <input class="pal-input" type="text" placeholder="Search mockups, projects, folders..." autocomplete="off" />
+          <button class="esc-badge">esc</button>
+        </div>
+        <div class="divider"></div>
+        <div class="results">
+          <div class="section-label">Projects</div>
+          <button class="item sel"><div class="item-icon">&#x1F4C1;</div><div class="item-info"><div class="item-name">lumen-coffee</div></div></button>
+          <button class="item"><div class="item-icon">&#x1F4C1;</div><div class="item-info"><div class="item-name">helio-pricing</div></div></button>
+          <div class="section-label">Mockups</div>
+          <button class="item"><div class="item-icon">&#x1F5BC;</div><div class="item-info"><div class="item-name">Hero v3</div><div class="item-path">lumen-coffee / Landing</div></div></button>
+          <button class="item"><div class="item-icon">&#x1F5BC;</div><div class="item-info"><div class="item-name">Banner</div><div class="item-path">lumen-coffee / Landing</div></div></button>
+        </div>
+        <div class="footer">
+          <span class="footer-hint"><kbd>&uarr;&darr;</kbd> navigate</span>
+          <span class="footer-hint"><kbd>&crarr;</kbd> open</span>
+          <span class="footer-hint"><kbd>esc</kbd> close</span>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Top-positioned at 80 px from viewport top (<code>position:fixed</code> in production; <code>relative</code> here for the stage). Scrim composes <code>floatingScrim</code> (blur 16 px + <code>--scrim-glass-bg</code>); panel composes <code>floatingSurface</code>. First result is auto-selected (<code>selectedIndex = 0</code>) so <code>Enter</code> on first keystroke navigates.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">B — Filtered with <code>&lt;mark&gt;</code> match highlight</div>
+    <div class="stage">
+      <div class="scrim"></div>
+      <div class="pal floating">
+        <div class="input-row">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97Z"/></svg>
+          <input class="pal-input" type="text" value="hero" autocomplete="off" />
+          <button class="esc-badge">esc</button>
+        </div>
+        <div class="divider"></div>
+        <div class="results">
+          <div class="section-label">Mockups</div>
+          <button class="item sel"><div class="item-icon">&#x1F5BC;</div><div class="item-info"><div class="item-name"><mark>Hero</mark> v3</div><div class="item-path">lumen-coffee / Landing</div></div></button>
+          <button class="item"><div class="item-icon">&#x1F5BC;</div><div class="item-info"><div class="item-name"><mark>Hero</mark> banner</div><div class="item-path">helio-pricing / Marketing</div></div></button>
+        </div>
+        <div class="footer">
+          <span class="footer-hint"><kbd>&uarr;&darr;</kbd> navigate</span>
+          <span class="footer-hint"><kbd>&crarr;</kbd> open</span>
+          <span class="footer-hint"><kbd>esc</kbd> close</span>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Query is debounced 150 ms then run through <code>filterAndGroup()</code>. Matching substrings are wrapped in <code>&lt;mark&gt;</code> (<code>--accent-overlay-mid</code> bg, <code>--accent-bright</code> text) via the local <code>highlightMatch()</code> helper inside the component. Selection resets to <code>0</code> on every query change so <code>Enter</code> always activates the top hit.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">C — Empty (no matches)</div>
+    <div class="stage">
+      <div class="scrim"></div>
+      <div class="pal floating">
+        <div class="input-row">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97Z"/></svg>
+          <input class="pal-input" type="text" value="zztop" autocomplete="off" />
+          <button class="esc-badge">esc</button>
+        </div>
+        <div class="divider"></div>
+        <div class="results">
+          <div class="empty">
+            <div class="empty-icon">&#x1F50D;</div>
+            <div class="empty-text">No results found</div>
+          </div>
+        </div>
+        <div class="footer">
+          <span class="footer-hint"><kbd>&uarr;&darr;</kbd> navigate</span>
+          <span class="footer-hint"><kbd>&crarr;</kbd> open</span>
+          <span class="footer-hint"><kbd>esc</kbd> close</span>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Empty state uses a 32 px magnifier glyph at 40% opacity and a single "No results found" line. The footer stays visible so the keyboard hints remain discoverable even when the result list is empty.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — custom compound (no Radix primitive)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">Radix Primitives ships no Command / Combobox primitive — the surface is built end-to-end inside <code>CommandPalette.tsx</code>: state (<code>open</code>, <code>query</code>, <code>selectedIndex</code>), data pipeline (<code>flattenProjectTree</code> → <code>filterAndGroup</code>), keyboard handling, and <code>next/router</code> navigation. The component is mounted once in <code>AppShell</code> and listens for the global <code>open-command-palette</code> CustomEvent dispatched by the <a href="./03-finder-pill.html" style="color:var(--accent)"><code>finder-pill</code></a>.</p>
+    <pre class="api"><span class="k">import</span> { CommandPalette } <span class="k">from</span> <span class="s">'@/components/CommandPalette/CommandPalette'</span>;
+<span class="k">import</span> <span class="k">type</span> { TreeProject } <span class="k">from</span> <span class="s">'@/components/ProjectTree/ProjectTree'</span>;
+
+<span class="k">function</span> AppShell({ projects }: { projects: TreeProject[] }) {
+  <span class="k">return</span> (
+    &lt;&gt;
+      {<span class="c">/* … topbar, sidebar, main … */</span>}
+      &lt;<span class="t">CommandPalette</span> projects={projects} /&gt;       <span class="c">// mounts once, top-layer</span>
+    &lt;/&gt;
+  );
+}
+
+<span class="c">// Open from anywhere (no prop drilling) ─ same event the pill dispatches:</span>
+document.dispatchEvent(<span class="k">new</span> CustomEvent(<span class="s">'open-command-palette'</span>));</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Single prop.</strong> <code>projects: TreeProject[]</code> — the full project tree. The component flattens it once via <code>flattenProjectTree</code> (memoised by reference) into a list of projects/folders/mockups searchable by name and path.</li>
+      <li><strong>Open via CustomEvent (custom).</strong> The component listens for <code>open-command-palette</code> on <code>document</code> AND attaches a <code>⌘K</code>/<code>Ctrl+K</code> listener. Both code paths set internal <code>open = true</code>. There is no <code>open</code>/<code>onOpenChange</code> prop because the trigger lives in a different subtree (the Topbar).</li>
+      <li><strong>iframe shortcut rewiring (custom).</strong> A <code>MutationObserver</code> wires the keyboard listener into every same-origin iframe so <code>⌘K</code> works inside the mockup viewer. The wrapper rewires on <code>iframe.load</code> because the mockup-serve route reloads the iframe contentDocument between version switches.</li>
+      <li><strong>Keyboard contract.</strong> <code>↑</code>/<code>↓</code> move <code>selectedIndex</code> with wraparound; <code>Enter</code> activates the selected item via <code>router.push(item.href)</code>; <code>Escape</code> closes; <code>⌘K</code>/<code>Ctrl+K</code> toggles.</li>
+      <li><strong>Highlight on match (custom).</strong> <code>highlightMatch()</code> wraps the query substring in <code>&lt;mark&gt;</code> and is rendered via <code>dangerouslySetInnerHTML</code> (the input is sanitised by <code>escapeHtml()</code> first).</li>
+      <li><strong>Surface composition.</strong> <code>.panel</code> uses CSS Modules <code>composes: floatingSurface from '../../styles/glass.module.css'</code>. Same recipe as the <a href="./14-dialog.html" style="color:var(--accent)"><code>dialog</code></a> and <a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a> — single source of truth for blur, border, and shadow.</li>
+      <li><strong>Why not Radix Dialog?</strong> The palette has dialog-shaped behaviour (scrim, focus trap-ish, Escape closes) but Radix Dialog's API doesn't model a command-list with type-ahead. Using Dialog here would mean implementing the command list anyway and shoehorning the listbox semantics. Custom keeps the implementation closer to its data shape.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>closed</code></td>
+          <td>Default. <code>open === false</code>.</td>
+          <td>Component returns <code>null</code> — nothing in the DOM.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>opening</code></td>
+          <td>Click pill / <code>⌘K</code> / dispatched CustomEvent.</td>
+          <td>Scrim fades in over <code>--motion-fast</code>; panel scales 0.97 → 1 and translateY −8 → 0 over 180 ms with <code>--ease-spring</code>. Input gains focus on next commit.</td>
+          <td><code>role="dialog"</code>, <code>aria-modal="true"</code>, <code>aria-label="Command palette"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>typing</code></td>
+          <td>Input <code>onChange</code>; 150 ms debounce.</td>
+          <td>Results filter, matches highlight via <code>&lt;mark&gt;</code>; <code>selectedIndex</code> resets to 0 so <code>Enter</code> hits the top result.</td>
+          <td>Live region implicit via the listbox-style list.</td>
+        </tr>
+        <tr>
+          <td><code>navigating</code></td>
+          <td><code>↑</code>/<code>↓</code> keys OR pointer hover.</td>
+          <td>Selected item gets <code>--accent-overlay-soft</code> bg + 2 px <code>--accent</code> left border. <code>scrollIntoView({block:'nearest'})</code> keeps it visible.</td>
+          <td><code>data-index</code> attribute on each result for scroll targeting.</td>
+        </tr>
+        <tr>
+          <td><code>empty</code></td>
+          <td><code>allVisible.length === 0</code>.</td>
+          <td>40 px-padded empty card with 🔍 glyph (32 px / 40% opacity) and "No results found" text.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>closing</code></td>
+          <td><code>Escape</code> / scrim click / Enter on selected.</td>
+          <td>Sets <code>open = false</code>; component unmounts on next render. No exit animation today.</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Surface</th><th>Use for</th><th>Backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>finder-overlay</code></td>
+          <td>Global search across projects, folders, and mockups. Type-ahead + keyboard navigation. Always reachable via <code>⌘K</code>.</td>
+          <td>Custom (this file)</td>
+        </tr>
+        <tr>
+          <td><a href="./14-dialog.html" style="color:var(--accent)"><code>dialog</code></a></td>
+          <td>Forms (create / edit project, mockup), info overlays. Single primary action, no list semantics.</td>
+          <td><code>@radix-ui/react-dialog</code></td>
+        </tr>
+        <tr>
+          <td><a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a></td>
+          <td>Anchored side-menus (kebab menus, tooltips with controls). Trigger-anchored, not centred.</td>
+          <td><code>@radix-ui/react-popover</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Rule of thumb: if the overlay is a <em>search</em> with results to navigate, use the finder. If it's a <em>form</em> with named fields, use Dialog. If it's a <em>menu</em> anchored to a trigger, use Popover.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>panel width<dd>min(640px, 92vw)
+      <dt>panel position<dd>fixed; top:80px; left:50%; translateX(-50%)
+      <dt>radius<dd>var(--radius-md) = 12px
+      <dt>shadow<dd>--shadow-glow + --shadow-popover
+      <dt>surface<dd>--surface-glass-bg, blur(16px) saturate(140%)
+      <dt>scrim<dd>--scrim-glass-bg, blur(16px) saturate(140%)
+      <dt>z-index<dd>panel 1000 / scrim 900
+      <dt>input-row height<dd>56px
+      <dt>input font<dd>18px / weight-bold / tracking-tight / --text-bright
+      <dt>caret<dd>--accent
+      <dt>esc badge<dd>10px mono / --bg-card / --radius-xs
+      <dt>section label<dd>10px / 0.12em uppercase / weight-semibold / --text-muted
+      <dt>item height<dd>44px
+      <dt>item icon<dd>28×28 / --radius-sm / --bg-card
+      <dt>item name<dd>14px / weight-medium / --text-bright
+      <dt>item path<dd>12px mono / --text-muted
+      <dt>selected item<dd>--accent-overlay-soft bg + 2px --accent left border
+      <dt>mark highlight<dd>--accent-overlay-mid bg / --accent-bright text
+      <dt>results max-height<dd>360px (overflow-y:auto)
+      <dt>footer<dd>10px mono hints; top border --border-subtle
+      <dt>open animation<dd>scale 0.97→1 + translateY -8→0 over 180ms / --ease-spring
+      <dt>item enter animation<dd>opacity 0→1 + translateX -6→0 / staggered 20ms each
+    </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Open.</strong> CustomEvent <code>open-command-palette</code> or <code>⌘K</code>/<code>Ctrl+K</code> sets <code>open = true</code>. The input is focused via <code>useEffect</code> after commit (RAF-based focus raced React 19's mount).</li>
+      <li><strong>Type-ahead.</strong> 150 ms debounce on the input value; results re-grouped by section (Projects → Folders → Mockups).</li>
+      <li><strong>Selection.</strong> Index resets to 0 every time the query changes so <code>Enter</code> on first keystroke always opens the top match. Pointer hover sets the index too.</li>
+      <li><strong>Navigation.</strong> <code>↑</code>/<code>↓</code> wrap around the visible list; <code>Enter</code> calls <code>router.push(item.href)</code> and closes the palette.</li>
+      <li><strong>Scroll into view.</strong> <code>resultsRef.current.querySelector([data-index=N]).scrollIntoView({block:'nearest'})</code> on every selectedIndex change.</li>
+      <li><strong>Close.</strong> <code>Escape</code>, scrim click, or successful navigation closes. No exit animation.</li>
+      <li><strong>Iframe support.</strong> Listener attaches to every same-origin iframe document via a MutationObserver, rewiring on <code>iframe.load</code> so <code>⌘K</code> works inside the mockup viewer even across version reloads.</li>
+      <li><strong>Single overlay invariant.</strong> Opening the palette dispatches the same event the Topbar listens for to close the avatar menu — two overlays never stack.</li>
+      <li><strong>No body scroll lock.</strong> Unlike <a href="./14-dialog.html" style="color:var(--accent)"><code>dialog</code></a>, the palette doesn't lock body scroll. The user can dismiss with Escape; if they manage to scroll the underlying page through the scrim that's not a correctness issue.</li>
+      <li><strong>Reduced motion.</strong> Item enter animation and panel transitions collapse to 0 ms via the token override + a dedicated <code>@media (prefers-reduced-motion: reduce)</code> rule on <code>.item</code>.</li>
+    </ul>
+  </section>
 </div>
-<div class="demo-label">04 — Finder Overlay</div>
-<script>function openP(){document.getElementById('scrim').classList.add('open');document.getElementById('pal').classList.add('open');document.getElementById('pinp').focus()}function closeP(){document.getElementById('scrim').classList.remove('open');document.getElementById('pal').classList.remove('open')}document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openP()}if(e.key==='Escape')closeP()})</script>
-</body></html>
+
+</body>
+</html>
