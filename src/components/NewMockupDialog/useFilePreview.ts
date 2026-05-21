@@ -62,7 +62,21 @@ export function useFilePreview(file: File | null): PreviewState {
       return;
     }
 
-    let cancelled = false;
+    // AbortController is the project-wide convention for cancelling
+    // async work in effects (see commit cb8a8f7 — code hygiene batch
+    // that swept `let cancelled = …` flags out). The controller plays
+    // three roles here:
+    //   1. `signal.aborted` gates setState calls in the html2canvas
+    //      `.then()` / `.catch()` callbacks (html2canvas itself takes
+    //      no AbortSignal, so we gate at the resolution boundary).
+    //   2. The iframe's `load` listener is registered with
+    //      `{ signal }`, so the browser removes it on abort.
+    //   3. The timeout is cleared explicitly in cleanup (setTimeout
+    //      has no AbortSignal integration in jsdom / older Safari, so
+    //      a manual clearTimeout is more portable than
+    //      AbortSignal.timeout fan-in).
+    const controller = new AbortController();
+    const signal = controller.signal;
     const url = URL.createObjectURL(file);
     const iframe = document.createElement('iframe');
     iframe.setAttribute('sandbox', 'allow-same-origin');
@@ -75,14 +89,15 @@ export function useFilePreview(file: File | null): PreviewState {
     iframe.src = url;
 
     const timeoutId: ReturnType<typeof setTimeout> = setTimeout(() => {
-      if (cancelled) return;
-      cancelled = true;
-      cleanup();
+      if (signal.aborted) return;
+      controller.abort();
+      iframe.remove();
+      URL.revokeObjectURL(url);
       setState({ state: 'fallback', dataUrl: null, reason: 'timeout' });
     }, IFRAME_LOAD_TIMEOUT_MS);
 
     const onLoad = () => {
-      if (cancelled) return;
+      if (signal.aborted) return;
       clearTimeout(timeoutId);
       const target = iframe.contentDocument?.body ?? iframe;
       html2canvas(target as HTMLElement, {
@@ -91,33 +106,35 @@ export function useFilePreview(file: File | null): PreviewState {
         allowTaint: true,
       })
         .then((canvas) => {
-          if (cancelled) return;
+          if (signal.aborted) return;
           const dataUrl = canvas.toDataURL('image/png');
-          cancelled = true;
-          cleanup();
+          controller.abort();
+          iframe.remove();
+          URL.revokeObjectURL(url);
           setState({ state: 'ready', dataUrl });
         })
         .catch(() => {
-          if (cancelled) return;
-          cancelled = true;
-          cleanup();
+          if (signal.aborted) return;
+          controller.abort();
+          iframe.remove();
+          URL.revokeObjectURL(url);
           setState({ state: 'fallback', dataUrl: null, reason: 'error' });
         });
     };
 
-    iframe.addEventListener('load', onLoad);
+    iframe.addEventListener('load', onLoad, { signal });
     document.body.appendChild(iframe);
 
-    function cleanup() {
-      iframe.removeEventListener('load', onLoad);
+    return () => {
+      // Idempotent: if a terminal branch (timeout / ready / error)
+      // already aborted + cleaned up, the second pass is a no-op.
+      // `clearTimeout` on an expired id is harmless, `iframe.remove()`
+      // on a detached node is harmless, and `URL.revokeObjectURL` on
+      // an already-revoked URL is harmless.
+      controller.abort();
+      clearTimeout(timeoutId);
       iframe.remove();
       URL.revokeObjectURL(url);
-    }
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timeoutId);
-      cleanup();
     };
   }, [file]);
 
