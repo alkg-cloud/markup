@@ -32,7 +32,8 @@
  */
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { type ComponentPropsWithoutRef, type ElementRef, forwardRef, type ReactNode } from 'react';
+import { type ComponentPropsWithoutRef, type ElementRef, forwardRef } from 'react';
+import { VscClose } from 'react-icons/vsc';
 import { cn } from '@/lib/cn';
 import styles from './RadixDialog.module.css';
 
@@ -48,15 +49,6 @@ const Overlay = forwardRef<
   <DialogPrimitive.Overlay ref={ref} className={cn(styles.scrim, className)} {...props} />
 ));
 Overlay.displayName = 'RadixDialog.Overlay';
-
-/** Inline close-X glyph — same path as NewMockupDialog's local CloseGlyph. */
-function DialogCloseGlyph(): ReactNode {
-  return (
-    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z" />
-    </svg>
-  );
-}
 
 type ContentOwnProps = {
   /**
@@ -103,7 +95,7 @@ const Content = forwardRef<
           aria-label={closeLabel}
           disabled={closeButtonDisabled}
         >
-          <DialogCloseGlyph />
+          <VscClose aria-hidden="true" />
         </DialogPrimitive.Close>
       )}
     </DialogPrimitive.Content>
