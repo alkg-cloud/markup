@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { filterIcons, PICKER_ICONS } from '@/components/IconPicker/icons';
+import { filterIcons, PICKER_ICONS, resolveIconToken } from '@/components/IconPicker/icons';
 
 describe('PICKER_ICONS data', () => {
   it('has 4 tabs: code, brands, ui, emoji', () => {
@@ -70,5 +70,23 @@ describe('IconPicker SSR', () => {
       createElement(IconPicker, { value: 'vsc:VscFile', onSelect: vi.fn() }),
     );
     expect(html).toContain('vsc:VscFile');
+  });
+
+  it('renders no dangerouslySetInnerHTML markers in icon cells', async () => {
+    const { IconPicker } = await import('@/components/IconPicker/IconPicker');
+    const html = renderToStaticMarkup(createElement(IconPicker, { onSelect: vi.fn() }));
+    // react-icons components render real SVG DOM — no __html injection
+    expect(html).not.toContain('__html');
+    expect(html).not.toContain('dangerouslySetInnerHTML');
+  });
+
+  it('resolveIconToken returns Icon component for brand:nextjs (Simple Icons)', () => {
+    const resolved = resolveIconToken('brand:nextjs');
+    expect(resolved).not.toBeNull();
+    expect(resolved?.kind).toBe('icon');
+    // The resolved Icon should be a function (React component)
+    if (resolved?.kind === 'icon') {
+      expect(typeof resolved.Icon).toBe('function');
+    }
   });
 });

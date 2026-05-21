@@ -97,9 +97,9 @@ function IconCell({
     >
       {icon.label ? (
         <span className={styles.emoji}>{icon.label}</span>
-      ) : (
-        <span dangerouslySetInnerHTML={{ __html: icon.svg ?? '' }} />
-      )}
+      ) : icon.Icon ? (
+        <icon.Icon size={14} aria-hidden="true" />
+      ) : null}
     </button>
   );
 }
