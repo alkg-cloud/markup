@@ -302,8 +302,7 @@ function routeErrorResponse(status: number, body: unknown): UploadState {
   }
 
   if (status === 413) {
-    const limit =
-      isRecord(body) && typeof body.limit === 'number' ? body.limit : MAX_UPLOAD_BYTES;
+    const limit = isRecord(body) && typeof body.limit === 'number' ? body.limit : MAX_UPLOAD_BYTES;
     return {
       status: 'error',
       route: 'global',

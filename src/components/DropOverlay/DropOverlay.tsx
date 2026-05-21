@@ -41,15 +41,16 @@ export function DropOverlay(): JSX.Element | null {
 
   return (
     <Portal>
-      <div
-        className={styles.overlay}
-        role="status"
-        aria-live="polite"
-        data-drop-overlay=""
-      >
+      <div className={styles.overlay} role="status" aria-live="polite" data-drop-overlay="">
         <div className={styles.panel}>
           <div className={styles.iconCircle} aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            >
               <path
                 d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16"
                 strokeLinecap="round"
