@@ -1,10 +1,14 @@
 import 'server-only';
 
+import type { Prisma } from '@prisma/client';
+
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { MAX_ANCESTOR_ITERATIONS, MAX_FOLDER_DEPTH } from './constants';
 
 const log = logger.child({ name: 'project-service' });
+
+type Db = Prisma.TransactionClient | typeof prisma;
 
 // ---------------------------------------------------------------------------
 // Slug
@@ -101,10 +105,10 @@ export async function updateProject(id: string, input: { name?: string; icon?: s
   return updated;
 }
 
-export async function deleteProject(id: string) {
-  const existing = await prisma.project.findUnique({ where: { id } });
+export async function deleteProject(id: string, db: Db = prisma) {
+  const existing = await db.project.findUnique({ where: { id } });
   if (!existing) return null;
-  await prisma.project.delete({ where: { id } });
+  await db.project.delete({ where: { id } });
   log.info({ projectId: id }, 'project_deleted');
   return existing;
 }
@@ -240,10 +244,10 @@ export async function updateFolder(id: string, input: { name?: string }) {
   return { folder };
 }
 
-export async function deleteFolder(id: string) {
-  const existing = await prisma.folder.findUnique({ where: { id } });
+export async function deleteFolder(id: string, db: Db = prisma) {
+  const existing = await db.folder.findUnique({ where: { id } });
   if (!existing) return null;
-  await prisma.folder.delete({ where: { id } });
+  await db.folder.delete({ where: { id } });
   log.info({ folderId: id }, 'folder_deleted');
   return existing;
 }

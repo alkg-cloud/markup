@@ -1,6 +1,10 @@
 import 'server-only';
 
+import type { Prisma } from '@prisma/client';
+
 import { prisma } from '@/lib/prisma';
+
+type Db = Prisma.TransactionClient | typeof prisma;
 
 interface ErrorWithStatus extends Error {
   status: number;
@@ -26,15 +30,16 @@ function http(status: number, message: string): never {
 export async function assertCascadeOwnershipForProject(
   viewerId: string,
   projectId: string,
+  db: Db = prisma,
 ): Promise<void> {
   const [foreignMockupCount, foreignFolderCount] = await Promise.all([
-    prisma.mockup.count({
+    db.mockup.count({
       where: {
         projectId,
         OR: [{ createdById: { not: viewerId } }, { createdById: null }],
       },
     }),
-    prisma.folder.count({
+    db.folder.count({
       where: {
         projectId,
         OR: [{ createdById: { not: viewerId } }, { createdById: null }],
@@ -60,6 +65,7 @@ export async function assertCascadeOwnershipForProject(
 export async function assertCascadeOwnershipForFolder(
   viewerId: string,
   folderId: string,
+  db: Db = prisma,
 ): Promise<void> {
   // Collect all folder IDs in the subtree (BFS).
   const subtreeIds = new Set<string>();
@@ -67,7 +73,7 @@ export async function assertCascadeOwnershipForFolder(
   while (queue.length > 0) {
     const batch = queue.splice(0, queue.length);
     for (const id of batch) subtreeIds.add(id);
-    const children = await prisma.folder.findMany({
+    const children = await db.folder.findMany({
       where: { parentId: { in: batch } },
       select: { id: true },
     });
@@ -81,14 +87,14 @@ export async function assertCascadeOwnershipForFolder(
 
   const [foreignMockupCount, foreignFolderCount] = await Promise.all([
     // Mockups inside any folder in the subtree.
-    prisma.mockup.count({
+    db.mockup.count({
       where: {
         folderId: { in: subtreeIdList },
         OR: [{ createdById: { not: viewerId } }, { createdById: null }],
       },
     }),
     // Sub-folders that belong to someone else (exclude the root).
-    prisma.folder.count({
+    db.folder.count({
       where: {
         id: { in: subFolderIds },
         OR: [{ createdById: { not: viewerId } }, { createdById: null }],
