@@ -17,10 +17,6 @@ import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
  * Agent-loop surface. Auth: cookie OR Bearer.
  * Field-level gating: `name` is admin-only (agents get 403 `forbidden_field`).
  * Status, projectId, folderId, position are writable by any authenticated identity.
- *
- * TODO (CLAUDE.md amendment): add `PATCH /api/mockups/[id]` to the Agent-loop rule's
- * bullet list in CLAUDE.md. Pending user approval — do not edit CLAUDE.md without
- * explicit acknowledgement from the user.
  */
 const patchSchema = z
   .object({

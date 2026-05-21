@@ -19,6 +19,16 @@ Rules:
 - **Emojis are forbidden** in UI components — not in toolbar buttons, not in cards, not in menu items. Two narrow exceptions: (a) user-supplied content, where an emoji is part of a user's project name / icon picker selection; (b) `docs/feature-catalog.md` shorthand for surface descriptions, where `🔑` is a label not a rendered glyph.
 - **Other icon libraries** (`lucide-react`, `heroicons`, `@radix-ui/react-icons`, etc.) are not allowed without an explicit ADR. The mixing of multiple icon sets is a smell — one stroke weight, one corner radius philosophy, one optical alignment.
 
+### Bounded multi-set exception: IconPicker
+
+`src/components/IconPicker/` is the documented exception. The picker offers users a catalogue of icons to label their own projects, so its job is the opposite of the rule above — breadth, not chrome consistency. It sources from three `react-icons` sub-modules:
+
+- `react-icons/vsc` for the **Code** tab (codicons, matches the rest of the chrome).
+- `react-icons/si` (Simple Icons) for the **Brands** tab.
+- `react-icons/lu` (Lucide) for the **UI** tab.
+
+This exception is **scoped to `src/components/IconPicker/icons.ts`**. House glyphs that render the picker's *selection* outside the picker (project cards, tree nodes) read the same map, but no other component may pull from `si` or `lu` directly. Any new sub-module addition still requires an ADR.
+
 `react-icons` v5 is installed as a regular dependency; bundle impact is per-icon (only what you import).
 
 ## Token system

@@ -60,6 +60,7 @@ The endpoints that compose the agent loop are documented in [`docs/agent-loop/`]
 - `GET /api/annotations/[id]/intent` (server-side parsed intent + DOM resolution)
 - `GET /api/agent/context/[annotationId]` (single-call aggregator)
 - `PATCH /api/mockups/[id]/version-patch` (unified-diff versioning)
+- `PATCH /api/mockups/[id]` (mockup metadata: status, placement, name)
 - `GET /api/annotations/[id]/region` (bbox-cropped screenshot)
 - `GET /api/mockups/[id]/diff` (text-mode diff API)
 - `PUT /api/annotations/[id]/tldraw` (drawing edit persistence)
