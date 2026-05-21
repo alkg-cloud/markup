@@ -45,7 +45,7 @@ import {
 } from 'react';
 import { AlertBanner } from '@/components/AlertBanner';
 import { RadixDialog } from '@/components/Dialog/RadixDialog';
-import { FolderPicker, type FolderPickerFolder } from '@/components/FolderPicker';
+import { FolderPicker } from '@/components/FolderPicker';
 import { InputField } from '@/components/InputField';
 import { mockupSlugHref } from '@/lib/project/routes';
 import { FileChip } from './FileChip';
@@ -53,6 +53,7 @@ import styles from './NewMockupDialog.module.css';
 import { PreviewBox } from './PreviewBox';
 import { type ReplaceMode, ReplaceToggle } from './ReplaceToggle';
 import { useFilePreview } from './useFilePreview';
+import { useFolders } from './useFolders';
 import { type UploadError, type UploadState, useUploadMockup } from './useUploadMockup';
 
 /** Navigation target hydrated from the route the drop/click came from. */
@@ -81,8 +82,6 @@ export type NewMockupDialogProps = {
   /** `'add'` (default) or `'replace'` — `'replace'` requires `currentMockup`. */
   mode?: ReplaceMode;
   currentMockup?: { id: string; name: string };
-  /** Folder tree for the currently-selected project. */
-  folders: FolderPickerFolder[];
   /** All projects the user can post to. Rendered in the project <select>. */
   projects: NewMockupDialogProject[];
 };
@@ -175,7 +174,6 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
     target,
     mode: modeProp = 'add',
     currentMockup,
-    folders,
     projects,
   } = props;
   const router = useRouter();
@@ -192,6 +190,13 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
 
   const { state, start, abort, reset } = useUploadMockup();
   const preview = useFilePreview(open ? file : null);
+
+  // Folder tree for whichever project is currently picked inside the
+  // dialog (which may differ from the target the dialog was opened with
+  // — the user can switch projects mid-flow). Per-project caching lives
+  // inside `useFolders`, so flipping back to a previously-loaded
+  // project is free.
+  const { folders, loading: foldersLoading } = useFolders(selectedProjectId);
 
   // Re-seed local state whenever the dialog is (re)opened or the bound
   // file / target changes. Closing the dialog is the other side of
@@ -270,15 +275,9 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
     [projects],
   );
 
-  // Folders for the currently-selected project. The parent typically
-  // already filters `folders` to one project's tree; if it sends the
-  // full set we still narrow here so the picker shows only relevant
-  // entries.
-  const visibleFolders = useMemo(() => {
-    // No project selected → no folders are reachable.
-    if (selectedProjectId === null) return [];
-    return folders;
-  }, [folders, selectedProjectId]);
+  // `useFolders(selectedProjectId)` already returns `[]` for a null
+  // project, so `folders` itself is the visible list.
+  const visibleFolders = folders;
 
   const isUploading = state.status === 'uploading';
   const submitDisabled = isUploading || fieldError !== null || file === null;
@@ -426,10 +425,15 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
                 carries its own `aria-label="Choose folder"` for SR. */}
             <span className={styles.selectLabel}>Folder</span>
             <FolderPicker
-              projectId={selectedProjectId}
+              // Force-disable while the per-project folder tree is in
+              // flight: `projectId={null}` is the picker's "disabled"
+              // signal. The override is purely cosmetic — selectedProjectId
+              // itself is unchanged, so the submit payload stays correct.
+              projectId={foldersLoading ? null : selectedProjectId}
               folders={visibleFolders}
               value={selectedFolderId}
               onChange={setSelectedFolderId}
+              triggerLabel={foldersLoading ? 'Loading folders…' : undefined}
             />
           </div>
         </div>
