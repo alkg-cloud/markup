@@ -2,497 +2,850 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>25 — New Mockup Dialog</title>
+<title>25 — New mockup dialog</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-tinted:oklch(9% 0.02 165);
   --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
-  --surface-input:rgba(255,255,255,0.03);
   --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
   --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
   --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
   --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
   --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
-  --warning:oklch(80% 0.15 80);--warning-soft:oklch(30% 0.07 80);
+  --success:oklch(76% 0.16 152);--success-soft:oklch(28% 0.07 152);
   --info:oklch(74% 0.13 200);--info-soft:oklch(26% 0.06 200);
+  --warning:oklch(80% 0.15 80);--warning-soft:oklch(30% 0.07 80);
   --btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);
   --surface-glass-bg:rgb(7 12 15 / 80%);
-  --scrim-glass-bg:oklch(0% 0 0/0.2);
+  --scrim-glass-bg:oklch(0% 0 0 / 0.2);
   --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
   --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
-  --motion-fast:160ms;--motion-base:220ms;
+  --motion-fast:160ms;--motion-base:220ms;--motion-slow:320ms;
   --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
   --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
 }
-@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms;--motion-slow:0ms}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
   background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
   -webkit-font-smoothing:antialiased;
-  background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
-  background-attachment:fixed;min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
 }
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
-input,select{font-family:inherit;color:inherit;font-size:inherit}
-.page{padding:48px 32px 96px;max-width:1080px;margin:0 auto}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+input,textarea,select{font-family:inherit;color:inherit}
+
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:920px;margin:0 auto}
 .h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
-.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px}
 .section{margin-bottom:48px}
 .section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
-.variant-label{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-dim);margin-bottom:10px;text-transform:lowercase}
-
-/* Stage frame */
 .stage{
+  position:relative;
   background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
   border:1px solid var(--border-subtle);border-radius:var(--radius-md);
-  min-height:420px;padding:36px;display:flex;align-items:center;justify-content:center;position:relative;
-}
-.scrim{
-  position:absolute;inset:0;background:var(--scrim-glass-bg);
-  backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
-  display:flex;align-items:center;justify-content:center;padding:24px;border-radius:var(--radius-md);
-}
-
-/* ─── Dialog (Dialog.module.css verbatim) ─── */
-.dialog{
-  background:var(--surface-glass-bg);
-  backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
-  border:1px solid var(--border);
-  width:min(520px,calc(100% - 32px));
-  border-radius:var(--radius-md);
-  box-shadow:var(--shadow-popover);
-  display:flex;flex-direction:column;
+  padding:32px;
+  min-height:560px;
+  display:flex;align-items:center;justify-content:center;
   overflow:hidden;
 }
-.dialog.wide{width:min(680px,calc(100% - 32px))}
-.dialog-header{
-  display:flex;align-items:center;justify-content:space-between;gap:16px;
-  padding:14px 18px 8px;
+.stage + .stage{margin-top:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+
+/* ─── new-mockup-dialog — singular recipe.
+       Layout: nome+pickers+preview. Folder picker: tree-popover. File icon: color-coded.
+       Composes input-field (28) for the name field and alert-banner (27) for global errors.
+       Replace toggle is visible only when current view is a mockup view. ─── */
+.dialog-stage-shell{
+  position:relative;
+  width:100%;height:520px;
 }
-.dialog-title{font-size:18px;font-weight:700;color:var(--text-bright);letter-spacing:-0.01em}
-.dialog-body{padding:8px 18px 16px;display:flex;flex-direction:column;gap:14px}
-.dialog-footer{
-  display:flex;justify-content:flex-end;gap:8px;padding:12px 18px 16px;
-  border-top:1px solid var(--border-subtle);
+.dialog-scrim{
+  position:absolute;inset:0;
+  background:var(--scrim-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  display:flex;align-items:center;justify-content:center;
+}
+.new-mockup-dialog{
+  position:relative;
+  width:min(440px,calc(100vw - 32px));
+  padding:18px 18px 14px;
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:var(--shadow-popover);
+  display:flex;flex-direction:column;gap:10px;
+  animation:dialogIn var(--motion-base) var(--ease-spring);
+}
+@keyframes dialogIn{
+  from{opacity:0;transform:scale(0.96) translateY(8px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
 }
 
-/* File chip in header */
+.dialog-head{
+  display:flex;align-items:center;justify-content:space-between;
+}
+.dialog-head h3{
+  font-size:13px;font-weight:700;color:var(--text-bright);
+  letter-spacing:-0.01em;
+}
+.dialog-head .close-btn{
+  width:24px;height:24px;border-radius:var(--radius-xs);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-muted);
+  transition:background var(--motion-fast),color var(--motion-fast);
+}
+.dialog-head .close-btn:hover{background:var(--surface-hover);color:var(--text-bright)}
+.dialog-head .close-btn svg{width:12px;height:12px}
+
+/* File chip — color-coded HTML/ZIP type */
 .file-chip{
-  display:inline-flex;align-items:center;gap:8px;
-  background:var(--bg-card);border:1px solid var(--border-subtle);
-  border-radius:var(--radius-pill);padding:5px 10px;
-  font-family:var(--font-mono);font-size:11px;color:var(--text-dim);
-}
-.file-chip.html .ft-glyph{color:oklch(74% 0.16 35)} /* orange */
-.file-chip.zip  .ft-glyph{color:oklch(74% 0.13 240)} /* blue */
-.file-chip.mono .ft-glyph{color:var(--text-dim)}
-.ft-glyph{
-  width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:10px;
-}
-
-/* Field */
-.field{display:flex;flex-direction:column;gap:5px}
-.field-label{font-size:12px;font-weight:600;color:var(--text);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.08em}
-.input{
-  background:var(--surface-input);border:1px solid var(--border);
-  border-radius:var(--radius-sm);padding:8px 12px;color:var(--text-bright);
-  height:36px;outline:none;transition:border-color var(--motion-fast),background var(--motion-fast);
-  width:100%;
-}
-.input:focus{border-color:var(--accent);background:var(--surface-hover)}
-.select{appearance:none;background:var(--surface-input) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23888'%3E%3Cpath d='M8 11L3 6l1-1 4 4 4-4 1 1z'/%3E%3C/svg%3E") no-repeat right 10px center / 12px;padding-right:32px}
-.field-hint{font-family:var(--font-mono);font-size:10px;color:var(--text-muted)}
-
-/* Inline picker chips row */
-.chip-row{display:flex;gap:6px;flex-wrap:wrap}
-.chip-row .picker-chip{
-  display:inline-flex;align-items:center;gap:6px;
-  background:var(--btn-bg);border:1px solid var(--border);border-radius:var(--radius-pill);
-  padding:5px 10px;font-size:12px;color:var(--text);
-}
-.chip-row .picker-chip .key{color:var(--text-muted);font-family:var(--font-mono);font-size:10px}
-.chip-row .picker-chip.active{background:var(--accent-soft);border-color:var(--accent-overlay-mid);color:var(--accent)}
-
-/* Folder select options with indent */
-.option-list{
-  background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
-  padding:4px;display:flex;flex-direction:column;gap:1px;max-height:140px;overflow:auto;
-}
-.option-list .opt{padding:5px 8px;border-radius:var(--radius-xs);font-size:12px;color:var(--text);cursor:pointer}
-.option-list .opt:hover{background:var(--surface-hover);color:var(--text-bright)}
-.option-list .opt.selected{background:var(--accent-overlay-soft);color:var(--accent-bright)}
-.opt[data-depth="1"]{padding-left:22px}
-.opt[data-depth="2"]{padding-left:36px}
-.opt[data-depth="3"]{padding-left:50px}
-
-/* Preview */
-.preview{
-  width:100%;height:180px;background:linear-gradient(135deg, oklch(60% 0.18 165), oklch(55% 0.2 220), oklch(60% 0.18 320));
-  border-radius:var(--radius-sm);border:1px solid var(--border-subtle);position:relative;overflow:hidden;
-}
-.preview svg{position:absolute;inset:0;width:100%;height:100%}
-
-/* Replace toggle */
-.radio-group{display:flex;flex-direction:column;gap:6px}
-.radio-row{
   display:flex;align-items:center;gap:10px;
-  padding:8px 10px;border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
-  cursor:pointer;background:var(--surface-soft);
+  padding:8px 12px;
+  background:var(--bg-card);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
 }
-.radio-row.selected{border-color:var(--accent-overlay-mid);background:var(--accent-overlay-soft)}
-.radio-dot{
-  width:14px;height:14px;border-radius:50%;border:1.5px solid var(--text-dim);position:relative;flex-shrink:0;
+.file-chip .ftype{
+  width:32px;height:32px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:10px;font-weight:700;
 }
-.radio-row.selected .radio-dot{border-color:var(--accent)}
-.radio-row.selected .radio-dot::after{
+.file-chip .ftype.html{background:oklch(35% 0.12 60);color:oklch(85% 0.16 60)}
+.file-chip .ftype.zip{background:oklch(35% 0.12 240);color:oklch(85% 0.14 240)}
+.file-chip .fmeta{display:flex;flex-direction:column}
+.file-chip .fmeta .fname{font-weight:600;color:var(--text-bright);font-size:13.5px}
+.file-chip .fmeta .fsize{font-family:var(--font-mono);font-size:11px;color:var(--text-muted)}
+
+/* Name field — composes input-field (DS 28) */
+.dialog-field{display:flex;flex-direction:column;gap:4px;position:relative}
+.dialog-field > label{
+  font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);
+}
+.dialog-field input,
+.dialog-field select{
+  height:34px;padding:0 10px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text-bright);
+  font-size:13.5px;
+  transition:border-color var(--motion-fast),box-shadow var(--motion-fast);
+}
+.dialog-field input:focus,
+.dialog-field select:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-overlay-soft);
+}
+.dialog-field .help{font-size:11px;color:var(--text-dim)}
+
+/* Name field — error state (field-level: name validation) */
+.dialog-field[data-state="error"] input{
+  border-color:var(--danger);
+  box-shadow:0 0 0 3px var(--danger-soft);
+  animation:errorShake 320ms var(--ease-spring);
+}
+.dialog-field[data-state="error"] input:focus{
+  border-color:var(--danger);
+  box-shadow:0 0 0 3px var(--danger-soft);
+}
+.dialog-field[data-state="error"] .help{
+  color:var(--danger);font-weight:500;
+  display:flex;align-items:center;gap:5px;
+}
+.dialog-field[data-state="error"] .help::before{content:'⚠';font-size:11px}
+@keyframes errorShake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-4px)}
+  40%{transform:translateX(4px)}
+  60%{transform:translateX(-2px)}
+  80%{transform:translateX(2px)}
+}
+
+/* Pickers row — project + folder */
+.dialog-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Folder picker — tree-popover variant */
+.folder-picker{position:relative}
+.folder-picker-trigger{
+  display:flex;align-items:center;gap:8px;
+  height:34px;padding:0 10px;width:100%;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text-bright);font-size:13.5px;text-align:left;
+  transition:border-color var(--motion-fast);
+}
+.folder-picker-trigger:hover{border-color:var(--border-strong)}
+.folder-picker-trigger.is-open{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-overlay-soft);
+}
+.folder-picker-trigger .icon{color:var(--text-muted)}
+.folder-picker-trigger .value{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-picker-trigger .chev{
+  width:14px;height:14px;display:flex;align-items:center;justify-content:center;
+  color:var(--text-muted);transition:transform var(--motion-fast);
+}
+.folder-picker-trigger.is-open .chev{transform:rotate(180deg);color:var(--accent)}
+.folder-picker-trigger.is-open .chev{transform:rotate(180deg);color:var(--accent)}
+
+.folder-popover{
+  position:absolute;top:calc(100% + 6px);left:0;
+  width:100%;
+  max-height:280px;
+  display:flex;flex-direction:column;
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-popover);
+  z-index:5;
+  overflow:hidden;
+}
+.folder-popover-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 10px;
+  font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);
+  border-bottom:1px solid var(--border-subtle);
+}
+.folder-popover-body{overflow-y:auto;padding:4px;flex:1}
+.folder-tree{list-style:none;display:flex;flex-direction:column;gap:1px}
+.folder-tree ul{list-style:none}
+.folder-row{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 8px;border-radius:var(--radius-xs);
+  cursor:pointer;
+  font-size:13px;color:var(--text);
+  transition:background var(--motion-fast);
+}
+.folder-row:hover{background:var(--surface-hover)}
+.folder-row.is-selected{background:var(--accent-soft);color:var(--accent)}
+.folder-row.is-selected .name{font-weight:600}
+.folder-row .chevron{width:12px;font-family:var(--font-mono);font-size:9px;color:var(--text-muted);text-align:center;flex-shrink:0}
+.folder-row .chevron.is-leaf{color:var(--text-muted);opacity:0.4}
+.folder-row .ficon{width:14px;text-align:center;flex-shrink:0}
+.folder-row .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-children{padding-left:18px;display:flex;flex-direction:column;gap:1px}
+
+/* Preview area — placeholder image of the dropped HTML */
+.preview-area{display:flex;flex-direction:column;gap:4px}
+.preview-area .preview-label{
+  font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);
+}
+.preview-area .preview-box{
+  height:160px;border-radius:var(--radius-sm);
+  overflow:hidden;border:1px solid var(--border);
+  background:oklch(95% 0.02 60);
+}
+.preview-area .preview-box svg{width:100%;height:100%;display:block}
+
+/* Replace toggle — visible only on mockup view */
+.replace-toggle{
+  display:flex;flex-direction:column;gap:6px;
+  background:oklch(15% 0.025 165);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:8px 12px;
+}
+.replace-toggle .replace-label{
+  font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);
+}
+.replace-toggle .opts{display:flex;flex-direction:column;gap:6px}
+.opt-row{display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer}
+.opt-row .radio{width:14px;height:14px;border-radius:50%;border:2px solid var(--text-muted);position:relative}
+.opt-row.is-active .radio{border-color:var(--accent)}
+.opt-row.is-active .radio::after{
   content:'';position:absolute;inset:2px;border-radius:50%;background:var(--accent);
 }
-.radio-text{font-size:13px;color:var(--text)}
-.radio-text strong{color:var(--text-bright);font-weight:600}
-.replace-link{
-  font-family:var(--font-mono);font-size:11px;color:var(--accent);text-decoration:underline;background:none;border:none;cursor:pointer;align-self:flex-start;padding:0;
+.opt-row .lbl{color:var(--text)}
+.opt-row .lbl .name-quote{color:var(--accent);font-weight:600}
+
+/* Inline progress bar — uploading state */
+.dialog-progress{
+  height:4px;background:var(--btn-bg);
+  border-radius:var(--radius-pill);overflow:hidden;position:relative;
+}
+.dialog-progress::after{
+  content:'';position:absolute;inset:0;background:var(--accent);
+  animation:progress-indeterminate 1.4s ease-in-out infinite;
+  border-radius:var(--radius-pill);
+}
+@keyframes progress-indeterminate{
+  0%{transform:translateX(-100%)}
+  50%{transform:translateX(20%)}
+  100%{transform:translateX(120%)}
 }
 
-/* Buttons */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  height:34px;padding:0 14px;border-radius:var(--radius-sm);
-  font-size:13px;font-weight:600;transition:background var(--motion-fast),color var(--motion-fast);
+/* Alert banner — composed from DS 27 (global errors only) */
+.alert-banner{
+  display:flex;align-items:stretch;gap:10px;
+  padding:10px 14px;
+  border-radius:var(--radius-sm);
+  font-size:12.5px;
+  animation:bannerIn var(--motion-base) var(--ease-spring);
+  background:linear-gradient(90deg, oklch(35% 0.14 25 / 0.4) 0%, oklch(28% 0.09 25 / 0.23) 100%);
+  border:1px solid var(--danger);
+  color:oklch(96% 0.04 25);
 }
-.btn-ghost{background:var(--btn-bg);color:var(--text)}
-.btn-ghost:hover{background:var(--btn-bg-hover);color:var(--text-bright)}
-.btn-primary{background:var(--btn-bg);color:var(--accent);border:1px solid var(--accent-overlay-mid)}
-.btn-primary:hover{background:var(--btn-bg-hover);color:var(--accent-bright);border-color:var(--accent)}
-.btn-primary[disabled]{opacity:0.6;cursor:default}
+@keyframes bannerIn{
+  from{opacity:0;transform:translateY(-4px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.alert-banner .icon{
+  width:28px;height:28px;flex-shrink:0;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-weight:700;font-size:14px;
+  background:oklch(48% 0.2 25);color:oklch(98% 0.02 25);
+}
+.alert-banner .body{flex:1;display:flex;flex-direction:column;gap:2px;justify-content:center;min-width:0}
+.alert-banner .title{font-weight:700;font-size:13px;color:oklch(97% 0.04 25)}
+.alert-banner .body p{opacity:0.9}
+.alert-banner .close-btn{
+  width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-xs);
+  color:oklch(90% 0.06 25);align-self:flex-start;opacity:0.7;
+  transition:background var(--motion-fast),opacity var(--motion-fast);
+}
+.alert-banner .close-btn:hover{background:rgba(255,255,255,0.1);opacity:1}
+.alert-banner .close-btn svg{width:12px;height:12px}
 
-/* Alerts */
-.alert{
-  display:flex;align-items:flex-start;gap:8px;
-  padding:8px 12px;border-radius:var(--radius-sm);font-size:12px;
+/* Actions row */
+.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.btn-secondary{
+  padding:8px 14px;background:var(--btn-bg);color:var(--text);
+  font-weight:600;font-size:12.5px;border-radius:var(--radius-pill);
+  transition:background var(--motion-fast);
 }
-.alert-danger{background:var(--danger-soft);border:1px solid oklch(40% 0.1 25);color:oklch(86% 0.1 25)}
+.btn-secondary:hover{background:var(--btn-bg-hover)}
+.btn-secondary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-accent{
+  padding:8px 18px;background:var(--accent);color:var(--bg);
+  font-weight:700;font-size:12.5px;border-radius:var(--radius-pill);
+  transition:background var(--motion-fast);
+}
+.btn-accent:hover{background:var(--accent-bright)}
+.btn-accent:disabled{opacity:0.5;cursor:not-allowed}
 
-/* Inline progress bar */
-.progress{
-  display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:11px;color:var(--text-dim);
-  padding-top:4px;
-}
-.progress-bar{flex:1;height:4px;background:var(--bg-card);border-radius:var(--radius-pill);overflow:hidden;position:relative}
-.progress-bar::after{
-  content:'';position:absolute;inset:0;width:42%;background:var(--accent);border-radius:var(--radius-pill);
-}
-
-/* Footer notes */
-.footer-note{
-  margin-top:48px;padding-top:24px;border-top:1px solid var(--border-subtle);
-  font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.7;
+/* Demo fake-app background */
+.fake-app{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:11px;color:var(--text-muted);
+  letter-spacing:0.1em;text-transform:uppercase;
+  pointer-events:none;
 }
 
-.stack{display:flex;flex-direction:column;gap:36px}
+/* State helpers */
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:24px}
+.state{display:flex;flex-direction:column;gap:6px}
+.state .state-label{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim)}
+
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
+
 <div class="page" data-ds-component="new-mockup-dialog">
-  <h1 class="h1">25 — New Mockup Dialog</h1>
-  <p class="lede">Surfaces after a successful drop OR a click on the sidebar "+ New Mockup" footer. Glass surface, 520 px wide, standard scrim. Carries the parsed filename as Name, infers destination by view, and offers a Replace-as-new-version toggle when the user drops on a mockup view. Four layout variants and one toggle showcase below.</p>
 
-  <div class="section">
-    <div class="section-title">Layout variants</div>
-    <div class="stack">
+  <h1 class="h1">New mockup dialog</h1>
+  <p class="lede">Modal dialog that opens after the user drops a file on the app or clicks "New mockup" / "Upload mockup". Single recipe: <strong>nome+pickers+preview</strong> layout, <strong>tree-popover</strong> folder picker, <strong>color-coded</strong> file icon, <strong>inline-progress</strong> while uploading. Composes the canonical <a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a> for the name (driving field-level errors) and the <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> for non-field errors (server reject, network failure). The "replace as new version" toggle appears only when the dialog is opened from a mockup view.</p>
 
-      <!-- nome-only -->
-      <div>
-        <div class="variant-label">nome-only</div>
-        <div class="stage">
-          <div class="scrim">
-            <div class="dialog">
-              <div class="dialog-header">
-                <div class="dialog-title">New mockup</div>
-                <div class="file-chip html"><span class="ft-glyph">H</span>pricing-v3.html · 12.4 KB</div>
+  <section class="section">
+    <div class="section-title">Default — idle state</div>
+    <div class="stage">
+      <div class="dialog-stage-shell">
+        <div class="fake-app">app surface · view: project · Lumen Coffee</div>
+        <div class="dialog-scrim">
+          <div class="new-mockup-dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-title-1">
+            <div class="dialog-head">
+              <h3 id="dlg-title-1">New mockup</h3>
+              <button class="close-btn" type="button" title="Close · Esc" aria-label="Close">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg>
+              </button>
+            </div>
+            <div class="file-chip">
+              <div class="ftype html">HTML</div>
+              <div class="fmeta"><div class="fname">pricing-v3.html</div><div class="fsize">12.4 KB · text/html</div></div>
+            </div>
+            <div class="dialog-field">
+              <label for="dlg1-name">Name</label>
+              <input id="dlg1-name" type="text" value="pricing-v3">
+            </div>
+            <div class="dialog-row">
+              <div class="dialog-field">
+                <label for="dlg1-proj">Project</label>
+                <select id="dlg1-proj">
+                  <option selected>☕ Lumen Coffee</option>
+                  <option>📐 Helio</option>
+                  <option>✨ Design Demos</option>
+                  <option>— Unsorted</option>
+                </select>
               </div>
-              <div class="dialog-body">
-                <div class="field">
-                  <label class="field-label">Name</label>
-                  <input class="input" value="pricing-v3"/>
-                  <div class="field-hint">Will go to · Lumen Coffee › Hero (inferred from view)</div>
+              <div class="dialog-field">
+                <label>Folder</label>
+                <div class="folder-picker">
+                  <button type="button" class="folder-picker-trigger" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="icon">📁</span>
+                    <span class="value">Hero</span>
+                    <span class="chev"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </button>
                 </div>
               </div>
-              <div class="dialog-footer">
-                <button class="btn btn-ghost">Cancel</button>
-                <button class="btn btn-primary">Add</button>
+            </div>
+            <div class="preview-area">
+              <span class="preview-label">Preview</span>
+              <div class="preview-box">
+                <svg viewBox="0 0 320 180" preserveAspectRatio="none">
+                  <defs><linearGradient id="prv1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="oklch(72% 0.18 60)" stop-opacity="0.7"/><stop offset="100%" stop-color="oklch(40% 0.12 60)" stop-opacity="0.4"/></linearGradient></defs>
+                  <rect width="320" height="180" fill="oklch(95% 0.02 60)"/>
+                  <rect width="320" height="180" fill="url(#prv1)"/>
+                  <rect x="20" y="24" width="120" height="16" rx="3" fill="oklch(20% 0.04 60)"/>
+                  <rect x="20" y="60" width="280" height="12" rx="3" fill="oklch(35% 0.05 60)"/>
+                  <rect x="20" y="80" width="220" height="12" rx="3" fill="oklch(45% 0.05 60)"/>
+                  <rect x="20" y="130" width="80" height="22" rx="11" fill="oklch(30% 0.14 60)"/>
+                </svg>
               </div>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn-secondary" type="button">Cancel</button>
+              <button class="btn-accent" type="button">Add mockup</button>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- nome+pickers -->
-      <div>
-        <div class="variant-label">nome+pickers (default)</div>
-        <div class="stage">
-          <div class="scrim">
-            <div class="dialog">
-              <div class="dialog-header">
-                <div class="dialog-title">New mockup</div>
-                <div class="file-chip html"><span class="ft-glyph">H</span>pricing-v3.html · 12.4 KB</div>
-              </div>
-              <div class="dialog-body">
-                <div class="field">
-                  <label class="field-label">Name</label>
-                  <input class="input" value="pricing-v3"/>
-                </div>
-                <div class="field">
-                  <label class="field-label">Project</label>
-                  <select class="input select">
-                    <option>Lumen Coffee</option>
-                    <option>Helio</option>
-                    <option>Design Demos</option>
-                    <option>— Unsorted —</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="field-label">Folder</label>
-                  <div class="option-list" role="listbox">
-                    <div class="opt" data-depth="0">(root)</div>
-                    <div class="opt selected" data-depth="0">Hero</div>
-                    <div class="opt" data-depth="1">Hero / Section</div>
-                    <div class="opt" data-depth="2">Hero / Section / Variants</div>
-                    <div class="opt" data-depth="0">Pricing</div>
-                  </div>
-                </div>
-              </div>
-              <div class="dialog-footer">
-                <button class="btn btn-ghost">Cancel</button>
-                <button class="btn btn-primary">Add</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- nome+pickers+preview -->
-      <div>
-        <div class="variant-label">nome+pickers+preview</div>
-        <div class="stage" style="min-height:560px">
-          <div class="scrim">
-            <div class="dialog wide">
-              <div class="dialog-header">
-                <div class="dialog-title">New mockup</div>
-                <div class="file-chip html"><span class="ft-glyph">H</span>pricing-v3.html · 12.4 KB</div>
-              </div>
-              <div class="dialog-body" style="display:grid;grid-template-columns:1fr 320px;gap:18px">
-                <div style="display:flex;flex-direction:column;gap:14px">
-                  <div class="field">
-                    <label class="field-label">Name</label>
-                    <input class="input" value="pricing-v3"/>
-                  </div>
-                  <div class="field">
-                    <label class="field-label">Project</label>
-                    <select class="input select"><option>Lumen Coffee</option><option>Helio</option></select>
-                  </div>
-                  <div class="field">
-                    <label class="field-label">Folder</label>
-                    <select class="input select"><option>Hero</option><option>Pricing</option></select>
-                  </div>
-                </div>
-                <div class="field">
-                  <label class="field-label">Preview</label>
-                  <div class="preview">
-                    <svg viewBox="0 0 320 180" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="hue-cycle" x1="0" x2="1">
-                          <stop offset="0%" stop-color="oklch(60% 0.2 165)"/>
-                          <stop offset="50%" stop-color="oklch(60% 0.2 230)"/>
-                          <stop offset="100%" stop-color="oklch(60% 0.2 330)"/>
-                        </linearGradient>
-                      </defs>
-                      <rect width="320" height="180" fill="url(#hue-cycle)"/>
-                      <rect x="20" y="22" width="120" height="14" rx="3" fill="rgba(255,255,255,0.6)"/>
-                      <rect x="20" y="46" width="200" height="8" rx="3" fill="rgba(255,255,255,0.45)"/>
-                      <rect x="20" y="60" width="170" height="8" rx="3" fill="rgba(255,255,255,0.4)"/>
-                      <rect x="20" y="98" width="86" height="32" rx="6" fill="rgba(0,0,0,0.35)"/>
-                      <rect x="118" y="98" width="86" height="32" rx="6" fill="rgba(255,255,255,0.4)"/>
-                    </svg>
-                  </div>
-                  <div class="field-hint">320 × 180 · sandboxed</div>
-                </div>
-              </div>
-              <div class="dialog-footer">
-                <button class="btn btn-ghost">Cancel</button>
-                <button class="btn btn-primary">Add</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- nome+inline-pickers -->
-      <div>
-        <div class="variant-label">nome+inline-pickers</div>
-        <div class="stage">
-          <div class="scrim">
-            <div class="dialog">
-              <div class="dialog-header">
-                <div class="dialog-title">New mockup</div>
-                <div class="file-chip html"><span class="ft-glyph">H</span>pricing-v3.html · 12.4 KB</div>
-              </div>
-              <div class="dialog-body">
-                <div class="field">
-                  <label class="field-label">Name</label>
-                  <input class="input" value="pricing-v3"/>
-                </div>
-                <div class="field">
-                  <label class="field-label">Project</label>
-                  <div class="chip-row">
-                    <button class="picker-chip">Lumen Coffee</button>
-                    <button class="picker-chip">Helio</button>
-                    <button class="picker-chip active">Design Demos</button>
-                    <button class="picker-chip"><span class="key">+</span>Unsorted</button>
-                  </div>
-                </div>
-                <div class="field">
-                  <label class="field-label">Folder</label>
-                  <div class="chip-row">
-                    <button class="picker-chip">(root)</button>
-                    <button class="picker-chip active">Hero</button>
-                    <button class="picker-chip">Hero / Section</button>
-                    <button class="picker-chip">Hero / Section / Variants</button>
-                  </div>
-                </div>
-              </div>
-              <div class="dialog-footer">
-                <button class="btn btn-ghost">Cancel</button>
-                <button class="btn btn-primary">Add</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
-  </div>
+    <div class="caption">Modal dialog over the app scrim (--scrim-glass-bg + 16px blur). Composes file-chip · input-field · project select · folder-picker (tree-popover trigger collapsed) · preview placeholder · accent CTA + secondary Cancel.</div>
+  </section>
 
-  <div class="section">
-    <div class="section-title">Replace toggle (mockup-view drop only)</div>
-    <div class="stack">
-
-      <div>
-        <div class="variant-label">visible (default)</div>
-        <div class="stage">
-          <div class="scrim">
-            <div class="dialog">
-              <div class="dialog-header">
-                <div class="dialog-title">New mockup</div>
-                <div class="file-chip html"><span class="ft-glyph">H</span>pricing-v3.html · 12.4 KB</div>
+  <section class="section">
+    <div class="section-title">Folder picker — popover open</div>
+    <div class="stage">
+      <div class="dialog-stage-shell">
+        <div class="fake-app">app surface · view: project</div>
+        <div class="dialog-scrim">
+          <div class="new-mockup-dialog" role="dialog" aria-modal="true">
+            <div class="dialog-head">
+              <h3>New mockup</h3>
+              <button class="close-btn" type="button" aria-label="Close"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg></button>
+            </div>
+            <div class="file-chip">
+              <div class="ftype html">HTML</div>
+              <div class="fmeta"><div class="fname">pricing-v3.html</div><div class="fsize">12.4 KB · text/html</div></div>
+            </div>
+            <div class="dialog-field">
+              <label>Name</label>
+              <input type="text" value="pricing-v3">
+            </div>
+            <div class="dialog-row">
+              <div class="dialog-field">
+                <label>Project</label>
+                <select><option>☕ Lumen Coffee</option></select>
               </div>
-              <div class="dialog-body">
-                <div class="field">
-                  <label class="field-label">Name</label>
-                  <input class="input" value="pricing-v3"/>
-                </div>
-                <div class="radio-group">
-                  <div class="radio-row">
-                    <div class="radio-dot"></div>
-                    <div class="radio-text"><strong>Add as new mockup</strong> in Lumen Coffee › Hero</div>
+              <div class="dialog-field">
+                <label>Folder</label>
+                <div class="folder-picker">
+                  <button type="button" class="folder-picker-trigger is-open" aria-haspopup="listbox" aria-expanded="true">
+                    <span class="icon">📁</span>
+                    <span class="value">Hero / Section</span>
+                    <span class="chev"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </button>
+                  <div class="folder-popover">
+                    <div class="folder-popover-head">
+                      <span>Folders in Lumen Coffee</span>
+                    </div>
+                    <div class="folder-popover-body">
+                      <ul class="folder-tree">
+                        <li>
+                          <div class="folder-row">
+                            <span class="chevron">▾</span><span class="ficon">📁</span><span class="name">Hero</span>
+                          </div>
+                          <ul class="folder-children">
+                            <li>
+                              <div class="folder-row is-selected">
+                                <span class="chevron is-leaf">·</span><span class="ficon">📁</span><span class="name">Section</span>
+                              </div>
+                            </li>
+                          </ul>
+                        </li>
+                        <li>
+                          <div class="folder-row">
+                            <span class="chevron">▸</span><span class="ficon">📁</span><span class="name">Pricing</span>
+                          </div>
+                        </li>
+                        <li>
+                          <div class="folder-row">
+                            <span class="chevron is-leaf">·</span><span class="ficon">📁</span><span class="name">Ritual</span>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
-                  <div class="radio-row selected">
-                    <div class="radio-dot"></div>
-                    <div class="radio-text">Replace as <strong>new version</strong> of "lumen-coffee-hero"</div>
-                  </div>
                 </div>
               </div>
-              <div class="dialog-footer">
-                <button class="btn btn-ghost">Cancel</button>
-                <button class="btn btn-primary">Add</button>
-              </div>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn-secondary" type="button">Cancel</button>
+              <button class="btn-accent" type="button">Add mockup</button>
             </div>
           </div>
         </div>
       </div>
-
-      <div>
-        <div class="variant-label">hidden-until-edit (collapsed)</div>
-        <div class="stage">
-          <div class="scrim">
-            <div class="dialog">
-              <div class="dialog-header">
-                <div class="dialog-title">New mockup</div>
-                <div class="file-chip html"><span class="ft-glyph">H</span>pricing-v3.html · 12.4 KB</div>
-              </div>
-              <div class="dialog-body">
-                <div class="field">
-                  <label class="field-label">Name</label>
-                  <input class="input" value="pricing-v3"/>
-                </div>
-                <button class="replace-link">Or replace this mockup with a new version</button>
-              </div>
-              <div class="dialog-footer">
-                <button class="btn btn-ghost">Cancel</button>
-                <button class="btn btn-primary">Add</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
-  </div>
+    <div class="caption">Trigger gains <code>.is-open</code> (accent border + chevron rotate). Popover positions <code>top: calc(100% + 6px)</code> with same width as the trigger. Selected row uses accent-soft bg + accent text + bold name. Tree row hover state shown on the bottom rows.</div>
+  </section>
 
-  <div class="section">
-    <div class="section-title">States · file chip variants · inline feedback</div>
-    <div class="stack">
-
-      <div>
-        <div class="variant-label">error inline + progress + chip variants</div>
-        <div class="stage">
-          <div class="scrim">
-            <div class="dialog">
-              <div class="dialog-header">
-                <div class="dialog-title">New mockup</div>
-                <div style="display:flex;gap:6px;flex-wrap:wrap">
-                  <span class="file-chip html"><span class="ft-glyph">H</span>pricing-v3.html · 12.4 KB</span>
-                  <span class="file-chip zip"><span class="ft-glyph">Z</span>bundle.zip · 96 KB</span>
-                  <span class="file-chip mono"><span class="ft-glyph">·</span>raw.html · 8 KB</span>
-                  <span class="file-chip" style="color:var(--text-muted)">raw.html · 8 KB</span>
-                </div>
+  <section class="section">
+    <div class="section-title">Uploading — inline progress bar</div>
+    <div class="stage">
+      <div class="dialog-stage-shell">
+        <div class="fake-app">app surface · uploading</div>
+        <div class="dialog-scrim">
+          <div class="new-mockup-dialog" role="dialog" aria-modal="true">
+            <div class="dialog-head">
+              <h3>New mockup</h3>
+              <button class="close-btn" type="button" aria-label="Close" disabled style="opacity:0.4;cursor:not-allowed"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg></button>
+            </div>
+            <div class="file-chip">
+              <div class="ftype html">HTML</div>
+              <div class="fmeta"><div class="fname">pricing-v3.html</div><div class="fsize">12.4 KB · text/html</div></div>
+            </div>
+            <div class="dialog-field">
+              <label>Name</label>
+              <input type="text" value="pricing-v3" disabled>
+            </div>
+            <div class="dialog-row">
+              <div class="dialog-field">
+                <label>Project</label>
+                <select disabled><option>☕ Lumen Coffee</option></select>
               </div>
-              <div class="dialog-body">
-                <div class="alert alert-danger">
-                  <strong>Name must be lowercase letters, numbers, or hyphens.</strong>
-                  <span style="margin-left:auto;font-family:var(--font-mono);font-size:10px">name_not_url_safe</span>
-                </div>
-                <div class="field">
-                  <label class="field-label">Name</label>
-                  <input class="input" value="Pricing v3 (final)" style="border-color:var(--danger)"/>
-                </div>
-                <div class="progress">
-                  <span>Uploading</span>
-                  <div class="progress-bar"></div>
-                  <span>42%</span>
-                </div>
+              <div class="dialog-field">
+                <label>Folder</label>
+                <button type="button" class="folder-picker-trigger" disabled style="opacity:0.5">
+                  <span class="icon">📁</span><span class="value">Hero</span><span class="chev"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </button>
               </div>
-              <div class="dialog-footer">
-                <button class="btn btn-ghost">Cancel</button>
-                <button class="btn btn-primary" disabled>Adding…</button>
-              </div>
+            </div>
+            <div class="dialog-progress"></div>
+            <div class="dialog-actions">
+              <button class="btn-secondary" type="button">Cancel</button>
+              <button class="btn-accent" type="button" disabled>Uploading…</button>
             </div>
           </div>
         </div>
       </div>
-
     </div>
-  </div>
+    <div class="caption">Form fields disabled. Inline progress bar (4px, --accent fill, indeterminate animation 1.4s infinite) replaces the preview area. Add button: "Uploading…" + disabled. Close button disabled — only Cancel can abort the upload.</div>
+  </section>
 
-  <div class="footer-note">
-    Tokens: <code>--surface-glass-bg</code>, <code>--border</code>, <code>--accent-soft</code>, <code>--accent-overlay-mid</code>, <code>--surface-input</code>, <code>--danger-soft</code>.
-    File-chip colour-coding: HTML = oklch(74% 0.16 35) orange; ZIP = oklch(74% 0.13 240) blue; mono = <code>--text-dim</code>.
-    Validation: <code>URL_SAFE_NAME_PATTERN</code> (`/^[A-Za-z0-9_-]+$/`); inline danger pill above body.
-    Submit: <code>Esc</code> cancels; <code>Add</code> disables and shows inline progress; closes on success or routes to the newly created mockup.
-  </div>
+  <section class="section">
+    <div class="section-title">Error — field-level (name validation)</div>
+    <div class="stage">
+      <div class="dialog-stage-shell">
+        <div class="fake-app">app surface</div>
+        <div class="dialog-scrim">
+          <div class="new-mockup-dialog" role="dialog" aria-modal="true">
+            <div class="dialog-head">
+              <h3>New mockup</h3>
+              <button class="close-btn" type="button" aria-label="Close"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg></button>
+            </div>
+            <div class="file-chip">
+              <div class="ftype html">HTML</div>
+              <div class="fmeta"><div class="fname">pricing-v3.html</div><div class="fsize">12.4 KB · text/html</div></div>
+            </div>
+            <div class="dialog-field" data-state="error">
+              <label>Name</label>
+              <input type="text" value="Pricing V3">
+              <div class="help">Use lowercase letters, numbers, or hyphens only.</div>
+            </div>
+            <div class="dialog-row">
+              <div class="dialog-field">
+                <label>Project</label>
+                <select><option>☕ Lumen Coffee</option></select>
+              </div>
+              <div class="dialog-field">
+                <label>Folder</label>
+                <button type="button" class="folder-picker-trigger"><span class="icon">📁</span><span class="value">Hero</span><span class="chev"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+              </div>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn-secondary" type="button">Cancel</button>
+              <button class="btn-accent" type="button" disabled>Add mockup</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Field-level error renders as the <a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a> error state: danger border + ring + shake on entry + ⚠ help text below the input. Triggered by Radix <code>Form.Message match="patternMismatch"</code> OR custom <code>data-state="error"</code> for server-side name collisions. Add button disabled while error stands.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Error — global (banner: server reject / network failure)</div>
+    <div class="stage">
+      <div class="dialog-stage-shell">
+        <div class="fake-app">app surface</div>
+        <div class="dialog-scrim">
+          <div class="new-mockup-dialog" role="dialog" aria-modal="true">
+            <div class="dialog-head">
+              <h3>New mockup</h3>
+              <button class="close-btn" type="button" aria-label="Close"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg></button>
+            </div>
+            <div class="alert-banner" role="alert">
+              <div class="icon">!</div>
+              <div class="body">
+                <div class="title">Could not upload mockup</div>
+                <p>Network request failed. Check your connection and try again.</p>
+              </div>
+              <button class="close-btn" type="button" aria-label="Dismiss"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg></button>
+            </div>
+            <div class="file-chip">
+              <div class="ftype html">HTML</div>
+              <div class="fmeta"><div class="fname">pricing-v3.html</div><div class="fsize">12.4 KB · text/html</div></div>
+            </div>
+            <div class="dialog-field">
+              <label>Name</label>
+              <input type="text" value="pricing-v3">
+            </div>
+            <div class="dialog-row">
+              <div class="dialog-field">
+                <label>Project</label>
+                <select><option>☕ Lumen Coffee</option></select>
+              </div>
+              <div class="dialog-field">
+                <label>Folder</label>
+                <button type="button" class="folder-picker-trigger"><span class="icon">📁</span><span class="value">Hero</span><span class="chev"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+              </div>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn-secondary" type="button">Cancel</button>
+              <button class="btn-accent" type="button">Retry</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Global error renders as the <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> with <code>data-status="error"</code>, mounted at the top of the dialog body (above the file-chip). Fields stay editable so the user can adjust before retrying. Add button text flips to "Retry".</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Replace toggle — visible only on mockup view</div>
+    <div class="stage">
+      <div class="dialog-stage-shell">
+        <div class="fake-app">app surface · view: mockup · lumen-coffee-hero</div>
+        <div class="dialog-scrim">
+          <div class="new-mockup-dialog" role="dialog" aria-modal="true">
+            <div class="dialog-head">
+              <h3>New mockup</h3>
+              <button class="close-btn" type="button" aria-label="Close"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg></button>
+            </div>
+            <div class="file-chip">
+              <div class="ftype html">HTML</div>
+              <div class="fmeta"><div class="fname">pricing-v3.html</div><div class="fsize">12.4 KB · text/html</div></div>
+            </div>
+            <div class="dialog-field">
+              <label>Name</label>
+              <input type="text" value="pricing-v3">
+            </div>
+            <div class="dialog-row">
+              <div class="dialog-field">
+                <label>Project</label>
+                <select><option>☕ Lumen Coffee</option></select>
+              </div>
+              <div class="dialog-field">
+                <label>Folder</label>
+                <button type="button" class="folder-picker-trigger"><span class="icon">📁</span><span class="value">Hero</span><span class="chev"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+              </div>
+            </div>
+            <div class="replace-toggle">
+              <span class="replace-label">Action</span>
+              <div class="opts">
+                <div class="opt-row is-active"><span class="radio"></span><span class="lbl">Add as new mockup in the same folder</span></div>
+                <div class="opt-row"><span class="radio"></span><span class="lbl">Replace as new version of <span class="name-quote">"lumen-coffee-hero"</span></span></div>
+              </div>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn-secondary" type="button">Cancel</button>
+              <button class="btn-accent" type="button">Add mockup</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">When the dialog is opened from a mockup view, the replace toggle replaces the preview area. Two radio options: "Add as new mockup in the same folder" (default) OR "Replace as new version of …". The mockup name is quoted in accent green.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — composes Radix Dialog + Radix Form + DS 27 + DS 28</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">The dialog is rendered with <code style="color:var(--accent)">@radix-ui/react-dialog</code> (modal + focus trap + escape + portal). The form inside uses <code style="color:var(--accent)">@radix-ui/react-form</code> for sync validation. The name field uses our <a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a>; the folder picker is a custom popover; global errors render via our <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a>.</p>
+    <pre class="api"><span class="c">// NewMockupDialog.tsx</span>
+<span class="k">import</span> * <span class="k">as</span> Dialog <span class="k">from</span> <span class="s">'@radix-ui/react-dialog'</span>;
+<span class="k">import</span> * <span class="k">as</span> Form <span class="k">from</span> <span class="s">'@radix-ui/react-form'</span>;
+<span class="k">import</span> { InputField, AlertBanner, FolderPicker } <span class="k">from</span> <span class="s">'@/components/ds'</span>;
+
+&lt;<span class="t">Dialog.Root</span> open={open} onOpenChange={setOpen}&gt;
+  &lt;<span class="t">Dialog.Portal</span>&gt;
+    &lt;<span class="t">Dialog.Overlay</span> className=<span class="s">"dialog-scrim"</span> /&gt;
+    &lt;<span class="t">Dialog.Content</span> className=<span class="s">"new-mockup-dialog"</span>&gt;
+
+      &lt;<span class="t">Dialog.Title</span>&gt;New mockup&lt;/<span class="t">Dialog.Title</span>&gt;
+      &lt;<span class="t">Dialog.Close</span> asChild&gt;
+        &lt;<span class="k">button</span> aria-label=<span class="s">"Close"</span> className=<span class="s">"close-btn"</span>&gt;<span class="t">&lt;XIcon /&gt;</span>&lt;/<span class="k">button</span>&gt;
+      &lt;/<span class="t">Dialog.Close</span>&gt;
+
+      {globalError &amp;&amp; (
+        &lt;<span class="t">AlertBanner.Root</span> status=<span class="s">"error"</span>&gt;                <span class="c">// DS 27 — non-field errors</span>
+          &lt;<span class="t">AlertBanner.Title</span>&gt;{globalError.title}&lt;/<span class="t">AlertBanner.Title</span>&gt;
+          &lt;<span class="t">AlertBanner.Description</span>&gt;{globalError.detail}&lt;/<span class="t">AlertBanner.Description</span>&gt;
+          &lt;<span class="t">AlertBanner.Close</span> asChild&gt;
+            &lt;<span class="k">button</span> onClick={() =&gt; setGlobalError(null)}&gt;<span class="t">&lt;XIcon /&gt;</span>&lt;/<span class="k">button</span>&gt;
+          &lt;/<span class="t">AlertBanner.Close</span>&gt;
+        &lt;/<span class="t">AlertBanner.Root</span>&gt;
+      )}
+
+      &lt;<span class="t">FileChip</span> file={file} /&gt;                            <span class="c">// HTML/ZIP color-coded</span>
+
+      &lt;<span class="t">Form.Root</span> onSubmit={handleSubmit}&gt;
+
+        &lt;<span class="t">InputField.Root</span> name=<span class="s">"name"</span>                    <span class="c">// DS 28 — field-level error/success</span>
+                          data-state={nameStatus}&gt;     <span class="c">// 'error' | 'success' | undef</span>
+          &lt;<span class="t">InputField.Label</span>&gt;Name&lt;/<span class="t">InputField.Label</span>&gt;
+          &lt;<span class="t">InputField.Control</span> asChild&gt;
+            &lt;<span class="k">input</span> required pattern=<span class="s">"[a-z0-9-]+"</span> defaultValue={suggestedName} /&gt;
+          &lt;/<span class="t">InputField.Control</span>&gt;
+          &lt;<span class="t">InputField.Message</span> match=<span class="s">"patternMismatch"</span>&gt;
+            Use lowercase letters, numbers, or hyphens only.
+          &lt;/<span class="t">InputField.Message</span>&gt;
+        &lt;/<span class="t">InputField.Root</span>&gt;
+
+        &lt;<span class="t">Form.Field</span> name=<span class="s">"projectId"</span>&gt;
+          &lt;<span class="t">Form.Label</span>&gt;Project&lt;/<span class="t">Form.Label</span>&gt;
+          &lt;<span class="t">Form.Control</span> asChild&gt;&lt;<span class="k">select</span>&gt;{projectOptions}&lt;/<span class="k">select</span>&gt;&lt;/<span class="t">Form.Control</span>&gt;
+        &lt;/<span class="t">Form.Field</span>&gt;
+
+        &lt;<span class="t">FolderPicker</span>                                  <span class="c">// custom — tree-popover variant</span>
+          projectId={selectedProject}
+          value={folderPath}
+          onChange={setFolderPath}
+        /&gt;
+
+        {currentViewIsMockup
+          ? &lt;<span class="t">ReplaceToggle</span> currentMockup={currentMockup} /&gt;
+          : &lt;<span class="t">PreviewBox</span> file={file} /&gt;}
+
+        {uploading &amp;&amp; &lt;<span class="t">ProgressBar</span> /&gt;}
+
+        &lt;<span class="t">Form.Submit</span> asChild&gt;
+          &lt;<span class="k">button</span> className=<span class="s">"btn-accent"</span> disabled={uploading || nameStatus === <span class="s">'error'</span>}&gt;
+            {uploading ? <span class="s">'Uploading…'</span> : (globalError ? <span class="s">'Retry'</span> : <span class="s">'Add mockup'</span>)}
+          &lt;/<span class="k">button</span>&gt;
+        &lt;/<span class="t">Form.Submit</span>&gt;
+      &lt;/<span class="t">Form.Root</span>&gt;
+    &lt;/<span class="t">Dialog.Content</span>&gt;
+  &lt;/<span class="t">Dialog.Portal</span>&gt;
+&lt;/<span class="t">Dialog.Root</span>&gt;
+</pre>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px;margin-top:12px">
+      <li><strong>Radix Dialog</strong> handles: focus trap, Escape to close, scroll lock, portal, ARIA (aria-modal, labelledby, describedby).</li>
+      <li><strong>Radix Form</strong> handles: sync validation via browser ConstraintValidation, emits <code>[data-invalid]</code> / <code>[data-valid]</code> on Field, <code>Form.Message match="patternMismatch"</code> binds error copy to the matcher.</li>
+      <li><strong><a href="./28-input-field.html" style="color:var(--accent)"><code>InputField</code></a></strong> (DS 28) wraps Radix Form.Field with our styling. CSS picks up both Radix's <code>[data-invalid]</code> and our explicit <code>[data-state="error"]</code> (server-side name collision).</li>
+      <li><strong><a href="./27-alert-banner.html" style="color:var(--accent)"><code>AlertBanner</code></a></strong> (DS 27) renders ONLY non-field errors at the top of the dialog body. Field-level errors stay on the input.</li>
+      <li><strong>FolderPicker</strong> (custom compound, not yet a DS file) renders the tree-popover variant — chevron trigger + popover with project's folder tree.</li>
+      <li><strong>FileChip + ReplaceToggle + PreviewBox</strong> are internal sub-components — not separate DS files since they only appear inside this dialog.</li>
+      <li><strong>Submit button label is contextual</strong>: "Add mockup" (idle) / "Uploading…" (uploading) / "Retry" (after global error).</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead><tr><th>State</th><th>Trigger</th><th>Visual</th><th>Affordances</th></tr></thead>
+      <tbody>
+        <tr><td><code>idle</code></td><td>Dialog mounts after drop / click</td><td>All fields editable; preview visible; Add button enabled</td><td>Cancel · Add mockup</td></tr>
+        <tr><td><code>field-error</code></td><td>Radix <code>Form.Message match</code> fires OR server returns 409 conflict</td><td><a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a> error state on the relevant field</td><td>Cancel · <em>Add disabled</em></td></tr>
+        <tr><td><code>global-error</code></td><td>Server returns 500/network/permission/rate-limit</td><td><a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> at top; fields stay editable</td><td>Cancel · Retry</td></tr>
+        <tr><td><code>uploading</code></td><td>Submit fires + request in flight</td><td>Fields disabled; preview hidden; inline progress bar shown; Add → "Uploading…"</td><td>Cancel only (Esc / Close disabled)</td></tr>
+        <tr><td><code>replace-mode</code></td><td>Dialog opened from <a href="./11-mockup-view.html" style="color:var(--accent)"><code>mockup-view</code></a></td><td>Replace toggle replaces preview area; default "Add as new"; alt "Replace as new version"</td><td>Same as idle</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Open paths</strong>: (a) file dropped on app via <a href="./24-drop-overlay.html" style="color:var(--accent)"><code>drop-overlay</code></a>; (b) "New mockup" footer button (<a href="./01-sidebar.html" style="color:var(--accent)"><code>sidebar</code></a>) → file picker → dialog; (c) <a href="./26-empty-state.html" style="color:var(--accent)"><code>empty-state</code></a> dropzone click; (d) Ctrl/Cmd+U shortcut.</li>
+      <li><strong>Name pre-fill</strong>: file basename minus extension, lower-cased, hyphenated. User can edit.</li>
+      <li><strong>Project pre-fill</strong>: from route (current project / "Unsorted" for /). User can change.</li>
+      <li><strong>Folder pre-fill</strong>: from route. User can navigate the tree-popover to a different folder.</li>
+      <li><strong>Preview</strong>: file URL (<code>URL.createObjectURL</code>) rendered into an offscreen iframe + screenshot pipeline → preview-box. Replaced by progress bar during upload; replaced by replace-toggle when in replace-mode.</li>
+      <li><strong>Validation</strong>: name pattern <code>^[a-z0-9-]+$</code> (lowercase + digits + hyphen). Sync via Radix Form. Duplicate names checked async after debounce (200 ms) → field-error.</li>
+      <li><strong>Submit</strong>: posts FormData to <code>/api/mockups</code> with file + name + projectId + folderId + (mode: add|replace). On success: dialog closes, navigates to the new mockup's view.</li>
+      <li><strong>Cancel</strong>: aborts the request (AbortController), closes dialog. Esc closes the dialog when not uploading; when uploading, Esc is intercepted and shows a confirm via <a href="./14-dialog.html" style="color:var(--accent)"><code>ConfirmDialog</code></a> ("Cancel upload?").</li>
+      <li><strong>Field error recovery</strong>: typing in the field clears its error state; submit re-runs validation.</li>
+      <li><strong>Global error recovery</strong>: dismissing the banner clears it; Add button reverts to "Add mockup". Banner stays sticky otherwise (no auto-dismiss for errors).</li>
+      <li><strong>Replace toggle behavior</strong>: when toggled to "Replace", the name field becomes read-only (matches the existing mockup's name) and the form submits to <code>/api/mockups/[id]/version</code> instead of <code>/api/mockups</code>.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>dialog width<dd>min(440px, calc(100vw - 32px))
+      <dt>dialog padding<dd>18px 18px 14px
+      <dt>dialog radius<dd>14px
+      <dt>dialog bg<dd>--surface-glass-bg + blur(16px) saturate(140%)
+      <dt>dialog border<dd>1px solid --border
+      <dt>dialog shadow<dd>--shadow-popover
+      <dt>dialog enter<dd>opacity 0 → 1 + scale(0.96 → 1) + translateY(8 → 0) over --motion-base / --ease-spring
+      <dt>title<dd>13px / 700 / -0.01em, --text-bright
+      <dt>close btn<dd>24×24, --radius-xs; :hover --surface-hover + --text-bright
+      <dt>file-chip<dd>--bg-card bg, 1px --border-subtle, --radius-sm, 8×12 pad
+      <dt>file-chip .html<dd>32×32 chip, oklch(35% 0.12 60) bg / oklch(85% 0.16 60) text — orange family
+      <dt>file-chip .zip<dd>32×32 chip, oklch(35% 0.12 240) bg / oklch(85% 0.14 240) text — blue family
+      <dt>field input<dd>34px tall, 8px radius, rgba(255,255,255,0.04) bg, 1px --border
+      <dt>field focus<dd>--accent border + 3px --accent-overlay-soft ring
+      <dt>field error<dd>--danger border + 3px --danger-soft ring + shake
+      <dt>folder-picker trigger<dd>34px tall, matches input style; .is-open → --accent border + 3px ring + chevron rotate
+      <dt>folder-popover<dd>320 wide (matches trigger), max-height 280px, --surface-glass-bg, --shadow-popover
+      <dt>folder-row selected<dd>--accent-soft bg, --accent text, 600 weight on name
+      <dt>preview-box<dd>160px tall, --radius-sm, 1px --border, white-tinted bg
+      <dt>progress bar<dd>4px tall, --btn-bg track, --accent fill, --radius-pill, 1.4s indeterminate
+      <dt>replace-toggle<dd>--bg-tinted bg, 1px --border-subtle, 8×12 pad, accent radio when active
+      <dt>actions<dd>flex-end, 8px gap
+      <dt>btn-secondary<dd>8×14 pad, --btn-bg, --text, --radius-pill, 600 / 12.5px
+      <dt>btn-accent<dd>8×18 pad, --accent bg, --bg text, --radius-pill, 700 / 12.5px
+    </dl>
+  </section>
+
 </div>
+
 </body>
 </html>

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>28 — Input field</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);
+  /* Semantic palette — verbatim from src/styles/tokens.css */
+  --danger:oklch(70% 0.2 25);   --danger-soft:oklch(28% 0.09 25);
+  --success:oklch(76% 0.16 152);--success-soft:oklch(28% 0.07 152);
+  --info:oklch(74% 0.13 200);   --info-soft:oklch(26% 0.06 200);
+  --warning:oklch(80% 0.15 80); --warning-soft:oklch(30% 0.07 80);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+input{font-family:inherit;color:inherit}
+
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:880px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  padding:32px;
+}
+.stage + .stage{margin-top:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
+.state{display:flex;flex-direction:column;gap:6px}
+.state .state-label{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim)}
+
+/* ─── input-field — single canonical surface with stateful variants ─── */
+.input-field{
+  display:flex;flex-direction:column;
+  gap:4px;
+  position:relative;
+}
+.input-field > label,
+.input-field .field-label{
+  font-family:var(--font-mono);
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+}
+.input-field .field-control{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+.input-field input{
+  width:100%;
+  height:34px;
+  padding:0 10px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text-bright);
+  font-size:13.5px;
+  transition:border-color var(--motion-fast),box-shadow var(--motion-fast),background var(--motion-fast);
+}
+.input-field input::placeholder{color:var(--text-muted)}
+.input-field input:hover:not(:focus):not(:disabled){border-color:var(--border-strong)}
+.input-field input:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-overlay-soft);
+}
+.input-field input:disabled{
+  background:transparent;
+  color:var(--text-muted);
+  cursor:not-allowed;
+  border-style:dashed;
+}
+
+/* ── Leading icon ── */
+.input-field.has-leading-icon input{padding-left:32px}
+.input-field .leading-icon{
+  position:absolute;
+  left:10px;
+  width:14px;height:14px;
+  color:var(--text-muted);
+  pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+}
+.input-field .leading-icon svg{width:14px;height:14px}
+
+/* ── Trailing icon (used by success state for ✓) ── */
+.input-field.has-trailing-icon input{padding-right:32px}
+.input-field .trailing-icon{
+  position:absolute;
+  right:10px;
+  width:14px;height:14px;
+  pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);
+  font-weight:700;
+}
+.input-field .trailing-icon svg{width:14px;height:14px}
+
+/* ── Help text ── */
+.input-field .help{
+  font-size:11px;
+  color:var(--text-dim);
+}
+
+/* ── ERROR STATE — driven by [data-state="error"] on .input-field. ──
+       Maps to Radix Form's [data-invalid] on Field. */
+.input-field[data-state="error"] input,
+.input-field[data-invalid] input{
+  border-color:var(--danger);
+  box-shadow:0 0 0 3px var(--danger-soft);
+  animation:errorShake 320ms var(--ease-spring);
+}
+.input-field[data-state="error"] input:focus,
+.input-field[data-invalid] input:focus{
+  border-color:var(--danger);
+  box-shadow:0 0 0 3px var(--danger-soft);
+}
+.input-field[data-state="error"] .help,
+.input-field[data-invalid] .help{
+  color:var(--danger);
+  font-weight:500;
+  display:flex;align-items:center;gap:5px;
+}
+.input-field[data-state="error"] .help::before,
+.input-field[data-invalid] .help::before{
+  content:'⚠';
+  font-size:11px;
+}
+@keyframes errorShake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-4px)}
+  40%{transform:translateX(4px)}
+  60%{transform:translateX(-2px)}
+  80%{transform:translateX(2px)}
+}
+
+/* ── SUCCESS STATE — driven by [data-state="success"] on .input-field. ──
+       Not a Radix primitive: Radix Form exposes [data-valid] for "no
+       validation errors" but that's passive (no visual change). Use this
+       success state when you want explicit affirmative feedback — e.g.,
+       after an async check confirmed (name available, code redeemed). */
+.input-field[data-state="success"] input{
+  border-color:var(--success);
+  box-shadow:0 0 0 3px var(--success-soft);
+}
+.input-field[data-state="success"] input:focus{
+  border-color:var(--success);
+  box-shadow:0 0 0 3px var(--success-soft);
+}
+.input-field[data-state="success"] .help{
+  color:var(--success);
+  font-weight:500;
+  display:flex;align-items:center;gap:5px;
+}
+.input-field[data-state="success"] .help::before{
+  content:'✓';
+  font-size:12px;
+  font-weight:700;
+}
+.input-field[data-state="success"] .trailing-icon{
+  color:var(--success);
+  animation:successPop 320ms var(--ease-spring);
+}
+@keyframes successPop{
+  0%{opacity:0;transform:scale(0.6)}
+  60%{opacity:1;transform:scale(1.15)}
+  100%{opacity:1;transform:scale(1)}
+}
+
+/* Demo helpers */
+.field-stack{display:flex;flex-direction:column;gap:16px;max-width:400px;margin:0 auto}
+
+/* Anatomy / matrix tables */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th, table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;
+  background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  color:var(--text-dim);
+  overflow-x:auto;
+  white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
+</style>
+</head>
+<body>
+
+<div class="page" data-ds-component="input-field">
+
+  <h1 class="h1">Input field</h1>
+  <p class="lede">Single-line text input with label, optional help line, and stateful variants. <strong>Error</strong> covers field-level validation (required, format, length, duplicate); <strong>success</strong> covers affirmative confirmation (e.g., async availability check passed). Non-field failures go to the <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> instead.</p>
+
+  <section class="section">
+    <div class="section-title">All states</div>
+    <div class="stage">
+      <div class="row-states">
+        <div class="state">
+          <div class="state-label">Default</div>
+          <div class="input-field">
+            <label for="i-default">Name</label>
+            <div class="field-control"><input id="i-default" type="text" placeholder="pricing-v3"></div>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">Filled</div>
+          <div class="input-field">
+            <label for="i-filled">Name</label>
+            <div class="field-control"><input id="i-filled" type="text" value="pricing-v3"></div>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">Focused</div>
+          <div class="input-field">
+            <label for="i-focused">Name</label>
+            <div class="field-control"><input id="i-focused" type="text" value="pricing-v3" autofocus></div>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">Error</div>
+          <div class="input-field" data-state="error">
+            <label for="i-error">Name</label>
+            <div class="field-control"><input id="i-error" type="text" value="Pricing V3"></div>
+            <div class="help">Use lowercase letters, numbers, or hyphens only.</div>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">Success</div>
+          <div class="input-field has-trailing-icon" data-state="success">
+            <label for="i-success">Name</label>
+            <div class="field-control">
+              <input id="i-success" type="text" value="pricing-v3">
+              <span class="trailing-icon" aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8.5l3 3 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </div>
+            <div class="help">Name is available.</div>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">Disabled</div>
+          <div class="input-field">
+            <label for="i-disabled">Name</label>
+            <div class="field-control"><input id="i-disabled" type="text" value="pricing-v3" disabled></div>
+            <div class="help">Editing is paused while the upload is in flight.</div>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">With leading icon</div>
+          <div class="input-field has-leading-icon">
+            <label for="i-search">Search</label>
+            <div class="field-control">
+              <span class="leading-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3" stroke-linecap="round"/></svg></span>
+              <input id="i-search" type="text" placeholder="Find a mockup…">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Six variants share the same 34px height, 8px radius, mono-cased label. Error adds danger border + ring + shake + ⚠ help. Success adds success border + ring + ✓ trailing icon + ✓ help. Both states key off <code>[data-state]</code> on the wrapper.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Error state — driven by <code>[data-state="error"]</code> or Radix <code>[data-invalid]</code></div>
+    <div class="stage">
+      <div class="field-stack">
+        <div class="input-field" data-state="error">
+          <label for="i-err1">Name</label>
+          <div class="field-control"><input id="i-err1" type="text" value="Pricing V3"></div>
+          <div class="help">Use lowercase letters, numbers, or hyphens only.</div>
+        </div>
+        <div class="input-field" data-state="error">
+          <label for="i-err2">Name</label>
+          <div class="field-control"><input id="i-err2" type="text" value="pricing-v3"></div>
+          <div class="help">A mockup named "pricing-v3" already exists in this folder.</div>
+        </div>
+        <button type="button" id="replay-error" style="align-self:flex-start;padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-xs);font-family:var(--font-mono);font-size:11px;color:var(--text-dim);cursor:pointer">Replay error shake</button>
+      </div>
+    </div>
+    <div class="caption">The shake animation fires when <code>data-state</code> flips to <code>error</code>. Re-trigger by removing and re-applying the attribute — the button above does this on click.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Success state — explicit affirmative</div>
+    <div class="stage">
+      <div class="field-stack">
+        <div class="input-field has-trailing-icon" data-state="success">
+          <label for="i-suc1">Name</label>
+          <div class="field-control">
+            <input id="i-suc1" type="text" value="pricing-v3">
+            <span class="trailing-icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8.5l3 3 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+          <div class="help">Name is available.</div>
+        </div>
+        <div class="input-field has-trailing-icon" data-state="success">
+          <label for="i-suc2">Invite code</label>
+          <div class="field-control">
+            <input id="i-suc2" type="text" value="MARK-2026-Q3">
+            <span class="trailing-icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8.5l3 3 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+          <div class="help">Code redeemed — you have 7 days of full access.</div>
+        </div>
+        <button type="button" id="replay-success" style="align-self:flex-start;padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-xs);font-family:var(--font-mono);font-size:11px;color:var(--text-dim);cursor:pointer">Replay success pop</button>
+      </div>
+    </div>
+    <div class="caption">Use sparingly. Reserved for async confirmations the user needs to <em>see</em> — name availability, code redemption, link verified. Resting "valid" state (no errors) is invisible by design.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — composes with Radix Form</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:640px">Radix Primitives ships <code style="color:var(--accent)">@radix-ui/react-form</code> with <code>Form.Root</code>, <code>Form.Field</code>, <code>Form.Label</code>, <code>Form.Control</code>, <code>Form.Message</code>, <code>Form.Submit</code>. It manages validity via the browser's <code>ConstraintValidation</code> API and emits <code>[data-invalid]</code> / <code>[data-valid]</code> on <code>Form.Field</code> when validation state changes. Our DS keys off both <code>data-invalid</code> (Radix-driven sync validation) and <code>data-state="error" | "success"</code> (consumer-driven for async/server validation).</p>
+    <pre class="api"><span class="c">// InputField.tsx — composes Radix Form primitives</span>
+<span class="k">import</span> * <span class="k">as</span> Form <span class="k">from</span> <span class="s">'@radix-ui/react-form'</span>;
+
+&lt;<span class="t">Form.Root</span> onSubmit={handleSubmit}&gt;
+  &lt;<span class="t">Form.Field</span> name=<span class="s">"name"</span> className=<span class="s">"input-field"</span>&gt;        <span class="c">// gets [data-invalid] / [data-valid]</span>
+    &lt;<span class="t">Form.Label</span>&gt;Name&lt;/<span class="t">Form.Label</span>&gt;
+    &lt;<span class="t">Form.Control</span> asChild&gt;                            <span class="c">// Slot — keep native &lt;input&gt;</span>
+      &lt;<span class="k">input</span> type=<span class="s">"text"</span> required pattern=<span class="s">"[a-z0-9-]+"</span> /&gt;
+    &lt;/<span class="t">Form.Control</span>&gt;
+    &lt;<span class="t">Form.Message</span> match=<span class="s">"valueMissing"</span> className=<span class="s">"help"</span>&gt;
+      A name is required.
+    &lt;/<span class="t">Form.Message</span>&gt;
+    &lt;<span class="t">Form.Message</span> match=<span class="s">"patternMismatch"</span> className=<span class="s">"help"</span>&gt;
+      Use lowercase letters, numbers, or hyphens only.
+    &lt;/<span class="t">Form.Message</span>&gt;
+    &lt;<span class="t">Form.Message</span> match={(value) =&gt; asyncCheckTaken(value)} className=<span class="s">"help"</span>&gt;
+      A mockup with that name already exists in this folder.
+    &lt;/<span class="t">Form.Message</span>&gt;
+  &lt;/<span class="t">Form.Field</span>&gt;
+
+  &lt;<span class="c">/* Custom success state — Radix doesn't ship one. Wrap or set */</span>
+  &lt;<span class="c">   data-state="success" once your async check resolves OK.       */</span>&gt;
+  &lt;<span class="t">Form.Field</span> name=<span class="s">"code"</span> className=<span class="s">"input-field has-trailing-icon"</span>
+              data-state={codeStatus}&gt;                          <span class="c">// 'success' | undefined</span>
+    &lt;<span class="t">Form.Label</span>&gt;Invite code&lt;/<span class="t">Form.Label</span>&gt;
+    &lt;<span class="t">Form.Control</span> asChild&gt;&lt;<span class="k">input</span> type=<span class="s">"text"</span> /&gt;&lt;/<span class="t">Form.Control</span>&gt;
+    {codeStatus === <span class="s">'success'</span> &amp;&amp; &lt;span className=<span class="s">"trailing-icon"</span>&gt;<span class="t">&lt;CheckIcon /&gt;</span>&lt;/span&gt;}
+    {codeStatus === <span class="s">'success'</span> &amp;&amp; &lt;<span class="k">div</span> className=<span class="s">"help"</span>&gt;Code redeemed.&lt;/<span class="k">div</span>&gt;}
+  &lt;/<span class="t">Form.Field</span>&gt;
+&lt;/<span class="t">Form.Root</span>&gt;
+</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:640px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><code>Form.Field</code> auto-stamps <code>data-invalid</code> when the embedded input's <code>ValidityState</code> fails any matcher. Our CSS picks this up alongside <code>[data-state="error"]</code> so both work.</li>
+      <li><code>Form.Field</code> also stamps <code>data-valid</code> when all matchers pass, but we treat that as <strong>resting</strong> — no visual. Showing a green "valid" state on every untouched input is noise.</li>
+      <li>For affirmative <strong>success</strong> (async name-available, code redeemed, etc.) set <code>data-state="success"</code> on the field manually — Radix has no built-in for this.</li>
+      <li><code>Form.Control asChild</code> wraps a native <code>&lt;input&gt;</code> (no Radix Input primitive — same convention as the buttons in <code>ConfirmDialog</code>).</li>
+      <li><code>Form.Message match</code> accepts built-in matchers (<code>valueMissing</code>, <code>typeMismatch</code>, <code>patternMismatch</code>, <code>tooShort</code>, <code>tooLong</code>, <code>rangeUnderflow</code>, <code>rangeOverflow</code>, <code>stepMismatch</code>, <code>badInput</code>) or a custom predicate function for async/server validation.</li>
+      <li>For server-side validation results from a <code>fetch</code> response, set <code>data-state="error"</code> + render the message in <code>.help</code> directly — Radix Form doesn't round-trip server errors automatically.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>How it triggers</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>default</code></td>
+          <td>Empty or untouched</td>
+          <td>Neutral border, placeholder visible</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>focused</code></td>
+          <td><code>:focus</code> via keyboard or click</td>
+          <td>Accent border + 3px accent ring</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>error</code></td>
+          <td>Radix <code>[data-invalid]</code> OR our <code>[data-state="error"]</code> (server)</td>
+          <td>Danger border + 3px danger ring + shake + ⚠ help</td>
+          <td><code>aria-invalid="true"</code> (set by Radix Form)</td>
+        </tr>
+        <tr>
+          <td><code>success</code></td>
+          <td>Our <code>[data-state="success"]</code> (async confirm)</td>
+          <td>Success border + 3px success ring + ✓ trailing icon + ✓ help</td>
+          <td>SR-friendly help text announces affirmative</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>HTML <code>disabled</code> attribute</td>
+          <td>Transparent bg, dashed border, muted text</td>
+          <td><code>aria-disabled</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">"Resting valid" (Radix <code>[data-valid]</code> with no <code>[data-state]</code>) deliberately has no visual treatment.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which channel</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>This field's <code>error</code> fires when…</th><th>Use <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> when…</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Required field is empty</td><td>Network/server request failed</td></tr>
+        <tr><td>Format invalid (regex, type)</td><td>Permission denied / not the owner</td></tr>
+        <tr><td>Length out of range</td><td>Rate limit reached</td></tr>
+        <tr><td>Value collides (duplicate name)</td><td>The failure isn't tied to any single field</td></tr>
+      </tbody>
+    </table>
+    <div class="caption">A single form can show one banner <em>and</em> multiple field errors at the same time — they don't compete.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>height<dd>34px
+      <dt>padding<dd>0 10px (0 32px 0 10px with leading icon; 10 32px 10 10 with trailing)
+      <dt>radius<dd>--radius-sm (8px)
+      <dt>bg<dd>rgba(255,255,255,0.04)
+      <dt>border<dd>1px solid --border
+      <dt>focus border<dd>--accent + 3px --accent-overlay-soft ring
+      <dt>error border<dd>--danger + 3px --danger-soft ring
+      <dt>success border<dd>--success + 3px --success-soft ring
+      <dt>label<dd>10.5px / 700 / 0.08em uppercase, --text-muted, font-mono
+      <dt>help (default)<dd>11px / 400, --text-dim
+      <dt>help (error)<dd>11px / 500, --danger, ⚠ prefix
+      <dt>help (success)<dd>11px / 500, --success, ✓ prefix
+      <dt>trailing icon (success)<dd>14×14, --success colour, pop-in 320ms / --ease-spring
+      <dt>shake<dd>320ms / --ease-spring, ±4px → ±2px → 0
+      <dt>placeholder<dd>--text-muted
+      <dt>disabled<dd>transparent bg, dashed border, --text-muted
+    </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px">
+      <li>Error state set by Radix Form (sync, via <code>[data-invalid]</code>) or by us (async/server, via <code>[data-state="error"]</code>). Both paths render the same visual.</li>
+      <li>Setting <code>[data-state="error"]</code> auto-triggers the shake — no JS needed. Re-apply to replay.</li>
+      <li>Success state ONLY via <code>[data-state="success"]</code> — there is no Radix primitive for this. Trigger after async confirmation (debounced).</li>
+      <li><code>.help</code> slot is the same DOM position for resting / error / success — no layout shift when state changes.</li>
+      <li>Error focused state keeps danger border (doesn't fall back to accent) so the error stays legible while editing.</li>
+      <li>Clear state by removing <code>data-state</code> when the user types — error returns to default; success persists or clears on the consumer's logic.</li>
+    </ul>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  document.getElementById('replay-error')?.addEventListener('click', () => {
+    document.querySelectorAll('.input-field[data-state="error"]').forEach(f => {
+      f.removeAttribute('data-state');
+      void f.offsetWidth;                          // force reflow so the shake restarts
+      f.setAttribute('data-state', 'error');
+    });
+  });
+  document.getElementById('replay-success')?.addEventListener('click', () => {
+    document.querySelectorAll('.input-field[data-state="success"] .trailing-icon').forEach(ic => {
+      ic.style.animation = 'none';
+      void ic.offsetWidth;
+      ic.style.animation = '';
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

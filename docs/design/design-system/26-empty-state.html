@@ -2,24 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>26 — Empty State (Uploads)</title>
+<title>26 — Empty state (uploads)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
-  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
-  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);
+  --surface-hover:rgba(255,255,255,0.04);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);
   --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
   --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
   --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
-  --btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);
   --surface-glass-bg:rgb(7 12 15 / 80%);
   --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
   --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
   --motion-fast:160ms;--motion-base:220ms;
-  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-pill:9999px;
-  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
 }
 @media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -27,255 +25,257 @@ html,body{height:100%}
 body{
   background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
   -webkit-font-smoothing:antialiased;
-  background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
-  background-attachment:fixed;min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
 }
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
-.page{padding:48px 32px 96px;max-width:1280px;margin:0 auto}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+input{font-family:inherit;color:inherit}
+
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:920px;margin:0 auto}
 .h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
-.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:760px;line-height:1.55}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
 .section{margin-bottom:48px}
 .section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
-.variant-label{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-dim);margin-bottom:10px;text-transform:lowercase;display:flex;align-items:center;justify-content:space-between}
-.variant-label .ctx{color:var(--text-muted)}
-
-.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
-@media(max-width:1100px){.grid-3{grid-template-columns:1fr}}
-
-.frame{
-  position:relative;background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
   border:1px solid var(--border-subtle);border-radius:var(--radius-md);
-  height:360px;padding:18px;overflow:hidden;display:flex;flex-direction:column;
+  padding:32px;
 }
-.fake-topbar{
-  height:36px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
-  display:flex;align-items:center;padding:0 10px;gap:10px;font-family:var(--font-mono);font-size:10px;color:var(--text-muted);
-  margin-bottom:12px;flex-shrink:0;
-}
-.fake-topbar .crumb{color:var(--text-dim)}
-.fake-topbar .crumb-current{color:var(--text-bright);font-weight:600}
-.fake-topbar .grow{flex:1}
-.fake-topbar .new-project-chip{
-  display:inline-flex;align-items:center;gap:4px;background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);
-  color:var(--accent);border-radius:var(--radius-pill);padding:3px 9px;font-weight:600;font-size:10px;
-}
-.fake-main{
-  flex:1;display:flex;align-items:center;justify-content:center;position:relative;
-}
+.stage + .stage{margin-top:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
 
-/* drop-zone-gigante */
-.drop-zone-large{
-  width:100%;height:100%;border:2px dashed var(--accent-overlay-mid);border-radius:var(--radius-md);
-  background:oklch(20% 0.05 165 / 0.18);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;
+/* ─── empty-state — drop-zone-gigante (singular recipe).
+       Replaces the view content when a project / folder / all-projects
+       view has no mockups. Acts as a drop target (same as the surrounding
+       app) plus a click target that opens the system file picker. ─── */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:var(--space-md, 12px);
+  padding:40px 0;
+  width:100%;
+  min-height:420px;
+}
+.empty-state .empty-drop{
+  width:100%;
+  height:360px;
+  border:2px dashed var(--accent-overlay-mid);
+  border-radius:var(--radius-md);
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;
   cursor:pointer;
+  transition:border-color var(--motion-base) var(--ease-standard),background var(--motion-base) var(--ease-standard);
 }
-.drop-zone-large .cloud{
-  width:48px;height:48px;border-radius:50%;background:var(--accent-overlay-soft);
-  display:flex;align-items:center;justify-content:center;color:var(--accent);
+.empty-state .empty-drop:hover,
+.empty-state .empty-drop:focus-visible{
+  border-color:var(--accent);
+  background:var(--accent-overlay-soft);
+  outline:none;
 }
-.drop-zone-large .title{font-size:16px;font-weight:700;color:var(--text-bright);letter-spacing:-0.01em;text-align:center}
-.drop-zone-large .sub{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);text-align:center}
+.empty-state .empty-drop .icon{
+  width:56px;height:56px;border-radius:50%;
+  background:var(--accent-overlay-soft);
+  display:flex;align-items:center;justify-content:center;
+}
+.empty-state .empty-drop .icon svg{width:28px;height:28px;color:var(--accent)}
+.empty-state .empty-drop .title{
+  color:var(--text-bright);
+  font-weight:700;
+  font-size:18px;
+  letter-spacing:-0.01em;
+}
+.empty-state .empty-drop .sub{
+  color:var(--text-dim);
+  font-family:var(--font-mono);
+  font-size:12px;
+}
 
-/* botao-pill */
-.pill-cta-wrap{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;
+/* Hidden file input — keyboard-accessible via the dropzone's tabIndex */
+.empty-state input[type="file"]{
+  position:absolute;
+  width:1px;height:1px;
+  padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;border:0;
 }
-.upload-pill{
-  display:inline-flex;align-items:center;gap:6px;background:var(--btn-bg);color:var(--accent);
-  border:1px solid var(--accent-overlay-mid);border-radius:var(--radius-pill);
-  padding:8px 16px;font-size:13px;font-weight:600;
-}
-.upload-pill:hover{background:var(--btn-bg-hover);color:var(--accent-bright)}
-.pill-cta-wrap .sub{font-family:var(--font-mono);font-size:11px;color:var(--text-muted)}
 
-/* footer notes */
-.footer-note{
-  margin-top:48px;padding-top:24px;border-top:1px solid var(--border-subtle);
-  font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.7;
+/* Demo helpers */
+.context-grid{display:flex;flex-direction:column;gap:16px}
+.context-frame{
+  border:1px dashed var(--border);
+  border-radius:var(--radius-sm);
+  padding:24px;
+  position:relative;
 }
-.note-row{margin-bottom:6px}
+.context-frame .frame-label{
+  position:absolute;
+  top:8px;left:12px;
+  font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.08em;
+  text-transform:uppercase;color:var(--text-muted);
+}
+
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
+
 <div class="page" data-ds-component="empty-state">
-  <h1 class="h1">26 — Empty State (Uploads)</h1>
-  <p class="lede">Replaces the content of any workspace view when there are zero mockups (or zero projects) to show. Three sub-variants — a giant drop zone, a discreet pill CTA, and a both-paths layout. Each variant adapts its copy to the current context (All Projects, Project, Folder).</p>
 
-  <!-- ──── drop-zone-gigante ──── -->
-  <div class="section">
-    <div class="section-title">drop-zone-gigante (default)</div>
-    <div class="grid-3">
+  <h1 class="h1">Empty state — drop-zone-gigante</h1>
+  <p class="lede">Replaces the view content when a project / folder / all-projects view has zero mockups. Single recipe: a full-width dashed-bordered area that doubles as a drop target and a click-to-pick file affordance. Title + subtitle are context-aware (project name / folder name / "first mockup"). When the view has no mockups <strong>and</strong> the user has dragged a file, the <a href="./24-drop-overlay.html" style="color:var(--accent)"><code>drop-overlay</code></a> takes over (this state hides behind it).</p>
 
-      <div>
-        <div class="variant-label"><span>all-projects</span><span class="ctx">/</span></div>
-        <div class="frame">
-          <div class="fake-topbar"><span class="crumb-current">All Projects</span><span class="grow"></span></div>
-          <div class="fake-main">
-            <div class="drop-zone-large">
-              <div class="cloud"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
+  <section class="section">
+    <div class="section-title">Default — on a project view</div>
+    <div class="stage">
+      <div class="empty-state">
+        <label class="empty-drop" tabindex="0" role="button" aria-label="Upload mockup to Lumen Coffee">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="title">No mockups in Lumen Coffee yet</div>
+          <div class="sub">Drop an HTML or click to upload to this project</div>
+          <input type="file" accept=".html,.zip" tabindex="-1">
+        </label>
+      </div>
+    </div>
+    <div class="caption">Dropzone fills the view width, 360px tall, dashed accent-overlay-mid border, glass-surface fill with 8px blur. Hover/focus brightens border to <code>--accent</code> and adds soft accent overlay.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Contextual titles per view</div>
+    <div class="stage">
+      <div class="context-grid">
+        <div class="context-frame">
+          <div class="frame-label">view: /</div>
+          <div class="empty-state">
+            <label class="empty-drop" tabindex="0" role="button" aria-label="Upload your first mockup">
+              <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
               <div class="title">Drop your first mockup here</div>
               <div class="sub">or click to choose a file</div>
-            </div>
+            </label>
           </div>
         </div>
-      </div>
-
-      <div>
-        <div class="variant-label"><span>project</span><span class="ctx">/projects/lumen-coffee</span></div>
-        <div class="frame">
-          <div class="fake-topbar"><span class="crumb">Lumen Coffee ›</span> <span class="crumb-current">Mockups</span><span class="grow"></span></div>
-          <div class="fake-main">
-            <div class="drop-zone-large">
-              <div class="cloud"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
+        <div class="context-frame">
+          <div class="frame-label">view: /projects/lumen-coffee</div>
+          <div class="empty-state">
+            <label class="empty-drop" tabindex="0" role="button" aria-label="Upload mockup to Lumen Coffee">
+              <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
               <div class="title">No mockups in Lumen Coffee yet</div>
               <div class="sub">Drop an HTML or click to upload to this project</div>
-            </div>
+            </label>
           </div>
         </div>
-      </div>
-
-      <div>
-        <div class="variant-label"><span>folder</span><span class="ctx">/lumen-coffee/hero</span></div>
-        <div class="frame">
-          <div class="fake-topbar"><span class="crumb">Lumen Coffee › Hero</span><span class="grow"></span></div>
-          <div class="fake-main">
-            <div class="drop-zone-large">
-              <div class="cloud"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
+        <div class="context-frame">
+          <div class="frame-label">view: /projects/lumen-coffee/hero</div>
+          <div class="empty-state">
+            <label class="empty-drop" tabindex="0" role="button" aria-label="Upload mockup to Hero">
+              <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
               <div class="title">Hero is empty</div>
               <div class="sub">Drop an HTML or click to upload to this folder</div>
-            </div>
+            </label>
           </div>
         </div>
       </div>
-
     </div>
-  </div>
+    <div class="caption">Three view contexts share the same visual recipe; only title + subtitle copy change. The route resolves which copy to use.</div>
+  </section>
 
-  <!-- ──── botao-pill ──── -->
-  <div class="section">
-    <div class="section-title">botao-pill</div>
-    <div class="grid-3">
+  <section class="section">
+    <div class="section-title">React API — custom compound, uses native <code>&lt;input type="file"&gt;</code></div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:640px">Radix Primitives has no file-picker primitive — file selection is a browser-native concern. The implementation uses a native hidden <code>&lt;input type="file"&gt;</code> wrapped by a <code>&lt;label&gt;</code> so the entire dropzone is the click target (and Space/Enter activate the label). Drag events bind to the same wrapper.</p>
+    <pre class="api"><span class="c">// EmptyState.tsx — custom compound, native file input</span>
+<span class="k">function</span> <span class="t">UploadEmptyState</span>({ context }: { context: <span class="t">EmptyContext</span> }) {
+  <span class="k">const</span> { title, sub, ariaLabel } = copyFor(context);    <span class="c">// route → copy lookup</span>
+  <span class="k">const</span> handleFile = (file: <span class="t">File</span>) =&gt; openNewMockupDialog({ file, target: context.target });
 
-      <div>
-        <div class="variant-label"><span>all-projects</span><span class="ctx">/</span></div>
-        <div class="frame">
-          <div class="fake-topbar"><span class="crumb-current">All Projects</span><span class="grow"></span></div>
-          <div class="fake-main">
-            <div class="pill-cta-wrap">
-              <button class="upload-pill">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-                Upload mockup
-              </button>
-              <div class="sub">or drop anywhere on the page</div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <span class="k">return</span> (
+    &lt;<span class="t">EmptyState.Root</span>&gt;
+      &lt;<span class="t">EmptyState.Dropzone</span>
+        aria-label={ariaLabel}
+        onFile={handleFile}                            <span class="c">// debounced drag + native input change</span>
+      &gt;
+        &lt;<span class="t">EmptyState.Icon</span> /&gt;
+        &lt;<span class="t">EmptyState.Title</span>&gt;{title}&lt;/<span class="t">EmptyState.Title</span>&gt;
+        &lt;<span class="t">EmptyState.Subtitle</span>&gt;{sub}&lt;/<span class="t">EmptyState.Subtitle</span>&gt;
+      &lt;/<span class="t">EmptyState.Dropzone</span>&gt;
+    &lt;/<span class="t">EmptyState.Root</span>&gt;
+  );
+}
+</pre>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px;margin-top:12px">
+      <li><strong>Native <code>&lt;input type="file" accept=".html,.zip"&gt;</code></strong> hidden via <code>clip:rect(0,0,0,0)</code>. The wrapping <code>&lt;label&gt;</code> makes the whole dropzone clickable AND keyboard-activatable (Enter / Space on the label).</li>
+      <li><strong>Drag events</strong> (<code>dragenter</code>, <code>dragover</code>, <code>drop</code>) bind to the same <code>&lt;label&gt;</code>. The "Drag is happening over the whole app" overlay (<a href="./24-drop-overlay.html" style="color:var(--accent)"><code>drop-overlay</code></a>) takes priority once it mounts.</li>
+      <li><strong>No Radix primitive</strong>: file pickers are browser-native, and Radix deliberately stays out of the way.</li>
+      <li><strong>Subcomponents</strong> (<code>Icon</code>, <code>Title</code>, <code>Subtitle</code>) accept <code>asChild</code> via <code>@radix-ui/react-slot</code> so consumers can swap any slot.</li>
+    </ul>
+  </section>
 
-      <div>
-        <div class="variant-label"><span>project</span><span class="ctx">/projects/lumen-coffee</span></div>
-        <div class="frame">
-          <div class="fake-topbar"><span class="crumb">Lumen Coffee ›</span> <span class="crumb-current">Mockups</span><span class="grow"></span></div>
-          <div class="fake-main">
-            <div class="pill-cta-wrap">
-              <button class="upload-pill">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-                Upload mockup
-              </button>
-              <div class="sub">or drop anywhere · saves to Lumen Coffee</div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px">
+      <li>Renders when the view has zero mockups AND the route is a project / folder / all-projects (mockup view never empties).</li>
+      <li>Click anywhere on the dropzone opens the system file picker (<code>&lt;label&gt;</code> activates the hidden input).</li>
+      <li>Keyboard: Tab to the dropzone, Enter / Space to open picker.</li>
+      <li>Drop a file onto the dropzone: same flow as drop on app surface — read file, mount <a href="./25-new-mockup-dialog.html" style="color:var(--accent)"><code>new-mockup-dialog</code></a>.</li>
+      <li>If the user starts a drag <em>before</em> the empty state mounts (mid-create), <a href="./24-drop-overlay.html" style="color:var(--accent)"><code>drop-overlay</code></a> mounts on top and the empty state is occluded — they're functionally identical drop targets so this is fine.</li>
+      <li>Title copy: route lookup (project name, folder name, or "first mockup" for /).</li>
+      <li>Sub copy: "or click to choose a file" on / view; "Drop an HTML or click to upload to this [project|folder]" otherwise.</li>
+      <li>Rejects (non-HTML/ZIP, multiple files, oversize) propagate to the dialog as an inline <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a>.</li>
+    </ul>
+  </section>
 
-      <div>
-        <div class="variant-label"><span>folder</span><span class="ctx">/lumen-coffee/hero</span></div>
-        <div class="frame">
-          <div class="fake-topbar"><span class="crumb">Lumen Coffee › Hero</span><span class="grow"></span></div>
-          <div class="fake-main">
-            <div class="pill-cta-wrap">
-              <button class="upload-pill">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-                Upload mockup
-              </button>
-              <div class="sub">or drop anywhere · saves to Hero</div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead><tr><th>This empty state</th><th>Sibling</th></tr></thead>
+      <tbody>
+        <tr><td>A view has zero mockups</td><td>View has mockups → render the cards grid, no dropzone</td></tr>
+        <tr><td>The user needs both drop AND click affordance</td><td>Just one-line CTA — use a pill button in the section head</td></tr>
+        <tr><td>The dropzone is the primary thing on the page</td><td>The dropzone is secondary; let the app-level drop overlay handle it</td></tr>
+      </tbody>
+    </table>
+  </section>
 
-    </div>
-  </div>
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>min-height (section)<dd>420px
+      <dt>padding (section)<dd>40px 0
+      <dt>dropzone height<dd>360px
+      <dt>dropzone border<dd>2px dashed --accent-overlay-mid; hover/focus → --accent
+      <dt>dropzone bg<dd>--surface-glass-bg + blur(8px); hover/focus → --accent-overlay-soft
+      <dt>dropzone radius<dd>--radius-md (12px)
+      <dt>icon circle<dd>56×56, --accent-overlay-soft fill, --accent stroke
+      <dt>title<dd>18px / 700 / -0.01em, --text-bright
+      <dt>subtitle<dd>12px / 400, --text-dim, mono
+      <dt>hover transition<dd>--motion-base / --ease-standard on border + bg
+      <dt>file input<dd>native <code>&lt;input type="file" accept=".html,.zip"&gt;</code>, visually hidden
+    </dl>
+  </section>
 
-  <!-- ──── both ──── -->
-  <div class="section">
-    <div class="section-title">both — drop zone + topbar "+ New project" chip</div>
-    <div class="grid-3">
-
-      <div>
-        <div class="variant-label"><span>all-projects</span><span class="ctx">/</span></div>
-        <div class="frame">
-          <div class="fake-topbar">
-            <span class="crumb-current">All Projects</span>
-            <span class="grow"></span>
-            <button class="new-project-chip"><svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New project</button>
-          </div>
-          <div class="fake-main">
-            <div class="drop-zone-large">
-              <div class="cloud"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
-              <div class="title">Drop your first mockup here</div>
-              <div class="sub">or click to choose a file</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div class="variant-label"><span>project</span><span class="ctx">/projects/lumen-coffee</span></div>
-        <div class="frame">
-          <div class="fake-topbar">
-            <span class="crumb">Lumen Coffee ›</span><span class="crumb-current">Mockups</span>
-            <span class="grow"></span>
-            <button class="new-project-chip"><svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New project</button>
-          </div>
-          <div class="fake-main">
-            <div class="drop-zone-large">
-              <div class="cloud"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
-              <div class="title">No mockups in Lumen Coffee yet</div>
-              <div class="sub">Drop an HTML or click to upload to this project</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div class="variant-label"><span>folder</span><span class="ctx">/lumen-coffee/hero</span></div>
-        <div class="frame">
-          <div class="fake-topbar">
-            <span class="crumb">Lumen Coffee › Hero</span>
-            <span class="grow"></span>
-            <button class="new-project-chip"><svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New project</button>
-          </div>
-          <div class="fake-main">
-            <div class="drop-zone-large">
-              <div class="cloud"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
-              <div class="title">Hero is empty</div>
-              <div class="sub">Drop an HTML or click to upload to this folder</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="footer-note">
-    <div class="note-row">Trigger: clicking the panel opens the OS file picker. Drop opens <code>25-new-mockup-dialog</code> with the parsed file pre-filled.</div>
-    <div class="note-row">Tokens: <code>--accent-overlay-mid</code> (dashed border), <code>--accent-overlay-soft</code> (cloud halo), <code>--btn-bg</code> + <code>--accent</code> (pill CTA).</div>
-    <div class="note-row">Hover/focus: panel border brightens to <code>--accent</code>; pill border + text shift to <code>--accent-bright</code>. Focus-visible inherits the global ring.</div>
-    <div class="note-row">Active path: same drop-overlay scrim appears on dragenter; release routes to dialog. Errors surface via toast.</div>
-  </div>
 </div>
+
 </body>
 </html>
