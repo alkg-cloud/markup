@@ -4,9 +4,31 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>21 — Invites</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--sidebar-collapsed-width:52px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0% 0 0/0.45);--shadow-md:0 6px 16px oklch(0% 0 0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+/* ─── Tokens (verbatim from src/styles/tokens.css) ──────────────────── */
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);
+  --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
+  --success:oklch(76% 0.16 152);--success-soft:oklch(28% 0.07 152);
+  --warning:oklch(80% 0.15 80);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);
+  --motion-fast:160ms;--motion-base:220ms;
+  --topbar-height:52px;--sidebar-width:280px;--sidebar-collapsed-width:52px;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;
+  --shadow-sm:0 2px 6px oklch(0% 0 0/0.45);--shadow-md:0 6px 16px oklch(0% 0 0/0.5);
+  --shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --scrim-strong:oklch(0% 0 0/0.65);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
 @media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%}
@@ -16,39 +38,54 @@ input,textarea{font-family:inherit;color:inherit}
 a{color:inherit;text-decoration:none}
 :focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
-.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
-.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
-.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:600px}
 
-.state-label{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}
-.state-label .num{color:var(--accent)}
-.state-label .rule{flex:1;height:1px;background:linear-gradient(to right,var(--border-subtle),transparent)}
+.page{padding:48px 32px 96px;max-width:1280px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:760px;line-height:1.55}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:10px;line-height:1.55;max-width:680px}
 
+/* ─── Stage (foil) ──────────────────────────────────────────────────── */
+.stage{position:relative;background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:32px;overflow:hidden}
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:24px;align-items:start}
+.state{display:flex;flex-direction:column;gap:10px}
+.state .state-label{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted)}
+
+/* ─── The component — invites page ──────────────────────────────────── */
 .page-title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
 .page-subtitle{font-size:13px;color:var(--text-dim);margin-bottom:20px}
 
 .list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .count{font-size:13px;color:var(--text-dim)}
 .header-actions{display:flex;align-items:center;gap:6px}
+
+/* btn-action + kebab — pulled from src/app/(app)/settings/invites/InvitesClient.module.css */
 .btn-action{display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);border-radius:var(--radius-sm);color:var(--accent);font-size:13px;font-weight:600;transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast)}
 .btn-action:hover{background:var(--accent-overlay-mid);border-color:var(--accent);color:var(--accent-bright)}
 .kebab-btn{width:32px;height:32px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast)}
 .kebab-btn:hover{background:var(--surface-hover);color:var(--text)}
+.kebab-btn[aria-expanded="true"]{background:var(--surface-active);color:var(--text-bright)}
 
 .list{display:flex;flex-direction:column;gap:8px}
 
+/* InviteRow — single recipe, state variants via class compositions */
 .card{display:flex;align-items:flex-start;gap:12px;padding:16px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-card);transition:border-color var(--motion-fast)}
 .card:hover{border-color:var(--border)}
 .card.is-terminal{opacity:0.65}
 .card-icon{width:36px;height:36px;border-radius:var(--radius-sm);background:var(--accent-overlay-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .card.is-state-used .card-icon{background:rgba(255,255,255,0.04);color:var(--text-muted)}
-.card.is-state-expired .card-icon,.card.is-state-revoked .card-icon{background:var(--danger-soft);color:var(--danger)}
+.card.is-state-expired .card-icon,
+.card.is-state-revoked .card-icon,
+.card.is-state-disabled .card-icon{background:var(--danger-soft);color:var(--danger)}
 .card-info{flex:1;min-width:0}
 .card-title{font-size:14px;font-weight:600;color:var(--text-bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-meta{font-size:11px;color:var(--text-muted);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .card-meta .sep{color:var(--text-muted);opacity:0.5}
 .card-meta .meta-state{color:var(--text-dim)}
-.card.is-state-expired .card-meta .meta-state,.card.is-state-revoked .card-meta .meta-state{color:var(--danger)}
+.card.is-state-expired .card-meta .meta-state,
+.card.is-state-revoked .card-meta .meta-state,
+.card.is-state-disabled .card-meta .meta-state{color:var(--danger)}
 .card-actions{display:flex;gap:4px;flex-shrink:0;align-items:center;align-self:center}
 .card-action{width:28px;height:28px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast),opacity var(--motion-fast)}
 .card-action:hover{background:var(--surface-hover);color:var(--text)}
@@ -58,7 +95,12 @@ a{color:inherit;text-decoration:none}
 .card.is-terminal .card-action.is-terminal-only{display:flex;opacity:0;pointer-events:none}
 .card.is-terminal:hover .card-action.is-terminal-only{opacity:1;pointer-events:auto}
 
-/* Empty — first-visit onboarding card */
+/* Just-created reveal (plaintext token visible once) */
+.token-reveal{margin-top:8px;padding:8px 12px;background:var(--success-soft);border:1px solid var(--success);border-radius:var(--radius-sm);display:flex;align-items:center;gap:10px}
+.token-reveal-label{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--success)}
+.token-reveal-code{flex:1;font-family:var(--font-mono);font-size:12px;color:var(--text-bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Empty — first-visit onboarding */
 .empty-onboarding{border:1px dashed var(--border);border-radius:var(--radius-card);padding:24px;background:rgba(255,255,255,0.015);position:relative}
 .empty-onboarding-eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
 .empty-onboarding-title{font-size:15px;font-weight:600;color:var(--text-bright);margin-bottom:16px}
@@ -78,7 +120,7 @@ a{color:inherit;text-decoration:none}
 .kebab-stage{display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap}
 .kebab-anchor{display:flex;align-items:center;gap:6px;padding:12px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-sm)}
 .kebab-anchor .btn-action{pointer-events:none}
-.kebab-anchor .kebab-btn{pointer-events:none;background:var(--surface-hover);color:var(--text)}
+.kebab-anchor .kebab-btn{pointer-events:none;background:var(--surface-active);color:var(--text-bright)}
 .kebab-menu{width:240px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-popover);overflow:hidden;padding:4px 0}
 .kebab-item{display:flex;align-items:center;gap:10px;padding:10px 14px;color:var(--danger);font-size:13px;font-weight:500;cursor:pointer;transition:background var(--motion-fast);width:100%;text-align:left}
 .kebab-item:hover{background:var(--danger-soft)}
@@ -88,260 +130,409 @@ a{color:inherit;text-decoration:none}
 .kebab-item svg{flex-shrink:0;opacity:0.8}
 .kebab-divider{height:1px;background:var(--border-subtle);margin:4px 8px}
 
-/* Page layout */
-.page-wrap{display:flex;flex-direction:column;gap:56px;padding:32px}
 .state-frame{max-width:600px}
 .state-frame.is-wide{max-width:760px}
+
+/* ─── Anatomy + matrix helpers ──────────────────────────────────────── */
+dl.tokens{display:grid;grid-template-columns:220px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim);line-height:1.55}
+dl.tokens dd code{color:var(--text);background:var(--bg-card);padding:1px 5px;border-radius:3px;font-size:11px;font-family:var(--font-mono)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{font-family:var(--font-mono);font-size:11.5px;line-height:1.6;padding:14px 16px;background:oklch(8% 0.02 165);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--text-dim);overflow-x:auto;white-space:pre}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
+
+.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
 </style>
 </head>
 <body>
 
-<div class="demo">
-  <div style="padding:32px 32px 0 32px;max-width:680px">
-    <div class="title">Invites</div>
-    <div class="subtitle">Generate invite links for new teammates. Three canonical list states (populated, first-visit onboarding, post-activity terse); plus the bulk-actions popover anchored to the header kebab. The transition first-visit → post-activity happens on either of two events (admin creates the first invite OR dismisses the onboarding card) and is one-way.</div>
-  </div>
+<div class="page" data-ds-component="invites">
+  <h1 class="h1">21 — Invites</h1>
+  <p class="lede">
+    Admin-only page at <code style="font-family:var(--font-mono);font-size:12px;color:var(--text)">/settings/invites</code>. Generates invite links for new teammates. Three canonical list states (populated, first-visit onboarding, post-activity terse) plus the bulk-actions popover anchored to the header kebab. Opens <a href="./22-new-invite-dialog.html" style="color:var(--accent-bright);text-decoration:underline">22-new-invite-dialog</a> from "New Invite"; destructive bulk actions go through <a href="./14-dialog.html" style="color:var(--accent-bright);text-decoration:underline">useConfirm</a>. The first-visit → post-activity transition fires on either of two events (admin creates the first invite OR dismisses the onboarding card) and is one-way (persisted in <code>localStorage</code>). Implemented by <code>src/app/(app)/settings/invites/InvitesClient.tsx</code>.
+  </p>
 
-  <div class="page-wrap">
+  <!-- ─── A — Populated list ────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">A — Populated (mixed-state list)</div>
+    <div class="stage">
+      <section class="state-frame">
+        <h1 class="page-title">Invites</h1>
+        <p class="page-subtitle">Generate invite links for new teammates.</p>
 
-    <!-- ─── STATE 01 · Populated ────────────────────── -->
-    <section class="state-frame">
-      <div class="state-label"><span class="num">01</span><span>Populated</span><span class="rule"></span></div>
+        <div class="list-header">
+          <span class="count">5 invites</span>
+          <div class="header-actions">
+            <button class="btn-action" type="button">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+              New Invite
+            </button>
+            <button class="kebab-btn" type="button" title="Bulk actions" aria-label="Bulk actions">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+            </button>
+          </div>
+        </div>
 
-      <h1 class="page-title">Invites</h1>
-      <p class="page-subtitle">Generate invite links for new teammates.</p>
+        <div class="list">
+          <!-- Unused, email-bound, just-created with token reveal -->
+          <div class="card is-state-unused">
+            <div class="card-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
+            </div>
+            <div class="card-info">
+              <div class="card-title">Invite for bea@studio.io</div>
+              <div class="card-meta">
+                <span>Created just now</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Expires in 7d</span>
+              </div>
+              <div class="token-reveal">
+                <span class="token-reveal-label">Copied</span>
+                <span class="token-reveal-code">https://markup.alego.cloud/invite/inv_a4f9c…</span>
+                <button class="card-action" type="button" aria-label="Copy again">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="card-actions">
+              <button class="card-action is-active-only" type="button" aria-label="Copy link">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
+              </button>
+              <button class="card-action is-active-only danger" type="button" aria-label="Revoke">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 1-7 7 7.008 7.008 0 0 1 7-7zM2 8c0 1.418.504 2.79 1.423 3.87l8.447-8.447A5.993 5.993 0 0 0 2 8zm12 0c0-1.418-.504-2.79-1.423-3.87L4.13 12.577A5.993 5.993 0 0 0 14 8z"/></svg>
+              </button>
+            </div>
+          </div>
 
-      <div class="list-header">
-        <span class="count">5 invites</span>
-        <div class="header-actions">
-          <button class="btn-action">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-            New Invite
-          </button>
-          <button class="kebab-btn" title="Bulk actions">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
-          </button>
+          <!-- Unused, open -->
+          <div class="card is-state-unused">
+            <div class="card-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg></div>
+            <div class="card-info">
+              <div class="card-title">Open invite</div>
+              <div class="card-meta">
+                <span>Created yesterday</span><span class="sep">·</span><span>Admin</span><span class="sep">·</span><span class="meta-state">Expires in 29d</span>
+              </div>
+            </div>
+            <div class="card-actions">
+              <button class="card-action is-active-only" type="button" aria-label="Copy link"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg></button>
+              <button class="card-action is-active-only danger" type="button" aria-label="Revoke"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 1-7 7 7.008 7.008 0 0 1 7-7zM2 8c0 1.418.504 2.79 1.423 3.87l8.447-8.447A5.993 5.993 0 0 0 2 8zm12 0c0-1.418-.504-2.79-1.423-3.87L4.13 12.577A5.993 5.993 0 0 0 14 8z"/></svg></button>
+            </div>
+          </div>
+
+          <!-- Used (terminal) -->
+          <div class="card is-state-used is-terminal">
+            <div class="card-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M14.431 3.323l-8.47 10-.79-.036-3.35-4.77.818-.574 2.978 4.24L13.668 2.681l.763.642z"/></svg></div>
+            <div class="card-info">
+              <div class="card-title">Invite for marco@studio.io</div>
+              <div class="card-meta">
+                <span>Created 5 days ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Used 3 days ago by marco@studio.io</span>
+              </div>
+            </div>
+            <div class="card-actions">
+              <button class="card-action is-terminal-only danger" type="button" aria-label="Remove from list"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg></button>
+            </div>
+          </div>
+
+          <!-- Expired (terminal) -->
+          <div class="card is-state-expired is-terminal">
+            <div class="card-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg></div>
+            <div class="card-info">
+              <div class="card-title">Open invite</div>
+              <div class="card-meta">
+                <span>Created 10 days ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Expired 3 days ago</span>
+              </div>
+            </div>
+            <div class="card-actions">
+              <button class="card-action is-terminal-only danger" type="button" aria-label="Remove from list"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg></button>
+            </div>
+          </div>
+
+          <!-- Revoked (terminal) -->
+          <div class="card is-state-revoked is-terminal">
+            <div class="card-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg></div>
+            <div class="card-info">
+              <div class="card-title">Invite for sam@studio.io</div>
+              <div class="card-meta">
+                <span>Created 2 weeks ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Revoked yesterday</span>
+              </div>
+            </div>
+            <div class="card-actions">
+              <button class="card-action is-terminal-only danger" type="button" aria-label="Remove from list"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="caption">Row state is encoded as a class composition: <code>.card.is-state-{unused,used,expired,revoked,disabled}</code> + optional <code>.is-terminal</code>. Action buttons swap visibility on <code>:hover</code> for terminal rows so the list reads quiet at rest and reveals the destructive "Remove from list" affordance only when the admin is engaging with that row. The token-reveal strip is rendered only for the just-minted invite (plaintext lives in <code>plaintextByInviteId</code> in component state; the server never returns it again on reload).</div>
+  </section>
+
+  <!-- ─── B — Empty states ──────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">B — Empty states (first-visit · post-activity)</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">First-visit onboarding</div>
+        <div class="stage">
+          <section class="state-frame">
+            <h1 class="page-title">Invites</h1>
+            <p class="page-subtitle">Generate invite links for new teammates.</p>
+
+            <div class="list-header">
+              <span class="count">0 invites</span>
+              <div class="header-actions">
+                <button class="btn-action" type="button"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>New Invite</button>
+                <button class="kebab-btn" type="button" aria-label="Bulk actions"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg></button>
+              </div>
+            </div>
+
+            <div class="empty-onboarding">
+              <button class="empty-onboarding-dismiss" type="button" aria-label="Dismiss onboarding"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.646 3.646.707.708L8 8.707z"/></svg></button>
+              <div class="empty-onboarding-eyebrow">Getting started</div>
+              <div class="empty-onboarding-title">Onboard your first teammate</div>
+              <div class="empty-onboarding-steps">
+                <div class="empty-onboarding-step"><span class="empty-onboarding-stepnum">1</span><span>Click <strong style="color:var(--text-bright);font-weight:600">New Invite</strong> in the header.</span></div>
+                <div class="empty-onboarding-step"><span class="empty-onboarding-stepnum">2</span><span>Pick a role, expiry, and optionally bind to an email.</span></div>
+                <div class="empty-onboarding-step"><span class="empty-onboarding-stepnum">3</span><span>Copy the link and send it to your teammate.</span></div>
+              </div>
+              <button class="btn-action" type="button"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>Create your first invite</button>
+            </div>
+          </section>
         </div>
       </div>
 
-      <div class="list">
+      <div class="state">
+        <div class="state-label">Post-activity terse</div>
+        <div class="stage">
+          <section class="state-frame">
+            <h1 class="page-title">Invites</h1>
+            <p class="page-subtitle">Generate invite links for new teammates.</p>
 
-        <!-- Unused, email-bound -->
-        <div class="card is-state-unused">
-          <div class="card-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
-          </div>
-          <div class="card-info">
-            <div class="card-title">Invite for bea@studio.io</div>
-            <div class="card-meta">
-              <span>Created 2 hours ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Expires in 6d 22h</span>
+            <div class="list-header">
+              <span class="count">0 invites</span>
+              <div class="header-actions">
+                <button class="btn-action" type="button"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>New Invite</button>
+                <button class="kebab-btn" type="button" aria-label="Bulk actions"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg></button>
+              </div>
             </div>
+
+            <div class="empty-terse">
+              <div class="empty-terse-icon"><svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg></div>
+              <div class="empty-terse-title">No invites yet</div>
+              <div class="empty-terse-line">Generate a link to invite a teammate.</div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <div class="caption"><strong>First-visit</strong> shows the heavy onboarding card (steps + secondary CTA) — for admins who've never opened the page. <strong>Post-activity</strong> renders after the admin either (a) creates an invite or (b) explicitly dismisses the onboarding card. The flag (<code>ONBOARDING_KEY = 'markup.invites.onboarding-dismissed'</code>) is stored in <code>localStorage</code> and the transition is one-way — once an admin has seen the terse state, the heavy card never returns.</div>
+  </section>
+
+  <!-- ─── C — Bulk-actions popover ──────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">C — Bulk-actions popover (anchored to header kebab)</div>
+    <div class="stage">
+      <section class="state-frame is-wide">
+        <div class="kebab-stage">
+          <div class="kebab-anchor">
+            <button class="btn-action" type="button"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>New Invite</button>
+            <button class="kebab-btn" type="button" aria-expanded="true" aria-label="Bulk actions"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg></button>
           </div>
-          <div class="card-actions">
-            <button class="card-action is-active-only" title="Copy link">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
-            </button>
-            <button class="card-action is-active-only danger" title="Revoke">
+
+          <div class="kebab-menu" role="menu">
+            <button class="kebab-item" role="menuitem">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 1-7 7 7.008 7.008 0 0 1 7-7zM2 8c0 1.418.504 2.79 1.423 3.87l8.447-8.447A5.993 5.993 0 0 0 2 8zm12 0c0-1.418-.504-2.79-1.423-3.87L4.13 12.577A5.993 5.993 0 0 0 14 8z"/></svg>
+              Revoke all open invites
+              <span class="count-chip">2</span>
+            </button>
+            <div class="kebab-divider"></div>
+            <button class="kebab-item" role="menuitem">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+              Clear all history
+              <span class="count-chip">3</span>
             </button>
           </div>
-        </div>
 
-        <!-- Unused, open -->
-        <div class="card is-state-unused">
-          <div class="card-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
-          </div>
-          <div class="card-info">
-            <div class="card-title">Open invite</div>
-            <div class="card-meta">
-              <span>Created yesterday</span><span class="sep">·</span><span>Admin</span><span class="sep">·</span><span class="meta-state">Expires in 29d</span>
-            </div>
-          </div>
-          <div class="card-actions">
-            <button class="card-action is-active-only" title="Copy link">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
-            </button>
-            <button class="card-action is-active-only danger" title="Revoke">
+          <div class="kebab-menu" role="menu" style="opacity:0.55" aria-label="zero-state preview">
+            <button class="kebab-item is-disabled" role="menuitem" aria-disabled="true">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 1-7 7 7.008 7.008 0 0 1 7-7zM2 8c0 1.418.504 2.79 1.423 3.87l8.447-8.447A5.993 5.993 0 0 0 2 8zm12 0c0-1.418-.504-2.79-1.423-3.87L4.13 12.577A5.993 5.993 0 0 0 14 8z"/></svg>
+              Revoke all open invites
+              <span class="count-chip">0</span>
             </button>
-          </div>
-        </div>
-
-        <!-- Used (delete on hover) -->
-        <div class="card is-state-used is-terminal">
-          <div class="card-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M14.431 3.323l-8.47 10-.79-.036-3.35-4.77.818-.574 2.978 4.24L13.668 2.681l.763.642z"/></svg>
-          </div>
-          <div class="card-info">
-            <div class="card-title">Invite for marco@studio.io</div>
-            <div class="card-meta">
-              <span>Created 5 days ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Used 3 days ago by marco@studio.io</span>
-            </div>
-          </div>
-          <div class="card-actions">
-            <button class="card-action is-terminal-only danger" title="Remove from list">
+            <div class="kebab-divider"></div>
+            <button class="kebab-item is-disabled" role="menuitem" aria-disabled="true">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+              Clear all history
+              <span class="count-chip">0</span>
             </button>
           </div>
         </div>
+      </section>
+    </div>
+    <div class="caption">Both items render with the live count chip of affected invites — when the count is zero the item is <em>disabled (right preview), not hidden</em>, so the menu shape stays consistent regardless of list state. Each action opens a <code>useConfirm</code> dialog before firing. The popover anchors to the kebab via the project's <code>usePopover()</code> hook — not a Radix DropdownMenu, see React API below.</div>
+  </section>
 
-        <!-- Expired (delete on hover) -->
-        <div class="card is-state-expired is-terminal">
-          <div class="card-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>
-          </div>
-          <div class="card-info">
-            <div class="card-title">Open invite</div>
-            <div class="card-meta">
-              <span>Created 10 days ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Expired 3 days ago</span>
-            </div>
-          </div>
-          <div class="card-actions">
-            <button class="card-action is-terminal-only danger" title="Remove from list">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
-            </button>
-          </div>
-        </div>
+  <!-- ─── React API ─────────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">React API — page composition (no Radix primitive for the page itself)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px"><strong>The page itself is a custom client component</strong> — no Radix primitive backs the row/list/header anatomy. It composes the project's <code>AppMain</code> shell, opens <a href="./22-new-invite-dialog.html" style="color:var(--accent)"><code>22-new-invite-dialog</code></a> (which IS Radix-backed: <code>RadixDialog</code> + <code>Form.Root</code> + <code>InputField</code>), uses the project's <code>useConfirm</code> compound (which IS Radix-backed: <code>@radix-ui/react-alert-dialog</code>), and anchors the bulk-actions menu via the project's <code>usePopover</code> hook (custom — see notes). Source: <code>src/app/(app)/settings/invites/InvitesClient.tsx</code>.</p>
+    <pre class="api"><span class="s">'use client'</span>;
+<span class="k">import</span> * <span class="k">as</span> Form <span class="k">from</span> <span class="s">'@radix-ui/react-form'</span>;
+<span class="k">import</span> { AppMain } <span class="k">from</span> <span class="s">'@/components/AppMain/AppMain'</span>;
+<span class="k">import</span> { useConfirm } <span class="k">from</span> <span class="s">'@/components/ConfirmDialog'</span>;       <span class="c">// AlertDialog-backed</span>
+<span class="k">import</span> { RadixDialog } <span class="k">from</span> <span class="s">'@/components/Dialog/RadixDialog'</span>;  <span class="c">// Dialog-backed</span>
+<span class="k">import</span> { InputField } <span class="k">from</span> <span class="s">'@/components/InputField'</span>;
+<span class="k">import</span> { useToast } <span class="k">from</span> <span class="s">'@/components/Toast/Toast'</span>;
+<span class="k">import</span> { usePopover } <span class="k">from</span> <span class="s">'@/lib/popover/usePopover'</span>;             <span class="c">// custom — see notes</span>
 
-        <!-- Revoked (delete on hover) -->
-        <div class="card is-state-revoked is-terminal">
-          <div class="card-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>
-          </div>
-          <div class="card-info">
-            <div class="card-title">Invite for sam@studio.io</div>
-            <div class="card-meta">
-              <span>Created 2 weeks ago</span><span class="sep">·</span><span>Member</span><span class="sep">·</span><span class="meta-state">Revoked yesterday</span>
-            </div>
-          </div>
-          <div class="card-actions">
-            <button class="card-action is-terminal-only danger" title="Remove from list">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
-            </button>
-          </div>
-        </div>
+<span class="k">export function</span> <span class="t">InvitesClient</span>({ initialInvites }) {
+  <span class="k">const</span> [invites, setInvites] = <span class="t">useState</span>(initialInvites);
+  <span class="k">const</span> [onboardingDismissed, setOnboardingDismissed] = <span class="t">useState</span>(<span class="k">false</span>);
+  <span class="k">const</span> [plaintextByInviteId, setPlaintextByInviteId] = <span class="t">useState</span>({});      <span class="c">// session-only</span>
+  <span class="k">const</span> [showDialog, setShowDialog] = <span class="t">useState</span>(<span class="k">false</span>);
+  <span class="k">const</span> bulkMenu = <span class="t">usePopover</span>&lt;<span class="t">HTMLButtonElement</span>, <span class="t">HTMLDivElement</span>&gt;(<span class="s">'right'</span>);
+  <span class="k">const</span> { confirm, dialog: confirmDialog } = <span class="t">useConfirm</span>();
+  <span class="k">const</span> toast = <span class="t">useToast</span>();
 
-      </div>
-    </section>
+  <span class="k">const</span> total = invites.length;
+  <span class="k">const</span> showOnboarding = total === 0 &amp;&amp; !onboardingDismissed;
+  <span class="k">const</span> showTerse      = total === 0 &amp;&amp;  onboardingDismissed;
 
-    <!-- ─── STATE 02 · First-visit (onboarding) ────────────────────── -->
-    <section class="state-frame">
-      <div class="state-label"><span class="num">02</span><span>First-visit · onboarding</span><span class="rule"></span></div>
+  <span class="k">return</span> (
+    &lt;<span class="t">AppMain</span> variant=<span class="s">"scroll"</span>&gt;
+      &lt;<span class="k">h1</span>&gt;Invites&lt;/<span class="k">h1</span>&gt;
+      &lt;<span class="k">p</span>&gt;Generate invite links for new teammates.&lt;/<span class="k">p</span>&gt;
 
-      <h1 class="page-title">Invites</h1>
-      <p class="page-subtitle">Generate invite links for new teammates.</p>
+      &lt;<span class="k">div</span> className={styles.listHeader}&gt;
+        &lt;<span class="k">span</span> className={styles.count}&gt;{total} invites&lt;/<span class="k">span</span>&gt;
+        &lt;<span class="k">div</span> className={styles.headerActions}&gt;
+          &lt;<span class="k">button</span> type=<span class="s">"button"</span> className={styles.btnAction} onClick={() =&gt; setShowDialog(<span class="k">true</span>)}&gt;
+            &lt;<span class="t">VscAdd</span> /&gt; New Invite
+          &lt;/<span class="k">button</span>&gt;
+          &lt;<span class="k">button</span> type=<span class="s">"button"</span> ref={bulkMenu.triggerRef} {...bulkMenu.triggerProps} className={styles.kebabBtn}&gt;
+            &lt;<span class="t">VscKebabVertical</span> /&gt;
+          &lt;/<span class="k">button</span>&gt;
+        &lt;/<span class="k">div</span>&gt;
+      &lt;/<span class="k">div</span>&gt;
 
-      <div class="list-header">
-        <span class="count">0 invites</span>
-        <div class="header-actions">
-          <button class="btn-action">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-            New Invite
-          </button>
-          <button class="kebab-btn" title="Bulk actions">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
-          </button>
-        </div>
-      </div>
+      {showOnboarding ? &lt;<span class="t">EmptyOnboarding</span> onDismiss={…} onCreate={…} /&gt; :
+       showTerse      ? &lt;<span class="t">EmptyTerse</span> /&gt; :
+                        invites.map((row) =&gt; (
+                          &lt;<span class="t">InviteRow</span> key={row.id} row={row}
+                            plaintext={plaintextByInviteId[row.id]}                <span class="c">// session-only reveal</span>
+                            onRevoke={(r) =&gt; confirm({...}).then(...)}             <span class="c">// AlertDialog</span>
+                            onRemove={(r) =&gt; confirm({...}).then(...)}             <span class="c">// AlertDialog</span>
+                          /&gt;
+                        ))}
 
-      <div class="empty-onboarding">
-        <button class="empty-onboarding-dismiss" title="Dismiss">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.646 3.646.707.708L8 8.707z"/></svg>
-        </button>
-        <div class="empty-onboarding-eyebrow">Getting started</div>
-        <div class="empty-onboarding-title">Onboard your first teammate</div>
-        <div class="empty-onboarding-steps">
-          <div class="empty-onboarding-step"><span class="empty-onboarding-stepnum">1</span><span>Click <strong style="color:var(--text-bright);font-weight:600">New Invite</strong> in the header.</span></div>
-          <div class="empty-onboarding-step"><span class="empty-onboarding-stepnum">2</span><span>Pick a role, expiry, and optionally bind to an email.</span></div>
-          <div class="empty-onboarding-step"><span class="empty-onboarding-stepnum">3</span><span>Copy the link and send it to your teammate.</span></div>
-        </div>
-        <button class="btn-action">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-          Create your first invite
-        </button>
-      </div>
-    </section>
+      {bulkMenu.isOpen &amp;&amp; (
+        &lt;<span class="k">div</span> ref={bulkMenu.contentRef} {...bulkMenu.contentProps} className={styles.kebabMenu} role=<span class="s">"menu"</span>&gt;…&lt;/<span class="k">div</span>&gt;
+      )}
 
-    <!-- ─── STATE 03 · Post-activity (terse) ────────────────────── -->
-    <section class="state-frame">
-      <div class="state-label"><span class="num">03</span><span>Post-activity · terse</span><span class="rule"></span></div>
+      &lt;<span class="t">NewInviteDialog</span> open={showDialog} onClose={() =&gt; setShowDialog(<span class="k">false</span>)} onSubmit={…} /&gt;
+      {confirmDialog}                                                              <span class="c">// Portaled AlertDialog</span>
+    &lt;/<span class="t">AppMain</span>&gt;
+  );
+}</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>No Radix primitive for the page itself.</strong> <code>AppMain</code> is the project's scroll-container shell; the list / row / header are plain HTML + CSS Modules. The only Radix-backed surfaces invoked from this page are: <code>NewInviteDialog</code> (Dialog + Form), <code>useConfirm</code> (AlertDialog), and the buttons-via-asChild pattern inside those (see <a href="./13-buttons.html" style="color:var(--accent)"><code>13-buttons</code></a>).</li>
+      <li><strong>Bulk-actions popover uses <code>usePopover</code>, not Radix.</strong> The project's <code>usePopover</code> in <code>src/lib/popover/usePopover.ts</code> is a small custom hook for anchored popovers — it predates the decision to standardize on Radix. Migration to <code>@radix-ui/react-popover</code> or <code>react-dropdown-menu</code> is parked in <code>docs/future-features.md</code>; the current behavior (click anchor → toggle, click outside → close, Esc → close) is correct.</li>
+      <li><strong>Destructive actions go through <code>useConfirm</code>.</strong> Revoke single row, remove single row, "Revoke all open", "Clear all history" — each opens an AlertDialog with action-specific copy. <code>confirmDialog</code> must be rendered in the JSX tree once so the portaled dialog mounts.</li>
+      <li><strong>Plaintext token reveal is session-local.</strong> The server returns the plaintext token only in the response to <code>POST /api/invites</code>. The client stores it in <code>plaintextByInviteId</code> state and shows it on the just-created row. On reload, the map is empty and the row renders without the reveal — same security posture as <a href="./10-agent-tokens.html" style="color:var(--accent)"><code>agent-tokens</code></a>.</li>
+      <li><strong>Onboarding flag.</strong> Read from <code>localStorage[ONBOARDING_KEY]</code> on mount; written when the admin dismisses or creates their first invite. Once true, never reverts.</li>
+      <li><strong>Admin-only route.</strong> Behind <code>/settings/invites</code>; the middleware redirects non-admins to <code>/</code>. The client also re-checks via <code>useRequireAuth({ role: 'admin' })</code> as a defensive double-check.</li>
+    </ul>
+  </section>
 
-      <h1 class="page-title">Invites</h1>
-      <p class="page-subtitle">Generate invite links for new teammates.</p>
+  <!-- ─── State decision matrix ────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead><tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr></thead>
+      <tbody>
+        <tr><td><code>populated</code></td><td><code>invites.length &gt; 0</code></td><td>List of <code>InviteRow</code>s.</td><td>List semantics via stacked divs.</td></tr>
+        <tr><td><code>empty.first-visit</code></td><td><code>invites.length === 0 &amp;&amp; !onboardingDismissed</code></td><td>Onboarding card with steps + secondary CTA + dismiss ×.</td><td>Dismiss has <code>aria-label</code>.</td></tr>
+        <tr><td><code>empty.terse</code></td><td><code>invites.length === 0 &amp;&amp; onboardingDismissed</code></td><td>Centered icon + title + line.</td><td>—</td></tr>
+        <tr><td><code>row.unused</code></td><td>API row.status</td><td>Default card with accent icon. Copy + Revoke actions on hover.</td><td>Action buttons have aria-label.</td></tr>
+        <tr><td><code>row.unused.just-created</code> (custom)</td><td>Local: <code>plaintextByInviteId[id]</code> is set this session.</td><td>Card + token-reveal strip with success-soft bg.</td><td>—</td></tr>
+        <tr><td><code>row.used</code></td><td>API row.status</td><td>Muted icon (success-tint), <code>is-terminal</code> opacity 0.65. "Remove" appears on hover.</td><td>—</td></tr>
+        <tr><td><code>row.expired</code></td><td>API row.status</td><td>Danger-soft icon + danger meta-state. <code>is-terminal</code>.</td><td>—</td></tr>
+        <tr><td><code>row.revoked</code></td><td>API row.status</td><td>Same as expired.</td><td>—</td></tr>
+        <tr><td><code>row.disabled</code></td><td>API row.status (too many failed attempts)</td><td>Same as expired, with "Disabled (suspicious activity)" meta-state.</td><td>—</td></tr>
+        <tr><td><code>bulk.menu.open</code></td><td>Admin clicks the header kebab.</td><td>Popover anchored right; live count chips.</td><td><code>aria-expanded="true"</code> on trigger; <code>role="menu"</code> on content.</td></tr>
+        <tr><td><code>bulk.menu.disabled-item</code></td><td>Item count = 0.</td><td>Item dimmed; <code>aria-disabled="true"</code>; click is a no-op.</td><td><code>aria-disabled</code>.</td></tr>
+      </tbody>
+    </table>
+    <div class="caption">Row state combines: API <code>row.status</code> (unused/used/expired/revoked/disabled) × terminal modifier × local <code>just-created</code> overlay. <code>just-created</code> is a session-only custom state for the plaintext-token reveal.</div>
+  </section>
 
-      <div class="list-header">
-        <span class="count">0 invites</span>
-        <div class="header-actions">
-          <button class="btn-action">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-            New Invite
-          </button>
-          <button class="kebab-btn" title="Bulk actions">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
-          </button>
-        </div>
-      </div>
+  <!-- ─── When-to-use ──────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead><tr><th>Surface</th><th>Use for</th><th>Backing</th></tr></thead>
+      <tbody>
+        <tr><td><code>invites</code> (this)</td><td>Admin manages invite links: create, copy, revoke, bulk-clean.</td><td>Custom <code>InvitesClient</code>.</td></tr>
+        <tr><td><a href="./22-new-invite-dialog.html" style="color:var(--accent)"><code>new-invite-dialog</code></a></td><td>Modal opened from "New Invite" — pick role, expiry, optional email bind.</td><td>RadixDialog + Form.Root + InputField.</td></tr>
+        <tr><td><a href="./23-invite-signup.html" style="color:var(--accent)"><code>invite-signup</code></a></td><td>Public landing for the invite recipient — sign up via token URL.</td><td>Custom page at <code>/invite/[token]</code>.</td></tr>
+        <tr><td><a href="./10-agent-tokens.html" style="color:var(--accent)"><code>agent-tokens</code></a></td><td>Sibling admin page — long-lived API tokens for automation agents.</td><td>Custom — same one-time-reveal pattern.</td></tr>
+        <tr><td><a href="./14-dialog.html" style="color:var(--accent)"><code>useConfirm</code></a></td><td>Destructive confirmations: revoke single, remove single, "Revoke all", "Clear all history".</td><td>@radix-ui/react-alert-dialog.</td></tr>
+      </tbody>
+    </table>
+    <div class="caption">The invites page sits beside <a href="./10-agent-tokens.html" style="color:var(--accent)"><code>agent-tokens</code></a> in the same Settings tree — both share the "plaintext reveal once, then gone" pattern for credentials.</div>
+  </section>
 
-      <div class="empty-terse">
-        <div class="empty-terse-icon">
-          <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3l-.5.5v9l.5.5h13l.5-.5v-9l-.5-.5h-13zM2 4.21l5.65 4.06.59-.01L14 4.21V12H2V4.21zM13.07 4H2.93L8 7.65 13.07 4z"/></svg>
-        </div>
-        <div class="empty-terse-title">No invites yet</div>
-        <div class="empty-terse-line">Generate a link to invite a teammate.</div>
-      </div>
-    </section>
+  <!-- ─── Anatomy ──────────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>page padding<dd>via <code>AppMain variant="scroll"</code>
+      <dt>page-title<dd>20 / 700 / -0.015em · <code>--text-bright</code>
+      <dt>page-subtitle<dd>13 / 400 · <code>--text-dim</code> · margin-bottom 20
+      <dt>list-header<dd>flex space-between · margin-bottom 16
+      <dt>count<dd>13 / 400 · <code>--text-dim</code>
+      <dt>header-actions gap<dd>6 px
+      <dt>btn-action<dd>32 px tall · <code>--accent-soft</code> · 1px <code>--accent-overlay-mid</code> · 13/600 · radius <code>--radius-sm</code>
+      <dt>kebab-btn<dd>32 × 32 · radius <code>--radius-sm</code> · <code>--text-muted</code>
+      <dt>list gap<dd>8 px (vertical between rows)
+      <dt>card<dd>flex-start · gap 12 · padding 16 · <code>--bg-card</code> · 1px <code>--border-subtle</code> · radius <code>--radius-card</code>
+      <dt>card hover<dd>border <code>--border</code> (no shadow lift — calmer than project cards)
+      <dt>card.is-terminal<dd>opacity 0.65 · "Remove" action revealed on hover
+      <dt>card-icon<dd>36 × 36 · radius <code>--radius-sm</code> · per-state bg + glyph hue
+      <dt>card-title<dd>14 / 600 · <code>--text-bright</code> · ellipsis
+      <dt>card-meta<dd>11 / 400 · <code>--text-muted</code> · gap 6 · sep "·" opacity 0.5
+      <dt>meta-state.danger<dd><code>--danger</code> when card is expired/revoked/disabled
+      <dt>card-action<dd>28 × 28 · radius <code>--radius-xs</code> · <code>--text-muted</code> → <code>--text</code> on hover
+      <dt>card-action.danger<dd><code>--danger-soft</code> bg + <code>--danger</code> color on hover
+      <dt>token-reveal<dd>full-width inside card-info · <code>--success-soft</code> bg · 1px <code>--success</code> · radius <code>--radius-sm</code>
+      <dt>empty-onboarding<dd>dashed <code>--border</code> · 24 px padding · radius <code>--radius-card</code> · rgba 0.015 bg
+      <dt>empty-terse<dd>48 24 padding · text-center · 48 px icon
+      <dt>kebab-menu<dd>240 px · <code>--bg-card</code> · 1px <code>--border</code> · radius <code>--radius-md</code> · <code>--shadow-popover</code>
+      <dt>kebab-item<dd>10 14 px · 13/500 · <code>--danger</code> text · count-chip mono 11/600
+    </dl>
+  </section>
 
-    <!-- ─── STATE 04 · Bulk-actions popover ────────────────────── -->
-    <section class="state-frame is-wide">
-      <div class="state-label"><span class="num">04</span><span>Bulk-actions popover (anchored to kebab)</span><span class="rule"></span></div>
-
-      <div class="kebab-stage">
-        <div class="kebab-anchor">
-          <button class="btn-action">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-            New Invite
-          </button>
-          <button class="kebab-btn" title="Bulk actions">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0-4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm0 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
-          </button>
-        </div>
-
-        <div class="kebab-menu" role="menu">
-          <button class="kebab-item" role="menuitem">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 1-7 7 7.008 7.008 0 0 1 7-7zM2 8c0 1.418.504 2.79 1.423 3.87l8.447-8.447A5.993 5.993 0 0 0 2 8zm12 0c0-1.418-.504-2.79-1.423-3.87L4.13 12.577A5.993 5.993 0 0 0 14 8z"/></svg>
-            Revoke all open invites
-            <span class="count-chip">2</span>
-          </button>
-          <div class="kebab-divider"></div>
-          <button class="kebab-item" role="menuitem">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
-            Clear all history
-            <span class="count-chip">3</span>
-          </button>
-        </div>
-
-        <div class="kebab-menu" role="menu" style="opacity:0.55" aria-label="zero-state preview">
-          <button class="kebab-item is-disabled" role="menuitem">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 1-7 7 7.008 7.008 0 0 1 7-7zM2 8c0 1.418.504 2.79 1.423 3.87l8.447-8.447A5.993 5.993 0 0 0 2 8zm12 0c0-1.418-.504-2.79-1.423-3.87L4.13 12.577A5.993 5.993 0 0 0 14 8z"/></svg>
-            Revoke all open invites
-            <span class="count-chip">0</span>
-          </button>
-          <div class="kebab-divider"></div>
-          <button class="kebab-item is-disabled" role="menuitem">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
-            Clear all history
-            <span class="count-chip">0</span>
-          </button>
-        </div>
-      </div>
-
-      <p style="margin-top:16px;font-size:12px;color:var(--text-muted);line-height:1.6">
-        Both items render with the live count of affected invites — when the count is zero the item is disabled (right preview), not hidden, so the menu shape stays consistent regardless of list state. Each action opens a confirm dialog before firing.
-      </p>
-    </section>
-
-  </div>
+  <!-- ─── Behavior ─────────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Admin-only.</strong> Behind <code>/settings/invites</code>. Middleware redirects non-admins; client also re-checks. Members never see this page.</li>
+      <li><strong>One-time plaintext reveal.</strong> Token is returned only by <code>POST /api/invites</code>. Stored in component state (<code>plaintextByInviteId</code>) for the session; auto-copied to clipboard; surfaced as a token-reveal strip on the just-created row. Page reload = strip gone forever. Same posture as <code>AgentToken</code>.</li>
+      <li><strong>Row actions vary by state.</strong> Active rows (unused) show Copy + Revoke; terminal rows (used/expired/revoked/disabled) show only "Remove from list" on hover — there's nothing to copy or revoke once the invite is dead.</li>
+      <li><strong>Revoke vs Remove.</strong> Revoke flips an unused invite to terminal (server-side, undoable by an admin? No — design choice: revoke is irreversible). Remove deletes the row from the admin's history view but never resurrects the underlying invite — same destructive semantic, different scope.</li>
+      <li><strong>Bulk actions.</strong> "Revoke all open invites" calls <code>POST /api/invites/revoke-all</code>; "Clear all history" calls <code>POST /api/invites/history/clear</code>. Both go through <code>useConfirm</code> first. Zero-count items render disabled (not hidden) so the menu shape is stable.</li>
+      <li><strong>Onboarding card transition.</strong> First-visit → terse fires on either (a) admin creates the first invite OR (b) explicit dismiss of the onboarding card. Persisted in <code>localStorage[ONBOARDING_KEY]</code>. One-way — once gone, never returns.</li>
+      <li><strong>Empty after activity.</strong> "Revoke all" then "Clear all" lands the admin in the post-activity terse empty (NOT the first-visit onboarding) — because <code>onboardingDismissed</code> is already true at that point.</li>
+      <li><strong>No optimistic deletes.</strong> Each destructive action waits for the API response before mutating the list — feedback comes via the toast. (The list is small enough that latency isn't a UX concern.)</li>
+      <li><strong>Reduced motion.</strong> No bespoke animations beyond color/border/opacity transitions, which collapse to 0 ms via the token override.</li>
+    </ul>
+  </section>
 </div>
 
 <div class="demo-label">21 — Invites</div>
