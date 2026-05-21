@@ -42,9 +42,25 @@ export async function GET(req: Request) {
     (t): t is ProjectTree => t !== null,
   );
 
-  const unsortedTree = allTrees.find((t) => t.slug === 'unsorted') ?? null;
-  const orphanMockups = unsortedTree ? unsortedTree.mockups : [];
   const projects = allTrees.filter((t) => t.slug !== 'unsorted');
+
+  // Mockups with no projectId/folderId render under the synthetic
+  // "NO PROJECT" section in the sidebar. The "unsorted" project slug is
+  // never persisted; we surface the orphan rows directly so they appear
+  // even when no placeholder project row exists.
+  const orphanRows = await prisma.mockup.findMany({
+    where: { projectId: null, status: { not: 'archived' } },
+    orderBy: { position: 'asc' },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      status: true,
+      position: true,
+      createdById: true,
+    },
+  });
+  const orphanMockups = orphanRows;
 
   const allMockups = await prisma.mockup.findMany({
     where: { status: { not: 'archived' } },

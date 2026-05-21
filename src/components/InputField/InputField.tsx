@@ -72,7 +72,18 @@ const Label = forwardRef<
 Label.displayName = 'InputField.Label';
 
 const Control = Form.Control;
-const Message = Form.Message;
+
+// Wrap Radix `Form.Message` so it carries `.help` — the InputField CSS
+// keys the error font + danger color off the `.help` selector. Without
+// this wrapper the message renders as a class-less <span> and inherits
+// the document body font size, breaking the DS 28 contract.
+const Message = forwardRef<
+  ElementRef<typeof Form.Message>,
+  ComponentPropsWithoutRef<typeof Form.Message>
+>(({ className, ...props }, ref) => (
+  <Form.Message ref={ref} className={cn(styles.help, className)} {...props} />
+));
+Message.displayName = 'InputField.Message';
 
 const Help = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
   ({ className, ...props }, ref) => (

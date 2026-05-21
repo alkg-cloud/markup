@@ -22,8 +22,7 @@ export const NAME_MAX_LENGTH = 64;
  */
 export const NAME_LENGTH_WARN_THRESHOLD = NAME_MAX_LENGTH - 8;
 
-export const URL_SAFE_NAME_HINT =
-  'Use only letters (a–z, A–Z), digits, hyphens (-), or underscores (_).';
+export const URL_SAFE_NAME_HINT = 'Use only letters, digits, hyphens, or underscores.';
 
 export type UrlSafeNameErrorCode = 'name_required' | 'name_too_long' | 'name_not_url_safe';
 
