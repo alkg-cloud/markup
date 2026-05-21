@@ -1,0 +1,155 @@
+/* Preview area — port of DS 25's `.preview-area` block. Renders one of three
+   states via [data-state] on the inner box:
+     - "loading"  → shimmer gradient + 5 skeleton rows
+     - "ready"    → <img> screenshot
+     - "fallback" → centered file-type icon + helper text */
+
+.previewArea {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.previewLabel {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status {
+  font-weight: 400;
+  color: var(--text-dim);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 10.5px;
+}
+
+.previewBox {
+  height: 160px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: oklch(95% 0.02 60);
+  position: relative;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* Skeleton loading state — used while html2canvas is generating the preview
+   AND while the mockup is being uploaded (the preview stays visible but
+   reverts to skeleton to signal "this view will reload"). */
+.previewBox[data-state="loading"] {
+  background: linear-gradient(
+    90deg,
+    oklch(18% 0.025 165) 0%,
+    oklch(22% 0.03 165) 50%,
+    oklch(18% 0.025 165) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+  border-color: var(--border-subtle);
+}
+
+.skeletonBlocks {
+  position: absolute;
+  inset: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.row {
+  height: 10px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    oklch(28% 0.03 165) 0%,
+    oklch(32% 0.035 165) 50%,
+    oklch(28% 0.03 165) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+}
+
+.title {
+  height: 14px;
+  width: 55%;
+  margin-bottom: 4px;
+}
+
+.short {
+  width: 38%;
+}
+
+.cta {
+  height: 22px;
+  width: 80px;
+  border-radius: var(--radius-pill);
+  margin-top: 10px;
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .previewBox[data-state="loading"],
+  .previewBox[data-state="loading"] .row {
+    animation: none;
+    background: oklch(22% 0.03 165);
+  }
+  .previewBox[data-state="loading"] .row {
+    background: oklch(30% 0.035 165);
+  }
+}
+
+/* Fallback state — when html2canvas times out or fails (zip files, blocked
+   content). Box shows the file icon + helper text without the screenshot. */
+.previewBox[data-state="fallback"] {
+  background: var(--bg-tinted);
+  border-color: var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.fallbackIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: oklch(35% 0.12 60);
+  color: oklch(85% 0.16 60);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.fallbackText {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
