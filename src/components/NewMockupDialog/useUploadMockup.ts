@@ -57,6 +57,15 @@ export type UseUploadMockupApi = {
 
 const IDLE: UploadState = { status: 'idle' };
 
+/**
+ * Hard ceiling on a single upload. Five minutes covers the 10 MB cap
+ * even on the slowest plausible mobile uplink (~30 kbps), and keeps a
+ * hung connection from leaving the hook stuck in `{ status: 'uploading' }`
+ * forever. The server enforces its own 413 long before this fires for
+ * any well-behaved client.
+ */
+const UPLOAD_TIMEOUT_MS = 5 * 60 * 1000;
+
 export function useUploadMockup(): UseUploadMockupApi {
   const [state, setState] = useState<UploadState>(IDLE);
   const xhrRef = useRef<XMLHttpRequest | null>(null);
@@ -77,6 +86,7 @@ export function useUploadMockup(): UseUploadMockupApi {
       params.mode === 'replace' ? `/api/mockups/${params.mockupId}/version` : '/api/mockups';
 
     xhr.open('POST', url);
+    xhr.timeout = UPLOAD_TIMEOUT_MS;
 
     xhr.upload.addEventListener('progress', (event) => {
       // `lengthComputable === false` means the browser doesn't know the
@@ -85,6 +95,40 @@ export function useUploadMockup(): UseUploadMockupApi {
       if (!event.lengthComputable || !event.total) return;
       const progress = event.loaded / event.total;
       setState({ status: 'uploading', progress });
+    });
+
+    // `xhr.upload` is its own EventTarget — errors that happen DURING the
+    // upload phase (network dropped mid-transfer, browser-side timeout,
+    // user-initiated abort) fire on `xhr.upload`, not on the top-level
+    // `xhr`. Without these listeners, a flaky connection mid-upload would
+    // leave the hook stuck in `{ status: 'uploading' }` forever.
+    xhr.upload.addEventListener('error', () => {
+      if (xhrRef.current !== xhr) return;
+      xhrRef.current = null;
+      setState({
+        status: 'error',
+        route: 'global',
+        error: { kind: 'network' },
+      });
+    });
+
+    xhr.upload.addEventListener('timeout', () => {
+      if (xhrRef.current !== xhr) return;
+      xhrRef.current = null;
+      setState({
+        status: 'error',
+        route: 'global',
+        error: { kind: 'server_error', detail: 'timeout' },
+      });
+    });
+
+    xhr.upload.addEventListener('abort', () => {
+      // Defensive backstop: the imperative `abort()` method already
+      // transitions the hook to `idle`, but if some other path triggers
+      // `xhr.abort()` we still want to clear the in-flight ref so a
+      // late `load` doesn't try to parse a torn-down response.
+      if (xhrRef.current !== xhr) return;
+      xhrRef.current = null;
     });
 
     xhr.addEventListener('load', () => {
