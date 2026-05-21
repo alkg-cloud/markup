@@ -110,8 +110,8 @@ src/components/
     Dropdown.tsx            # 'use client' — positioned popover menu with items, divider, danger variant
     Dropdown.module.css     # menu, item, itemDanger, divider styles + spring animation
   Dialog/
-    RadixDialog.tsx         # 'use client' — Radix-Dialog compound (Root/Trigger/Portal/Overlay/Content/Title/Description/Close)
-    RadixDialog.module.css  # scrim, dialog card, title, description, scale-in animation (ported from the legacy Dialog primitive)
+    RadixDialog.tsx         # 'use client' — Radix-Dialog compound (Root/Trigger/Portal/Overlay/Content/Title/Description/Close); Content accepts showCloseButton + closeLabel + closeButtonDisabled to surface the canonical top-right X (see docs/design/design-system/14-dialog.html)
+    RadixDialog.module.css  # scrim, dialog card, title, description, scale-in animation (ported from the legacy Dialog primitive); closeBtn for the opt-in X affordance
   InputField/
     InputField.tsx          # 'use client' — Radix-Form compound (Root/Label/Control/Message/Help) with `data-state="error"|"success"` for server-driven feedback
     InputField.module.css   # field, label, input, message, help styles; hooks both [data-invalid] (Radix sync) and [data-state="error"] (consumer-set async)
@@ -128,8 +128,8 @@ src/components/
     UploadEmptyState.tsx        # 'use client' — drop-zone-gigante for empty all-projects/project/folder views; combines drop handler + visually-hidden file input
     UploadEmptyState.module.css # dropzone, label, copy, focus ring styles
   NewMockupDialog/
-    NewMockupDialog.tsx          # 'use client' — composes RadixDialog + AlertBanner + InputField + FolderPicker + FileChip + PreviewBox + ReplaceToggle; runs `useUploadMockup` + `useFilePreview` + `useFolders`; resolves `target.projectSlug` → `projectId` and `target.folderPath` → `folderId` against the projects/folders that land
-    NewMockupDialog.module.css   # dialog body grid, file-chip row, picker row, progress bar, actions row
+    NewMockupDialog.tsx          # 'use client' — composes RadixDialog (showCloseButton + closeButtonDisabled={isUploading}) + AlertBanner + InputField + FolderPicker + FileChip + PreviewBox + ReplaceToggle; runs `useUploadMockup` + `useFilePreview` + `useFolders`; resolves `target.projectSlug` → `projectId` and `target.folderPath` → `folderId` against the projects/folders that land
+    NewMockupDialog.module.css   # dialog body grid, file-chip row, picker row, progress bar, actions row (close-button styles moved to RadixDialog.module.css)
     NewMockupDialogProvider.tsx  # 'use client' — context provider exposing `useNewMockupDialog().openDialog({ file, target, mode? })`; lazy-fetches the project list, mounted in (app)/layout.tsx
     FileChip.tsx / .module.css   # HTML/ZIP badge + filename pill
     PreviewBox.tsx / .module.css # mockup preview iframe with loading/ready/fallback states

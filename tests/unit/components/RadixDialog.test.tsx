@@ -109,4 +109,88 @@ describe('RadixDialog', () => {
     expect(overlay?.className).toMatch(/scrim/);
     expect(title?.className).toMatch(/title/);
   });
+
+  describe('showCloseButton', () => {
+    it('does not render a close-X button when showCloseButton is omitted', () => {
+      renderHarness(<Harness />);
+      // The only close button in the Harness is the explicit RadixDialog.Close
+      // with text "Close". There should be no additional aria-label="Close" button.
+      const closeButtons = Array.from(document.querySelectorAll('button[aria-label="Close"]'));
+      expect(closeButtons).toHaveLength(0);
+    });
+
+    it('renders a close-X button when showCloseButton={true}', () => {
+      act(() => {
+        root.render(
+          <RadixDialog.Root defaultOpen>
+            <RadixDialog.Portal>
+              <RadixDialog.Overlay />
+              <RadixDialog.Content showCloseButton>
+                <RadixDialog.Title>With X</RadixDialog.Title>
+              </RadixDialog.Content>
+            </RadixDialog.Portal>
+          </RadixDialog.Root>,
+        );
+      });
+      const xBtn = document.querySelector('button[aria-label="Close"]') as HTMLButtonElement | null;
+      expect(xBtn).not.toBeNull();
+      expect(xBtn?.disabled).toBe(false);
+    });
+
+    it('respects a custom closeLabel', () => {
+      act(() => {
+        root.render(
+          <RadixDialog.Root defaultOpen>
+            <RadixDialog.Portal>
+              <RadixDialog.Overlay />
+              <RadixDialog.Content showCloseButton closeLabel="Dismiss dialog">
+                <RadixDialog.Title>Custom label</RadixDialog.Title>
+              </RadixDialog.Content>
+            </RadixDialog.Portal>
+          </RadixDialog.Root>,
+        );
+      });
+      expect(document.querySelector('button[aria-label="Dismiss dialog"]')).not.toBeNull();
+    });
+
+    it('disables the close-X when closeButtonDisabled={true}', () => {
+      act(() => {
+        root.render(
+          <RadixDialog.Root defaultOpen>
+            <RadixDialog.Portal>
+              <RadixDialog.Overlay />
+              <RadixDialog.Content showCloseButton closeButtonDisabled>
+                <RadixDialog.Title>Disabled X</RadixDialog.Title>
+              </RadixDialog.Content>
+            </RadixDialog.Portal>
+          </RadixDialog.Root>,
+        );
+      });
+      const xBtn = document.querySelector('button[aria-label="Close"]') as HTMLButtonElement | null;
+      expect(xBtn).not.toBeNull();
+      expect(xBtn?.disabled).toBe(true);
+    });
+
+    it('close-X click closes the dialog', async () => {
+      act(() => {
+        root.render(
+          <RadixDialog.Root defaultOpen>
+            <RadixDialog.Portal>
+              <RadixDialog.Overlay />
+              <RadixDialog.Content showCloseButton>
+                <RadixDialog.Title>Closeable</RadixDialog.Title>
+              </RadixDialog.Content>
+            </RadixDialog.Portal>
+          </RadixDialog.Root>,
+        );
+      });
+      expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+      const xBtn = document.querySelector('button[aria-label="Close"]') as HTMLButtonElement;
+      expect(xBtn).not.toBeNull();
+      act(() => {
+        xBtn.click();
+      });
+      expect(document.querySelector('[role="dialog"]')).toBeNull();
+    });
+  });
 });

@@ -7,51 +7,6 @@
    DS source: docs/design/design-system/25-new-mockup-dialog.html
 */
 
-.head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.head h2 {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-bright);
-  letter-spacing: -0.01em;
-  margin: 0;
-}
-
-.closeBtn {
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition:
-    background var(--motion-fast),
-    color var(--motion-fast);
-}
-
-.closeBtn:hover {
-  background: var(--surface-hover);
-  color: var(--text-bright);
-}
-
-.closeBtn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.closeBtn svg {
-  width: 12px;
-  height: 12px;
-}
-
 /* The Form.Root collapses to a stack matching the dialog's vertical
    rhythm (10px gap, matching `.new-mockup-dialog` in the DS). */
 .form {

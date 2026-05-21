@@ -398,19 +398,7 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
   // parent can mount us with `file: null` while the dialog is closed.
   const body = file ? (
     <>
-      <div className={styles.head}>
-        <RadixDialog.Title>New mockup</RadixDialog.Title>
-        <RadixDialog.Close asChild>
-          <button
-            type="button"
-            className={styles.closeBtn}
-            aria-label="Close"
-            disabled={isUploading}
-          >
-            <CloseGlyph />
-          </button>
-        </RadixDialog.Close>
-      </div>
+      <RadixDialog.Title>New mockup</RadixDialog.Title>
 
       {globalError ? (
         <AlertBanner.Root status="error">
@@ -569,6 +557,8 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
         <RadixDialog.Overlay />
         <RadixDialog.Content
           aria-describedby={undefined}
+          showCloseButton
+          closeButtonDisabled={isUploading}
           onInteractOutside={(event) => {
             // Don't close while uploading from a pointer-outside click;
             // the user must explicitly hit Cancel (matches DS 25's

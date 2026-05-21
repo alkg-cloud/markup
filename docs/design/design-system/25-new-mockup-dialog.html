@@ -455,7 +455,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
 <div class="page" data-ds-component="new-mockup-dialog">
 
   <h1 class="h1">New mockup dialog</h1>
-  <p class="lede">Modal dialog that opens after the user drops a file on the app or clicks "New mockup" / "Upload mockup". Single recipe: <strong>nome+pickers+preview</strong> layout, <strong>tree-popover</strong> folder picker, <strong>color-coded</strong> file icon, <strong>inline-progress</strong> while uploading. Composes the canonical <a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a> for the name (driving field-level errors) and the <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> for non-field errors (server reject, network failure). The "replace as new version" toggle appears only when the dialog is opened from a mockup view.</p>
+  <p class="lede">Modal dialog that opens after the user drops a file on the app or clicks "New mockup" / "Upload mockup". Single recipe: <strong>nome+pickers+preview</strong> layout, <strong>tree-popover</strong> folder picker, <strong>color-coded</strong> file icon, <strong>inline-progress</strong> while uploading. Uses <code>showCloseButton</code> on <a href="./14-dialog.html" style="color:var(--accent)"><code>RadixDialog.Content</code></a> for the close-X — the close button is disabled (<code>closeButtonDisabled</code>) while uploading. Composes the canonical <a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a> for the name (driving field-level errors) and the <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> for non-field errors (server reject, network failure). The "replace as new version" toggle appears only when the dialog is opened from a mockup view.</p>
 
   <section class="section">
     <div class="section-title">Default — idle state</div>
@@ -898,20 +898,20 @@ pre.api .t{color:oklch(86% 0.12 60)}
   <section class="section">
     <div class="section-title">React API — composes Radix Dialog + Radix Form + DS 27 + DS 28</div>
     <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">The dialog is rendered with <code style="color:var(--accent)">@radix-ui/react-dialog</code> (modal + focus trap + escape + portal). The form inside uses <code style="color:var(--accent)">@radix-ui/react-form</code> for sync validation. The name field uses our <a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a>; the folder picker is a custom popover; global errors render via our <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a>.</p>
-    <pre class="api"><span class="c">// NewMockupDialog.tsx</span>
-<span class="k">import</span> * <span class="k">as</span> Dialog <span class="k">from</span> <span class="s">'@radix-ui/react-dialog'</span>;
+    <pre class="api"><span class="c">// NewMockupDialog.tsx — uses RadixDialog (DS 14) with showCloseButton</span>
+<span class="k">import</span> { RadixDialog } <span class="k">from</span> <span class="s">'@/components/Dialog/RadixDialog'</span>;   <span class="c">// see 14-dialog.html</span>
 <span class="k">import</span> * <span class="k">as</span> Form <span class="k">from</span> <span class="s">'@radix-ui/react-form'</span>;
 <span class="k">import</span> { InputField, AlertBanner, FolderPicker } <span class="k">from</span> <span class="s">'@/components/ds'</span>;
 
-&lt;<span class="t">Dialog.Root</span> open={open} onOpenChange={setOpen}&gt;
-  &lt;<span class="t">Dialog.Portal</span>&gt;
-    &lt;<span class="t">Dialog.Overlay</span> className=<span class="s">"dialog-scrim"</span> /&gt;
-    &lt;<span class="t">Dialog.Content</span> className=<span class="s">"new-mockup-dialog"</span>&gt;
+&lt;<span class="t">RadixDialog.Root</span> open={open} onOpenChange={setOpen}&gt;
+  &lt;<span class="t">RadixDialog.Portal</span>&gt;
+    &lt;<span class="t">RadixDialog.Overlay</span> /&gt;
+    &lt;<span class="t">RadixDialog.Content</span>
+      showCloseButton                              <span class="c">// CUSTOM — see DS 14 § close-btn</span>
+      closeButtonDisabled={isUploading}            <span class="c">// gray X while XHR in flight</span>
+    &gt;
 
-      &lt;<span class="t">Dialog.Title</span>&gt;New mockup&lt;/<span class="t">Dialog.Title</span>&gt;
-      &lt;<span class="t">Dialog.Close</span> asChild&gt;
-        &lt;<span class="k">button</span> aria-label=<span class="s">"Close"</span> className=<span class="s">"close-btn"</span>&gt;<span class="t">&lt;XIcon /&gt;</span>&lt;/<span class="k">button</span>&gt;
-      &lt;/<span class="t">Dialog.Close</span>&gt;
+      &lt;<span class="t">RadixDialog.Title</span>&gt;New mockup&lt;/<span class="t">RadixDialog.Title</span>&gt;
 
       {globalError &amp;&amp; (
         &lt;<span class="t">AlertBanner.Root</span> status=<span class="s">"error"</span>&gt;                <span class="c">// DS 27 — non-field errors</span>
@@ -970,9 +970,9 @@ pre.api .t{color:oklch(86% 0.12 60)}
           &lt;/<span class="k">button</span>&gt;
         &lt;/<span class="t">Form.Submit</span>&gt;
       &lt;/<span class="t">Form.Root</span>&gt;
-    &lt;/<span class="t">Dialog.Content</span>&gt;
-  &lt;/<span class="t">Dialog.Portal</span>&gt;
-&lt;/<span class="t">Dialog.Root</span>&gt;
+    &lt;/<span class="t">RadixDialog.Content</span>&gt;
+  &lt;/<span class="t">RadixDialog.Portal</span>&gt;
+&lt;/<span class="t">RadixDialog.Root</span>&gt;
 </pre>
     <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px;margin-top:12px">
       <li><strong>Radix Dialog</strong> handles: focus trap, Escape to close, scroll lock, portal, ARIA (aria-modal, labelledby, describedby).</li>
