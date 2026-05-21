@@ -75,16 +75,21 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     }
   }
 
-  const existing = await getMockup(mockupId);
+  // Existing mockup + FK targets run in parallel — none depend on each other.
+  const [existing, project, folder] = await Promise.all([
+    getMockup(mockupId),
+    typeof fields.projectId === 'string'
+      ? prisma.project.findUnique({ where: { id: fields.projectId } })
+      : Promise.resolve(null),
+    typeof fields.folderId === 'string'
+      ? prisma.folder.findUnique({ where: { id: fields.folderId } })
+      : Promise.resolve(null),
+  ]);
   if (!existing) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-
-  // Validate FK targets before any DB write.
-  if (typeof fields.projectId === 'string') {
-    const project = await prisma.project.findUnique({ where: { id: fields.projectId } });
-    if (!project) return NextResponse.json({ error: 'project_not_found' }, { status: 400 });
+  if (typeof fields.projectId === 'string' && !project) {
+    return NextResponse.json({ error: 'project_not_found' }, { status: 400 });
   }
   if (typeof fields.folderId === 'string') {
-    const folder = await prisma.folder.findUnique({ where: { id: fields.folderId } });
     if (!folder) return NextResponse.json({ error: 'folder_not_found' }, { status: 400 });
     const resolvedProjectId = fields.projectId ?? existing.projectId;
     if (resolvedProjectId && folder.projectId !== resolvedProjectId) {
