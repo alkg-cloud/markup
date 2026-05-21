@@ -14,10 +14,12 @@
   --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
   --surface-glass-bg:rgb(7 12 15 / 80%);
   --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
-  --ease-spring:cubic-bezier(0.5,1.4,0.6,1);
-  --motion-fast:160ms;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
   --radius-xs:4px;--radius-sm:8px;--radius-md:12px;
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
 }
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
@@ -27,11 +29,14 @@ body{
   background-attachment:fixed;
 }
 button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
-.page{padding:48px 32px 96px}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+
+.page{padding:48px 32px 96px;max-width:960px;margin:0 auto}
 .h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
 .lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
 .section{margin-bottom:48px}
 .section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
 .stage{
   background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
@@ -77,16 +82,53 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
 .trig-icon{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-muted);background:var(--bg-card-active);border-radius:var(--radius-xs)}
 .trig-text{font-family:var(--font-mono);font-size:10px;color:var(--text-dim)}
 
-/* Tokens */
-.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
-.tokens dt{color:var(--text-dim)}.tokens dt::before{content:'--'}.tokens dd{color:var(--text-bright)}
+/* All-states grid helpers */
+.row-states{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:24px;
+}
+.state{display:flex;flex-direction:column;gap:8px}
+.state .state-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+}
+.state .state-row{
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:24px 18px 36px;display:flex;align-items:center;justify-content:center;
+  min-height:90px;position:relative;
+}
+
+/* Anatomy / matrix tables */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;
+  background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  color:var(--text-dim);
+  overflow-x:auto;
+  white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
 
-<div class="page">
+<div class="page" data-ds-component="tooltip">
   <h1 class="h1">16 — Tooltip</h1>
-  <p class="lede">The single tooltip primitive (<code>src/components/Tooltip/TooltipPortal.tsx</code>). A <code>&lt;div popover="hint" id="markup-tooltip"&gt;</code> rendered once at root layout; a capture-phase document listener watches <code>mouseenter</code> / <code>focusin</code> on every <code>[data-tooltip]</code> trigger, copies the text, positions against the trigger's <code>getBoundingClientRect</code>, and calls <code>showPopover()</code>. Top-layer paint escapes every overflow ancestor and stacking context. ~150 ms dwell before show; instant hide on leave/scroll.</p>
+  <p class="lede">Non-interactive hover hint. Single global <code>&lt;div popover="hint" id="markup-tooltip"&gt;</code> rendered once at the root layout (<code>src/components/Tooltip/TooltipPortal.tsx</code>); a capture-phase document listener watches <code>mouseenter</code> / <code>focusin</code> on every <code>[data-tooltip]</code> trigger, copies the text, positions against the trigger's <code>getBoundingClientRect</code>, and calls <code>showPopover()</code>. <code>popover="hint"</code> paints in the browser top-layer — escapes every overflow ancestor and stacking context, no z-index fight. ~150 ms dwell before show; instant hide on leave/scroll. Shares the glass-surface standard with <a href="./14-dialog.html" style="color:var(--accent)"><code>dialog</code></a>, <a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a>, and rail/toolbar but with a smaller padding / radius / font footprint.</p>
 
   <section class="section">
     <div class="section-title">A — Alignment variants</div>
@@ -113,7 +155,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         </div>
       </div>
     </div>
-    <p class="lede" style="margin-top:14px">When the trigger is near the right edge, alignment flips to <code>right</code> so the tooltip extends leftwards instead of clipping. Inside the rail's scrollable list, all triggers use <code>data-tooltip-align="right"</code>.</p>
+    <div class="caption">When the trigger is near the right edge, alignment flips to <code>right</code> so the tooltip extends leftwards instead of clipping. Inside the rail's scrollable list, all triggers use <code>data-tooltip-align="right"</code>.</div>
   </section>
 
   <section class="section">
@@ -124,7 +166,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         <span class="tip below">Flipped to below trigger</span>
       </div>
     </div>
-    <p class="lede" style="margin-top:14px">Default placement is above the trigger; the portal flips below when there's no room (top &lt; 4 px). Horizontal anchor still respects the <code>align</code> attribute. Clamped to the viewport with a 4 px gutter.</p>
+    <div class="caption">Default placement is above the trigger; the portal flips below when there's no room (top &lt; 4 px). Horizontal anchor still respects the <code>align</code> attribute. Clamped to the viewport with a 4 px gutter.</div>
   </section>
 
   <section class="section">
@@ -135,10 +177,42 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         <span class="tip above" style="white-space:normal">Toggle fullscreen — exits when you press <strong>F</strong> or <strong>Esc</strong>. The viewer uses the Fullscreen API on AppMain so floating chrome survives.</span>
       </div>
     </div>
+    <div class="caption">Multiline content wraps within the 220 px hard cap. Strong tags work; links and other interactive content do not (the tooltip is <code>pointer-events: none</code> by design).</div>
   </section>
 
   <section class="section">
-    <div class="section-title">D — Triggers in the shipped product</div>
+    <div class="section-title">D — All alignment + flip states, one row</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">above-left</div>
+        <div class="state-row">
+          <div class="trigger"><span class="ico">⋯</span><span class="tip above">Edit</span></div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">above-center</div>
+        <div class="state-row">
+          <div class="trigger"><span class="ico">⚙</span><span class="tip above-center">Settings</span></div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">above-right</div>
+        <div class="state-row">
+          <div class="trigger"><span class="ico">⤢</span><span class="tip above-right">Fullscreen</span></div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">below (flipped)</div>
+        <div class="state-row" style="padding-top:48px">
+          <div class="trigger"><span class="ico">+</span><span class="tip below">New annotation</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">A single recipe paints every position. The <code>[data-align]</code> attribute on the tooltip element selects which of the four placement rules applies — set by JS after measurement.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">E — Triggers in the shipped product</div>
     <div class="triggers">
       <div class="trig-row"><span class="trig-icon">−</span><span class="trig-text">CanvasToolbar zoom-out</span></div>
       <div class="trig-row"><span class="trig-icon">+</span><span class="trig-text">CanvasToolbar zoom-in</span></div>
@@ -155,6 +229,133 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
       <div class="trig-row"><span class="trig-icon">◧</span><span class="trig-text">Sidebar collapse</span></div>
       <div class="trig-row"><span class="trig-icon">AC</span><span class="trig-text">Topbar avatar</span></div>
     </div>
+    <div class="caption">All triggers use the same <code>data-tooltip="…"</code> attribute. <code>TooltipPortal</code> attaches one capture-phase document listener — no per-trigger React state.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — custom <code>popover="hint"</code> (not Radix)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">Backed by a custom in-project implementation rather than a Radix primitive. <code style="color:var(--accent)">@radix-ui/react-tooltip</code> exists but is <strong>NOT installed</strong> in this project — add it only when the first consumer needs <code>Tooltip.Provider</code> coordination (shared open-delay timer across multiple tooltips) or arrow-positioning. The current <code>popover="hint"</code> approach is simpler: one global element, one document listener, zero per-trigger React state.</p>
+    <pre class="api"><span class="c">// 1) Mount once in root layout</span>
+<span class="k">import</span> { TooltipPortal } <span class="k">from</span> <span class="s">'@/components/Tooltip/TooltipPortal'</span>;
+
+<span class="k">export default function</span> RootLayout({ children }: { children: <span class="t">ReactNode</span> }) {
+  <span class="k">return</span> (
+    &lt;<span class="k">html</span>&gt;
+      &lt;<span class="k">body</span>&gt;
+        {children}
+        &lt;<span class="t">TooltipPortal</span> /&gt;                              <span class="c">// single global &lt;div popover="hint"&gt;</span>
+      &lt;/<span class="k">body</span>&gt;
+    &lt;/<span class="k">html</span>&gt;
+  );
+}
+
+<span class="c">// 2) Use anywhere — just attribute-driven, no component wrapper</span>
+&lt;<span class="k">button</span>
+  data-tooltip=<span class="s">"New annotation"</span>                       <span class="c">// required — tooltip text</span>
+  data-tooltip-align=<span class="s">"right"</span>                          <span class="c">// optional: "left" (default) | "center" | "right"</span>
+  className={styles.kebab}
+  aria-label=<span class="s">"New annotation"</span>                        <span class="c">// always pair with aria-label for SR</span>
+&gt;
+  &lt;<span class="t">PlusIcon</span> /&gt;
+&lt;/<span class="k">button</span>&gt;
+
+<span class="c">// 3) Hypothetical Radix migration — only if needed (NOT INSTALLED today):</span>
+<span class="c">// import * as Tooltip from '@radix-ui/react-tooltip';</span>
+<span class="c">//</span>
+<span class="c">// &lt;Tooltip.Provider delayDuration={150}&gt;                  // shared dwell across tree</span>
+<span class="c">//   &lt;Tooltip.Root&gt;</span>
+<span class="c">//     &lt;Tooltip.Trigger asChild&gt;                            // Slot — keep native button</span>
+<span class="c">//       &lt;button className={styles.kebab}&gt;…&lt;/button&gt;</span>
+<span class="c">//     &lt;/Tooltip.Trigger&gt;</span>
+<span class="c">//     &lt;Tooltip.Portal&gt;</span>
+<span class="c">//       &lt;Tooltip.Content side="top" align="start" sideOffset={6}&gt;</span>
+<span class="c">//         New annotation</span>
+<span class="c">//       &lt;/Tooltip.Content&gt;</span>
+<span class="c">//     &lt;/Tooltip.Portal&gt;</span>
+<span class="c">//   &lt;/Tooltip.Root&gt;</span>
+<span class="c">// &lt;/Tooltip.Provider&gt;</span></pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><code>@radix-ui/react-tooltip</code> is <strong>not installed</strong>. Add to <code>package.json</code> only when the first consumer needs Provider-coordinated open-delays or an arrow. Until then, <code>TooltipPortal</code> is the canonical implementation.</li>
+      <li>Trigger contract is just an HTML attribute: <code>data-tooltip="text"</code> + optional <code>data-tooltip-align</code>. No React component wrapping required — works on any DOM element.</li>
+      <li><code>data-tooltip</code> is <strong>not</strong> a replacement for <code>aria-label</code>. Pair them: <code>data-tooltip</code> drives the visible hint; <code>aria-label</code> drives the SR announcement. They may carry the same text, but the tooltip is <code>aria-hidden</code> at the element level (<code>role="tooltip"</code> on the portal alone is not enough for SR).</li>
+      <li>Tooltip content is <code>pointer-events: none</code> — never put interactive elements inside. For hover-triggered overlays with actions, use <a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a>.</li>
+      <li>Only one global tooltip element exists; switching triggers reuses the same node (text + position get reassigned). This is what keeps the global capture-listener O(1).</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>hidden</code></td>
+          <td>Default. <code>showPopover()</code> not called.</td>
+          <td>Nothing in the top-layer. The global element exists but is <code>display: none</code>.</td>
+          <td>Element carries <code>role="tooltip"</code> but is unreachable by SR.</td>
+        </tr>
+        <tr>
+          <td><code>dwell</code></td>
+          <td><code>mouseenter</code> or <code>focusin</code> on a <code>[data-tooltip]</code> trigger.</td>
+          <td>~150 ms timer pending — nothing visible yet.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>shown</code></td>
+          <td>Dwell elapsed. <code>showPopover()</code> invoked with text + position.</td>
+          <td>Glass surface at calculated <code>top</code>/<code>left</code>, 6 px gap from trigger. Top-layer paint — never clipped.</td>
+          <td>Element gets <code>role="tooltip"</code> + visible text; trigger's <code>aria-label</code> carries the SR announcement.</td>
+        </tr>
+        <tr>
+          <td><code>flipped</code> (auto)</td>
+          <td>Above-trigger placement would put top &lt; 4 px.</td>
+          <td>Switches to below trigger. <code>[data-align]</code> unchanged.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>dismissed</code></td>
+          <td><code>mouseleave</code>, <code>focusout</code>, <code>scroll</code>, <code>resize</code>, or another tooltip taking over.</td>
+          <td>Instant hide — <code>hidePopover()</code> with no transition. Element returns to <code>display: none</code>.</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">"dwell", "flipped", and "dismissed" are all <em>internal</em> states — the consumer never sets them. The portal owns the lifecycle entirely; consumers only paint <code>data-tooltip</code> on triggers.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Primitive</th><th>Use for</th><th>Backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>tooltip</code></td>
+          <td>Static hover/focus hint for icon-only or terse-label triggers (kebabs, zoom buttons, rail handles, version chips). No interactive content.</td>
+          <td>Custom — <code>popover="hint"</code> + <code>TooltipPortal</code></td>
+        </tr>
+        <tr>
+          <td><code>popover</code></td>
+          <td>Anchored interactive surfaces — menu actions, status toggles, pickers. Click-driven, interactive content.</td>
+          <td>See <a href="./15-popover.html" style="color:var(--accent)"><code>15-popover.html</code></a></td>
+        </tr>
+        <tr>
+          <td><code>alert-banner</code></td>
+          <td>Inline, non-dismissable contextual hints inside a form body (e.g. "you can't undo this"). Lives in the layout, not on hover.</td>
+          <td>See <a href="./27-alert-banner.html" style="color:var(--accent)"><code>27-alert-banner.html</code></a></td>
+        </tr>
+        <tr>
+          <td><code>input-field hint</code></td>
+          <td>Inline helper text under a form field. Always visible (or replaced by error).</td>
+          <td>See <a href="./28-input-field.html" style="color:var(--accent)"><code>28-input-field.html</code></a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Rule of thumb: if the consumer must read it without acting, it's a tooltip. If they may act on it, it's a popover. If it lives next to a form field permanently, it's a hint.</div>
   </section>
 
   <section class="section">
@@ -172,10 +373,28 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
       <dt>radius<dd>--radius-xs (4 px)
       <dt>font<dd>10 px / 600 / 0.02em, --text-bright
       <dt>shadow<dd>0 4 px 12 px rgba(0 0 0 0.4)
+      <dt>pointer-events<dd>none — tooltip never receives clicks
+      <dt>gap from trigger<dd>6 px
+      <dt>viewport gutter<dd>4 px (clamps + flips at this margin)
       <dt>show-delay<dd>~150 ms dwell on mouseenter / focusin
       <dt>hide<dd>instant on mouseleave / focusout / scroll / resize
       <dt>animation<dd>opacity 0 → 1, translateY 2 px → 0 over --motion-fast / --ease-spring
     </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Single global element.</strong> One <code>&lt;div popover="hint" id="markup-tooltip"&gt;</code> mounted at root. Switching triggers reassigns text + position on the same node — no per-trigger React state.</li>
+      <li><strong>Attribute-driven triggers.</strong> Any DOM element with <code>data-tooltip="text"</code> works. Optional <code>data-tooltip-align="left|center|right"</code> picks horizontal anchor.</li>
+      <li><strong>Dwell delay.</strong> ~150 ms after <code>mouseenter</code> / <code>focusin</code> before show. Prevents flicker when sweeping the cursor across icons.</li>
+      <li><strong>Instant hide.</strong> No exit transition on <code>mouseleave</code> / <code>focusout</code> / <code>scroll</code> / <code>resize</code>. Snappy beats smooth here — a delayed hide reads as "still hovering".</li>
+      <li><strong>Top-layer paint.</strong> <code>popover="hint"</code> escapes every overflow ancestor and stacking context. No clipping by rail / toolbar / dialog overflow.</li>
+      <li><strong>Position flip.</strong> Default placement is above the trigger; flips below when top &lt; 4 px. Horizontal clamping keeps the tooltip inside the viewport with a 4 px gutter on both sides.</li>
+      <li><strong>Focus-driven show.</strong> Tooltips appear on keyboard focus (<code>focusin</code>) — the hint is reachable without a mouse, which Biome's a11y rule requires.</li>
+      <li><strong>Pointer-events: none.</strong> Tooltips never receive clicks. If you find yourself wanting interactive content, switch to <a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a>.</li>
+      <li><strong>Reduced motion.</strong> Under <code>prefers-reduced-motion: reduce</code>, the show animation collapses to a 0 ms opacity flip via the token override at the top of the file.</li>
+    </ul>
   </section>
 </div>
 
