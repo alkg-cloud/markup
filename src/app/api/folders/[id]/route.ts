@@ -57,22 +57,31 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   });
   if (!folder) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
+  let viewer: Awaited<ReturnType<typeof requireOwnerOrAdmin>>;
   try {
-    const viewer = await requireOwnerOrAdmin(ident, {
+    viewer = await requireOwnerOrAdmin(ident, {
       kind: 'folder',
       createdById: folder.createdById,
     });
-    // Members must own every descendant; admins skip the cascade check.
-    if (viewer.kind === 'user' && viewer.role === 'member') {
-      await assertCascadeOwnershipForFolder(viewer.userId, id);
-    }
   } catch (e) {
     return handleAuthError(e);
   }
 
-  const deleted = await deleteFolder(id);
-  if (!deleted) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-  return NextResponse.json({ id: deleted.id });
+  // Cascade-check + delete atomically: closes the window where a concurrent
+  // POST /api/mockups could insert a foreign-owned row between the check
+  // and the delete. Per docs/api/authz.md "Cascade semantics".
+  try {
+    const deleted = await prisma.$transaction(async (tx) => {
+      if (viewer.kind === 'user' && viewer.role === 'member') {
+        await assertCascadeOwnershipForFolder(viewer.userId, id, tx);
+      }
+      return deleteFolder(id, tx);
+    });
+    if (!deleted) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+    return NextResponse.json({ id: deleted.id });
+  } catch (e) {
+    return handleAuthError(e);
+  }
 }
 
 export const dynamic = 'force-dynamic';
