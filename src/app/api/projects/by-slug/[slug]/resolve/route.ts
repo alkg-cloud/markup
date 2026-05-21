@@ -23,12 +23,39 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
     .map((s) => decodeURIComponent(s))
     .filter((s) => s.length > 0);
 
-  const project = await prisma.project.findUnique({ where: { slug } });
-  if (!project) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-
   if (segments.length === 0) {
     return NextResponse.json({ error: 'invalid_path' }, { status: 400 });
   }
+
+  // Synthetic "unsorted" slug — orphan mockups (projectId=null) live
+  // under this virtual project so the sidebar can link them with a
+  // stable `/projects/unsorted/<mockup-slug>` URL. Only a single
+  // mockup segment is supported (orphans cannot live in folders).
+  if (slug === 'unsorted') {
+    if (segments.length !== 1) {
+      return NextResponse.json({ error: 'not_found' }, { status: 404 });
+    }
+    const mockup = await prisma.mockup.findFirst({
+      where: { projectId: null, slug: segments[0] },
+      select: { id: true, slug: true, name: true },
+    });
+    if (!mockup) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+    const projectCrumb = { label: 'Ungrouped', href: '/projects/unsorted' };
+    return NextResponse.json({
+      kind: 'mockup',
+      mockupId: mockup.id,
+      breadcrumbs: [
+        projectCrumb,
+        {
+          label: mockup.name,
+          href: `/projects/unsorted/${mockup.slug}`,
+        },
+      ],
+    });
+  }
+
+  const project = await prisma.project.findUnique({ where: { slug } });
+  if (!project) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
   const resolution = await resolveProjectPath(project.id, segments);
   if (!resolution) return NextResponse.json({ error: 'not_found' }, { status: 404 });
