@@ -26,8 +26,10 @@ class MockXHR {
   responseText = '';
   sent = false;
   aborted = false;
+  timeout = 0;
 
-  // upload sub-object — listeners for the upload's progress event live here.
+  // upload sub-object — listeners for the upload's progress, error,
+  // timeout and abort events live here.
   upload: {
     listeners: Record<string, Array<(e: ProgressInit) => void>>;
     addEventListener: (type: string, fn: (e: ProgressInit) => void) => void;
@@ -73,6 +75,16 @@ class MockXHR {
   // Test helper: dispatch an upload-progress event.
   fireProgress(init: ProgressInit) {
     for (const fn of this.upload.listeners.progress ?? []) fn(init);
+  }
+
+  // Test helper: dispatch a non-progress event on the upload (error,
+  // timeout, abort). Real `XMLHttpRequestUpload` dispatches `ProgressEvent`
+  // for these too, but the hook does not read the event payload — a
+  // bare call is enough.
+  fireUpload(type: string) {
+    for (const fn of this.upload.listeners[type] ?? []) {
+      fn({ loaded: 0, total: 0, lengthComputable: false });
+    }
   }
 
   // Test helper: dispatch a top-level event (load / error / abort).
@@ -481,6 +493,86 @@ describe('useUploadMockup', () => {
       expect(latest.current.state.route).toBe('global');
       expect(latest.current.state.error.kind).toBe('network');
     }
+  });
+
+  it('xhr.upload.error → network global (mid-upload failure)', () => {
+    const { latest, render } = makeHarness();
+    render();
+    act(() => {
+      latest.current!.api.start({
+        mode: 'add',
+        file: htmlFile(),
+        name: 'x',
+        projectId: null,
+        folderId: null,
+      });
+    });
+    expect(latest.current?.state.status).toBe('uploading');
+
+    act(() => lastXhr().fireUpload('error'));
+
+    expect(latest.current?.state.status).toBe('error');
+    if (latest.current?.state.status === 'error') {
+      expect(latest.current.state.route).toBe('global');
+      expect(latest.current.state.error.kind).toBe('network');
+    }
+  });
+
+  it('xhr.upload.timeout → server_error global with detail=timeout', () => {
+    const { latest, render } = makeHarness();
+    render();
+    act(() => {
+      latest.current!.api.start({
+        mode: 'add',
+        file: htmlFile(),
+        name: 'x',
+        projectId: null,
+        folderId: null,
+      });
+    });
+
+    // xhr.timeout should be set to the 5-minute ceiling so timeouts can
+    // actually fire on hung connections.
+    expect(lastXhr().timeout).toBe(5 * 60 * 1000);
+
+    act(() => lastXhr().fireUpload('timeout'));
+
+    expect(latest.current?.state.status).toBe('error');
+    if (latest.current?.state.status === 'error') {
+      expect(latest.current.state.route).toBe('global');
+      expect(latest.current.state.error.kind).toBe('server_error');
+      if (latest.current.state.error.kind === 'server_error') {
+        expect(latest.current.state.error.detail).toBe('timeout');
+      }
+    }
+  });
+
+  it('xhr.upload.abort clears the in-flight ref (defensive backstop)', () => {
+    const { latest, render } = makeHarness();
+    render();
+    act(() => {
+      latest.current!.api.start({
+        mode: 'add',
+        file: htmlFile(),
+        name: 'x',
+        projectId: null,
+        folderId: null,
+      });
+    });
+    const xhr = lastXhr();
+
+    // Simulate something external calling abort on the upload (e.g. a
+    // browser-driven cancellation). The listener should clear the ref so
+    // a late `load` event would be treated as superseded.
+    act(() => xhr.fireUpload('abort'));
+
+    // A subsequent stray load must be a no-op (no state change).
+    xhr.status = 201;
+    xhr.responseText = JSON.stringify({ id: 'mck_late', slug: 'late' });
+    act(() => xhr.fire('load'));
+
+    // State stays at `uploading` because the load handler short-circuited.
+    expect(latest.current?.state.status).toBe('uploading');
   });
 
   it('abort() returns state to idle and calls xhr.abort', () => {
