@@ -180,6 +180,24 @@ The test suite is configured `fileParallelism: false, maxWorkers: 1` because par
 ### 19. Empty thumbnail.png in `with-thumbnail.zip`
 The fixture was created with only the PNG magic header (8 bytes). The thumbnail route now guards against this (≥ 64 bytes minimum), but the fixture itself should be either rebuilt with a real thumbnail or removed in favor of the new `lumen-coffee.zip` / `helio-pricing.zip` / `drone-console.zip`.
 
+### 31. Radix latent migrations (DropdownMenu / Tooltip / Toast / Toolbar)
+
+**Where:** four DS files declare posture (b) — "would use Radix X but it is NOT installed":
+`09-avatar-menu.html`, `16-tooltip.html`, `17-toast.html`, `19-toolbar.html`.
+
+**Today:** the project ships custom implementations of each surface — `usePopover` for the avatar menu, `popover="hint"` for tooltips, a context+reducer for toasts, and inline `<button>` groups for the canvas toolbar. Each implementation satisfies the consumer set and matches the DS contract.
+
+**Trigger to migrate (per DS authoring rule):** install the Radix primitive only when the first consumer needs a capability the custom implementation does not provide. Concretely:
+
+- **`@radix-ui/react-dropdown-menu`** — install when a second consumer of the menu pattern needs typeahead navigation, sub-menus, or item-checked states beyond plain action items. The current avatar menu and tree-row kebabs are flat action lists.
+- **`@radix-ui/react-tooltip`** — install when a consumer needs `Tooltip.Provider`-coordinated open-delay timers across multiple tooltips, or pointer-events-on-content (e.g. a tooltip containing a copy-to-clipboard button). The current global hint popover is hover/focus only.
+- **`@radix-ui/react-toast`** — install when a consumer needs swipe-to-dismiss, an action slot ("Undo"), or queue-limit policies. The current toast is fire-and-fade.
+- **`@radix-ui/react-toolbar`** — install when `CanvasToolbar` gains ToggleGroup behaviour (e.g. pan/select/draw mode toggle), focus-roving across many controls, or visible separator semantics.
+
+**On migration:** add the package in the same PR as the first consumer; update the DS file's React API section to switch from posture (b) to posture (a); update `docs/feature-catalog.md` for any new state (e.g. tooltip-with-action becomes a new sub-row).
+
+**Size:** ~half a day per primitive (install, port one consumer, smoke test, doc update). Migrating all four at once is discouraged — each migration carries its own consumer-driven trigger.
+
 ---
 
 ## Agent collaboration efficiency (Tier 3 of v1.3 token-optimization analysis)
