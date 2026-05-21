@@ -199,6 +199,11 @@ export function useUploadMockup(): UseUploadMockupApi {
     xhr.send(buildFormData(params));
   }, []);
 
+  // `abort()` and `reset()` collapse to the same operation: drop any
+  // in-flight XHR + return state to idle. The two names are kept for the
+  // sake of the API surface — the dialog calls `abort()` mid-upload (the
+  // user clicked Cancel) and `reset()` on close (a stale error/success
+  // shouldn't survive into the next open). Same teardown either way.
   const abort = useCallback(() => {
     if (xhrRef.current) {
       const xhr = xhrRef.current;
@@ -211,14 +216,7 @@ export function useUploadMockup(): UseUploadMockupApi {
     setState(IDLE);
   }, []);
 
-  const reset = useCallback(() => {
-    if (xhrRef.current) {
-      const xhr = xhrRef.current;
-      xhrRef.current = null;
-      xhr.abort();
-    }
-    setState(IDLE);
-  }, []);
+  const reset = abort;
 
   // Abort any in-flight request when the consumer unmounts. Otherwise
   // the load handler would fire and call setState on an unmounted tree.
