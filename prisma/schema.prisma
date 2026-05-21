@@ -55,6 +55,7 @@ model Invite {
   revokedAt      DateTime?
   failedAttempts Int       @default(0)
 
+  @@unique([usedById])
   @@index([status])
   @@index([createdAt])
 }

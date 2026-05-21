@@ -64,6 +64,8 @@ The `failedAttempts` counter increments on every failed redeem call (validation,
 
 `createdBy` has `onDelete: Cascade` — when the creating admin is deleted, their minted invites go with them (single-tenant model; no audit-trail value in retaining orphan-creator invite rows). `usedBy` has `onDelete: SetNull` so admin-driven user deletion preserves invite history.
 
+A partial-unique index on `usedById` (where `usedById IS NOT NULL`) physically enforces "at most one invite per user", giving the redeem transaction a second lock alongside the in-transaction `WHERE status='unused'` predicate.
+
 ### Project
 
 ```prisma

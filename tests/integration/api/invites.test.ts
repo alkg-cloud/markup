@@ -606,6 +606,55 @@ describe('invites API', () => {
       expect(res.headers.get('retry-after')).toMatch(/^\d+$/);
     });
 
+    it('after a 201 redeem, /state reports the token as used (case 33)', async () => {
+      const cookie = await adminCookie();
+      const created = await mintInvite(cookie, { email: null, role: 'member', expiry: '7d' });
+      const ok = await redeem(
+        makeRedeem(created.plaintext, {
+          email: 'fresh@x.com',
+          password: 'longpassword12345',
+          name: 'Fresh',
+        }),
+        { params: Promise.resolve({ id: created.plaintext }) },
+      );
+      expect(ok.status).toBe(201);
+      const state = await inviteState(new Request('http://l'), {
+        params: Promise.resolve({ id: created.plaintext }),
+      });
+      expect(state.status).toBe(200);
+      expect(await state.json()).toEqual({ usable: false, reason: 'used' });
+    });
+
+    it('a second sequential redeem of the same token returns 410 and creates no second user (case 34)', async () => {
+      const cookie = await adminCookie();
+      const created = await mintInvite(cookie, { email: null, role: 'member', expiry: '7d' });
+      const r1 = await redeem(
+        makeRedeem(
+          created.plaintext,
+          { email: 'first@x.com', password: 'longpassword12345', name: 'First' },
+          '8.8.8.1',
+        ),
+        { params: Promise.resolve({ id: created.plaintext }) },
+      );
+      expect(r1.status).toBe(201);
+
+      // Different IP so the per-IP rate limiter doesn't get in the way; different
+      // email so the existing-user silent-collision path isn't what fails it.
+      inviteRedeemIpLimiter.reset('invite-redeem:9.9.9.9');
+      const r2 = await redeem(
+        makeRedeem(
+          created.plaintext,
+          { email: 'second@x.com', password: 'longpassword12345', name: 'Second' },
+          '9.9.9.9',
+        ),
+        { params: Promise.resolve({ id: created.plaintext }) },
+      );
+      expect(r2.status).toBe(410);
+      expect((await r2.json()).error).toBe('invite_unusable');
+      const secondUser = await prisma.user.findUnique({ where: { email: 'second@x.com' } });
+      expect(secondUser).toBeNull();
+    });
+
     it('race: two concurrent redeems → one 201 + one 410 invite_unusable (case 32)', async () => {
       const cookie = await adminCookie();
       const created = await mintInvite(cookie, { email: null, role: 'member', expiry: '7d' });
