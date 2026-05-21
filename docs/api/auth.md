@@ -58,6 +58,8 @@ try {
 
 `/api/invites` (the first feature to gate by `role`) drives this; `/api/agent-tokens` is gated the same way.
 
+Owner-or-admin routes call `requireOwnerOrAdmin(ident, entity)`. The helper fetches `user.role`; if `admin`, passes; otherwise checks the entity's `createdById`/`createdBy` field against `ident.userId` (and `createdByType === 'user'`). Returns 403 `forbidden_owner` on failure; 403 `forbidden_kind` for `kind: 'agent'` (agents never delete via the matrix routes, per [`docs/api/authz.md`](authz.md)). See [authz.md](authz.md) for the full DELETE permissions matrix and cascade rules.
+
 ## Author attribution
 
 When persisting a row that records who created it, map the identity to a single string + a kind:

@@ -13,8 +13,9 @@ const createSchema = z.object({
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
+  let ident: Awaited<ReturnType<typeof identify>>;
   try {
-    await requireAdmin(await identify(req));
+    ident = await requireAdmin(await identify(req));
   } catch (e) {
     return handleAuthError(e);
   }
@@ -26,6 +27,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     projectId,
     name: parsed.data.name,
     parentId: parsed.data.parentId ?? null,
+    createdById: ident.userId,
   });
 
   if ('error' in result) {

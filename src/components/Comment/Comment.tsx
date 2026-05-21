@@ -47,6 +47,8 @@ export interface CommentProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onReactionToggle?: (emoji: string) => void;
+  /** Whether the current viewer is an admin — they can delete others' comments (not edit). */
+  viewerIsAdmin?: boolean;
 }
 
 /**
@@ -73,6 +75,7 @@ export function Comment({
   onEdit,
   onDelete,
   onReactionToggle,
+  viewerIsAdmin = false,
 }: CommentProps) {
   // Kebab popover is browser-managed (HTML popover="auto" — top-layer
   // paint + light dismiss + ESC). `close()` is called on menu-item
@@ -131,7 +134,7 @@ export function Comment({
             <span className={styles.time}>{timestamp}</span>
           </div>
           <div className={styles.actions}>
-            {isOwn ? (
+            {isOwn || viewerIsAdmin ? (
               <>
                 <button
                   ref={kebabPopover.triggerRef}
@@ -157,18 +160,21 @@ export function Comment({
                     <VscReply aria-hidden="true" />
                     Reply
                   </button>
-                  <button
-                    type="button"
-                    className={styles.menuItem}
-                    role="menuitem"
-                    onClick={() => {
-                      kebabPopover.close();
-                      onEdit?.();
-                    }}
-                  >
-                    <VscEdit aria-hidden="true" />
-                    Edit
-                  </button>
+                  {/* Edit is own-only — admins can delete but not edit others' comments. */}
+                  {isOwn && (
+                    <button
+                      type="button"
+                      className={styles.menuItem}
+                      role="menuitem"
+                      onClick={() => {
+                        kebabPopover.close();
+                        onEdit?.();
+                      }}
+                    >
+                      <VscEdit aria-hidden="true" />
+                      Edit
+                    </button>
+                  )}
                   <button
                     type="button"
                     className={[styles.menuItem, styles.danger].join(' ')}

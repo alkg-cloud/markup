@@ -63,6 +63,8 @@ export interface AnnotationCardProps {
   onAnnotationStatusChange?: (status: AnnotationStatus) => void | Promise<void>;
   /** Delete this annotation (cascades to its thread + reactions). */
   onAnnotationDelete?: () => void | Promise<void>;
+  /** Whether the current viewer is an admin — widens delete access beyond `primary.isOwn`. */
+  viewerIsAdmin?: boolean;
 }
 
 /**
@@ -97,6 +99,7 @@ export function AnnotationCard({
   onCommentReact,
   onAnnotationStatusChange,
   onAnnotationDelete,
+  viewerIsAdmin = false,
 }: AnnotationCardProps) {
   // Primary-comment kebab popover — surfaces status toggle + Edit +
   // Delete for annotations the current user authored. Browser-managed
@@ -158,7 +161,7 @@ export function AnnotationCard({
           <span className={styles.author}>{author}</span>
         </span>
         <span className={[styles.pill, pillClass].join(' ')}>{status}</span>
-        {primary.isOwn ? (
+        {primary.isOwn || viewerIsAdmin ? (
           <div className={styles.primaryActions}>
             <button
               ref={primaryKebab.triggerRef}
@@ -320,6 +323,7 @@ export function AnnotationCard({
             onEdit={() => startEdit(r.id)}
             onDelete={() => onCommentDelete?.(r.id)}
             onReactionToggle={(emoji) => onCommentReact?.(r.id, emoji)}
+            viewerIsAdmin={viewerIsAdmin}
           />
         ))}
       </section>

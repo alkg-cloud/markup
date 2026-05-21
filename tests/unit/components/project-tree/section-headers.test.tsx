@@ -17,13 +17,21 @@ const fixtureProjects = [
     slug: 'project-alpha',
     icon: null,
     position: 1,
+    createdById: null,
     folders: [],
     mockups: [],
   },
 ];
 
 const fixtureOrphans = [
-  { id: 'm1', name: 'Draft sketch', slug: 'draft-sketch', status: 'active', position: 1 },
+  {
+    id: 'm1',
+    name: 'Draft sketch',
+    slug: 'draft-sketch',
+    status: 'active',
+    position: 1,
+    createdById: null,
+  },
 ];
 
 describe('ProjectTree section headers', () => {

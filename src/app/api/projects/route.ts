@@ -20,14 +20,19 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
+  let ident: Awaited<ReturnType<typeof identify>>;
   try {
-    await requireAdmin(await identify(req));
+    ident = await requireAdmin(await identify(req));
   } catch (e) {
     return handleAuthError(e);
   }
   const parsed = createSchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
-  const project = await createProject({ name: parsed.data.name, icon: parsed.data.icon });
+  const project = await createProject({
+    name: parsed.data.name,
+    icon: parsed.data.icon,
+    createdById: ident.userId,
+  });
   return NextResponse.json(project, { status: 201 });
 }
 

@@ -34,6 +34,7 @@ export function flattenProjects(
       projectSlug: p.slug,
       projectId: p.id,
       childCount: p.folders.length + p.mockups.length,
+      createdById: p.createdById,
     });
 
     if (!pExpanded) continue;
@@ -53,6 +54,7 @@ export function flattenProjects(
         posInSet: 0,
         projectSlug: p.slug,
         projectId: p.id,
+        createdById: null,
       });
       for (let ri = 0; ri < recentMockupIds.length; ri++) {
         // NOTE: dead code at the moment — `ProjectSidebar` doesn't pass
@@ -76,6 +78,7 @@ export function flattenProjects(
           projectSlug: p.slug,
           projectId: p.id,
           mockupId: recentMockupIds[ri],
+          createdById: null,
         });
       }
     }
@@ -126,6 +129,7 @@ function flattenChildren(
       projectSlug,
       projectId,
       childCount: f.children.length + f.mockups.length,
+      createdById: f.createdById,
     });
     if (fExpanded) {
       const childTotal = f.children.length + f.mockups.length;
@@ -158,6 +162,7 @@ function flattenChildren(
       projectSlug,
       projectId,
       mockupId: m.id,
+      createdById: m.createdById,
     });
   }
 }

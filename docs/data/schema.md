@@ -8,18 +8,22 @@ The Prisma schema lives at `prisma/schema.prisma`. Single SQLite file backs all 
 
 ```prisma
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  name         String
-  passwordHash String
-  role         String    @default("admin")
-  createdAt    DateTime  @default(now())
-  sessions     Session[]
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String
+  passwordHash    String
+  role            String    @default("admin")
+  createdAt       DateTime  @default(now())
+  sessions        Session[]
+  projectsCreated Project[] @relation("ProjectsCreated")
+  foldersCreated  Folder[]  @relation("FoldersCreated")
+  mockupsCreated  Mockup[]  @relation("MockupsCreated")
 }
 ```
 
 - Single-tenant first-run model: the first `POST /api/auth/setup` creates the admin user
-- `role` is always `'admin'` today; the column exists so future deployments can introduce non-admin users without a migration
+- `role` is `'admin' | 'member'`; defaults to `'admin'` for the setup-created user; invite rows carry the target role and `POST /api/invites/[token]/redeem` assigns it
+- `projectsCreated`, `foldersCreated`, `mockupsCreated` are the back-references for the ownership relations — they carry the `SetNull` cascade so deleting a `User` sets `createdById` to `NULL` on their projects, folders, and mockups rather than deleting the content
 
 ### Session
 
@@ -70,15 +74,18 @@ A partial-unique index on `usedById` (where `usedById IS NOT NULL`) physically e
 
 ```prisma
 model Project {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  icon      String?
-  position  Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  folders   Folder[]
-  mockups   Mockup[]
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  icon        String?
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+  createdBy   User?    @relation("ProjectsCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  folders     Folder[]
+  mockups     Mockup[]
+  @@index([createdById])
 }
 ```
 
@@ -86,31 +93,36 @@ model Project {
 - `slug` is unique, used in URLs
 - `icon` is an optional token string (e.g. `vsc:VscFile`, `emoji:🎨`) chosen in the New Project dialog; null when no icon is set
 - `position` controls display order in the sidebar
+- `createdById` is the cuid of the user who created the project. Nullable — rows that predate the `createdById` migration carry `NULL` and are admin-only-deletable. The seed "Unsorted" project has `createdById = NULL` by design (admin-only deletable).
 - A seed project `"Unsorted"` (slug `unsorted`) is created by migration and receives all pre-existing mockups
 
 ### Folder
 
 ```prisma
 model Folder {
-  id        String   @id @default(cuid())
-  projectId String
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  parentId  String?
-  parent    Folder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: Cascade)
-  children  Folder[] @relation("FolderTree")
-  name      String
-  position  Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  mockups   Mockup[]
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentId    String?
+  parent      Folder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Folder[] @relation("FolderTree")
+  name        String
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+  createdBy   User?    @relation("FoldersCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  mockups     Mockup[]
   @@unique([projectId, parentId, name])
   @@index([projectId])
   @@index([parentId])
+  @@index([createdById])
 }
 ```
 
 - Nested folders within a project via self-referencing `parentId`
 - `@@unique([projectId, parentId, name])` prevents sibling folders with the same name (note: SQLite treats NULL parentId as distinct, so root-level duplicates are not caught by the DB constraint alone — enforce in the service layer)
+- `createdById` follows the same nullable-ownership convention as `Project.createdById` — `NULL` means legacy or system row, admin-only-deletable
 - Cascade: deleting a Project deletes all its Folders; deleting a Folder deletes its children
 
 ### Mockup
@@ -129,11 +141,14 @@ model Mockup {
   position         Int             @default(0)
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
+  createdById      String?
+  createdBy        User?           @relation("MockupsCreated", fields: [createdById], references: [id], onDelete: SetNull)
   versions         MockupVersion[]
   annotations      Annotation[]
   @@index([status])
   @@index([projectId])
   @@index([folderId])
+  @@index([createdById])
 }
 ```
 
@@ -142,6 +157,7 @@ model Mockup {
 - `slug` is unique-per-mockup, derived from `name` at creation
 - `projectId` and `folderId` are nullable FKs with `onDelete: SetNull` — deleting a Project or Folder orphans the mockup rather than cascading deletion
 - `position` controls display order within its folder/project
+- `createdById` is nullable — `NULL` for mockups created by agents (agent tokens have no `User.id`) or for legacy rows. `NULL`-owned mockups are admin-only-deletable. See [authz.md](../api/authz.md) for the full ownership rule.
 
 ### MockupVersion
 
@@ -272,6 +288,9 @@ model Config {
 
 ```
 User ─┬─< Session
+      ├─<? Project   (createdById SetNull — ownership, not structural)
+      ├─<? Folder    (createdById SetNull — ownership, not structural)
+      └─<? Mockup    (createdById SetNull — ownership, not structural)
       │
 Project ─┬─< Folder (self-referencing parentId)
          │
@@ -288,7 +307,7 @@ Mockup ─┬─< MockupVersion (optional FK from Annotation.createdOnVersionId)
 
 Cascade rules:
 
-- Deleting a `User` cascades to their `Session`s
+- Deleting a `User` cascades to their `Session`s; sets `Project.createdById`, `Folder.createdById`, and `Mockup.createdById` to `NULL` (content is preserved — same "preserve history on deletion" convention as `Invite.usedById`)
 - Deleting a `Project` cascades to its `Folder`s; sets `Mockup.projectId` to `NULL`
 - Deleting a `Folder` cascades to its child `Folder`s; sets `Mockup.folderId` to `NULL`
 - Deleting a `Mockup` cascades to its `MockupVersion`s and `Annotation`s

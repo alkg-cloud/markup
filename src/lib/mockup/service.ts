@@ -7,7 +7,7 @@ import JSZip from 'jszip';
 import { env } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
-import { thumbnailPath, versionBuildDir, versionSourceZipPath } from './storage';
+import { thumbnailPath, versionBuildDir, versionDir, versionSourceZipPath } from './storage';
 import { generateThumbnailFromBuildDir } from './thumbnail-generator';
 import { extractZip } from './zip-extractor';
 
@@ -19,6 +19,8 @@ interface CreateInput {
   zipPath: string;
   createdBy: string;
   createdByType: 'user' | 'agent';
+  /** User-id of the human who initiated the upload. `null` for agent-created mockups. */
+  createdById?: string | null;
   projectId?: string;
   folderId?: string;
 }
@@ -108,6 +110,7 @@ export async function createMockupFromZip(input: CreateInput) {
       status: 'open',
       projectId: input.projectId ?? null,
       folderId: input.folderId ?? null,
+      createdById: input.createdById ?? null,
     },
   });
   const version = await prisma.mockupVersion.create({
@@ -286,4 +289,38 @@ export async function setMockupStatus(id: string, status: 'open' | 'resolved' | 
   const updated = await prisma.mockup.update({ where: { id }, data: { status } });
   log.info({ mockupId: id, status }, 'mockup_status_changed');
   return updated;
+}
+
+/**
+ * Hard-delete a mockup and all of its version build directories from disk.
+ * The Prisma cascade rules (onDelete: Cascade on MockupVersion, Annotation,
+ * Thread, Message, Reaction) handle the relational cleanup; this function
+ * additionally removes the version directories from the filesystem.
+ *
+ * Returns the deleted mockup row, or `null` if the id wasn't found.
+ */
+export async function deleteMockup(id: string) {
+  const root = env().DATA_DIR;
+
+  const mockup = await prisma.mockup.findUnique({
+    where: { id },
+    include: { versions: { select: { id: true } } },
+  });
+  if (!mockup) return null;
+
+  // DB-first (cheap rollback if disk cleanup fails).
+  await prisma.mockup.delete({ where: { id } });
+
+  // Remove all version build directories.
+  for (const v of mockup.versions) {
+    const dir = versionDir(root, id, v.id);
+    if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
+  }
+
+  // Remove the mockup-level thumbnail.
+  const thumb = thumbnailPath(root, id);
+  if (fs.existsSync(thumb)) fs.rmSync(thumb, { force: true });
+
+  log.info({ mockupId: id, versionCount: mockup.versions.length }, 'mockup_deleted');
+  return mockup;
 }

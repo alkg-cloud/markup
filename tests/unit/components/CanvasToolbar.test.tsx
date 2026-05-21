@@ -10,6 +10,15 @@ import {
 } from '@/components/CanvasToolbar/zoom';
 import { VersionChip } from '@/components/VersionChip/VersionChip';
 
+// Minimal stub satisfying VersionRow.createdBy / createdByType.
+const mkVer = (id: string, label: string, current?: boolean) => ({
+  id,
+  label,
+  current,
+  createdBy: 'u-test',
+  createdByType: 'user' as const,
+});
+
 describe('zoom utilities', () => {
   it('default index is 100%', () => {
     expect(ZOOM_STEPS[ZOOM_DEFAULT_INDEX]).toBe(1);
@@ -47,9 +56,7 @@ describe('CanvasToolbar', () => {
 
   it('renders the version chip slot when provided', () => {
     const html = renderToStaticMarkup(
-      <CanvasToolbar
-        versionChip={<VersionChip versions={[{ id: 'v4', label: 'v4', current: true }]} />}
-      />,
+      <CanvasToolbar versionChip={<VersionChip versions={[mkVer('v4', 'v4', true)]} />} />,
     );
     expect(html).toContain('v4');
   });
@@ -58,31 +65,19 @@ describe('CanvasToolbar', () => {
 describe('VersionChip', () => {
   it('renders current version label in the chip', () => {
     const html = renderToStaticMarkup(
-      <VersionChip
-        versions={[
-          { id: 'v4', label: 'v4 · current', current: true },
-          { id: 'v3', label: 'v3' },
-        ]}
-      />,
+      <VersionChip versions={[mkVer('v4', 'v4 · current', true), mkVer('v3', 'v3')]} />,
     );
     expect(html).toContain('v4 · current');
   });
 
   it('attaches the Versions & history tooltip', () => {
-    const html = renderToStaticMarkup(
-      <VersionChip versions={[{ id: 'v1', label: 'v1', current: true }]} />,
-    );
+    const html = renderToStaticMarkup(<VersionChip versions={[mkVer('v1', 'v1', true)]} />);
     expect(html).toContain('data-tooltip="Versions');
   });
 
   it('disables Promote for the current version', () => {
     const html = renderToStaticMarkup(
-      <VersionChip
-        versions={[
-          { id: 'v4', label: 'v4', current: true },
-          { id: 'v3', label: 'v3' },
-        ]}
-      />,
+      <VersionChip versions={[mkVer('v4', 'v4', true), mkVer('v3', 'v3')]} />,
     );
     // The current row has the Already-current label
     expect(html).toContain('Already current');

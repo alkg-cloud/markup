@@ -21,16 +21,19 @@ function makeProjects() {
       slug: 'alpha',
       icon: null,
       position: 1,
+      createdById: null,
       folders: [
         {
           id: 'f-outer',
           name: 'Outer',
           position: 1,
+          createdById: null,
           children: [
             {
               id: 'f-inner',
               name: 'Inner',
               position: 1,
+              createdById: null,
               children: [],
               mockups: [
                 {
@@ -39,6 +42,7 @@ function makeProjects() {
                   slug: 'deep-mockup',
                   status: 'active',
                   position: 1,
+                  createdById: null,
                 },
               ],
             },
@@ -53,6 +57,7 @@ function makeProjects() {
           slug: 'root-mockup',
           status: 'active',
           position: 2,
+          createdById: null,
         },
       ],
     },
@@ -62,6 +67,7 @@ function makeProjects() {
       slug: 'beta',
       icon: null,
       position: 2,
+      createdById: null,
       folders: [],
       mockups: [],
     },
