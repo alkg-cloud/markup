@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import * as Form from '@radix-ui/react-form';
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   VscAdd,
   VscCheck,
@@ -14,7 +15,8 @@ import {
 } from 'react-icons/vsc';
 import { AppMain } from '@/components/AppMain/AppMain';
 import { useConfirm } from '@/components/ConfirmDialog';
-import { Dialog, DialogButton, DialogField, DialogInput } from '@/components/Dialog/Dialog';
+import { RadixDialog } from '@/components/Dialog/RadixDialog';
+import { InputField } from '@/components/InputField';
 import { useToast } from '@/components/Toast/Toast';
 import { usePopover } from '@/lib/popover/usePopover';
 import styles from './InvitesClient.module.css';
@@ -206,76 +208,98 @@ function NewInviteDialog({ open, onClose, onSubmit }: NewInviteDialogProps) {
     }
   }
 
+  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    handleSubmit();
+  };
+
+  const handleOpenChange = (next: boolean) => {
+    if (!next) onClose();
+  };
+
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      title="Create invite"
-      actions={
-        <>
-          <DialogButton variant="secondary" onClick={onClose} disabled={busy}>
-            Cancel
-          </DialogButton>
-          <DialogButton variant="accent" onClick={handleSubmit} disabled={busy}>
-            {busy ? 'Creating…' : 'Create invite'}
-          </DialogButton>
-        </>
-      }
-    >
-      <DialogField
-        label="Bind to email (optional)"
-        hint="If set, signup requires this exact email."
-        error={emailError}
-      >
-        <DialogInput
-          type="text"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="name@example.com"
-          autoFocus
-        />
-      </DialogField>
+    <RadixDialog.Root open={open} onOpenChange={handleOpenChange}>
+      <RadixDialog.Portal>
+        <RadixDialog.Overlay />
+        <RadixDialog.Content aria-describedby={undefined}>
+          <RadixDialog.Title>Create invite</RadixDialog.Title>
 
-      <div className={styles.dialogField}>
-        <span className={styles.dialogLabel}>Role</span>
-        <div className={`${styles.segmented} ${styles.cols2}`}>
-          <button
-            type="button"
-            className={`${styles.seg} ${role === 'member' ? styles.segActive : ''}`}
-            onClick={() => setRole('member')}
-          >
-            <MemberIcon />
-            Member
-          </button>
-          <button
-            type="button"
-            className={`${styles.seg} ${role === 'admin' ? styles.segActive : ''}`}
-            onClick={() => setRole('admin')}
-          >
-            <AdminIcon />
-            Admin
-          </button>
-        </div>
-        <span className={styles.dialogHint}>{roleHint(role)}</span>
-      </div>
+          <Form.Root className={styles.dialogForm} onSubmit={handleFormSubmit}>
+            <InputField.Root name="email" data-state={emailError ? 'error' : undefined}>
+              <InputField.Label>Bind to email (optional)</InputField.Label>
+              <InputField.Control asChild>
+                {/* RadixDialog auto-focuses the first focusable element
+                    on open, so no `autoFocus` (also forbidden by Biome). */}
+                <input
+                  type="text"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                />
+              </InputField.Control>
+              {emailError ? (
+                <InputField.Message forceMatch>{emailError}</InputField.Message>
+              ) : (
+                <InputField.Help>If set, signup requires this exact email.</InputField.Help>
+              )}
+            </InputField.Root>
 
-      <div className={styles.dialogField}>
-        <span className={styles.dialogLabel}>Expires in</span>
-        <div className={`${styles.segmented} ${styles.cols4}`}>
-          {(['24h', '7d', '30d', 'never'] as ExpiryOpt[]).map((opt) => (
-            <button
-              key={opt}
-              type="button"
-              className={`${styles.seg} ${expiry === opt ? styles.segActive : ''}`}
-              onClick={() => setExpiry(opt)}
-            >
-              {opt === 'never' ? 'Never' : opt}
-            </button>
-          ))}
-        </div>
-        <span className={styles.dialogHint}>{expiryHint(expiry)}</span>
-      </div>
-    </Dialog>
+            <div className={styles.dialogField}>
+              <span className={styles.dialogLabel}>Role</span>
+              <div className={`${styles.segmented} ${styles.cols2}`}>
+                <button
+                  type="button"
+                  className={`${styles.seg} ${role === 'member' ? styles.segActive : ''}`}
+                  onClick={() => setRole('member')}
+                >
+                  <MemberIcon />
+                  Member
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.seg} ${role === 'admin' ? styles.segActive : ''}`}
+                  onClick={() => setRole('admin')}
+                >
+                  <AdminIcon />
+                  Admin
+                </button>
+              </div>
+              <span className={styles.dialogHint}>{roleHint(role)}</span>
+            </div>
+
+            <div className={styles.dialogField}>
+              <span className={styles.dialogLabel}>Expires in</span>
+              <div className={`${styles.segmented} ${styles.cols4}`}>
+                {(['24h', '7d', '30d', 'never'] as ExpiryOpt[]).map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    className={`${styles.seg} ${expiry === opt ? styles.segActive : ''}`}
+                    onClick={() => setExpiry(opt)}
+                  >
+                    {opt === 'never' ? 'Never' : opt}
+                  </button>
+                ))}
+              </div>
+              <span className={styles.dialogHint}>{expiryHint(expiry)}</span>
+            </div>
+
+            <div className={styles.dialogActions}>
+              <RadixDialog.Close asChild>
+                <button type="button" className={styles.dialogBtnSecondary} disabled={busy}>
+                  Cancel
+                </button>
+              </RadixDialog.Close>
+              <Form.Submit asChild>
+                <button type="submit" className={styles.dialogBtnAccent} disabled={busy}>
+                  {busy ? 'Creating…' : 'Create invite'}
+                </button>
+              </Form.Submit>
+            </div>
+          </Form.Root>
+        </RadixDialog.Content>
+      </RadixDialog.Portal>
+    </RadixDialog.Root>
   );
 }
 
