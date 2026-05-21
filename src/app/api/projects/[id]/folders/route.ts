@@ -6,7 +6,7 @@ import { createFolder } from '@/lib/project/service';
 import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
 
 const createSchema = z.object({
-  name: urlSafeNameSchema(255),
+  name: urlSafeNameSchema(),
   parentId: z.string().min(1).nullish(),
 });
 
@@ -21,7 +21,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   }
   const { id: projectId } = await ctx.params;
   const parsed = createSchema.safeParse(await req.json().catch(() => ({})));
-  if (!parsed.success) return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+  if (!parsed.success) {
+    const code = parsed.error.issues[0]?.message ?? 'invalid_body';
+    return NextResponse.json({ error: code }, { status: 400 });
+  }
 
   const result = await createFolder({
     projectId,

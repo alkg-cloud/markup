@@ -50,7 +50,8 @@ Raw HTML in `build` is wrapped into a single-entry `index.html` zip by `wrapHtml
 | Status | `error` | When |
 |---|---|---|
 | 400 | `invalid_body` | `name` missing, `build` not a Blob, or optional fields wrong type |
-| 400 | `name_not_url_safe` | `name` fails `URL_SAFE_NAME_PATTERN` |
+| 400 | `name_too_long` | `name` exceeds `NAME_MAX_LENGTH` (64 chars); response also carries `limit: 64` |
+| 400 | `name_not_url_safe` | `name` fails `URL_SAFE_NAME_PATTERN` (length check runs first) |
 | 400 | `project_not_found` | `projectId` doesn't resolve |
 | 400 | `folder_not_found` | `folderId` doesn't resolve |
 | 400 | `folder_project_mismatch` | `folderId` belongs to a different project than `projectId` |

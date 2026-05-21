@@ -25,7 +25,7 @@ import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
 const patchSchema = z
   .object({
     status: z.enum(['open', 'resolved', 'archived']).optional(),
-    name: urlSafeNameSchema(200).optional(),
+    name: urlSafeNameSchema().optional(),
     projectId: z.string().min(1).nullable().optional(),
     folderId: z.string().min(1).nullable().optional(),
     position: z.number().int().min(0).optional(),
@@ -51,7 +51,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const { id: mockupId } = await ctx.params;
 
   const parsed = patchSchema.safeParse(await req.json().catch(() => ({})));
-  if (!parsed.success) return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+  if (!parsed.success) {
+    const code = parsed.error.issues[0]?.message ?? 'invalid_body';
+    return NextResponse.json({ error: code }, { status: 400 });
+  }
 
   const fields = parsed.data;
   if (Object.keys(fields).length === 0) {
