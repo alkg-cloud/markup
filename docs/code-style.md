@@ -153,7 +153,7 @@ The tooltip system is a **single** `<div popover="hint" id="markup-tooltip">` re
 Every interactive surface that needs a hover/focus hint MUST use the `data-tooltip="text"` attribute. The CanvasToolbar's `Zoom in` / `Zoom out` / `Fullscreen` buttons are the reference; rail tooltips, kebab tooltips, comment kebab tooltips, the emoji-picker `Add reaction` tooltip — all route through the same `TooltipPortal`.
 
 Forbidden:
-- `title="…"` attributes on buttons, links, or any interactive role (use `data-tooltip` instead; keep `aria-label` for accessibility). `title` is permitted on **non-interactive display elements** when the visible text is truncated by `text-overflow: ellipsis` — it serves as the overflow-disclosure primitive for screen readers and keyboard users who tab to a non-focusable element. Examples: `<h2 title={project.name}>` (ProjectCard), `<div title={displayLabel}>` (TreeNode). Every such site must carry a one-line inline comment acknowledging the exception.
+- `title="…"` attributes on buttons, links, or any interactive role (use `data-tooltip` instead; keep `aria-label` for accessibility). See the overflow-disclosure exception below.
 - JSX tooltip components (no `<Tooltip>…</Tooltip>` wrappers, no portal-based one-off implementations).
 - `aria-describedby` paired with a visually-hidden element used as a tooltip.
 
@@ -173,6 +173,34 @@ Required:
 ```
 
 The trigger doesn't need any positioning context — the popover lives in the top-layer and positions itself against the trigger's `getBoundingClientRect`. Browser support: Chrome 114+, Safari 17+, Firefox 125+.
+
+### `title=` overflow-disclosure exception
+
+`title="…"` is permitted on **non-interactive display elements** when the visible text is truncated by `text-overflow: ellipsis`. The attribute then serves as the overflow-disclosure primitive: screen readers announce the full string, mouse users get the native tooltip on hover, and keyboard users that tab to the element (when it is focusable) see the same. `data-tooltip` is the wrong tool here — it is for interactive hints on triggers, not for revealing clipped content.
+
+Conditions for the exception:
+
+- The element is **not a button, link, menuitem, or any interactive role**. `<h2>`, `<div>`, `<span>`, `<p>`, `<li>` are typical hosts.
+- The same element (or a child) renders the user-supplied text that may overflow.
+- The CSS on the same element produces the overflow — `text-overflow: ellipsis`, `-webkit-line-clamp`, `overflow: hidden` etc.
+- The `title` value is the **same string** that is being clipped.
+
+Reference call sites (kept by exception):
+
+- `src/components/ProjectCard/ProjectCard.tsx` — `<h2 title={project.name}>`
+- `src/components/ProjectTree/TreeNode.tsx` — `<div title={displayLabel}>`
+- `src/components/ProjectTree/ProjectTree.tsx` — `<div title={m.name}>` on mockup-row labels
+- `src/app/mockups/MockupCard.tsx` — `<div className={styles.subtitle} title={subtitle}>`
+
+Inline comment shorthand at each site (reference, don't paraphrase):
+
+```tsx
+// title= is the overflow-disclosure exception — see docs/code-style.md
+```
+
+Adding new exception sites: the comment above is sufficient. No ADR required; the rule is bounded and self-checking (the same string must be both clipped and used as `title`).
+
+Iframe `title` attribute (in `MockupViewer/ViewerCanvas.tsx`, `mockups/[id]/diff/DiffViewer.tsx`) is a separate WCAG-required accessible name for the iframe — not covered by this exception, but also not forbidden by the rule because it is not a tooltip.
 
 ## Never use native browser dialogs
 

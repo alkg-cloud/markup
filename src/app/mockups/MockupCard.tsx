@@ -82,8 +82,8 @@ export default function MockupCard({
 
       <div className={styles.body}>
         <div className={styles.name}>{name}</div>
-        {/* title= is the canonical overflow-disclosure primitive for truncated display text — icon-button hints use data-tooltip instead */}
         {subtitle && (
+          // title= is the overflow-disclosure exception — see docs/code-style.md
           <div className={styles.subtitle} title={subtitle}>
             {subtitle}
           </div>
