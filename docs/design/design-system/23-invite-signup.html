@@ -4,22 +4,47 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>23 — Invite Signup</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--motion-fast:160ms;--motion-base:220ms;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--shadow-sm:0 2px 6px oklch(0% 0 0/0.45);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+/* ─── Tokens (verbatim from src/styles/tokens.css) ──────────────────── */
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);
+  --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
+  --warning:oklch(80% 0.15 80);--warning-soft:oklch(30% 0.07 80);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;
+  --shadow-sm:0 2px 6px oklch(0% 0 0/0.45);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
 @media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%}
 body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
 input{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
 :focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
-.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
-.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
-.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px;max-width:600px}
-.row{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
-.col-label{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:9999px}
 
+.page{padding:48px 32px 96px;max-width:1280px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:760px;line-height:1.55}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:10px;line-height:1.55;max-width:680px}
+
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:24px;align-items:start}
+.state{display:flex;flex-direction:column;gap:10px}
+.state .state-label{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted)}
+
+/* ─── The component — invite-signup public page ─────────────────────── */
 .signup-frame{display:flex;flex-direction:column;align-items:center;padding:32px;background:repeating-linear-gradient(135deg,oklch(12% 0.025 165) 0 18px,oklch(11% 0.02 165) 18px 36px);border:1px solid var(--border-subtle);border-radius:var(--radius-md)}
 .wordmark{font-family:var(--font-body);font-weight:800;font-size:28px;letter-spacing:-0.025em;color:var(--text-bright);margin-bottom:20px;display:inline-flex;align-items:baseline}
 .wordmark .dot{color:var(--accent);font-size:32px;line-height:0.4;margin-left:1px}
@@ -32,117 +57,326 @@ input{font-family:inherit;color:inherit}
 .field-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;display:block}
 .signup-input{width:100%;height:36px;padding:0 12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:var(--text-bright);outline:none;transition:border-color var(--motion-fast),box-shadow var(--motion-fast)}
 .signup-input:focus{border-color:var(--accent-bright);box-shadow:0 0 0 3px var(--accent-soft)}
+.signup-input::placeholder{color:var(--text-muted)}
 .field-hint{display:block;margin-top:6px;font-size:11px;line-height:1.4;color:var(--text-muted)}
 
 .signup-submit{width:100%;height:40px;background:var(--accent);color:var(--bg);font-size:13px;font-weight:700;letter-spacing:0.02em;border-radius:var(--radius-sm);transition:background var(--motion-fast)}
-.signup-submit:hover{background:var(--accent-bright)}
+.signup-submit:hover:not(:disabled){background:var(--accent-bright)}
+.signup-submit:disabled{opacity:0.6;cursor:not-allowed}
 .signup-error{padding:8px 12px;border-radius:var(--radius-xs);background:var(--danger-soft);color:var(--danger);font-size:12px;line-height:1.4}
 .signup-foot{font-size:12px;color:var(--text-muted);margin-top:20px;letter-spacing:0.01em}
 
-/* Warning-card (terminal states) */
+/* Warning-card — terminal states share one template */
 .warning-card{width:380px;max-width:calc(100% - 32px);padding:28px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-card);display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;box-shadow:var(--shadow-sm)}
 .warning-icon{width:28px;height:28px;border-radius:var(--radius-sm);background:var(--danger-soft);color:var(--danger);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
 .warning-title{font-size:16px;font-weight:700;color:var(--text-bright)}
 .warning-body{font-size:13px;color:var(--text-dim);line-height:1.5}
+
+/* ─── Anatomy + matrix helpers ──────────────────────────────────────── */
+dl.tokens{display:grid;grid-template-columns:220px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim);line-height:1.55}
+dl.tokens dd code{color:var(--text);background:var(--bg-card);padding:1px 5px;border-radius:3px;font-size:11px;font-family:var(--font-mono)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{font-family:var(--font-mono);font-size:11.5px;line-height:1.6;padding:14px 16px;background:oklch(8% 0.02 165);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--text-dim);overflow-x:auto;white-space:pre}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
+
+.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
 </style>
 </head>
 <body>
 
-<div class="demo" style="padding:32px;max-width:920px">
-  <div class="title">Invite Signup</div>
-  <div class="subtitle">Public route <code style="font-family:var(--font-mono);font-size:12px;color:var(--text)">/invite/&lt;token&gt;</code>. Mirrors the setup-page structure. Open and email-bound invites are visually indistinguishable at rest — the only signal of a bound invite is the helper text under the email field and the explicit mismatch error on submit. Four terminal states share one warning-card template.</div>
+<div class="page" data-ds-component="invite-signup">
+  <h1 class="h1">23 — Invite Signup</h1>
+  <p class="lede">
+    Public landing for an invite token. Route <code style="font-family:var(--font-mono);font-size:12px;color:var(--text)">/invite/[token]</code> — lives OUTSIDE <code>src/app/(app)/</code>, so the auth shell (Topbar, IdentityContext, <code>useRequireAuth</code>) never runs. This page must work for unauthenticated visitors; that is the whole point. It also redirects already-signed-in users to <code>/</code>. Pairs with <a href="./22-new-invite-dialog.html" style="color:var(--accent-bright);text-decoration:underline">22-new-invite-dialog</a> (the admin side of the same flow) and reuses the wordmark + striped-frame composition from <code>src/app/setup/</code>. Implemented by <code>src/app/invite/[token]/page.tsx</code>.
+  </p>
 
-  <div class="row">
+  <!-- ─── A — Usable states grid ────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">A — Usable states (open vs email-bound)</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">Open invite (no email binding)</div>
+        <div class="signup-frame">
+          <div class="wordmark"><span>Markup</span><span class="dot">.</span></div>
+          <form class="signup-card">
+            <div class="signup-h1">Create your account</div>
+            <div class="signup-preamble">You were invited to Markup.</div>
 
-    <!-- Open / bound (idêntico em repouso, com helper text só no bound) -->
-    <div>
-      <div class="col-label">Email-bound, clean</div>
-      <div class="signup-frame">
-        <div class="wordmark">Markup<span class="dot">.</span></div>
+            <div class="field">
+              <label class="field-label" for="signup-email">Email</label>
+              <input class="signup-input" id="signup-email" type="email" placeholder="you@company.com">
+            </div>
+            <div class="field">
+              <label class="field-label" for="signup-password">Password</label>
+              <input class="signup-input" id="signup-password" type="password">
+              <span class="field-hint">At least 12 characters.</span>
+            </div>
+            <div class="field">
+              <label class="field-label" for="signup-name">Name</label>
+              <input class="signup-input" id="signup-name" type="text" placeholder="Your name">
+            </div>
 
-        <div class="signup-card">
-          <div class="signup-h1">Create your account</div>
-          <div class="signup-preamble">You were invited to Markup.</div>
-
-          <div class="field">
-            <label class="field-label" for="signup-email">Email</label>
-            <input class="signup-input" id="signup-email" type="email" placeholder="you@company.com">
-            <span class="field-hint">Use the email your admin used to invite you.</span>
-          </div>
-
-          <div class="field">
-            <label class="field-label" for="signup-password">Password</label>
-            <input class="signup-input" id="signup-password" type="password" placeholder="">
-            <span class="field-hint">At least 12 characters.</span>
-          </div>
-
-          <div class="field">
-            <label class="field-label" for="signup-name">Name</label>
-            <input class="signup-input" id="signup-name" type="text" placeholder="Your name">
-          </div>
-
-          <button class="signup-submit">Create account</button>
+            <button class="signup-submit" type="submit">Create account</button>
+          </form>
+          <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
         </div>
+      </div>
 
-        <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
+      <div class="state">
+        <div class="state-label">Email-bound (helper text only differentiator)</div>
+        <div class="signup-frame">
+          <div class="wordmark"><span>Markup</span><span class="dot">.</span></div>
+          <form class="signup-card">
+            <div class="signup-h1">Create your account</div>
+            <div class="signup-preamble">You were invited to Markup.</div>
+
+            <div class="field">
+              <label class="field-label" for="signup-email-b">Email</label>
+              <input class="signup-input" id="signup-email-b" type="email" placeholder="you@company.com">
+              <span class="field-hint">Use the email your admin used to invite you.</span>
+            </div>
+            <div class="field">
+              <label class="field-label" for="signup-password-b">Password</label>
+              <input class="signup-input" id="signup-password-b" type="password">
+              <span class="field-hint">At least 12 characters.</span>
+            </div>
+            <div class="field">
+              <label class="field-label" for="signup-name-b">Name</label>
+              <input class="signup-input" id="signup-name-b" type="text" placeholder="Your name">
+            </div>
+
+            <button class="signup-submit" type="submit">Create account</button>
+          </form>
+          <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
+        </div>
       </div>
     </div>
+    <div class="caption">Open and email-bound invites are <strong>visually indistinguishable at rest</strong>. The only signal of a bound invite is the helper text under the email field ("Use the email your admin used to invite you"). The hint is rendered only when <code>state.boundEmail === true</code> — see <code>page.tsx</code> ~L408. This protects against email enumeration: an attacker who guesses a token can't tell from the rendered page whether a specific email is required.</div>
+  </section>
 
-    <!-- Email mismatch -->
-    <div>
-      <div class="col-label">Email-bound, mismatch</div>
-      <div class="signup-frame">
-        <div class="wordmark">Markup<span class="dot">.</span></div>
+  <!-- ─── B — Email mismatch error ──────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">B — Email mismatch (submit-time error)</div>
+    <div class="signup-frame" style="max-width:520px">
+      <div class="wordmark"><span>Markup</span><span class="dot">.</span></div>
+      <form class="signup-card">
+        <div class="signup-h1">Create your account</div>
+        <div class="signup-preamble">You were invited to Markup.</div>
 
-        <div class="signup-card">
-          <div class="signup-h1">Create your account</div>
-          <div class="signup-preamble">You were invited to Markup.</div>
-
-          <div class="field">
-            <label class="field-label" for="signup-email-2">Email</label>
-            <input class="signup-input" id="signup-email-2" type="email" value="alex@x.com">
-            <span class="field-hint">Use the email your admin used to invite you.</span>
-          </div>
-
-          <div class="field">
-            <label class="field-label" for="signup-password-2">Password</label>
-            <input class="signup-input" id="signup-password-2" type="password">
-            <span class="field-hint">At least 12 characters.</span>
-          </div>
-
-          <div class="field">
-            <label class="field-label" for="signup-name-2">Name</label>
-            <input class="signup-input" id="signup-name-2" type="text" placeholder="Your name">
-          </div>
-
-          <div class="signup-error">Email doesn't match this invite. Use the email your admin invited.</div>
-
-          <button class="signup-submit">Create account</button>
+        <div class="field">
+          <label class="field-label" for="signup-email-c">Email</label>
+          <input class="signup-input" id="signup-email-c" type="email" value="alex@x.com">
+          <span class="field-hint">Use the email your admin used to invite you.</span>
+        </div>
+        <div class="field">
+          <label class="field-label" for="signup-password-c">Password</label>
+          <input class="signup-input" id="signup-password-c" type="password" value="••••••••••••">
+          <span class="field-hint">At least 12 characters.</span>
+        </div>
+        <div class="field">
+          <label class="field-label" for="signup-name-c">Name</label>
+          <input class="signup-input" id="signup-name-c" type="text" value="Alex">
         </div>
 
-        <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
-      </div>
+        <div class="signup-error" role="alert">Email doesn't match this invite. Use the email your admin invited.</div>
+
+        <button class="signup-submit" type="submit">Create account</button>
+      </form>
+      <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
     </div>
+    <div class="caption">The error block sits <em>above</em> the submit button and uses <code>--danger-soft</code> background + <code>--danger</code> text — same colorway as <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a>'s error hue, but inline (no border / no icon). Emitted in response to <code>body.error === 'email_mismatch'</code> from <code>POST /api/invites/[token]/redeem</code>. Also used for <code>'invalid_body'</code> (password too short / invalid email) and the 429 rate-limit fallback.</div>
+  </section>
 
-    <!-- Terminal state -->
-    <div>
-      <div class="col-label">Terminal state (expired / used / revoked / disabled)</div>
-      <div class="signup-frame">
-        <div class="wordmark">Markup<span class="dot">.</span></div>
-
-        <div class="warning-card">
-          <div class="warning-icon">
-            <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg>
+  <!-- ─── C — Terminal warning card ─────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">C — Terminal state (single warning-card template, 4 reasons)</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">expired</div>
+        <div class="signup-frame" style="padding:24px">
+          <div class="wordmark"><span>Markup</span><span class="dot">.</span></div>
+          <div class="warning-card" role="alert">
+            <div class="warning-icon"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg></div>
+            <div class="warning-title">This invite expired.</div>
+            <div class="warning-body">It's no longer usable. Ask your admin for a new link.</div>
           </div>
-          <div class="warning-title">This invite was disabled.</div>
-          <div class="warning-body">It received too many failed attempts and was disabled for safety. Ask your admin for a new link.</div>
+          <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
         </div>
-
-        <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
+      </div>
+      <div class="state">
+        <div class="state-label">used</div>
+        <div class="signup-frame" style="padding:24px">
+          <div class="wordmark"><span>Markup</span><span class="dot">.</span></div>
+          <div class="warning-card" role="alert">
+            <div class="warning-icon"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg></div>
+            <div class="warning-title">This invite was already used.</div>
+            <div class="warning-body">Each invite can only create one account. Ask your admin for a new link.</div>
+          </div>
+          <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">revoked</div>
+        <div class="signup-frame" style="padding:24px">
+          <div class="wordmark"><span>Markup</span><span class="dot">.</span></div>
+          <div class="warning-card" role="alert">
+            <div class="warning-icon"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg></div>
+            <div class="warning-title">This invite was revoked.</div>
+            <div class="warning-body">It's no longer usable. Ask your admin for a new link.</div>
+          </div>
+          <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">disabled</div>
+        <div class="signup-frame" style="padding:24px">
+          <div class="wordmark"><span>Markup</span><span class="dot">.</span></div>
+          <div class="warning-card" role="alert">
+            <div class="warning-icon"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28L2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z"/></svg></div>
+            <div class="warning-title">This invite was disabled.</div>
+            <div class="warning-body">It received too many failed attempts and was disabled for safety. Ask your admin for a new link.</div>
+          </div>
+          <div class="signup-foot">Trouble signing up? Ask the admin who sent you this link.</div>
+        </div>
       </div>
     </div>
+    <div class="caption">All four terminal states share the warning-card template — only the title + body strings differ. <code>TERMINAL_COPY</code> in <code>page.tsx</code> maps each reason to its <code>{title, body}</code>. There is also a fifth fallback (<code>unknown</code>) used when the <code>/state</code> endpoint errors. The form is never rendered when the invite is unusable — there is no "try anyway" path.</div>
+  </section>
 
-  </div>
+  <!-- ─── React API ─────────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">React API — public route, no auth shell, no Radix primitive</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px"><strong>This page deliberately uses neither <code>RadixDialog</code> nor <code>Form.Root</code>.</strong> It's a full-screen public route, not a dialog inside an app, so the project follows the same pattern as <code>src/app/setup/</code>: native <code>&lt;form&gt;</code> + inline styles + one tiny <code>&lt;style&gt;</code> block for pseudo-class state. The page is its own client component; data fetching is <code>fetch</code> against the route handlers. No Radix primitive backs it — the form is &lt;form onSubmit={…}&gt; with three <code>&lt;input&gt;</code>s.</p>
+    <pre class="api"><span class="c">// src/app/invite/[token]/page.tsx — abridged</span>
+<span class="s">'use client'</span>;
+<span class="k">import</span> { useRouter } <span class="k">from</span> <span class="s">'next/navigation'</span>;
+<span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">'react'</span>;
+
+<span class="k">type</span> <span class="t">InviteState</span> =
+  | { usable: <span class="k">true</span>; boundEmail: <span class="k">boolean</span> }
+  | { usable: <span class="k">false</span>; reason: <span class="s">'expired' | 'used' | 'revoked' | 'disabled' | 'unknown'</span> };
+
+<span class="k">export default function</span> <span class="t">InviteSignupPage</span>({ params }) {
+  <span class="k">const</span> router = <span class="t">useRouter</span>();
+  <span class="k">const</span> [state, setState] = <span class="t">useState</span>&lt;<span class="t">InviteState</span> | <span class="k">null</span>&gt;(<span class="k">null</span>);
+  <span class="k">const</span> [token, setToken] = <span class="t">useState</span>&lt;<span class="k">string</span> | <span class="k">null</span>&gt;(<span class="k">null</span>);
+  <span class="k">const</span> [email, setEmail] = <span class="t">useState</span>(<span class="s">''</span>);
+  <span class="k">const</span> [password, setPassword] = <span class="t">useState</span>(<span class="s">''</span>);
+  <span class="k">const</span> [name, setName] = <span class="t">useState</span>(<span class="s">''</span>);
+  <span class="k">const</span> [error, setError] = <span class="t">useState</span>&lt;<span class="k">string</span> | <span class="k">null</span>&gt;(<span class="k">null</span>);
+  <span class="k">const</span> [busy, setBusy] = <span class="t">useState</span>(<span class="k">false</span>);
+
+  <span class="t">useEffect</span>(() =&gt; {
+    (<span class="k">async</span> () =&gt; {
+      <span class="k">const</span> { token } = <span class="k">await</span> params;
+      setToken(token);
+      <span class="c">// Signed-in users skip the landing entirely.</span>
+      <span class="k">const</span> me = <span class="k">await</span> <span class="t">fetch</span>(<span class="s">'/api/auth/me'</span>);
+      <span class="k">if</span> (me.ok) { router.replace(<span class="s">'/'</span>); <span class="k">return</span>; }
+      <span class="k">const</span> r = <span class="k">await</span> <span class="t">fetch</span>(`/api/invites/${token}/state`);
+      setState(r.ok ? <span class="k">await</span> r.json() : { usable: <span class="k">false</span>, reason: <span class="s">'unknown'</span> });
+    })();
+  }, [params, router]);
+
+  <span class="k">async function</span> <span class="t">onSubmit</span>(e) {
+    e.preventDefault();
+    <span class="k">if</span> (!token || !state?.usable) <span class="k">return</span>;
+    setBusy(<span class="k">true</span>); setError(<span class="k">null</span>);
+    <span class="k">const</span> res = <span class="k">await</span> <span class="t">fetch</span>(`/api/invites/${token}/redeem`, {
+      method: <span class="s">'POST'</span>,
+      headers: { <span class="s">'content-type'</span>: <span class="s">'application/json'</span> },
+      body: <span class="t">JSON</span>.stringify({ email, password, name }),
+    });
+    setBusy(<span class="k">false</span>);
+    <span class="k">if</span> (res.status === 201) { router.replace(<span class="s">'/'</span>); <span class="k">return</span>; }
+    <span class="c">// Map error codes onto inline error string (see Behavior).</span>
+    …
+  }
+
+  <span class="k">if</span> (!state) <span class="k">return null</span>;                          <span class="c">// pre-bootstrap, avoid flash</span>
+  <span class="k">if</span> (!state.usable) <span class="k">return</span> &lt;<span class="t">WarningCard</span> reason={state.reason} /&gt;;
+  <span class="k">return</span> &lt;<span class="k">form</span> onSubmit={onSubmit}&gt;…&lt;/<span class="k">form</span>&gt;;
+}</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Public route.</strong> Lives at <code>src/app/invite/[token]/page.tsx</code> — NOT under <code>(app)</code>, so the auth shell never wraps it. <code>middleware.ts</code> explicitly allowlists <code>/invite/*</code> for unauthenticated traffic.</li>
+      <li><strong>Two API endpoints.</strong> <code>GET /api/invites/[token]/state</code> returns usability + binding info; <code>POST /api/invites/[token]/redeem</code> creates the user + session and returns 201. Both are public (no Bearer auth) — the token <em>is</em> the auth.</li>
+      <li><strong>Pre-bootstrap render = <code>null</code>.</strong> Returning <code>null</code> until <code>/state</code> resolves prevents a flash of the wrong template (e.g. showing the form for a revoked invite for 200 ms before the warning-card replaces it).</li>
+      <li><strong>Signed-in pre-empt.</strong> If <code>/api/auth/me</code> returns 200, the page silently redirects to <code>/</code>. The product decision is that landing on an invite while already signed in is meaningless — accept-into-current-org is a different surface (not built yet; see <code>docs/future-features.md</code>).</li>
+      <li><strong>No global toast bus.</strong> The setup-page lineage doesn't have access to <code>useToast</code>. Errors render inline (<code>.signup-error</code> block).</li>
+      <li><strong>Inline styles + tiny &lt;style&gt; block.</strong> Pseudo-class states (<code>:focus-visible</code>, <code>:hover</code>, <code>:disabled</code>) live in <code>LOCAL_STYLE</code>; everything else is a <code>React.CSSProperties</code> object. This matches the <code>src/app/setup/</code> precedent and lets the file ship without a CSS module.</li>
+    </ul>
+  </section>
+
+  <!-- ─── State decision matrix ────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead><tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr></thead>
+      <tbody>
+        <tr><td><code>pre-bootstrap</code></td><td><code>state === null</code> while <code>/state</code> is in flight.</td><td>Render nothing.</td><td>—</td></tr>
+        <tr><td><code>signed-in</code></td><td><code>/api/auth/me</code> returns 200.</td><td><code>router.replace('/')</code> immediately.</td><td>—</td></tr>
+        <tr><td><code>usable.open</code></td><td><code>state.usable &amp;&amp; !state.boundEmail</code></td><td>Form. Email hint hidden.</td><td>Native <code>&lt;form&gt;</code>.</td></tr>
+        <tr><td><code>usable.bound</code></td><td><code>state.usable &amp;&amp; state.boundEmail</code></td><td>Form. Email hint shown.</td><td>Native <code>&lt;form&gt;</code>.</td></tr>
+        <tr><td><code>email-mismatch</code> (custom)</td><td>POST returns <code>body.error === 'email_mismatch'</code>.</td><td>Inline <code>.signup-error</code> above CTA.</td><td><code>role="alert"</code> on error block.</td></tr>
+        <tr><td><code>invalid-body</code> (custom)</td><td>POST returns <code>body.error === 'invalid_body'</code>.</td><td>Inline error — best-guess copy ("Password must be at least 12 characters" or "Please enter a valid email").</td><td><code>role="alert"</code>.</td></tr>
+        <tr><td><code>rate-limited</code> (custom)</td><td>POST returns 429.</td><td>Inline error: "Too many attempts. Try again later."</td><td><code>role="alert"</code>.</td></tr>
+        <tr><td><code>busy</code> (custom)</td><td><code>busy</code> while POST in flight.</td><td>Submit disabled + dimmed.</td><td>Native <code>disabled</code>.</td></tr>
+        <tr><td><code>terminal</code></td><td><code>!state.usable</code> for any reason.</td><td>Warning-card template (4 reasons + unknown fallback).</td><td><code>role="alert"</code> on warning-card.</td></tr>
+        <tr><td><code>terminal-mid-flight</code></td><td>POST returns <code>'invite_unusable'</code>.</td><td>Refetch <code>/state</code>; swap UI to warning-card.</td><td>—</td></tr>
+        <tr><td><code>success</code></td><td>POST returns 201.</td><td><code>router.replace('/')</code> — server set the session cookie.</td><td>—</td></tr>
+      </tbody>
+    </table>
+    <div class="caption">Five custom states because the page owns the entire signup flow without going through Radix Form (no <code>[data-invalid]</code>, no <code>ValidityState</code> driving CSS). Server errors map to a single inline error string; that's enough — none of the failure modes need a granular per-field treatment beyond the email hint.</div>
+  </section>
+
+  <!-- ─── Anatomy ──────────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>frame outer<dd>100dvh, <code>display:grid;place-items:center</code> · padding 32 px · <code>--bg</code>
+      <dt>striped frame<dd>diagonal repeating-linear-gradient at 135° · 18 px stripe · <code>--border-subtle</code> · radius <code>--radius-md</code>
+      <dt>wordmark<dd>"Markup" 28/800/-0.025em · the dot is <code>--accent</code> 32 px (offset baseline)
+      <dt>signup-card<dd>380 px · <code>--bg-card</code> · 1 px <code>--border-subtle</code> · radius <code>--radius-card</code> · <code>--shadow-sm</code>
+      <dt>card padding<dd>28 px
+      <dt>card gap<dd>16 px (vertical between blocks)
+      <dt>h1<dd>20 / 700 · <code>--text-bright</code> · line-height 1.2
+      <dt>preamble<dd>13 / 400 · <code>--text-dim</code>
+      <dt>field-label<dd>10 / 700 / 0.08em uppercase · <code>--text-dim</code> · margin-bottom 6
+      <dt>signup-input<dd>36 px tall · <code>--bg-elevated</code> · 1 px <code>--border</code> · radius <code>--radius-sm</code>
+      <dt>input focus<dd>border <code>--accent-bright</code> + 3 px <code>--accent-soft</code> ring
+      <dt>field-hint<dd>11 / 400 · <code>--text-muted</code> · margin-top 6
+      <dt>signup-error<dd>8 12 px · <code>--danger-soft</code> bg · <code>--danger</code> text · 12 px · radius <code>--radius-xs</code>
+      <dt>submit btn<dd>full-width · 40 px · <code>--accent</code> bg · <code>--bg</code> text · radius <code>--radius-sm</code>
+      <dt>warning-card<dd>same shell as signup-card · <code>align-items:center</code> · gap 12 px · centered
+      <dt>warning-icon<dd>28 × 28 · radius <code>--radius-sm</code> · <code>--danger-soft</code> bg · <code>--danger</code> glyph
+      <dt>foot<dd>12 / 400 · <code>--text-muted</code> · margin-top 20
+    </dl>
+  </section>
+
+  <!-- ─── Behavior ─────────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Public — no auth required.</strong> The page is mounted by <code>src/app/invite/[token]/page.tsx</code> outside the <code>(app)</code> group. Middleware whitelists <code>/invite/*</code>. No <code>useRequireAuth</code> / no <code>identify()</code> server-side.</li>
+      <li><strong>Anti-enumeration.</strong> Open and email-bound invites are pixel-identical at rest — the helper text under the email field is the only hint, and the mismatch error only fires on submit. This prevents attackers from probing whether a specific email "belongs" to a token.</li>
+      <li><strong>Signed-in fallthrough.</strong> If <code>/api/auth/me</code> returns 200, the page silently redirects to <code>/</code>. No toast (no toast bus available here).</li>
+      <li><strong>Submit lifecycle.</strong> <code>POST /api/invites/[token]/redeem</code> creates the user + sets the session cookie on a 201, after which <code>router.replace('/')</code> takes the new user to the project list. 4xx maps to an inline error.</li>
+      <li><strong>Race recovery.</strong> If the invite transitions to terminal between <code>/state</code> and <code>/redeem</code> (admin revokes mid-signup), the server returns <code>'invite_unusable'</code>; the page refetches <code>/state</code> and swaps to the warning-card template — no jarring "submit just failed" with no context.</li>
+      <li><strong>Rate limit.</strong> A 429 from <code>/redeem</code> renders "Too many attempts. Try again later." but does NOT disable the form — the user may want to try a different email shortly. The server's <code>disabled</code> protection kicks in via the regular invite state transition (terminal-disabled card).</li>
+      <li><strong>No <code>autoFocus</code>.</strong> Same Biome rule that applies to dialogs. The browser's default focus order (email → password → name → submit) is the right one here.</li>
+      <li><strong>Reduced motion.</strong> No bespoke animations — only the input focus-ring transition, which collapses to 0 ms via the token override.</li>
+    </ul>
+  </section>
 </div>
 
 <div class="demo-label">23 — Invite Signup</div>
