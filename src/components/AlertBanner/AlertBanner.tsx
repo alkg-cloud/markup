@@ -39,11 +39,8 @@
 
 import { Slot } from '@radix-ui/react-slot';
 import { type ComponentPropsWithoutRef, createContext, forwardRef, useContext } from 'react';
+import { cn } from '@/lib/cn';
 import styles from './AlertBanner.module.css';
-
-function cn(...names: Array<string | undefined | false | null>): string {
-  return names.filter(Boolean).join(' ');
-}
 
 export type AlertBannerStatus = 'error' | 'warning' | 'success' | 'info';
 

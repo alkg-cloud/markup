@@ -37,11 +37,8 @@ import {
   type ElementRef,
   forwardRef,
 } from 'react';
+import { cn } from '@/lib/cn';
 import styles from './RadixDialog.module.css';
-
-function cn(...names: Array<string | undefined | false | null>): string {
-  return names.filter(Boolean).join(' ');
-}
 
 const Root = DialogPrimitive.Root;
 const Trigger = DialogPrimitive.Trigger;
