@@ -7,7 +7,6 @@ import { UploadEmptyState } from '@/components/EmptyState/UploadEmptyState';
 import { FolderCard } from '@/components/FolderCard/FolderCard';
 import { FolderHeader } from '@/components/FolderHeader/FolderHeader';
 import { useNewMockupDialog } from '@/components/NewMockupDialog';
-import { Topbar } from '@/components/Topbar/Topbar';
 import type { DragTarget } from '@/hooks/useDragTarget';
 import { mockupSlugHref } from '@/lib/project/routes';
 
@@ -56,10 +55,6 @@ export function ProjectContent({
   folderPathNames,
   folders,
   mockups,
-  breadcrumbs,
-  userName,
-  userEmail,
-  userRole,
 }: ProjectContentProps) {
   const isEmpty = folders.length === 0 && mockups.length === 0;
   const { openDialog } = useNewMockupDialog();
@@ -83,13 +78,6 @@ export function ProjectContent({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-      <Topbar
-        breadcrumbs={breadcrumbs}
-        userName={userName}
-        userEmail={userEmail}
-        userRole={userRole}
-      />
-
       <AppMain variant="scroll" ariaLabel="Project workspace">
         <FolderHeader
           icon={projectIcon ?? null}

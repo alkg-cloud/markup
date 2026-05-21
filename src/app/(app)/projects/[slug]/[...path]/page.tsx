@@ -56,6 +56,16 @@ export default function ProjectPathPage() {
   const identity = useIdentity();
   const [resolution, setResolution] = useState<ResolvePayload | null>(null);
   const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
+  // In-render URL reset — drop the stale resolution synchronously when
+  // the user navigates between mockups so the skeleton paints on the
+  // same frame as the URL change, not a tick later.
+  const [storedPath, setStoredPath] = useState(`${slug}/${pathQuery}`);
+  const currentPath = `${slug}/${pathQuery}`;
+  if (storedPath !== currentPath) {
+    setStoredPath(currentPath);
+    setResolution(null);
+    setStatus('loading');
+  }
 
   useEffect(() => {
     if (!slug || pathQuery === '') return;
@@ -101,12 +111,16 @@ export default function ProjectPathPage() {
     // skeleton when the last segment is plausible.
     const segments = params?.path ?? [];
     const looksLikeMockup = segments.length > 0 && segments[segments.length - 1].includes('-');
-    return looksLikeMockup ? <MockupViewerSkeleton /> : <ProjectSkeleton />;
+    return (
+      <FadeIn key="loading">
+        {looksLikeMockup ? <MockupViewerSkeleton /> : <ProjectSkeleton />}
+      </FadeIn>
+    );
   }
 
   if (resolution.kind === 'mockup') {
     return (
-      <FadeIn>
+      <FadeIn key="loaded-mockup">
         <MockupViewerPage
           mockupId={resolution.mockupId}
           breadcrumbs={resolution.breadcrumbs}
@@ -119,7 +133,7 @@ export default function ProjectPathPage() {
   }
 
   return (
-    <FadeIn>
+    <FadeIn key="loaded-folder">
       <ProjectContent
         projectName={resolution.projectName}
         projectSlug={resolution.projectSlug}

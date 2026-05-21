@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
-import { Topbar } from '@/components/Topbar/Topbar';
-import { useIdentity } from '@/lib/hooks/use-require-auth';
 import { AgentsClient } from './AgentsClient';
 
 interface AgentTokenRow {
@@ -21,7 +19,6 @@ interface AgentTokensResponse {
 }
 
 export default function AgentsPage() {
-  const identity = useIdentity();
   const [tokens, setTokens] = useState<AgentTokenRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,15 +59,5 @@ export default function AgentsPage() {
     return <LoadingState />;
   }
 
-  return (
-    <>
-      <Topbar
-        breadcrumbs={[]}
-        userName={identity?.name}
-        userEmail={identity?.email}
-        userRole={identity?.role}
-      />
-      <AgentsClient initialTokens={tokens} />
-    </>
-  );
+  return <AgentsClient initialTokens={tokens} />;
 }

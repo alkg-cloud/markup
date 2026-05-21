@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
-import { Topbar } from '@/components/Topbar/Topbar';
-import { useIdentity } from '@/lib/hooks/use-require-auth';
 import { type InviteRow, InvitesClient } from './InvitesClient';
 
 interface InvitesResponse {
@@ -12,7 +10,6 @@ interface InvitesResponse {
 }
 
 export default function InvitesPage() {
-  const identity = useIdentity();
   const [invites, setInvites] = useState<InviteRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,15 +50,5 @@ export default function InvitesPage() {
     return <LoadingState />;
   }
 
-  return (
-    <>
-      <Topbar
-        breadcrumbs={[]}
-        userName={identity?.name}
-        userEmail={identity?.email}
-        userRole={identity?.role}
-      />
-      <InvitesClient initialInvites={invites} />
-    </>
-  );
+  return <InvitesClient initialInvites={invites} />;
 }

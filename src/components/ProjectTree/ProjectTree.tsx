@@ -7,6 +7,7 @@ import { mockupSlugHref } from '@/lib/project/routes';
 import styles from './ProjectTree.module.css';
 import { MockupIcon } from './TreeIcons';
 import { type CreatingTarget, type RenameTarget, TreeNode } from './TreeNode';
+import { TreeNodeKebab } from './TreeNodeKebab';
 import { flattenProjects } from './treeFlatten';
 import { getDescendantIds, getNodeDepth, getSubtreeDepth } from './treeHelpers';
 import type { FlatNode, TreeMockup, TreeProject } from './treeTypes';
@@ -323,6 +324,26 @@ export function ProjectTree({
               // they still get a canonical path-based URL.
               const href = mockupSlugHref('unsorted', [], m.slug);
               const active = pathname === href;
+              // Build a `FlatNode`-shaped record so we can reuse the
+              // shared `TreeNodeKebab` (Open / Rename / Delete) without
+              // duplicating the menu markup. Orphans have no project,
+              // so `projectSlug` is the synthetic `'unsorted'` constant.
+              const orphanNode: FlatNode = {
+                id: m.id,
+                type: 'mockup',
+                label: m.name,
+                level: 1,
+                expandable: false,
+                expanded: false,
+                parentId: null,
+                href,
+                setSize: orphanMockups.length,
+                posInSet: 0,
+                projectSlug: 'unsorted',
+                projectId: '',
+                mockupId: m.id,
+                createdById: m.createdById,
+              };
               return (
                 <li key={m.id} role="none" className={styles.item}>
                   <div
@@ -345,6 +366,17 @@ export function ProjectTree({
                       <MockupIcon />
                     </span>
                     <span className={styles.label}>{m.name}</span>
+                    <TreeNodeKebab
+                      node={orphanNode}
+                      displayLabel={m.name}
+                      createdById={m.createdById}
+                      onOpen={() => router.push(href)}
+                      onRename={() => {
+                        setRenaming({ id: m.id, type: 'mockup' });
+                        setRenameValue(m.name);
+                      }}
+                      onDelete={onDelete}
+                    />
                   </div>
                 </li>
               );

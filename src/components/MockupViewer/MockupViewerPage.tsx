@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import type { ThreadComment } from '@/components/AnnotationCard';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { AppMainViewerWired } from '@/components/MockupViewer/AppMainViewerWired';
-import { Topbar } from '@/components/Topbar/Topbar';
+import { MockupViewerSkeleton } from '@/components/Skeleton';
 import type { VersionRow } from '@/components/VersionChip';
 import type { Anchor } from '@/lib/anchoring';
 import type { AppMainAnnotation } from './AppMainViewer';
@@ -42,15 +42,18 @@ export interface MockupViewerPageProps {
  * read + display-name resolution + annotation rollup that used to be
  * inlined in this file as a server component.
  */
-export function MockupViewerPage({
-  mockupId,
-  breadcrumbs,
-  userName,
-  userEmail,
-  userRole,
-}: MockupViewerPageProps) {
+export function MockupViewerPage({ mockupId, userRole }: MockupViewerPageProps) {
   const [data, setData] = useState<ViewerPayload | null>(null);
   const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
+  // In-render mockupId reset — drop the stale viewer payload
+  // synchronously when the user switches mockups so the skeleton
+  // paints on the same frame as the URL change.
+  const [storedMockupId, setStoredMockupId] = useState(mockupId);
+  if (storedMockupId !== mockupId) {
+    setStoredMockupId(mockupId);
+    setData(null);
+    setStatus('loading');
+  }
 
   useEffect(() => {
     if (!mockupId) return;
@@ -90,27 +93,22 @@ export function MockupViewerPage({
     return <main style={{ padding: 24, color: 'var(--danger)' }}>Failed to load mockup.</main>;
   }
   if (status === 'loading' || !data) {
-    return null;
+    // No FadeIn wrap here — this surface is always rendered inside a
+    // parent FadeIn (`/projects/[slug]/[...path]/page.tsx`'s mockup
+    // branch). Adding a second FadeIn would double-animate.
+    return <MockupViewerSkeleton />;
   }
 
   return (
-    <>
-      <Topbar
-        breadcrumbs={breadcrumbs}
-        userName={userName}
-        userEmail={userEmail}
-        userRole={userRole}
-      />
-      <AppMainViewerWired
-        mockupId={data.mockupId}
-        mockupName={data.mockupName}
-        mockupSrc={data.mockupSrc}
-        currentUser={data.currentUser}
-        currentUserColorIndex={data.currentUserColorIndex}
-        versions={data.versions}
-        initialAnnotations={data.annotations}
-        viewerIsAdmin={userRole === 'admin'}
-      />
-    </>
+    <AppMainViewerWired
+      mockupId={data.mockupId}
+      mockupName={data.mockupName}
+      mockupSrc={data.mockupSrc}
+      currentUser={data.currentUser}
+      currentUserColorIndex={data.currentUserColorIndex}
+      versions={data.versions}
+      initialAnnotations={data.annotations}
+      viewerIsAdmin={userRole === 'admin'}
+    />
   );
 }

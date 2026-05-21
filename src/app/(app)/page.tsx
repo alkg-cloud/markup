@@ -49,11 +49,15 @@ export default function Root() {
   }
 
   if (!data) {
-    return <ProjectSkeleton />;
+    return (
+      <FadeIn key="loading">
+        <ProjectSkeleton />
+      </FadeIn>
+    );
   }
 
   return (
-    <FadeIn>
+    <FadeIn key="loaded">
       <AllProjectsPage data={data} onMutated={reload} />
     </FadeIn>
   );
