@@ -2,78 +2,469 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>10-agent-tokens</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>10 — Agent Tokens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--sidebar-collapsed-width:52px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0%,0,0/0.45);--shadow-md:0 6px 16px oklch(0%,0,0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0%,0,0/0.6),0 6px 12px oklch(0%,0,0/0.45),inset 0 1px 0 oklch(100%,0,0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
+  --success:oklch(76% 0.16 152);--success-soft:oklch(28% 0.09 152);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
 @media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
-a{color:inherit;text-decoration:none}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;padding:0}
+input,textarea{font-family:inherit;color:inherit}
 :focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
-.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
-.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px}
+
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:880px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  min-height:340px;padding:32px;display:flex;align-items:flex-start;justify-content:center;
+  overflow:hidden;
+}
+.stage + .stage{margin-top:24px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+
+/* ─── Page recipe — agent tokens (verbatim from AgentsClient.module.css) ─── */
+.tokens-page{width:600px;max-width:100%}
+.page-title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
+.page-subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px}
 
 .tokens-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .tokens-count{font-size:13px;color:var(--text-dim)}
-.btn-action{display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);border-radius:var(--radius-sm);color:var(--accent);font-size:13px;font-weight:600;transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast)}
+
+.btn-action{
+  display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;
+  background:var(--accent-soft);border:1px solid var(--accent-overlay-mid);
+  border-radius:var(--radius-sm);color:var(--accent);
+  font-size:13px;font-weight:600;
+  transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast);
+}
 .btn-action:hover{background:var(--accent-overlay-mid);border-color:var(--accent);color:var(--accent-bright)}
+
 .token-list{display:flex;flex-direction:column;gap:8px}
-.token-card{display:flex;align-items:flex-start;gap:12px;padding:16px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-card);transition:border-color var(--motion-fast)}
+.token-card{
+  display:flex;align-items:flex-start;gap:12px;padding:16px;
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-card);
+  transition:border-color var(--motion-fast);
+}
 .token-card:hover{border-color:var(--border)}
-.token-icon{width:36px;height:36px;border-radius:var(--radius-sm);background:var(--accent-overlay-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.token-icon{
+  width:36px;height:36px;border-radius:var(--radius-sm);
+  background:var(--accent-overlay-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
 .token-info{flex:1;min-width:0}
 .token-name{font-size:14px;font-weight:600;color:var(--text-bright)}
 .token-meta{font-size:11px;color:var(--text-muted);margin-top:2px}
-.token-value{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:6px;background:var(--bg-elevated);padding:4px 8px;border-radius:var(--radius-xs);border:1px solid var(--border-subtle)}
+.token-value{
+  font-family:var(--font-mono);font-size:11px;color:var(--text-dim);
+  margin-top:6px;background:var(--bg-elevated);padding:4px 8px;
+  border-radius:var(--radius-xs);border:1px solid var(--border-subtle);
+  display:inline-block;
+}
 .token-actions{display:flex;gap:4px;flex-shrink:0}
-.token-action-btn{width:28px;height:28px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:background var(--motion-fast),color var(--motion-fast)}
+.token-action-btn{
+  width:28px;height:28px;border-radius:var(--radius-xs);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-muted);
+  transition:background var(--motion-fast),color var(--motion-fast);
+}
 .token-action-btn:hover{background:var(--surface-hover);color:var(--text)}
-.token-action-btn.danger:hover{background:var(--danger-soft);color:var(--danger)}
+.token-action-btn[data-variant="danger"]:hover{background:var(--danger-soft);color:var(--danger)}
 
+/* Reveal banner (post-create one-time secret) */
+.reveal{
+  display:flex;flex-direction:column;gap:8px;padding:14px 16px;margin-bottom:16px;
+  background:var(--success-soft);border:1px solid oklch(40% 0.12 152);
+  border-radius:var(--radius-card);
+}
+.reveal-label{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--success)}
+.reveal-row{display:flex;align-items:center;gap:8px}
+.reveal-code{
+  flex:1;font-family:var(--font-mono);font-size:12px;color:var(--text-bright);
+  background:var(--bg-elevated);padding:6px 10px;border-radius:var(--radius-xs);
+  border:1px solid var(--border-subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.reveal-copy{
+  height:28px;padding:0 12px;background:var(--accent-soft);color:var(--accent-bright);
+  border:1px solid var(--accent-overlay-mid);border-radius:var(--radius-xs);
+  font-size:12px;font-weight:700;
+}
+
+/* Empty state */
+.empty{
+  padding:32px;background:var(--bg-card);border:1px dashed var(--border);
+  border-radius:var(--radius-card);
+  color:var(--text-muted);font-size:13px;text-align:center;
+}
+
+/* Create form */
+.form{
+  padding:16px;background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-card);margin-bottom:16px;
+}
+.form-label{
+  font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.12em;color:var(--text-muted);margin-bottom:10px;
+}
+.form-row{display:flex;gap:8px;align-items:center}
+.form-input{
+  flex:1;height:32px;padding:0 12px;
+  background:var(--bg-elevated);border:1px solid var(--border);
+  border-radius:var(--radius-xs);font-size:13px;color:var(--text-bright);outline:none;
+  transition:border-color var(--motion-fast),box-shadow var(--motion-fast);
+}
+.form-input:focus{border-color:var(--accent-bright);box-shadow:0 0 0 3px var(--accent-soft)}
+.btn-cancel{
+  height:32px;padding:0 14px;background:transparent;color:var(--text-dim);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  font-size:13px;font-weight:600;
+}
+.btn-cancel:hover{background:var(--surface-hover);color:var(--text)}
+
+/* States grid */
+.row-states{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:24px;align-items:start;
+}
+.state{display:flex;flex-direction:column;gap:10px}
+.state .state-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+}
+
+/* Anatomy / matrix */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
 
-<div class="demo" style="padding:32px;max-width:600px">
-  <div class="title">Agent Tokens</div>
-  <div class="subtitle">API tokens for agent integrations. Create, copy and revoke tokens.</div>
+<div class="page" data-ds-component="agent-tokens">
+  <h1 class="h1">10 — Agent Tokens</h1>
+  <p class="lede">Settings page for managing API tokens used by non-browser agents. Implemented as <code>src/app/(app)/settings/agents/AgentsClient.tsx</code> behind <code>/settings/agents</code> (admin-only route, gated by middleware + entry in <a href="./09-avatar-menu.html" style="color:var(--accent)"><code>avatar-menu</code></a>'s Admin block). Provides: list of existing tokens (masked preview + relative timestamps), inline create form, post-create one-time reveal banner (the only moment the plaintext exists in the UI), and per-token copy + revoke actions. Revoke uses <a href="./14-dialog.html" style="color:var(--accent)"><code>useConfirm</code></a> for the destructive confirmation.</p>
 
-  <div class="tokens-header">
-    <span class="tokens-count">2 tokens</span>
-    <button class="btn-action"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> New Token</button>
-  </div>
-
-  <div class="token-list">
-    <div class="token-card">
-      <div class="token-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.351 1.091a4.528 4.528 0 0 1 3.44 3.16c.215.724.247 1.49.093 2.23a4.583 4.583 0 0 1-4.437 3.6c-.438 0-.874-.063-1.293-.19l-.8.938-.379.175H7v1.5l-.5.5H5v1.5l-.5.5h-3l-.5-.5v-2.307l.146-.353L6.12 6.87a4.464 4.464 0 0 1-.2-1.405 4.528 4.528 0 0 1 5.431-4.375zm1.318 7.2a3.568 3.568 0 0 0 1.239-2.005l.004.005A3.543 3.543 0 0 0 9.72 2.08a3.576 3.576 0 0 0-2.8 3.4c-.01.456.07.908.239 1.33l-.11.543L2 12.404v1.6h2v-1.5l.5-.5H6v-1.5l.5-.5h1.245l.876-1.016.561-.14a3.47 3.47 0 0 0 1.269.238 3.568 3.568 0 0 0 2.218-.795zm-.838-2.732a1 1 0 1 0-1.662-1.11 1 1 0 0 0 1.662 1.11z"/></svg></div>
-      <div class="token-info">
-        <div class="token-name">Production Agent</div>
-        <div class="token-meta">Created 3 days ago &middot; Last used 2h ago</div>
-        <div class="token-value">mk_live_••••••••••••a3f7</div>
-      </div>
-      <div class="token-actions">
-        <button class="token-action-btn" title="Copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg></button>
-        <button class="token-action-btn danger" title="Revoke"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg></button>
+  <section class="section">
+    <div class="section-title">A — Token list (the steady state)</div>
+    <div class="stage">
+      <div class="tokens-page">
+        <div class="tokens-header">
+          <span class="tokens-count">2 tokens</span>
+          <button class="btn-action" type="button">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+            New Token
+          </button>
+        </div>
+        <div class="token-list">
+          <div class="token-card">
+            <div class="token-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.351 1.091a4.528 4.528 0 0 1 3.44 3.16c.215.724.247 1.49.093 2.23a4.583 4.583 0 0 1-4.437 3.6c-.438 0-.874-.063-1.293-.19l-.8.938-.379.175H7v1.5l-.5.5H5v1.5l-.5.5h-3l-.5-.5v-2.307l.146-.353L6.12 6.87a4.464 4.464 0 0 1-.2-1.405 4.528 4.528 0 0 1 5.431-4.375zm.83 4.468a1 1 0 1 0-1.662-1.11 1 1 0 0 0 1.662 1.11z"/></svg></div>
+            <div class="token-info">
+              <div class="token-name">Production Agent</div>
+              <div class="token-meta">Created 3 days ago · Last used 2h ago</div>
+              <div class="token-value">mk_live_••••••••••••a3f7</div>
+            </div>
+            <div class="token-actions">
+              <button class="token-action-btn" type="button" aria-label="Copy">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
+              </button>
+              <button class="token-action-btn" data-variant="danger" type="button" aria-label="Revoke">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="token-card">
+            <div class="token-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.351 1.091a4.528 4.528 0 0 1 3.44 3.16c.215.724.247 1.49.093 2.23a4.583 4.583 0 0 1-4.437 3.6c-.438 0-.874-.063-1.293-.19l-.8.938-.379.175H7v1.5l-.5.5H5v1.5l-.5.5h-3l-.5-.5v-2.307l.146-.353L6.12 6.87a4.464 4.464 0 0 1-.2-1.405 4.528 4.528 0 0 1 5.431-4.375zm.83 4.468a1 1 0 1 0-1.662-1.11 1 1 0 0 0 1.662 1.11z"/></svg></div>
+            <div class="token-info">
+              <div class="token-name">Development Agent</div>
+              <div class="token-meta">Created 1 week ago · Last used 5m ago</div>
+              <div class="token-value">mk_test_••••••••••••b2e1</div>
+            </div>
+            <div class="token-actions">
+              <button class="token-action-btn" type="button" aria-label="Copy">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg>
+              </button>
+              <button class="token-action-btn" data-variant="danger" type="button" aria-label="Revoke">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="token-card">
-      <div class="token-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.351 1.091a4.528 4.528 0 0 1 3.44 3.16c.215.724.247 1.49.093 2.23a4.583 4.583 0 0 1-4.437 3.6c-.438 0-.874-.063-1.293-.19l-.8.938-.379.175H7v1.5l-.5.5H5v1.5l-.5.5h-3l-.5-.5v-2.307l.146-.353L6.12 6.87a4.464 4.464 0 0 1-.2-1.405 4.528 4.528 0 0 1 5.431-4.375zm1.318 7.2a3.568 3.568 0 0 0 1.239-2.005l.004.005A3.543 3.543 0 0 0 9.72 2.08a3.576 3.576 0 0 0-2.8 3.4c-.01.456.07.908.239 1.33l-.11.543L2 12.404v1.6h2v-1.5l.5-.5H6v-1.5l.5-.5h1.245l.876-1.016.561-.14a3.47 3.47 0 0 0 1.269.238 3.568 3.568 0 0 0 2.218-.795zm-.838-2.732a1 1 0 1 0-1.662-1.11 1 1 0 0 0 1.662 1.11z"/></svg></div>
-      <div class="token-info">
-        <div class="token-name">Development Agent</div>
-        <div class="token-meta">Created 1 week ago &middot; Last used 5m ago</div>
-        <div class="token-value">mk_test_••••••••••••b2e1</div>
-      </div>
-      <div class="token-actions">
-        <button class="token-action-btn" title="Copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 1L2 2v10l1 1V2h6.414l-1-1H3z"/></svg></button>
-        <button class="token-action-btn danger" title="Revoke"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 6H9V12H10V6Z"/><path d="M7 6H6V12H7V6Z"/><path d="M13 3H11V2C11 1.73478 10.8947 1.48038 10.7072 1.29285C10.5196 1.10531 10.2652 1 10 1L6 1C5.73478 1 5.48038 1.10531 5.29285 1.29285C5.10531 1.48038 5 1.73478 5 2V3H2V4H3V14L4 15H12L13 14V4H14V3H13ZM6 2H10V3H6V2ZM12 14H4V4H12V14Z"/></svg></button>
+    <div class="caption">List view. Token preview shows prefix + 12 mid dots + lastFour digits — the plaintext is never re-shown after creation. Copy button copies the masked preview (useful for grep'ing logs); the real plaintext only appears once, in the reveal banner.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">B — Create form (inline)</div>
+    <div class="stage">
+      <div class="tokens-page">
+        <div class="form">
+          <div class="form-label">New token</div>
+          <div class="form-row">
+            <input class="form-input" type="text" placeholder="e.g. claude-code-prod, ci-builder, designer-bot" value="claude-code-prod" />
+            <button class="btn-action" type="button">Create</button>
+            <button class="btn-cancel" type="button">Cancel</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+    <div class="caption">Inline form mounted above the list when "New Token" is clicked. <code>pattern="[A-Za-z0-9_-]+"</code> + <code>maxLength=64</code> enforce URL-safe names. Submit POSTs <code>/api/agent-tokens</code>; on success the form unmounts and the reveal banner takes its place.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">C — Post-create reveal banner</div>
+    <div class="stage">
+      <div class="tokens-page">
+        <div class="reveal" role="alert">
+          <span class="reveal-label">Token created — copy now, it won't be shown again</span>
+          <div class="reveal-row">
+            <code class="reveal-code">mk_live_LFD7Hkqf8Hx7tbB2RYxa3f7K9pNw</code>
+            <button class="reveal-copy" type="button">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Renders directly after create returns 201. The plaintext appears <em>only here</em> — refreshing the page or revoking the token destroys it permanently. <code>role="alert"</code> ensures SR announces the warning. Click "Copy" → <code>navigator.clipboard.writeText(plaintext)</code> then flips the label to "Copied!" for 1.2 s.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">D — Empty state</div>
+    <div class="stage">
+      <div class="tokens-page">
+        <div class="tokens-header">
+          <span class="tokens-count">0 tokens</span>
+          <button class="btn-action" type="button">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+            New Token
+          </button>
+        </div>
+        <div class="empty">No tokens yet — create one to authorize a non-browser agent against the API.</div>
+      </div>
+    </div>
+    <div class="caption">Dashed border distinguishes the empty placeholder from a real card. See <a href="./26-empty-state.html" style="color:var(--accent)"><code>empty-state</code></a> for the broader pattern.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — custom page (admin route, no Radix primitive)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:640px">Page-level component. There is no Radix primitive for "list of tokens with create + revoke" — this is a domain-specific surface composed from the project's own building blocks: <code>AppMain</code> (page layout), native <code>&lt;form&gt;</code> for create, <a href="./14-dialog.html" style="color:var(--accent)"><code>useConfirm</code></a> (<code>@radix-ui/react-alert-dialog</code>) for revoke. The destructive confirmation is the only Radix primitive in the page.</p>
+    <pre class="api"><span class="c">// src/app/(app)/settings/agents/AgentsClient.tsx — abridged</span>
+<span class="k">import</span> { AppMain } <span class="k">from</span> <span class="s">'@/components/AppMain/AppMain'</span>;
+<span class="k">import</span> { useConfirm } <span class="k">from</span> <span class="s">'@/components/ConfirmDialog'</span>;
+<span class="k">import</span> { VscAdd, VscCopy, VscKey, VscTrash } <span class="k">from</span> <span class="s">'react-icons/vsc'</span>;
+
+<span class="k">const</span> [tokens, setTokens] = useState&lt;<span class="t">AgentToken</span>[]&gt;(initial);
+<span class="k">const</span> [revealed, setRevealed] = useState&lt;<span class="t">CreatedToken</span> | <span class="k">null</span>&gt;(<span class="k">null</span>);
+<span class="k">const</span> { confirm, dialog: confirmDialog } = useConfirm();          <span class="c">// see 14-dialog</span>
+
+<span class="k">async function</span> onCreate(e) {
+  e.preventDefault();
+  <span class="k">const</span> res = <span class="k">await</span> fetch(<span class="s">'/api/agent-tokens'</span>, {
+    method: <span class="s">'POST'</span>, headers: { <span class="s">'content-type'</span>: <span class="s">'application/json'</span> },
+    body: JSON.stringify({ name }),
+  });
+  <span class="k">if</span> (!res.ok) { setError(…); <span class="k">return</span>; }
+  <span class="k">const</span> created = <span class="k">await</span> res.json();
+  setRevealed(created);                                              <span class="c">// one-time plaintext</span>
+  <span class="k">await</span> refresh();
+}
+
+<span class="k">async function</span> onRevoke(id, tokenName) {
+  <span class="k">const</span> ok = <span class="k">await</span> confirm({
+    title: <span class="s">'Revoke agent token'</span>,
+    description: `"${tokenName}" will lose API access immediately. …`,
+    confirmLabel: <span class="s">'Revoke'</span>,
+    danger: <span class="k">true</span>,                                              <span class="c">// → .btn-danger styling</span>
+  });
+  <span class="k">if</span> (!ok) <span class="k">return</span>;
+  <span class="k">await</span> fetch(`/api/agent-tokens/${id}`, { method: <span class="s">'DELETE'</span> });
+  <span class="k">await</span> refresh();
+}
+
+<span class="k">return</span> (
+  &lt;<span class="t">AppMain</span> variant=<span class="s">"centered"</span> ariaLabel=<span class="s">"Agent tokens settings"</span>&gt;
+    {confirmDialog}                                                  <span class="c">// mount once for the portal root</span>
+    &lt;<span class="k">h1</span>&gt;Agent Tokens&lt;/<span class="k">h1</span>&gt;
+    {revealed &amp;&amp; &lt;<span class="t">RevealBanner</span> token={revealed} /&gt;}              <span class="c">// post-create one-time</span>
+    {showForm &amp;&amp; &lt;<span class="t">CreateForm</span> onSubmit={onCreate} /&gt;}
+    &lt;<span class="t">TokenList</span> tokens={tokens} onRevoke={onRevoke} /&gt;
+  &lt;/<span class="t">AppMain</span>&gt;
+);</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:640px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><code>useConfirm</code> is the Promise-based revoke confirmation. <code>danger: true</code> swaps the primary action to <code>.btn-danger</code>. <code>confirmDialog</code> must be mounted once inside <code>AppMain</code> so the portal has a tree root. See <a href="./14-dialog.html" style="color:var(--accent)"><code>14-dialog</code></a>.</li>
+      <li>The reveal banner is intentionally not a dialog — it doesn't take focus, doesn't trap, doesn't dismiss on Escape. It's a persistent in-flow notice that survives until the user navigates away or creates another token. Using a dialog here would force a click-out for every token.</li>
+      <li>The page replaces the banned <code>window.confirm</code> with <code>useConfirm</code> (see <code>docs/code-style.md § Never use native browser dialogs</code>).</li>
+      <li>Native <code>&lt;form&gt;</code> with <code>pattern="[A-Za-z0-9_-]+"</code> + <code>required</code> attributes does the sync validation; the server is authoritative for uniqueness and length. A <code>@radix-ui/react-form</code> migration is on the table — see <a href="./28-input-field.html" style="color:var(--accent)"><code>28-input-field</code></a> for the pattern.</li>
+      <li>Server route: <code>src/app/api/agent-tokens/*</code>. The list endpoint never returns plaintext — only <code>{prefix, lastFour}</code>. The create endpoint returns plaintext exactly once, in the 201 body.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>list</code></td>
+          <td>Default; tokens fetched from <code>GET /api/agent-tokens</code>.</td>
+          <td>Token cards rendered, each with masked preview + copy + revoke.</td>
+          <td>Page <code>aria-label="Agent tokens settings"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>empty</code></td>
+          <td>API returns empty array.</td>
+          <td>Dashed-border <code>.empty</code> block replaces <code>.token-list</code>.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>creating</code> (custom)</td>
+          <td>"New Token" clicked; <code>showForm = true</code>.</td>
+          <td>Inline <code>.form</code> mounts above the list. "New Token" button hidden so the action lives only in the form.</td>
+          <td>Form has <code>aria-label</code>; input has <code>aria-label="Token name"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>revealed</code> (custom)</td>
+          <td>Create returned 201; plaintext available in client state.</td>
+          <td><code>.reveal</code> banner above the list. Stays mounted until next create or until user navigates away.</td>
+          <td><code>role="alert"</code> on the banner. Copy button has <code>aria-label</code>.</td>
+        </tr>
+        <tr>
+          <td><code>confirming-revoke</code></td>
+          <td>Revoke icon clicked → <code>useConfirm.confirm(…)</code> Promise pending.</td>
+          <td>Page dimmed by scrim; <a href="./14-dialog.html" style="color:var(--accent)"><code>useConfirm</code></a> dialog with danger button.</td>
+          <td><code>role="alertdialog"</code> on the confirm modal.</td>
+        </tr>
+        <tr>
+          <td><code>busy</code></td>
+          <td>Create submit pending.</td>
+          <td>Submit button label switches to "Creating…"; <code>disabled</code> while in-flight.</td>
+          <td>Disabled buttons announced as <code>disabled</code> via native semantics.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">"creating", "revealed", and "confirming-revoke" are custom DS states with no Radix analogue — they're orchestrated in <code>AgentsClient.tsx</code>'s local state machine.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Surface</th><th>Use for</th><th>Backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>agent-tokens</code> (this)</td>
+          <td>The full settings page for token management. One per admin user.</td>
+          <td>Custom page component.</td>
+        </tr>
+        <tr>
+          <td><a href="./14-dialog.html" style="color:var(--accent)"><code>useConfirm</code></a></td>
+          <td>The revoke confirmation specifically. Promise-based.</td>
+          <td><code>@radix-ui/react-alert-dialog</code>.</td>
+        </tr>
+        <tr>
+          <td><a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a></td>
+          <td>Server errors during create (would replace the inline <code>.form-error</code> string with a proper banner).</td>
+          <td>Custom compound.</td>
+        </tr>
+        <tr>
+          <td><a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a></td>
+          <td>Future: replace the bare <code>&lt;input&gt;</code> in the create form with the <code>InputField</code> compound for richer per-field validation messaging.</td>
+          <td><code>@radix-ui/react-form</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">The reveal banner is intentionally <em>not</em> an alert-banner — it's a one-time secret callout with distinct semantics (success hue, persistent until next action). Worth a separate slot.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>page max-width<dd>600 px (AppMain variant="centered")
+      <dt>page padding<dd>32 px
+      <dt>page title<dd>20px / 700, --text-bright
+      <dt>page subtitle<dd>13px / 400, --text-dim
+      <dt>header gap<dd>16 px below title block
+      <dt>count label<dd>13px / 400, --text-dim
+      <dt>btn-action<dd>32 px tall, --accent-soft bg, --accent text, --radius-sm
+      <dt>token-card<dd>16 px padding, --bg-card, --border-subtle, --radius-card
+      <dt>card hover<dd>border --border (no other change)
+      <dt>token-icon<dd>36 × 36, --accent-overlay-soft bg, --accent glyph
+      <dt>token-name<dd>14px / 600, --text-bright
+      <dt>token-meta<dd>11px / 400, --text-muted
+      <dt>token-value<dd>11px mono, --text-dim, --bg-elevated chip
+      <dt>action-btn<dd>28 × 28, --text-muted resting, --surface-hover hover
+      <dt>action-btn danger<dd>--danger-soft hover bg, --danger color
+      <dt>reveal bg<dd>--success-soft
+      <dt>reveal border<dd>1px solid oklch(40% 0.12 152)
+      <dt>reveal label<dd>11px / 700 mono uppercase, --success
+      <dt>form bg<dd>--bg-card, --border-subtle
+      <dt>form-input focus<dd>--accent-bright border + 3 px --accent-soft ring
+      <dt>empty border<dd>1px dashed --border
+    </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><strong>Plaintext is one-time.</strong> The reveal banner is the only place the full token appears in the UI. Refreshing the page, navigating away, or creating another token destroys it from client state.</li>
+      <li><strong>Copy preserves provenance.</strong> Copy on a list card copies the masked preview (with prefix + lastFour); copy on the reveal banner copies the plaintext. The masked-preview-copy is intentionally useful for matching tokens to log lines.</li>
+      <li><strong>Revoke confirms.</strong> Always via <a href="./14-dialog.html" style="color:var(--accent)"><code>useConfirm</code></a>. <code>window.confirm</code> is banned (<code>docs/code-style.md</code>).</li>
+      <li><strong>Revoke is instant.</strong> The token is hashed-then-deleted on the server; any client using it starts receiving 401 within the next request.</li>
+      <li><strong>Refresh after mutate.</strong> Both create and revoke call <code>refresh()</code> (re-fetches <code>/api/agent-tokens</code>) so the list reflects the new state without optimistic updates.</li>
+      <li><strong>Admin only.</strong> Route is gated by middleware on the server; the avatar menu only shows the entry for admins. Members hitting the URL directly are 403'd.</li>
+      <li><strong>Last-used timestamp.</strong> The server updates <code>lastUsedAt</code> on every authenticated API call by the token; the client renders it as relative time (<code>relTime()</code> helper in <code>AgentsClient.tsx</code>).</li>
+      <li><strong>Reduced motion.</strong> No bespoke animations beyond color/border transitions, which collapse to 0 ms via the token override.</li>
+    </ul>
+  </section>
 </div>
 
-<div class="demo-label">10 &mdash; Agent Tokens</div>
 </body>
 </html>
