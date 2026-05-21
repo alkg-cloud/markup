@@ -1,0 +1,89 @@
+/* RadixDialog — chrome for the Radix-backed dialog primitive.
+   Ported verbatim from `Dialog.module.css` so the migration from the
+   legacy `Dialog` primitive (T15/T16) is visually a no-op. Shares the
+   same glass-surface standard as `confirm-dialog`, the rail, toolbar,
+   composer, and every popover — see `tokens.css § Glass surface` +
+   `docs/feature-catalog.md § glass-surface-standard`.
+
+   Only the dialog-chrome surfaces live here (.scrim, .dialog, .title,
+   .description). Field / input / button styling that used to live in
+   the legacy `Dialog.module.css` now belongs to the per-dialog body
+   modules (NewMockupDialog, NewProjectDialog, InputField, …). */
+
+.scrim {
+  composes: floatingScrim from "../../styles/glass.module.css";
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: scrimIn var(--motion-base) var(--ease-standard);
+}
+
+.dialog {
+  composes: floatingSurface from "../../styles/glass.module.css";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(440px, calc(100vw - 32px));
+  padding: 18px 18px 14px;
+  border-radius: 14px;
+  box-shadow: var(--shadow-popover);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 801;
+  animation: dialogIn var(--motion-base) var(--ease-spring);
+}
+.dialog:focus-visible {
+  outline: none;
+}
+
+@keyframes scrimIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 8px)) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--text-bright);
+  margin: 0;
+}
+
+.description {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .dialog {
+    animation: none;
+  }
+  @keyframes dialogIn {
+    from,
+    to {
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+}
