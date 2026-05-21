@@ -1,0 +1,207 @@
+/**
+ * CopyButton — copy-to-clipboard button with inline feedback.
+ *
+ * DS source: docs/design/design-system/30-copy-button.html
+ * Tokens: all from src/styles/tokens.css — no literal colour values.
+ *
+ * Single recipe with state variants on the wrapper per DS authoring rule.
+ *
+ * .root                   — base (icon variant by default: 28×28 icon button)
+ * .root[data-variant]     — visual shell overrides
+ * .root[data-state]       — copied / error states
+ * .iconCopy               — default copy icon
+ * .iconCopied             — success check icon (hidden when not copied)
+ * .label                  — optional text label
+ *
+ * CUSTOM states:
+ * - copied (data-state="copied") — not a Radix primitive. 1200 ms inline swap.
+ *   Flagged at three places: this comment + state matrix in DS + API bullet.
+ * - error (data-state="error") — not a Radix primitive. Copy failed (non-secure
+ *   context / permission denied). Flagged same three places.
+ */
+
+.root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  /* icon variant default: 28×28 icon-only button */
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius-xs);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+  flex-shrink: 0;
+}
+
+.root:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.root:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.root:disabled,
+.root[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ─── Ghost variant ─────────────────────────────────────────────────────── */
+
+.root[data-variant="ghost"] {
+  width: auto;
+  height: auto;
+  padding: 2px 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* ─── Secondary variant ─────────────────────────────────────────────────── */
+
+.root[data-variant="secondary"] {
+  width: auto;
+  height: 28px;
+  padding: 0 10px;
+  background: var(--btn-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-body);
+  font-size: var(--type-sm);
+  font-weight: var(--weight-medium);
+}
+
+.root[data-variant="secondary"]:hover {
+  background: var(--btn-bg-hover);
+  border-color: var(--border-strong);
+  color: var(--text-bright);
+}
+
+/* ─── Accent variant ─────────────────────────────────────────────────────── */
+
+.root[data-variant="accent"] {
+  width: auto;
+  height: 28px;
+  padding: 0 10px;
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+  border: 1px solid var(--accent-overlay-mid);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-body);
+  font-size: var(--type-sm);
+  font-weight: var(--weight-medium);
+}
+
+.root[data-variant="accent"]:hover {
+  background: var(--accent-overlay-mid);
+  color: var(--accent-bright);
+}
+
+/* ─── Icons ─────────────────────────────────────────────────────────────── */
+
+.iconCopy {
+  flex-shrink: 0;
+}
+
+.iconCopied {
+  flex-shrink: 0;
+  display: none;
+}
+
+/* ─── Label ─────────────────────────────────────────────────────────────── */
+
+.label {
+  flex-shrink: 0;
+}
+
+/* ─── Copied state (CUSTOM — no Radix primitive) ────────────────────────── */
+/* data-state="copied" set for inlineDurationMs ms after successful copy.    */
+/* Flagged at three places: this comment + DS matrix row + API bullet.       */
+
+.root[data-state="copied"] {
+  color: var(--accent-bright);
+  background: var(--accent-soft);
+}
+
+.root[data-variant="secondary"][data-state="copied"],
+.root[data-variant="accent"][data-state="copied"] {
+  background: var(--accent-soft);
+  border-color: var(--accent-overlay-mid);
+  color: var(--accent-bright);
+}
+
+.root[data-state="copied"] .iconCopy {
+  display: none;
+}
+
+.root[data-state="copied"] .iconCopied {
+  display: inline-flex;
+  animation: iconPop var(--motion-fast) var(--ease-spring);
+}
+
+.root[data-state="copied"] .label {
+  color: var(--accent-bright);
+}
+
+@keyframes iconPop {
+  from {
+    opacity: 0;
+    transform: scale(0.75);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ─── Error state (CUSTOM — no Radix primitive) ─────────────────────────── */
+/* data-state="error" set for inlineDurationMs ms when clipboard write fails. */
+/* Flagged at three places: this comment + DS matrix row + API bullet.        */
+
+.root[data-state="error"] {
+  color: var(--danger);
+  animation: copyShake var(--motion-base) var(--ease-spring);
+}
+
+@keyframes copyShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-3px);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    transition: none;
+    animation: none;
+  }
+  .root[data-state="copied"] .iconCopied {
+    animation: none;
+  }
+  .root[data-state="error"] {
+    animation: none;
+  }
+}

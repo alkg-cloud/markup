@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
-import { VscAdd, VscCopy, VscKey, VscTrash } from 'react-icons/vsc';
+import { VscAdd, VscKey, VscTrash } from 'react-icons/vsc';
 import { AppMain } from '@/components/AppMain/AppMain';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { CopyButton } from '@/components/CopyButton';
 import styles from './AgentsClient.module.css';
 
 interface AgentToken {
@@ -58,7 +59,6 @@ export function AgentsClient({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<CreatedToken | null>(null);
-  const [copied, setCopied] = useState(false);
   // Styled Radix alert replaces the native `window.confirm` ban — see
   // `docs/code-style.md § Never use native browser dialogs`.
   const { confirm, dialog: confirmDialog } = useConfirm();
@@ -87,7 +87,6 @@ export function AgentsClient({
     }
     const created = await res.json();
     setRevealed(created);
-    setCopied(false);
     setName('');
     setShowForm(false);
     await refresh();
@@ -106,21 +105,6 @@ export function AgentsClient({
     await refresh();
   }
 
-  function handleCopyRevealed() {
-    if (!revealed) return;
-    void navigator.clipboard.writeText(revealed.plaintext);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1200);
-  }
-
-  async function copyToken(masked: string) {
-    try {
-      await navigator.clipboard.writeText(masked);
-    } catch {
-      /* clipboard unavailable / denied — silently no-op for now. */
-    }
-  }
-
   return (
     <AppMain variant="centered" className={styles.page} ariaLabel="Agent tokens settings">
       {confirmDialog}
@@ -136,14 +120,15 @@ export function AgentsClient({
           </span>
           <div className={styles.revealRow}>
             <code className={styles.revealCode}>{revealed.plaintext}</code>
-            <button
-              type="button"
-              onClick={handleCopyRevealed}
-              className={`${styles.revealCopyBtn}${copied ? ` ${styles.copied}` : ''}`}
-              aria-label={`Copy token ${revealed.name}`}
+            <CopyButton
+              variant="secondary"
+              feedback="both"
+              value={revealed.plaintext}
+              ariaLabel={`Copy token ${revealed.name}`}
+              message="Token copied — keep it safe"
             >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
+              Copy
+            </CopyButton>
           </div>
         </div>
       )}
@@ -216,14 +201,13 @@ export function AgentsClient({
                   <div className={styles.masked}>{masked}</div>
                 </div>
                 <div className={styles.actions}>
-                  <button
-                    type="button"
-                    aria-label={`Copy token ${t.name}`}
-                    title="Copy"
-                    onClick={() => copyToken(masked)}
-                  >
-                    <VscCopy size={14} aria-hidden="true" />
-                  </button>
+                  <CopyButton
+                    variant="icon"
+                    ariaLabel={`Copy token ${t.name}`}
+                    title="Copy preview"
+                    value={masked}
+                    message="Token preview copied"
+                  />
                   <button
                     type="button"
                     aria-label={`Revoke token ${t.name}`}

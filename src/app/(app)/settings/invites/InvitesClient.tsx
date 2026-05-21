@@ -7,7 +7,6 @@ import {
   VscCheck,
   VscCircleSlash,
   VscClose,
-  VscCopy,
   VscKebabVertical,
   VscMail,
   VscTrash,
@@ -15,9 +14,9 @@ import {
 } from 'react-icons/vsc';
 import { AppMain } from '@/components/AppMain/AppMain';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { CopyButton, useCopy } from '@/components/CopyButton';
 import { RadixDialog } from '@/components/Dialog/RadixDialog';
 import { InputField } from '@/components/InputField';
-import { useToast } from '@/components/Toast/Toast';
 import { usePopover } from '@/lib/popover/usePopover';
 import styles from './InvitesClient.module.css';
 
@@ -316,7 +315,7 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
   const [showDialog, setShowDialog] = useState(false);
   const bulkMenu = usePopover<HTMLButtonElement, HTMLDivElement>('right');
   const { confirm, dialog: confirmDialog } = useConfirm();
-  const toast = useToast();
+  const { copy: copyLink } = useCopy({ message: 'Invite link copied to clipboard' });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -398,16 +397,10 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
     const created = await res.json();
     setPlaintextByInviteId((prev) => ({ ...prev, [created.id]: created.plaintext }));
     const link = `${window.location.origin}/invite/${created.plaintext}`;
-    try {
-      await navigator.clipboard.writeText(link);
-    } catch {
-      /* clipboard unavailable — still show toast since the card exposes the
-         Copy button as a fallback for this page session. */
-    }
+    await copyLink(link);
     setShowDialog(false);
     localStorage.setItem(ONBOARDING_KEY, 'true');
     setOnboardingDismissed(true);
-    toast.show('Invite link copied to clipboard');
     await refresh();
     return null;
   }
@@ -415,18 +408,6 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
   function dismissOnboarding() {
     localStorage.setItem(ONBOARDING_KEY, 'true');
     setOnboardingDismissed(true);
-  }
-
-  async function copyExisting(invite: InviteRow) {
-    const plaintext = plaintextByInviteId[invite.id];
-    if (!plaintext) return;
-    const link = `${window.location.origin}/invite/${plaintext}`;
-    try {
-      await navigator.clipboard.writeText(link);
-      toast.show('Invite link copied');
-    } catch {
-      /* clipboard unavailable; silently no-op. */
-    }
   }
 
   // Sort: unused first (newest first), terminal next (newest first).
@@ -581,20 +562,22 @@ export function InvitesClient({ initialInvites }: { initialInvites: InviteRow[] 
                 <div className={styles.cardActions}>
                   {!terminal && (
                     <>
-                      <button
-                        type="button"
-                        className={styles.cardAction}
+                      <CopyButton
+                        variant="icon"
+                        ariaLabel="Copy invite link"
                         title={
                           hasPlaintext
                             ? 'Copy link'
                             : 'Copy unavailable — only available right after creation'
                         }
-                        aria-label="Copy invite link"
                         disabled={!hasPlaintext}
-                        onClick={() => copyExisting(row)}
-                      >
-                        <VscCopy size={14} aria-hidden="true" />
-                      </button>
+                        value={
+                          hasPlaintext
+                            ? `${typeof window !== 'undefined' ? window.location.origin : ''}/invite/${plaintextByInviteId[row.id]}`
+                            : ''
+                        }
+                        message="Invite link copied"
+                      />
                       <button
                         type="button"
                         className={`${styles.cardAction} ${styles.danger}`}
