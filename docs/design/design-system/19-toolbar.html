@@ -16,10 +16,12 @@
   --surface-glass-bg:rgb(7 12 15 / 80%);
   --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
   --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
-  --motion-fast:160ms;
+  --motion-fast:160ms;--motion-base:220ms;
   --radius-xs:4px;--radius-sm:8px;--radius-md:12px;
   --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
 }
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
@@ -29,11 +31,14 @@ body{
   background-attachment:fixed;
 }
 button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+
 .page{padding:48px 32px 96px;max-width:1200px;margin:0 auto}
 .h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
 .lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
 .section{margin-bottom:48px}
 .section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
 .stage{
   background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
   border:1px solid var(--border-subtle);border-radius:var(--radius-md);
@@ -96,16 +101,53 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
 .v-label{font-family:var(--font-mono);font-weight:700}
 .v-sub{font-size:10px;color:var(--text-muted);margin-left:auto}
 
-/* Tokens */
-.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
-.tokens dt{color:var(--text-dim)}.tokens dt::before{content:'--'}.tokens dd{color:var(--text-bright)}
+/* All-states grid helpers */
+.row-states{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:18px;
+}
+.state{display:flex;flex-direction:column;gap:8px}
+.state .state-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+}
+.state .state-row{
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:14px;display:flex;align-items:center;justify-content:center;
+  min-height:60px;
+}
+
+/* Anatomy / matrix tables */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;
+  background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  color:var(--text-dim);
+  overflow-x:auto;
+  white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
 
-<div class="page">
+<div class="page" data-ds-component="toolbar">
   <h1 class="h1">19 — Canvas Toolbar</h1>
-  <p class="lede">Center-bottom floating dock (<code>src/components/CanvasToolbar</code>) inside the mockup viewer. Glass surface; groups separated by 1 px <code>--border-subtle</code> dividers. Hosts zoom controls + fullscreen toggle + version chip + drag handle. Drag handle uses <code>GoGrabber</code> 25 × 25; clamps to <code>mockup-viewer-app-main</code> bounds (8 px margin), not the viewport.</p>
+  <p class="lede">Center-bottom floating dock inside the mockup viewer (<code>src/components/CanvasToolbar/CanvasToolbar.tsx</code>). Custom compound — Radix has <code>@radix-ui/react-toolbar</code> but it's <strong>NOT installed</strong>; the existing zoom logic, draggable position, and version-chip popover are already well-integrated as a native <code>&lt;div&gt;</code> with grouped <code>&lt;button&gt;</code>s. Glass surface composes the same recipe as <a href="./14-dialog.html" style="color:var(--accent)"><code>dialog</code></a>, <a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a>, and <a href="./18-annotations-rail.html" style="color:var(--accent)"><code>annotations-rail</code></a>. Groups separated by 1 px <code>--border-subtle</code> dividers. Hosts zoom controls + fullscreen toggle + version chip + drag handle. Drag handle uses <code>GoGrabber</code> 25 × 25; clamps to <code>mockup-viewer-app-main</code> bounds (8 px margin), not the viewport.</p>
 
   <section class="section">
     <div class="section-title">A — Default state</div>
@@ -128,6 +170,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         </div>
       </div>
     </div>
+    <div class="caption">Resting state. Four groups separated by 1 px dividers: zoom (out / label / in), fullscreen toggle, version chip, drag handle. Tooltips on every interactive child via <code>data-tooltip</code> (see <a href="./16-tooltip.html" style="color:var(--accent)"><code>tooltip</code></a>).</div>
   </section>
 
   <section class="section">
@@ -145,6 +188,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         <div class="group"><button class="grab"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button></div>
       </div>
     </div>
+    <div class="caption">Zoom label is a clickable button — clicking resets to 100% (the spec default). Hover lifts the label background to <code>--surface-hover</code> for affordance.</div>
   </section>
 
   <section class="section">
@@ -162,6 +206,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         <div class="group"><button class="grab"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button></div>
       </div>
     </div>
+    <div class="caption">At zoom min/max, the corresponding button gets <code>:disabled</code> (0.4 opacity, <code>cursor:not-allowed</code>). Same recipe as dialog buttons.</div>
   </section>
 
   <section class="section">
@@ -181,6 +226,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         <div class="group"><button class="grab"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button></div>
       </div>
     </div>
+    <div class="caption">Toggle buttons (fullscreen) flip to <code>.active</code> when pressed — accent fill + inset 1 px accent-overlay-mid ring + accent-bright icon. Same recipe as the lock-open button on the rail.</div>
   </section>
 
   <section class="section">
@@ -198,6 +244,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         <div class="group"><button class="grab" style="color:var(--accent-bright)"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button></div>
       </div>
     </div>
+    <div class="caption">While the drag handle is held, the toolbar gets an extra 1 px accent ring on top of the standard shadow, and the grab icon brightens to <code>--accent-bright</code>. Position clamps to the <code>mockup-viewer-app-main</code> bounds (8 px margin), not the viewport.</div>
   </section>
 
   <section class="section">
@@ -222,26 +269,240 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         </div>
       </div>
     </div>
+    <div class="caption">Version chip clicks open a <a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a> with the newest-first version list. The chip's chevron rotates 180° while the popover is open. Implementation uses <code>VersionChip</code> + <code>usePopover</code>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">All toolbar button states — one table</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">btn idle</div>
+        <div class="state-row" style="background:transparent;border:none;padding:0">
+          <button class="btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">btn hover</div>
+        <div class="state-row" style="background:transparent;border:none;padding:0">
+          <button class="btn" style="background:var(--surface-hover);color:var(--text-bright)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">btn active</div>
+        <div class="state-row" style="background:transparent;border:none;padding:0">
+          <button class="btn active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">btn disabled</div>
+        <div class="state-row" style="background:transparent;border:none;padding:0">
+          <button class="btn" disabled><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">chip resting</div>
+        <div class="state-row" style="background:transparent;border:none;padding:0">
+          <span class="chip"><span class="clock">🕐</span> v2</span>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">chip current</div>
+        <div class="state-row" style="background:transparent;border:none;padding:0">
+          <span class="chip current"><span class="clock">🕐</span> v3 <span class="chev">▾</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Every toolbar control is a native <code>&lt;button&gt;</code> with the <code>.btn</code> recipe. The version chip is its own pill component (<code>VersionChip</code>); the "current" variant is for the active mockup version.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — custom compound (no Radix primitive)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">Backed by the custom <code style="color:var(--accent)">&lt;CanvasToolbar&gt;</code> component (<code>src/components/CanvasToolbar/CanvasToolbar.tsx</code>). <code style="color:var(--accent)">@radix-ui/react-toolbar</code> exists but is <strong>NOT installed</strong> in this project — its ToggleGroup / Separator / focus-roving features would be useful if the toolbar grows, but the current zoom / fullscreen / version-chip surface is small enough that native <code>&lt;button&gt;</code>s with grouped <code>&lt;div&gt;</code> dividers are clearer to read.</p>
+    <pre class="api"><span class="c">// CanvasToolbar — composed inline at the viewer level</span>
+<span class="k">import</span> { CanvasToolbar } <span class="k">from</span> <span class="s">'@/components/CanvasToolbar'</span>;
+<span class="k">import</span> { VersionChip } <span class="k">from</span> <span class="s">'@/components/VersionChip'</span>;
+
+<span class="k">function</span> MockupViewer({ zoom, setZoom, isFullscreen, versions, currentVersion, canvasRef }) {
+  <span class="k">return</span> (
+    &lt;<span class="t">CanvasToolbar</span>
+      boundsRef={canvasRef}                            <span class="c">// drag clamps to this rect (8 px margin)</span>
+      resetPositionKey={isFullscreen ? <span class="s">'fs'</span> : <span class="s">'win'</span>}    <span class="c">// reset offset on fullscreen flip</span>
+    &gt;
+      &lt;<span class="t">CanvasToolbar.Group</span>&gt;                          <span class="c">// zoom controls</span>
+        &lt;<span class="k">button</span> className={styles.btn}
+                data-tooltip=<span class="s">"Zoom out (Ctrl+−)"</span>
+                aria-label=<span class="s">"Zoom out"</span>
+                onClick={() =&gt; setZoom(zoom - 10)}
+                disabled={zoom &lt;= MIN_ZOOM}&gt;
+          &lt;<span class="t">MinusIcon</span> /&gt;
+        &lt;/<span class="k">button</span>&gt;
+        &lt;<span class="k">button</span> className={styles.zoom}
+                onClick={() =&gt; setZoom(<span class="s">100</span>)}
+                aria-label={`Reset to 100% (current: ${zoom}%)`}&gt;
+          {zoom}%
+        &lt;/<span class="k">button</span>&gt;
+        &lt;<span class="k">button</span> className={styles.btn}
+                data-tooltip=<span class="s">"Zoom in (Ctrl++)"</span>
+                onClick={() =&gt; setZoom(zoom + 10)}
+                disabled={zoom &gt;= MAX_ZOOM}&gt;
+          &lt;<span class="t">PlusIcon</span> /&gt;
+        &lt;/<span class="k">button</span>&gt;
+      &lt;/<span class="t">CanvasToolbar.Group</span>&gt;
+
+      &lt;<span class="t">CanvasToolbar.Group</span>&gt;                          <span class="c">// fullscreen toggle</span>
+        &lt;<span class="k">button</span> className={cn(styles.btn, isFullscreen &amp;&amp; styles.active)}
+                data-tooltip={isFullscreen ? <span class="s">'Exit fullscreen (F)'</span> : <span class="s">'Fullscreen (F)'</span>}
+                aria-pressed={isFullscreen}
+                onClick={toggleFullscreen}&gt;
+          &lt;<span class="t">FullscreenIcon</span> /&gt;
+        &lt;/<span class="k">button</span>&gt;
+      &lt;/<span class="t">CanvasToolbar.Group</span>&gt;
+
+      &lt;<span class="t">CanvasToolbar.Group</span>&gt;                          <span class="c">// version chip (popover)</span>
+        &lt;<span class="t">VersionChip</span> versions={versions} current={currentVersion} /&gt;
+      &lt;/<span class="t">CanvasToolbar.Group</span>&gt;
+
+      &lt;<span class="t">CanvasToolbar.DragHandle</span> /&gt;                   <span class="c">// always last group — see annotations-rail</span>
+    &lt;/<span class="t">CanvasToolbar</span>&gt;
+  );
+}
+
+<span class="c">// Hypothetical Radix migration — only if a future revision needs roving focus / ToggleGroup:</span>
+<span class="c">// import * as Toolbar from '@radix-ui/react-toolbar';</span>
+<span class="c">//</span>
+<span class="c">// &lt;Toolbar.Root className={styles.toolbar} aria-label="Canvas controls"&gt;</span>
+<span class="c">//   &lt;Toolbar.Button className={styles.btn} onClick={zoomOut}&gt;…&lt;/Toolbar.Button&gt;</span>
+<span class="c">//   &lt;Toolbar.Separator className={styles.divider} /&gt;</span>
+<span class="c">//   &lt;Toolbar.ToggleGroup type="single" value={mode} onValueChange={setMode}&gt;…&lt;/Toolbar.ToggleGroup&gt;</span>
+<span class="c">// &lt;/Toolbar.Root&gt;</span></pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong><code>@radix-ui/react-toolbar</code> is not installed.</strong> The current surface is small enough that native <code>&lt;button&gt;</code> grouped by <code>&lt;div className={styles.group}&gt;</code> is the right fit. Add Radix Toolbar only when we need roving focus / arrow-key navigation (current shipped controls are tab-focusable individually, which works for 4 items).</li>
+      <li><strong>Buttons are native <code>&lt;button&gt;</code></strong> with the <code>.btn</code> class. Radix has no Button primitive — pair every icon button with an <code>aria-label</code> and a <code>data-tooltip</code>.</li>
+      <li><strong>Drag handle, zoom logic, and version chip are independent compounds.</strong> <code>CanvasToolbar</code> exposes <code>Group</code> + <code>DragHandle</code> slots; the actual zoom math (<code>zoom.ts</code>) and version popover (<code>VersionChip</code>) live in their own files.</li>
+      <li><strong><code>boundsRef</code> + <code>resetPositionKey</code></strong> mirror the annotations-rail pattern. Toolbar drag clamps to the canvas bounds; the position resets when the bounds change (fullscreen toggle).</li>
+      <li><strong>Toggle buttons use <code>aria-pressed</code></strong> (not <code>aria-checked</code> — that's for checkbox/radio). The fullscreen button gets <code>.active</code> visual state and <code>aria-pressed="true"</code> simultaneously.</li>
+      <li><strong>Zoom label is a button</strong>, not a span — clicking resets to 100%. Include the current value in <code>aria-label</code> so SR users know the state before activating.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>resting</code></td>
+          <td>Default. No interaction.</td>
+          <td>Glass surface, all buttons in <code>--text-muted</code> resting tone.</td>
+          <td>Root: <code>role="toolbar"</code>, <code>aria-label="Canvas controls"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>btn-hover</code></td>
+          <td><code>:hover</code> on any <code>.btn</code>.</td>
+          <td>Background lifts to <code>--surface-hover</code>; icon colour to <code>--text-bright</code>.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>btn-active</code></td>
+          <td>Toggle button is pressed (e.g. fullscreen on).</td>
+          <td><code>--accent-soft</code> bg + inset 1 px <code>--accent-overlay-mid</code> ring + <code>--accent-bright</code> icon.</td>
+          <td><code>aria-pressed="true"</code> on the button.</td>
+        </tr>
+        <tr>
+          <td><code>btn-disabled</code></td>
+          <td>Zoom at min/max → corresponding zoom button disabled.</td>
+          <td>0.4 opacity, <code>cursor:not-allowed</code>.</td>
+          <td><code>disabled</code> attribute — SR-announced natively.</td>
+        </tr>
+        <tr>
+          <td><code>dragging</code></td>
+          <td><code>mousedown</code> on the grab handle, drag in progress.</td>
+          <td>Toolbar gets extra 1 px <code>--accent-overlay-mid</code> ring on top of base shadow; grab icon brightens.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>version-popover-open</code></td>
+          <td>Version chip clicked.</td>
+          <td>Popover paints in top-layer above the toolbar. Chevron rotates 180°.</td>
+          <td>Chip: <code>aria-expanded="true"</code>, <code>aria-haspopup="listbox"</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">"dragging" and "version-popover-open" are <em>internal</em> states — the consumer doesn't toggle them. <code>btn-active</code> is consumer-driven (e.g. fullscreen state lives in the parent).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Primitive</th><th>Use for</th><th>Backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>toolbar</code> (this)</td>
+          <td>Canvas-action chrome on the mockup viewer: zoom, fullscreen, version chip, drag. One per <code>MockupViewer</code>.</td>
+          <td>Custom — <code>CanvasToolbar.tsx</code></td>
+        </tr>
+        <tr>
+          <td><code>annotations-rail</code></td>
+          <td>Left-side annotations panel. Same glass + drag + grab-handle recipe, different content (badge column / expanded card list).</td>
+          <td>See <a href="./18-annotations-rail.html" style="color:var(--accent)"><code>18-annotations-rail.html</code></a></td>
+        </tr>
+        <tr>
+          <td><code>marking-bar</code></td>
+          <td>Annotation creation tool palette — separate floating bar that appears during a marking gesture.</td>
+          <td>See <a href="./20-pins.html" style="color:var(--accent)"><code>20-pins.html</code></a></td>
+        </tr>
+        <tr>
+          <td><code>topbar</code></td>
+          <td>App-level chrome — project name, breadcrumb, avatar menu. Always present at the top of the page.</td>
+          <td>See <a href="./02-topbar.html" style="color:var(--accent)"><code>02-topbar.html</code></a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Rule of thumb: anything that floats <em>over</em> the mockup canvas is <code>toolbar</code> (actions) or <a href="./18-annotations-rail.html" style="color:var(--accent)"><code>annotations-rail</code></a> (annotations). App-level chrome lives outside the canvas in <code>topbar</code>.</div>
   </section>
 
   <section class="section">
     <div class="section-title">Anatomy</div>
     <dl class="tokens">
       <dt>position<dd>absolute; bottom 24 px; left 50% translateX(-50%)
+      <dt>surface bg<dd>--surface-glass-bg
+      <dt>backdrop-filter<dd>blur(16px) saturate(140%)
+      <dt>border<dd>1 px solid --border
       <dt>border-radius<dd>14 px
       <dt>padding<dd>6 px
       <dt>gap<dd>4 px (outer) / 2 px (group inner)
+      <dt>shadow<dd>--shadow-popover (dragging: + 1 px --accent-overlay-mid ring)
       <dt>btn<dd>32 × 32, --radius-xs, svg 16 × 16
+      <dt>btn idle<dd>--text-muted
       <dt>btn hover<dd>--surface-hover bg, --text-bright
-      <dt>btn active<dd>--accent-soft bg + inset 1 px --accent-overlay-mid ring + --accent-bright color
+      <dt>btn active<dd>--accent-soft bg + inset 1 px --accent-overlay-mid ring + --accent-bright icon
       <dt>btn disabled<dd>0.4 opacity, not-allowed cursor
       <dt>zoom label<dd>48 px min-width, 12 px mono, clickable (resets to 100%)
       <dt>version chip<dd>28 px tall pill, --bg-card border-subtle; current variant uses --accent-soft + --accent-overlay-mid
       <dt>group divider<dd>1 px --border-subtle vertical
       <dt>grab handle<dd>25 × 32 slot, GoGrabber 25 × 25
-      <dt>dragging<dd>--shadow-popover + 0 0 0 1px --accent-overlay-mid ring
+      <dt>tooltip alignment<dd>data-tooltip-align="center" or "right" depending on edge proximity
       <dt>clamping<dd>AppMain bounds (8 px margin), NOT viewport
     </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Drag-to-reposition.</strong> <code>mousedown</code> on the grab handle starts a drag. Position clamps to the canvas bounds with an 8 px margin on every edge.</li>
+      <li><strong>Reset on bounds change.</strong> <code>resetPositionKey</code> change clears the drag offset — toolbar returns to center-bottom default.</li>
+      <li><strong>Zoom controls.</strong> Out / in buttons step by 10% (configurable). Label is clickable and resets to 100%. Both side buttons disable at min/max.</li>
+      <li><strong>Fullscreen toggle.</strong> Uses Fullscreen API on the canvas container; toolbar rides along inside. <code>aria-pressed</code> reflects state.</li>
+      <li><strong>Version chip.</strong> Opens a popover (see <a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a>) with the version list. Click outside or Escape closes; chevron rotates while open.</li>
+      <li><strong>Tooltips on every button.</strong> Pair each icon with <code>data-tooltip</code> for the hint + <code>aria-label</code> for SR — see <a href="./16-tooltip.html" style="color:var(--accent)"><code>16-tooltip.html</code></a>.</li>
+      <li><strong>Keyboard shortcuts.</strong> <code>Ctrl+−</code> / <code>Ctrl++</code> for zoom, <code>F</code> for fullscreen. Registered globally by the viewer, not by individual buttons.</li>
+      <li><strong>Reduced motion.</strong> Under <code>prefers-reduced-motion: reduce</code>, the btn hover/active transitions collapse to a 0 ms snap via the token override at the top of the file.</li>
+    </ul>
   </section>
 </div>
 
