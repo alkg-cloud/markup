@@ -25,10 +25,10 @@
 
 /* Scrim — light dim + light blur (40% --bg tint, 4px blur). */
 .overlay::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: oklch(7% 0.02 165 / 0.40);
+  background: oklch(7% 0.02 165 / 0.4);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
