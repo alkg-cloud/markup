@@ -243,13 +243,90 @@ input,textarea,select{font-family:inherit;color:inherit}
 .preview-area{display:flex;flex-direction:column;gap:4px}
 .preview-area .preview-label{
   font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);
+  display:flex;align-items:center;gap:8px;
+}
+.preview-area .preview-label .status{
+  font-weight:400;color:var(--text-dim);text-transform:none;letter-spacing:0;
+  font-size:10.5px;
 }
 .preview-area .preview-box{
   height:160px;border-radius:var(--radius-sm);
   overflow:hidden;border:1px solid var(--border);
   background:oklch(95% 0.02 60);
+  position:relative;
 }
 .preview-area .preview-box svg{width:100%;height:100%;display:block}
+
+/* Skeleton loading state — driven by [data-state="loading"] on .preview-box.
+   Used while html2canvas is generating the preview AND while the mockup is
+   being uploaded (the preview stays visible but reverts to skeleton to signal
+   "this view will reload"). */
+.preview-area .preview-box[data-state="loading"]{
+  background:linear-gradient(
+    90deg,
+    oklch(18% 0.025 165) 0%,
+    oklch(22% 0.03 165) 50%,
+    oklch(18% 0.025 165) 100%
+  );
+  background-size:200% 100%;
+  animation:skeletonShimmer 1.4s ease-in-out infinite;
+  border-color:var(--border-subtle);
+}
+.preview-area .preview-box[data-state="loading"] .skeleton-blocks{
+  position:absolute;inset:16px 20px;
+  display:flex;flex-direction:column;gap:10px;
+  pointer-events:none;
+}
+.preview-area .preview-box[data-state="loading"] .skeleton-blocks .row{
+  height:10px;border-radius:3px;
+  background:linear-gradient(
+    90deg,
+    oklch(28% 0.03 165) 0%,
+    oklch(32% 0.035 165) 50%,
+    oklch(28% 0.03 165) 100%
+  );
+  background-size:200% 100%;
+  animation:skeletonShimmer 1.4s ease-in-out infinite;
+}
+.preview-area .preview-box[data-state="loading"] .skeleton-blocks .row.title{height:14px;width:55%;margin-bottom:4px}
+.preview-area .preview-box[data-state="loading"] .skeleton-blocks .row.short{width:38%}
+.preview-area .preview-box[data-state="loading"] .skeleton-blocks .row.cta{
+  height:22px;width:80px;border-radius:var(--radius-pill);margin-top:10px;
+}
+.preview-area .preview-box[data-state="loading"] > svg{display:none}
+@keyframes skeletonShimmer{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+@media(prefers-reduced-motion:reduce){
+  .preview-area .preview-box[data-state="loading"],
+  .preview-area .preview-box[data-state="loading"] .skeleton-blocks .row{
+    animation:none;
+    background:oklch(22% 0.03 165);
+  }
+  .preview-area .preview-box[data-state="loading"] .skeleton-blocks .row{
+    background:oklch(30% 0.035 165);
+  }
+}
+
+/* Fallback state — when html2canvas times out or fails (zip files, blocked
+   content). Box shows the file icon + name without the screenshot. */
+.preview-area .preview-box[data-state="fallback"]{
+  background:var(--bg-tinted);
+  border-color:var(--border-subtle);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;color:var(--text-muted);
+}
+.preview-area .preview-box[data-state="fallback"] > svg{display:none}
+.preview-area .preview-box[data-state="fallback"] .fallback-icon{
+  width:32px;height:32px;border-radius:6px;
+  background:oklch(35% 0.12 60);color:oklch(85% 0.16 60);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:10px;font-weight:700;
+}
+.preview-area .preview-box[data-state="fallback"] .fallback-text{
+  font-family:var(--font-mono);font-size:11px;color:var(--text-dim);
+}
 
 /* Replace toggle — visible only on mockup view */
 .replace-toggle{
@@ -525,7 +602,106 @@ pre.api .t{color:oklch(86% 0.12 60)}
   </section>
 
   <section class="section">
-    <div class="section-title">Uploading — inline progress bar</div>
+    <div class="section-title">Preview — generating (skeleton while html2canvas runs)</div>
+    <div class="stage">
+      <div class="dialog-stage-shell">
+        <div class="fake-app">app surface · just dropped, preview generating</div>
+        <div class="dialog-scrim">
+          <div class="new-mockup-dialog" role="dialog" aria-modal="true">
+            <div class="dialog-head">
+              <h3>New mockup</h3>
+              <button class="close-btn" type="button" aria-label="Close"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg></button>
+            </div>
+            <div class="file-chip">
+              <div class="ftype html">HTML</div>
+              <div class="fmeta"><div class="fname">pricing-v3.html</div><div class="fsize">12.4 KB · text/html</div></div>
+            </div>
+            <div class="dialog-field">
+              <label>Name</label>
+              <input type="text" value="pricing-v3">
+            </div>
+            <div class="dialog-row">
+              <div class="dialog-field">
+                <label>Project</label>
+                <select><option>☕ Lumen Coffee</option></select>
+              </div>
+              <div class="dialog-field">
+                <label>Folder</label>
+                <button type="button" class="folder-picker-trigger"><span class="icon">📁</span><span class="value">Hero</span><span class="chev"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+              </div>
+            </div>
+            <div class="preview-area">
+              <span class="preview-label">Preview <span class="status">— generating…</span></span>
+              <div class="preview-box" data-state="loading" aria-busy="true" aria-label="Generating preview">
+                <div class="skeleton-blocks">
+                  <div class="row title"></div>
+                  <div class="row"></div>
+                  <div class="row"></div>
+                  <div class="row short"></div>
+                  <div class="row cta"></div>
+                </div>
+              </div>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn-secondary" type="button">Cancel</button>
+              <button class="btn-accent" type="button">Add mockup</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Skeleton via <code>[data-state="loading"]</code> on <code>.preview-box</code>. Outer surface shimmers (background-position 200%→-200% on a 3-stop gradient, 1.4s ease-in-out infinite). Inside, 5 rows mimic title + body + CTA so the user pre-recognises the layout. <code>aria-busy="true"</code>. Add button stays enabled — preview is non-blocking.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Preview — fallback (zip file or html2canvas timeout)</div>
+    <div class="stage">
+      <div class="dialog-stage-shell">
+        <div class="fake-app">app surface · zip dropped, no preview</div>
+        <div class="dialog-scrim">
+          <div class="new-mockup-dialog" role="dialog" aria-modal="true">
+            <div class="dialog-head">
+              <h3>New mockup</h3>
+              <button class="close-btn" type="button" aria-label="Close"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg></button>
+            </div>
+            <div class="file-chip">
+              <div class="ftype zip" style="background:oklch(35% 0.12 240);color:oklch(85% 0.14 240)">ZIP</div>
+              <div class="fmeta"><div class="fname">lumen-coffee-bundle.zip</div><div class="fsize">2.8 MB · application/zip</div></div>
+            </div>
+            <div class="dialog-field">
+              <label>Name</label>
+              <input type="text" value="lumen-coffee-bundle">
+            </div>
+            <div class="dialog-row">
+              <div class="dialog-field">
+                <label>Project</label>
+                <select><option>☕ Lumen Coffee</option></select>
+              </div>
+              <div class="dialog-field">
+                <label>Folder</label>
+                <button type="button" class="folder-picker-trigger"><span class="icon">📁</span><span class="value">Hero</span><span class="chev"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+              </div>
+            </div>
+            <div class="preview-area">
+              <span class="preview-label">Preview <span class="status">— not available for ZIP</span></span>
+              <div class="preview-box" data-state="fallback">
+                <div class="fallback-icon">ZIP</div>
+                <div class="fallback-text">Preview generated after upload</div>
+              </div>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn-secondary" type="button">Cancel</button>
+              <button class="btn-accent" type="button">Add mockup</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Used when (a) the file is a ZIP (we don't render zip contents client-side), or (b) html2canvas times out (3s cap), or (c) the iframe is blocked by CSP. Shows the file icon + a one-line note. Backend generates the real thumb after upload.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Uploading — skeleton preview + bytes-transferred progress</div>
     <div class="stage">
       <div class="dialog-stage-shell">
         <div class="fake-app">app surface · uploading</div>
@@ -555,7 +731,23 @@ pre.api .t{color:oklch(86% 0.12 60)}
                 </button>
               </div>
             </div>
-            <div class="dialog-progress"></div>
+            <div class="preview-area">
+              <span class="preview-label">Preview <span class="status">— uploading 64%</span></span>
+              <div class="preview-box" data-state="loading" aria-busy="true" aria-label="Uploading mockup">
+                <div class="skeleton-blocks">
+                  <div class="row title"></div>
+                  <div class="row"></div>
+                  <div class="row"></div>
+                  <div class="row short"></div>
+                  <div class="row cta"></div>
+                </div>
+              </div>
+            </div>
+            <div class="dialog-progress" style="position:relative">
+              <div style="position:absolute;inset:0;background:var(--btn-bg);border-radius:var(--radius-pill);overflow:hidden">
+                <div style="height:100%;width:64%;background:var(--accent);border-radius:var(--radius-pill);transition:width 200ms var(--ease-standard)"></div>
+              </div>
+            </div>
             <div class="dialog-actions">
               <button class="btn-secondary" type="button">Cancel</button>
               <button class="btn-accent" type="button" disabled>Uploading…</button>
@@ -564,7 +756,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
         </div>
       </div>
     </div>
-    <div class="caption">Form fields disabled. Inline progress bar (4px, --accent fill, indeterminate animation 1.4s infinite) replaces the preview area. Add button: "Uploading…" + disabled. Close button disabled — only Cancel can abort the upload.</div>
+    <div class="caption">Form fields disabled. Preview reverts to <code>[data-state="loading"]</code> skeleton — signals "this view will refresh after upload" without flashing the old preview. Determinate progress bar (4px, --accent fill) sits below the preview, value driven by <code>XMLHttpRequest.upload.onprogress</code>. Add button: "Uploading…" + disabled. Close button disabled — Cancel is the only abort path (with confirm modal).</div>
   </section>
 
   <section class="section">
@@ -759,9 +951,18 @@ pre.api .t{color:oklch(86% 0.12 60)}
 
         {currentViewIsMockup
           ? &lt;<span class="t">ReplaceToggle</span> currentMockup={currentMockup} /&gt;
-          : &lt;<span class="t">PreviewBox</span> file={file} /&gt;}
+          : &lt;<span class="t">PreviewBox</span>                                <span class="c">// renders 3 states via data-state:</span>
+              file={file}                              <span class="c">// loading | fallback | ready</span>
+              previewDataUrl={preview.dataUrl}         <span class="c">// from useFilePreview() (html2canvas)</span>
+              isLoading={preview.loading || uploading} <span class="c">// skeleton during gen AND upload</span>
+              statusLabel={
+                uploading ? <span class="s">`uploading ${Math.round(progress*100)}%`</span> :
+                preview.loading ? <span class="s">'generating…'</span> :
+                file.type === <span class="s">'application/zip'</span> ? <span class="s">'not available for ZIP'</span> : null
+              }
+            /&gt;}
 
-        {uploading &amp;&amp; &lt;<span class="t">ProgressBar</span> /&gt;}
+        {uploading &amp;&amp; &lt;<span class="t">ProgressBar</span> value={progress} /&gt;}    <span class="c">// determinate; XHR.upload.onprogress</span>
 
         &lt;<span class="t">Form.Submit</span> asChild&gt;
           &lt;<span class="k">button</span> className=<span class="s">"btn-accent"</span> disabled={uploading || nameStatus === <span class="s">'error'</span>}&gt;
@@ -789,10 +990,12 @@ pre.api .t{color:oklch(86% 0.12 60)}
     <table class="matrix">
       <thead><tr><th>State</th><th>Trigger</th><th>Visual</th><th>Affordances</th></tr></thead>
       <tbody>
-        <tr><td><code>idle</code></td><td>Dialog mounts after drop / click</td><td>All fields editable; preview visible; Add button enabled</td><td>Cancel · Add mockup</td></tr>
+        <tr><td><code>idle</code></td><td>Dialog mounts after drop / click; preview ready</td><td>All fields editable; preview shows real screenshot; Add button enabled</td><td>Cancel · Add mockup</td></tr>
+        <tr><td><code>preview-loading</code></td><td>Dialog just mounted, html2canvas still rendering (sub-3s)</td><td>Fields editable; preview-box <code>[data-state="loading"]</code> skeleton; label "Preview — generating…"</td><td>Cancel · Add mockup (non-blocking)</td></tr>
+        <tr><td><code>preview-fallback</code></td><td>ZIP file dropped OR html2canvas timed out/failed</td><td>Fields editable; preview-box <code>[data-state="fallback"]</code> shows file icon + note</td><td>Cancel · Add mockup</td></tr>
         <tr><td><code>field-error</code></td><td>Radix <code>Form.Message match</code> fires OR server returns 409 conflict</td><td><a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a> error state on the relevant field</td><td>Cancel · <em>Add disabled</em></td></tr>
         <tr><td><code>global-error</code></td><td>Server returns 500/network/permission/rate-limit</td><td><a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> at top; fields stay editable</td><td>Cancel · Retry</td></tr>
-        <tr><td><code>uploading</code></td><td>Submit fires + request in flight</td><td>Fields disabled; preview hidden; inline progress bar shown; Add → "Uploading…"</td><td>Cancel only (Esc / Close disabled)</td></tr>
+        <tr><td><code>uploading</code></td><td>Submit fires + XHR in flight</td><td>Fields disabled; preview reverts to skeleton ("uploading X%"); determinate progress bar below; Add → "Uploading…"</td><td>Cancel only (Esc / Close disabled)</td></tr>
         <tr><td><code>replace-mode</code></td><td>Dialog opened from <a href="./11-mockup-view.html" style="color:var(--accent)"><code>mockup-view</code></a></td><td>Replace toggle replaces preview area; default "Add as new"; alt "Replace as new version"</td><td>Same as idle</td></tr>
       </tbody>
     </table>
@@ -805,7 +1008,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
       <li><strong>Name pre-fill</strong>: file basename minus extension, lower-cased, hyphenated. User can edit.</li>
       <li><strong>Project pre-fill</strong>: from route (current project / "Unsorted" for /). User can change.</li>
       <li><strong>Folder pre-fill</strong>: from route. User can navigate the tree-popover to a different folder.</li>
-      <li><strong>Preview</strong>: file URL (<code>URL.createObjectURL</code>) rendered into an offscreen iframe + screenshot pipeline → preview-box. Replaced by progress bar during upload; replaced by replace-toggle when in replace-mode.</li>
+      <li><strong>Preview</strong>: file URL (<code>URL.createObjectURL</code>) rendered into an offscreen iframe + html2canvas screenshot → preview-box. While generating, preview-box shows <code>[data-state="loading"]</code> skeleton (shimmer gradient + 5 row blocks). On html2canvas timeout (3s) or error, falls back to <code>[data-state="fallback"]</code> with file icon. ZIP files skip the screenshot path and go straight to fallback. During upload, preview reverts to <code>[data-state="loading"]</code> skeleton (with label "uploading X%") and the determinate progress bar appears below — the preview area stays visible for size stability and signals "this view will refresh after upload". Replace-mode replaces the preview area with the replace-toggle radio.</li>
       <li><strong>Validation</strong>: name pattern <code>^[a-z0-9-]+$</code> (lowercase + digits + hyphen). Sync via Radix Form. Duplicate names checked async after debounce (200 ms) → field-error.</li>
       <li><strong>Submit</strong>: posts FormData to <code>/api/mockups</code> with file + name + projectId + folderId + (mode: add|replace). On success: dialog closes, navigates to the new mockup's view.</li>
       <li><strong>Cancel</strong>: aborts the request (AbortController), closes dialog. Esc closes the dialog when not uploading; when uploading, Esc is intercepted and shows a confirm via <a href="./14-dialog.html" style="color:var(--accent)"><code>ConfirmDialog</code></a> ("Cancel upload?").</li>
@@ -837,7 +1040,10 @@ pre.api .t{color:oklch(86% 0.12 60)}
       <dt>folder-popover<dd>320 wide (matches trigger), max-height 280px, --surface-glass-bg, --shadow-popover
       <dt>folder-row selected<dd>--accent-soft bg, --accent text, 600 weight on name
       <dt>preview-box<dd>160px tall, --radius-sm, 1px --border, white-tinted bg
-      <dt>progress bar<dd>4px tall, --btn-bg track, --accent fill, --radius-pill, 1.4s indeterminate
+      <dt>preview-box loading<dd>shimmer gradient (3-stop oklch in hue 165) on outer surface, 200% bg-position cycling -200%↔200% over 1.4s ease-in-out infinite. 5 inner skeleton rows (title + 3 body + cta) shimmer in sync.
+      <dt>preview-box fallback<dd>--bg-tinted bg, 1px --border-subtle, centered file-icon (32×32, color-coded) + "Preview generated after upload" mono text
+      <dt>preview label status<dd>11px / 400, --text-dim, lowercase suffix to "Preview" — flips between "generating…" / "not available for ZIP" / "uploading X%" / hidden
+      <dt>progress bar<dd>4px tall, --btn-bg track, --accent fill, --radius-pill. Determinate during upload (width = bytes-transferred / total). Indeterminate fallback (1.4s shimmer) only if `lengthComputable === false`.
       <dt>replace-toggle<dd>--bg-tinted bg, 1px --border-subtle, 8×12 pad, accent radio when active
       <dt>actions<dd>flex-end, 8px gap
       <dt>btn-secondary<dd>8×14 pad, --btn-bg, --text, --radius-pill, 600 / 12.5px
