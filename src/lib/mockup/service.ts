@@ -23,6 +23,27 @@ interface CreateInput {
   folderId?: string;
 }
 
+/**
+ * Persist a raw HTML payload into the same single-entry zip layout the
+ * extraction pipeline expects. Returns the temp zip path; caller owns
+ * cleanup (mirrors how the route handlers already manage `mk-upload-*`
+ * tempfiles).
+ *
+ * The zip entry is always named `index.html` regardless of the source
+ * filename — `extractZip` + the thumbnail generator key off that name
+ * for the build's entrypoint.
+ */
+export async function wrapHtmlAsZip(html: Buffer): Promise<string> {
+  const tmpDir = path.join(env().DATA_DIR, 'tmp');
+  fs.mkdirSync(tmpDir, { recursive: true });
+  const tmp = path.join(tmpDir, `mk-html-${cuid()}.zip`);
+  const zip = new JSZip();
+  zip.file('index.html', html);
+  const buffer = await zip.generateAsync({ type: 'nodebuffer' });
+  fs.writeFileSync(tmp, buffer);
+  return tmp;
+}
+
 function buildLimits() {
   return {
     maxTotalBytes: env().MAX_UPLOAD_MB * 1024 * 1024,
