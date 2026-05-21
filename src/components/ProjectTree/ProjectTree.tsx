@@ -269,9 +269,6 @@ export function ProjectTree({
         onKeyDown={handleKeyDown}
         className={styles.tree}
       >
-        <div className={styles.sectionHeader} aria-hidden="true">
-          PROJECTS
-        </div>
         {nodes.map((node, index) => {
           if (node.type === 'recents-header') {
             return (

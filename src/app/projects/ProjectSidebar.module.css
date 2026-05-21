@@ -50,9 +50,10 @@
   box-shadow: var(--focus-ring);
 }
 
-/* ─── Footer "New mockup" button (DS 01 § footer pill) ────────────────
- * Pill that opens the file picker. Visual lineage matches the DS
- * `.btn-new-mockup` recipe — `btn-bg` surface, accent text, pill radius.
+/* ─── Footer "New mockup" button (DS 13 § action variant, pill-shaped) ─
+ * Pill that opens the file picker. Uses the DS "action" variant
+ * tokens (accent-soft surface, accent-overlay-mid border, accent text)
+ * so it reads as the primary action of the sidebar.
  */
 .btnNewMockup {
   display: flex;
@@ -62,8 +63,8 @@
   width: 100%;
   padding: 7px 12px;
   border-radius: var(--radius-pill);
-  background: var(--btn-bg);
-  border: 1px solid var(--border);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-overlay-mid);
   color: var(--accent);
   font-size: 13px;
   font-weight: 600;
@@ -75,8 +76,8 @@
 }
 
 .btnNewMockup:hover {
-  background: var(--btn-bg-hover);
-  border-color: var(--accent-overlay-mid);
+  background: var(--accent-overlay-mid);
+  border-color: var(--accent);
   color: var(--accent-bright);
 }
 
