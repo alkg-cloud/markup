@@ -10,13 +10,16 @@
   --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
   --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);
   --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
-  --accent:oklch(74.4% 0.193 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
   --info:oklch(74% 0.13 200);--warning:oklch(80% 0.15 80);--success:oklch(76% 0.16 152);
+  --danger:oklch(70% 0.2 25);
   --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
-  --ease-spring:cubic-bezier(0.5,1.4,0.6,1);
-  --motion-fast:160ms;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
   --radius-xs:4px;--radius-sm:8px;--radius-md:12px;
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
 }
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
@@ -25,11 +28,15 @@ body{
   background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
   background-attachment:fixed;
 }
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+
 .page{padding:48px 32px 96px;max-width:1200px;margin:0 auto}
 .h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
 .lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:720px;line-height:1.55}
 .section{margin-bottom:48px}
 .section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
 .stage{
   background:
@@ -58,6 +65,7 @@ body{
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;opacity:0.55;
   padding:0;
+  transition:opacity var(--motion-fast),border-color var(--motion-fast),box-shadow var(--motion-fast);
 }
 .pin > span{
   transform:rotate(45deg);
@@ -65,18 +73,21 @@ body{
   font-weight:800;font-size:12px;font-family:var(--font-mono);line-height:1;
 }
 .pin:hover{opacity:1;border-color:oklch(88% var(--pin-c) var(--pin-h))}
-.pin.active{
+.pin.active,
+.pin[data-status="active"]{
   opacity:1;z-index:11;
   border-color:oklch(88% var(--pin-c) var(--pin-h));
   box-shadow:0 4px 12px rgba(0,0,0,0.4),0 0 0 2px oklch(82% var(--pin-c) var(--pin-h) / 0.45);
 }
-.pin.pending{
+.pin.pending,
+.pin[data-status="pending"]{
   border:2px dashed oklch(82% var(--pin-c) var(--pin-h));
   box-shadow:0 3px 8px rgba(0,0,0,0.25);
   opacity:0.95;
   animation:pendingPulse 1.6s ease-in-out infinite;
 }
-.pin.pending > span{color:oklch(90% var(--pin-c) var(--pin-h));font-weight:900}
+.pin.pending > span,
+.pin[data-status="pending"] > span{color:oklch(90% var(--pin-c) var(--pin-h));font-weight:900}
 @keyframes pendingPulse{
   0%,100%{box-shadow:0 0 0 0 oklch(74% var(--pin-c) var(--pin-h) / 0.45)}
   50%{box-shadow:0 0 0 6px transparent}
@@ -121,16 +132,53 @@ body{
 .faux-p{font-size:12px;color:oklch(35% 0 0);line-height:1.5}
 .faux-btn{display:inline-block;margin-top:12px;padding:6px 14px;background:oklch(20% 0 0);color:oklch(100% 0 0);border-radius:9999px;font-size:11px;font-weight:600}
 
-/* Tokens */
-.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
-.tokens dt{color:var(--text-dim)}.tokens dt::before{content:'--'}.tokens dd{color:var(--text-bright)}
+/* All-states grid helpers */
+.row-states{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:18px;
+}
+.state{display:flex;flex-direction:column;gap:8px}
+.state .state-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+}
+.state .state-row{
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:18px;display:flex;align-items:center;justify-content:center;
+  min-height:60px;
+}
+
+/* Anatomy / matrix tables */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;
+  background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  color:var(--text-dim);
+  overflow-x:auto;
+  white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
 
-<div class="page">
+<div class="page" data-ds-component="pins">
   <h1 class="h1">20 — Pins</h1>
-  <p class="lede">Annotation pins are 30 × 30 teardrop tags rotated -45° (<code>border-radius: 50% 50% 50% 0</code>) so the tip lands on the anchor point. Glass tag aesthetic: dark translucent bg, accent border tied to the annotation's <code>colorIndex</code> (0-15 palette), inner numeric label counter-rotated 45° to read horizontally. <code>opacity: 0.55</code> at rest so the underlying mockup reads through; full opacity on hover / active. 16-colour palette shared between pins, rail badges, and avatars.</p>
+  <p class="lede">Annotation marker on the mockup canvas. Custom in-project component (<code>src/components/Pin/Pin.tsx</code>) — no Radix primitive (Radix doesn't ship anything in this shape). 30 × 30 teardrop tags rotated -45° (<code>border-radius: 50% 50% 50% 0</code>) so the tip lands on the anchor point. Glass tag aesthetic: dark translucent bg, accent border tied to the annotation's <code>colorIndex</code> (0-15 palette), inner numeric label counter-rotated 45° to read horizontally. <code>opacity: 0.55</code> at rest so the underlying mockup reads through; full opacity on hover / active. The 16-colour palette is shared with the rail badges (<a href="./18-annotations-rail.html" style="color:var(--accent)"><code>annotations-rail</code></a>) and with author avatars elsewhere — the same <code>colorIndex</code> means the same hue everywhere a user encounters the annotation.</p>
 
   <section class="section">
     <div class="section-title">A — Pin states</div>
@@ -156,6 +204,7 @@ body{
         <span class="state-desc">dashed border + 1.6 s soft pulse — used during composer marking</span>
       </div>
     </div>
+    <div class="caption">Four canonical states. Hover is purely CSS (<code>:hover</code>), active is the consumer-set <code>status="active"</code> on the Pin component, pending is composer-time before the annotation is persisted. No scale transform — the rotated -45° base transform makes any additional scale flicker, so opacity + border / shadow do the work.</div>
   </section>
 
   <section class="section">
@@ -178,6 +227,7 @@ body{
       <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="14"><span>14</span></div></div><span class="num">200°</span></div>
       <div class="palette-cell"><div class="pin-host"><div class="pin" data-color="15"><span>15</span></div></div><span class="num">150°</span></div>
     </div>
+    <div class="caption"><code>colorIndex</code> 0-15 maps to OKLCH hues at lightness 78% and chroma 0.12-0.18. Same palette as <a href="./18-annotations-rail.html" style="color:var(--accent)"><code>annotations-rail</code></a> badges and author avatars — pin + rail badge + author chip all share the hue for one annotation, which is how users tie a pin on the canvas to a card in the rail visually.</div>
   </section>
 
   <section class="section">
@@ -212,6 +262,7 @@ body{
         </div>
       </div>
     </div>
+    <div class="caption">A single annotation can have multiple pins (one per anchor); active state highlights one at a time. Resolved annotations fade their pin to 0.4 opacity. Pending pins (composer-time) carry a dashed border + pulse animation.</div>
   </section>
 
   <section class="section">
@@ -235,6 +286,164 @@ body{
         <div class="pin active" data-color="9"><span>2</span></div>
       </div>
     </div>
+    <div class="caption">Element anchors store a CSS-path + fractional bbox offset (resilient to whitespace changes). Text anchors store a CSS-path + character offset + sub-position (resilient to reflow / wrap / font change). The pin itself is unaware — <code>PinLayer</code> writes the inline <code>top</code> / <code>left</code>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">All pin states + sample colors — one table</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">idle · 0</div>
+        <div class="state-row" style="background:transparent;border:none"><div class="pin" data-color="0"><span>1</span></div></div>
+      </div>
+      <div class="state">
+        <div class="state-label">hover · 0</div>
+        <div class="state-row" style="background:transparent;border:none"><div class="pin" data-color="0" style="opacity:1"><span>1</span></div></div>
+      </div>
+      <div class="state">
+        <div class="state-label">active · 0</div>
+        <div class="state-row" style="background:transparent;border:none"><div class="pin active" data-color="0"><span>1</span></div></div>
+      </div>
+      <div class="state">
+        <div class="state-label">pending · 0</div>
+        <div class="state-row" style="background:transparent;border:none"><div class="pin pending" data-color="0"><span>+</span></div></div>
+      </div>
+      <div class="state">
+        <div class="state-label">resolved · 12</div>
+        <div class="state-row" style="background:transparent;border:none"><div class="pin" data-color="12" style="opacity:0.4"><span>3</span></div></div>
+      </div>
+      <div class="state">
+        <div class="state-label">active · 7</div>
+        <div class="state-row" style="background:transparent;border:none"><div class="pin active" data-color="7"><span>2</span></div></div>
+      </div>
+    </div>
+    <div class="caption">A single recipe paints every state. <code>[data-color]</code> sets the hue / chroma CSS vars; <code>.active</code> / <code>.pending</code> modify shadow + border without touching the base transform.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — custom Pin + PinLayer (no Radix primitive)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">Backed by two custom in-project components, <strong>no Radix primitive applies</strong>. <code style="color:var(--accent)">&lt;Pin&gt;</code> (<code>src/components/Pin/Pin.tsx</code>) is the stateless visual — receives <code>colorIndex</code>, <code>label</code>, <code>status</code>, <code>onClick</code>, and an optional <code>ref</code> that <code>PinLayer</code> uses to write inline <code>top</code> / <code>left</code>. <code style="color:var(--accent)">&lt;PinLayer&gt;</code> (<code>src/components/PinLayer/PinLayer.tsx</code>) owns the anchoring runtime: resolves each annotation's anchor against the live mockup DOM and reflows on every layout change.</p>
+    <pre class="api"><span class="c">// 1) Render a single pin — stateless presentation</span>
+<span class="k">import</span> { Pin } <span class="k">from</span> <span class="s">'@/components/Pin'</span>;
+
+&lt;<span class="t">Pin</span>
+  annotationId={a.id}
+  colorIndex={a.colorIndex}                          <span class="c">// 0..15 — matches rail badge hue</span>
+  label={i + 1}                                      <span class="c">// "1", "2", ... — or "+" for pending</span>
+  status={a.id === activeId ? <span class="s">'active'</span> : <span class="s">'idle'</span>}
+  onClick={(e) =&gt; { e.stopPropagation(); setActive(a.id); }}
+  ref={el =&gt; pinRefs.set(a.id, el)}                  <span class="c">// PinLayer writes top/left here</span>
+/&gt;
+
+<span class="c">// 2) Mount the layer at the canvas — owns the anchoring runtime</span>
+<span class="k">import</span> { PinLayer } <span class="k">from</span> <span class="s">'@/components/PinLayer'</span>;
+
+&lt;<span class="t">PinLayer</span>
+  mockupRoot={mockupRef.current}                     <span class="c">// the mounted &lt;iframe&gt;.contentDocument root</span>
+  annotations={annotations}                          <span class="c">// each carries .anchor (element or text)</span>
+  activeId={activeId}
+  pendingAnchor={composerAnchor}                     <span class="c">// renders the dashed pulsing pin during marking</span>
+  onPinClick={(id) =&gt; setActive(id)}
+  zoom={zoom}                                        <span class="c">// reflows on zoom change</span>
+/&gt;
+
+<span class="c">// Anchor shapes (Pin doesn't see these — PinLayer does):</span>
+<span class="c">//   element: { path: string, offsetX: number, offsetY: number }      // 0..1 fractional</span>
+<span class="c">//   text:    { path: string, textOffset: number, subX: number, subY: number }</span>
+<span class="c">// PinLayer queries the path against mockupRoot, gets the bbox, applies offsets,</span>
+<span class="c">// writes pin.style.top / left. ResizeObserver + MutationObserver retrigger.</span>
+
+<span class="c">// Pins intentionally do NOT use tooltips — the rotated -45° transform makes</span>
+<span class="c">// tooltip positioning flaky, and the rail card already labels the annotation.</span></pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>No Radix primitive.</strong> Radix ships overlays / dialogs / menus — none of which fit a "30 px tag pinned to a sub-element of a sandboxed mockup". The teardrop shape, the colorIndex palette, the anchoring runtime, and the composer-pending state are all app-specific.</li>
+      <li><strong>Pin is stateless presentation.</strong> All state lives in the parent: <code>status</code>, <code>activeId</code>, <code>pendingAnchor</code>. <code>Pin</code> renders the visual; <code>PinLayer</code> owns the layout.</li>
+      <li><strong>colorIndex shared with rail badges.</strong> The same <code>colorIndex</code> on a pin and on the rail's <code>.dot-badge</code> means the same hue everywhere — that's how a user ties a pin on the canvas to a card on the rail visually.</li>
+      <li><strong>Pin does NOT show a tooltip.</strong> The rotated -45° transform makes tooltip positioning flaky, and the rail card already labels the annotation (status + author + body). Pair <code>aria-label</code> with the pin instead — SR users hear "Annotation #001" on focus.</li>
+      <li><strong>Anchor resolution lives in <code>PinLayer</code>.</strong> Two anchor shapes (element / text). <code>ResizeObserver</code> + <code>MutationObserver</code> + zoom-change watchers retrigger position writes. Pins are <code>position: absolute</code> within the layer.</li>
+      <li><strong>Pending pin is composer-only.</strong> It renders during marking, before the annotation is persisted. Body is "+" rather than a number; border is dashed + pulses 1.6 s ease-in-out.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>idle</code></td>
+          <td>Default. <code>status="idle"</code>.</td>
+          <td>Opacity 0.55, accent border in colorIndex hue, mono numeric label.</td>
+          <td><code>role="button"</code>, <code>aria-label="Annotation #001"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>hover</code></td>
+          <td><code>:hover</code> on the pin.</td>
+          <td>Opacity 1; border-color brightens (78% → 88%).</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>active</code></td>
+          <td><code>status="active"</code> on the Pin component (parent: annotation = activeId).</td>
+          <td>Opacity 1; <code>z-index: 11</code>; 2 px accent glow ring; brighter border.</td>
+          <td><code>aria-current="true"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>pending</code></td>
+          <td><code>status="pending"</code> — composer is marking before persist.</td>
+          <td>2 px <em>dashed</em> border; 1.6 s ease-in-out pulse (anim-pin-pulse); body shows "+" instead of a number.</td>
+          <td><code>aria-label="New annotation pin"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>resolved</code></td>
+          <td>Annotation status is "resolved" (consumer-driven; not on the Pin component itself).</td>
+          <td>Opacity ~0.4; same colorIndex hue; no glow.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>multi-pin</code></td>
+          <td>One annotation with multiple anchors — same <code>colorIndex</code>, same label.</td>
+          <td>Multiple pins on the canvas, all the same hue + number. Activating one activates the annotation (all share the active visual).</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">"resolved" and "multi-pin" are <em>derived</em> — the parent decides opacity / status based on the annotation's resolved flag or anchor count. The <code>Pin</code> component itself only knows the four primitive states (idle / hover / active / pending).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Primitive</th><th>Use for</th><th>Backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>pin</code></td>
+          <td>Anchor visual for one annotation on the mockup canvas. One per anchor (an annotation may have multiple pins).</td>
+          <td>Custom — <code>Pin.tsx</code></td>
+        </tr>
+        <tr>
+          <td><code>pin-layer</code></td>
+          <td>The runtime that owns all pin positions on a mockup. One per <code>MockupViewer</code>.</td>
+          <td>Custom — <code>PinLayer.tsx</code></td>
+        </tr>
+        <tr>
+          <td><code>annotation-rail badge</code></td>
+          <td>Compact circle in the rail's collapsed column. Same colorIndex palette; different shape (round, not teardrop).</td>
+          <td>See <a href="./18-annotations-rail.html" style="color:var(--accent)"><code>18-annotations-rail.html</code></a></td>
+        </tr>
+        <tr>
+          <td><code>annotation-card dot-badge</code></td>
+          <td>18 × 18 mini-badge inside an expanded card. Same palette, smaller.</td>
+          <td>See <a href="./18-annotations-rail.html" style="color:var(--accent)"><code>18-annotations-rail.html</code></a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Rule of thumb: anything painted on the mockup canvas at the anchor point is a <code>pin</code>. Anything painted inside the rail or a card is a <code>badge</code> (round) or <code>dot-badge</code> (small round). All three share the 16-colour palette so the same <code>colorIndex</code> reads visually as the same annotation everywhere.</div>
   </section>
 
   <section class="section">
@@ -248,14 +457,31 @@ body{
       <dt>shadow<dd>0 3 px 8 px rgba(0 0 0 0.25)
       <dt>opacity (idle)<dd>0.55
       <dt>opacity (hover/active)<dd>1
+      <dt>opacity (resolved)<dd>~0.4 (consumer-driven)
       <dt>active ring<dd>0 0 0 2 px oklch(82% c h / 0.45) (no animation)
       <dt>numeric label<dd>12 px / 800 mono, rotated 45° counter, oklch(82% c h)
       <dt>pending border<dd>2 px dashed
       <dt>pending pulse<dd>1.6 s ease-in-out infinite (anim-pin-pulse)
       <dt>palette<dd>16 hues; colorIndex cycled by annotation id
       <dt>z-index<dd>10 idle / 11 active
+      <dt>tooltip<dd>none — the rotated transform makes positioning flaky; pair with aria-label
       <dt>transition<dd>opacity, transform, box-shadow, border-color over --motion-fast
     </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Click to activate.</strong> Click any pin → annotation becomes active. <code>onClick</code> receives the synthetic event so callers can <code>stopPropagation</code> (default behaviour) before the canvas-level click handler dismisses focus.</li>
+      <li><strong>Pin layer owns positioning.</strong> <code>PinLayer</code> resolves each annotation's anchor against the live mockup DOM and writes <code>pin.style.top</code> / <code>left</code>. <code>ResizeObserver</code> + <code>MutationObserver</code> + zoom-change watchers retrigger.</li>
+      <li><strong>Anchor types.</strong> Element anchors store a CSS-path + fractional bbox offset; text anchors store a CSS-path + character offset + sub-position. Both reflow correctly on font / wrap / window-size changes.</li>
+      <li><strong>Multi-pin annotations.</strong> One annotation can have multiple anchors → multiple pins with the same colorIndex + label. Activating one activates the annotation (all pins share the active visual).</li>
+      <li><strong>Pending state during composer.</strong> While the composer is marking, a dashed-outline pulsing pin renders at the cursor. On persist, it transitions to the idle pin with the next sequential number.</li>
+      <li><strong>Resolved state is opacity-only.</strong> The consumer fades the pin to ~0.4 opacity when the annotation is marked resolved. Shape, hue, and label remain so users can still find the annotation by its mark.</li>
+      <li><strong>No hover tooltip.</strong> The rotated -45° base transform makes tooltip positioning flaky. Pair the pin with <code>aria-label</code> for SR; the rail card carries the human-readable body.</li>
+      <li><strong>Z-index hierarchy.</strong> Pins are <code>z-index: 10</code> by default and <code>11</code> while active so the active pin reads above overlapping siblings.</li>
+      <li><strong>Reduced motion.</strong> Under <code>prefers-reduced-motion: reduce</code>, the pin-pulse animation collapses to a 0 ms snap and the hover transition is instant — token override at the top of the file.</li>
+    </ul>
   </section>
 </div>
 
