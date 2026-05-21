@@ -25,6 +25,11 @@ The unit of work is **one annotation → one fix → one reply**:
    - `POST /api/threads/[id]/reply` with the message body
    - The reply is appended to `Thread.messages`; `authorType: 'agent'` and `authorId: <tokenId>`
 
+4.5 **(optional) Agent closes the mockup**
+   - When the agent's policy says "this annotation was the last open thread and the fix shipped clean," `PATCH /api/mockups/[id]` with `{ "status": "resolved" }`
+   - Skip this step otherwise — most fix cycles don't close the mockup (more annotations may arrive)
+   - See [endpoints.md § PATCH /api/mockups/[id]](endpoints.md#patch-apimockupsid) for the full field list and composition notes
+
 5. **User reviews**
    - Reload the mockup viewer; the iframe now serves the new version
    - Open the annotation page; thread shows both messages
