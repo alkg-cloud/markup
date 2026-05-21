@@ -48,17 +48,6 @@ export function HomeProjects({
         <span className={styles.count}>
           {projects.length} {projects.length === 1 ? 'project' : 'projects'}
         </span>
-        {!isEmpty && (
-          <button
-            type="button"
-            className={styles.cta}
-            onClick={onNewProject}
-            aria-label="Create a new project"
-          >
-            <PlusIcon />
-            New project
-          </button>
-        )}
       </header>
 
       {isEmpty ? (

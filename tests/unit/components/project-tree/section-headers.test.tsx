@@ -51,7 +51,11 @@ describe('ProjectTree section headers', () => {
     document.body.innerHTML = '';
   });
 
-  it("renders 'PROJECTS' header above the project list", async () => {
+  // The "PROJECTS" label is rendered by ProjectSidebar (`projectsInlineLabel`),
+  // not the tree itself — the tree is one of two contexts the inline label
+  // sits above. ProjectTree-only contract: it does NOT render its own
+  // "PROJECTS" header.
+  it("does not render a 'PROJECTS' header (owned by the sidebar wrapper)", async () => {
     const { ProjectTree } = await import('@/components/ProjectTree/ProjectTree');
     await act(async () => {
       root.render(
@@ -63,7 +67,7 @@ describe('ProjectTree section headers', () => {
     });
 
     const text = container.textContent ?? '';
-    expect(text).toContain('PROJECTS');
+    expect(text).not.toContain('PROJECTS');
   });
 
   it("renders 'NO PROJECT' header above orphan mockups", async () => {
@@ -81,7 +85,7 @@ describe('ProjectTree section headers', () => {
     expect(text).toContain('NO PROJECT');
   });
 
-  it("renders 'NO PROJECT' after the projects (DOM order)", async () => {
+  it("renders 'NO PROJECT' after the project rows (DOM order)", async () => {
     const { ProjectTree } = await import('@/components/ProjectTree/ProjectTree');
     await act(async () => {
       root.render(
@@ -93,10 +97,10 @@ describe('ProjectTree section headers', () => {
     });
 
     const allText = container.innerHTML;
-    const projectsPos = allText.indexOf('PROJECTS');
+    const projectPos = allText.indexOf('Project Alpha');
     const orphanPos = allText.indexOf('NO PROJECT');
-    expect(projectsPos).toBeGreaterThanOrEqual(0);
-    expect(orphanPos).toBeGreaterThan(projectsPos);
+    expect(projectPos).toBeGreaterThanOrEqual(0);
+    expect(orphanPos).toBeGreaterThan(projectPos);
   });
 
   it("does not render 'NO PROJECT' when orphanMockups is empty", async () => {
