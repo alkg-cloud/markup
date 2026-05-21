@@ -3,10 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { UploadEmptyState } from '@/components/EmptyState/UploadEmptyState';
 import { HomeHero } from '@/components/HomeHero/HomeHero';
 import { HomeOrphans } from '@/components/HomeOrphans/HomeOrphans';
 import { HomeProjects } from '@/components/HomeProjects/HomeProjects';
 import { HomeRecents } from '@/components/HomeRecents/HomeRecents';
+import { useNewMockupDialog } from '@/components/NewMockupDialog';
 import { NewProjectDialog } from '@/components/NewProjectDialog/NewProjectDialog';
 import type { ProjectCardData } from '@/components/ProjectCard/ProjectCard';
 import { Topbar } from '@/components/Topbar/Topbar';
@@ -30,9 +32,27 @@ interface AllProjectsPageProps {
 export function AllProjectsPage({ data, onMutated }: AllProjectsPageProps) {
   const router = useRouter();
   const { confirm, dialog: confirmDialog } = useConfirm();
+  const { openDialog } = useNewMockupDialog();
 
   const [newOpen, setNewOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // When the workspace has zero projects, the all-projects empty state
+  // becomes the upload drop-zone-gigante from DS 26. Dropping or picking
+  // a file pops `NewMockupDialog` with a null project (Unsorted) — the
+  // user picks the project inside the dialog (or creates one first via
+  // the existing "New project" CTA, which still renders at the
+  // top-level header).
+  const handleEmptyStateFile = (file: File) =>
+    openDialog({
+      file,
+      target: {
+        projectId: null,
+        folderId: null,
+        projectLabel: 'Unsorted',
+        folderPath: [],
+      },
+    });
 
   // n is tiny (project count, never paginated) — inline find is fine
   // and skips a useMemo identity dance for every parent rerender.
@@ -115,13 +135,17 @@ export function AllProjectsPage({ data, onMutated }: AllProjectsPageProps) {
           updatedSinceYesterdayCount={data.greeting.updatedSinceYesterdayCount}
         />
         <HomeRecents items={data.recents} />
-        <HomeProjects
-          projects={data.projects}
-          onNewProject={() => setNewOpen(true)}
-          onOpen={(p) => router.push(projectHref(p.slug))}
-          onEdit={(p) => setEditingId(p.id)}
-          onDelete={(p) => handleDelete(p)}
-        />
+        {data.projects.length === 0 ? (
+          <UploadEmptyState context="all-projects" onFile={handleEmptyStateFile} />
+        ) : (
+          <HomeProjects
+            projects={data.projects}
+            onNewProject={() => setNewOpen(true)}
+            onOpen={(p) => router.push(projectHref(p.slug))}
+            onEdit={(p) => setEditingId(p.id)}
+            onDelete={(p) => handleDelete(p)}
+          />
+        )}
         <HomeOrphans items={data.orphans} />
       </main>
     </div>

@@ -3,10 +3,12 @@
 import MockupCard from '@/app/mockups/MockupCard';
 import { AppMain } from '@/components/AppMain/AppMain';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
-import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { UploadEmptyState } from '@/components/EmptyState/UploadEmptyState';
 import { FolderCard } from '@/components/FolderCard/FolderCard';
 import { FolderHeader } from '@/components/FolderHeader/FolderHeader';
+import { useNewMockupDialog } from '@/components/NewMockupDialog';
 import { Topbar } from '@/components/Topbar/Topbar';
+import type { DragTarget } from '@/hooks/useDragTarget';
 import { mockupSlugHref } from '@/lib/project/routes';
 
 interface FolderSummary {
@@ -46,8 +48,10 @@ interface ProjectContentProps {
 
 export function ProjectContent({
   projectName,
+  projectId,
   projectIcon,
   folderName,
+  currentFolderId,
   projectSlug,
   folderPathNames,
   folders,
@@ -58,6 +62,24 @@ export function ProjectContent({
   userRole,
 }: ProjectContentProps) {
   const isEmpty = folders.length === 0 && mockups.length === 0;
+  const { openDialog } = useNewMockupDialog();
+
+  // Build the dialog target from the route + payload IDs. The empty
+  // state's `onFile` hands the file to the upload dialog directly;
+  // the dialog will prefer the project/folder pre-resolved here over
+  // re-resolving from pathname slugs.
+  //
+  // `folderPathNames` already includes the current folder as its last
+  // entry (see `resolveProjectPath` → `pathNames`), so we use it as-is.
+  const uploadTarget: DragTarget = {
+    projectId,
+    folderId: currentFolderId ?? null,
+    projectLabel: projectName,
+    folderPath: folderName ? [...(folderPathNames ?? [])] : [],
+  };
+  const handleEmptyStateFile = (file: File) => openDialog({ file, target: uploadTarget });
+
+  const emptyContext: 'folder' | 'project' = folderName ? 'folder' : 'project';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
@@ -75,7 +97,12 @@ export function ProjectContent({
           count={folders.length + mockups.length}
         />
         {isEmpty ? (
-          <EmptyState variant="project" />
+          <UploadEmptyState
+            context={emptyContext}
+            projectLabel={projectName}
+            folderLabel={folderName ?? undefined}
+            onFile={handleEmptyStateFile}
+          />
         ) : (
           <div
             style={{
