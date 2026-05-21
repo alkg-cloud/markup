@@ -137,68 +137,30 @@ a{color:inherit;text-decoration:none}
 .btn-new-mockup{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;font-size:13px;font-weight:600;background:var(--btn-bg);border:1px solid var(--border);color:var(--accent);border-radius:var(--radius-pill);transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast)}
 .btn-new-mockup:hover{background:var(--btn-bg-hover);border-color:var(--accent-overlay-mid);color:var(--accent-bright)}
 
-/* ─── PROJECTS PILL HEADER (fixed-top, never scrolls) ─── */
-.projects-pill-header{
+/* ─── PROJECTS — inline label inside scroll (singular recipe) ─── */
+/* The "Projects" label scrolls with the tree, same treatment as "No Project".
+   A small "+" icon-button sits inline with the label for the canonical
+   "New project" action (no menu, no popover). The single canonical
+   upload affordance lives in the footer button below. */
+.projects-inline-label{
   display:flex;align-items:center;justify-content:space-between;
-  height:32px;padding:0 12px;margin:6px 8px 4px;
-  font-family:var(--font-mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;
-  color:var(--text-muted);
-  background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-pill);
-  flex-shrink:0;
+  padding:8px 12px 4px;
 }
-.projects-pill-header .header-plus-btn{
-  width:22px;height:22px;border-radius:var(--radius-xs);
-  display:flex;align-items:center;justify-content:center;color:var(--text-dim);
+.projects-inline-label .inline-plus-btn{
+  width:20px;height:20px;border-radius:var(--radius-xs);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-muted);
   transition:background var(--motion-fast),color var(--motion-fast);
 }
-.projects-pill-header .header-plus-btn:hover{background:var(--surface-hover);color:var(--accent)}
+.projects-inline-label .inline-plus-btn:hover{background:var(--surface-hover);color:var(--accent)}
 
-/* Variant: sticky-pill (glass + sticky inside scroll) */
-.projects-pill-header.glass{
-  background:var(--surface-glass-bg);
-  backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
-  border-color:var(--border);
-  position:sticky;top:0;z-index:1;
-}
-
-/* ─── Showcase area ─── */
-.showcase{padding:32px 28px 80px;max-width:1080px;margin:0 auto;color:var(--text)}
+/* ─── Showcase area (single recipe documentation) ─── */
+.showcase{padding:32px 28px 80px;max-width:880px;margin:0 auto;color:var(--text)}
 .showcase h2{font-size:13px;font-weight:700;color:var(--text-bright);letter-spacing:-0.01em;margin-bottom:10px}
-.showcase p{font-size:12px;color:var(--text-dim);margin-bottom:18px;max-width:680px;line-height:1.6}
-.showcase-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:36px}
-@media(max-width:1080px){.showcase-grid{grid-template-columns:1fr}}
-.showcase-tile{position:relative;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);overflow:hidden;height:420px}
-.showcase-tile .tile-label{position:absolute;top:8px;right:10px;font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-xs);padding:2px 6px;z-index:2}
-.mini-sidebar{
-  position:relative;width:240px;height:100%;background:var(--bg-elevated);
-  display:flex;flex-direction:column;border-right:1px solid var(--border-subtle);
-}
-.mini-sidebar .mini-header{height:40px;display:flex;align-items:center;padding:0 12px;gap:6px;flex-shrink:0;border-bottom:1px solid var(--border-subtle)}
-.mini-sidebar .mini-logo{font-weight:700;color:var(--text-bright);font-size:14px}
-.mini-sidebar .mini-logo .dot{color:var(--accent)}
-.mini-sidebar .mini-scroll{flex:1;overflow:auto;padding:6px 0;position:relative}
-.mini-sidebar .mini-tree-row{display:flex;align-items:center;gap:6px;padding:5px 12px;font-size:12px;color:var(--text-dim)}
-.mini-sidebar .mini-tree-row.active{background:var(--accent-overlay-soft);color:var(--accent-bright)}
-.mini-sidebar .mini-tree-row .chev{color:var(--text-muted);font-size:10px;width:10px;text-align:center}
-.mini-sidebar .mini-tree-row.indent-2{padding-left:24px}
-.mini-sidebar .mini-tree-row.indent-3{padding-left:36px}
-.mini-sidebar .mini-footer{padding:8px 10px;border-top:1px solid var(--border-subtle);flex-shrink:0}
-
-.menu-popover{
-  position:absolute;top:38px;right:8px;z-index:5;
-  background:var(--surface-glass-bg);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
-  border:1px solid var(--border);border-radius:var(--radius-sm);
-  padding:4px;min-width:170px;box-shadow:var(--shadow-popover);
-}
-.menu-popover .menu-item{padding:6px 10px;font-size:12px;color:var(--text);border-radius:var(--radius-xs);cursor:pointer}
-.menu-popover .menu-item:hover{background:var(--surface-hover);color:var(--text-bright)}
-
-.cta-pill-footer{
-  width:100%;display:flex;align-items:center;justify-content:center;gap:6px;
-  padding:7px 12px;font-size:12px;font-weight:600;
-  background:var(--btn-bg);color:var(--accent);
-  border:1px solid var(--border);border-radius:var(--radius-pill);
-}
+.showcase p{font-size:12px;color:var(--text-dim);margin-bottom:14px;max-width:680px;line-height:1.6}
+.showcase code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+.showcase dl dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+.showcase dl dd{color:var(--text-dim)}
 </style>
 </head>
 <body>
@@ -213,13 +175,13 @@ a{color:inherit;text-decoration:none}
         <span class="icon-expand"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.00073L1 2.00073V14.0007L2 15.0007H14L15 14.0007V2.00073L14 1.00073H2ZM2 14.0007V2.00073H6V14.0007H2ZM7 14.0007V2.00073H14V14.0007H7Z"/></svg></span>
       </button>
     </div>
-    <div class="projects-pill-header" role="presentation" aria-label="Projects">
-      <span>Projects</span>
-      <button class="header-plus-btn" title="New project · Ctrl+Shift+P" aria-label="New project">
-        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-      </button>
-    </div>
     <div class="sidebar-scroll">
+      <div class="sidebar-section-label projects-inline-label">
+        <span>Projects</span>
+        <button class="inline-plus-btn" title="New project · Ctrl+Shift+P" aria-label="New project">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+        </button>
+      </div>
       <div class="tree-item tree-indent-1" onclick="toggle('alpha')">
         <span class="tree-chevron open" id="chev-alpha"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span>
         <span class="tree-icon">🎨</span>
@@ -281,118 +243,68 @@ a{color:inherit;text-decoration:none}
   </aside>
   <div class="preview-area">
     <div class="showcase">
-      <h2>Projects header — placement variants</h2>
-      <p>The fixed-top Projects pill always sits at 32 px tall, mono uppercase. The "+" affordance opens a "New project" action (or a 2-item menu in the <em>both</em> CTA placement). Three placement strategies determine how the header behaves relative to the scrollable tree below.</p>
-      <div class="showcase-grid">
+      <h2>Header + CTA placement — singular recipe</h2>
+      <p>The Projects label lives <strong>inside the scrollable tree</strong> (no fixed pill above scroll). It scrolls together with project rows — same treatment as <code>"No Project"</code>. A small <code>+</code> icon-button sits inline with the label for the canonical "New project" action. The upload affordance is the <strong>footer pill button</strong> — single canonical CTA, never duplicated in the header. The fixed-top pill variant and the header-menu CTA variant from earlier drafts are not part of the final design.</p>
 
-        <div class="showcase-tile">
-          <div class="tile-label">sticky-top · default</div>
-          <div class="mini-sidebar">
-            <div class="mini-header"><span class="mini-logo">Markup<span class="dot">.</span></span></div>
-            <div class="projects-pill-header">
-              <span>Projects</span>
-              <button class="header-plus-btn"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
-            </div>
-            <div class="mini-scroll">
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>🎨 Project Alpha</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>📐 Project Beta</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>✨ Design Demos</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>🧪 Drafts</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>🪐 Helio</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>🧭 Compass</div>
-            </div>
-            <div class="mini-footer"><button class="cta-pill-footer">+ New Mockup</button></div>
-          </div>
-        </div>
+      <h2 style="margin-top:24px">React API — composes with the sidebar shell</h2>
+      <p>The full sidebar composes the logo + collapse button at the top, the scrollable tree in the middle (with the inline Projects label + project rows + "No Project" rows), and the footer with the canonical "New mockup" button. Tree expansion uses native CSS Grid transitions on <code>grid-template-rows: 0fr → 1fr</code>; no Radix Accordion needed for the tree.</p>
+      <pre style="font-family:var(--font-mono);font-size:11.5px;line-height:1.6;padding:14px 16px;background:oklch(8% 0.02 165);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--text-dim);overflow-x:auto;white-space:pre;margin-bottom:18px">
+<span style="color:var(--text-muted);font-style:italic">// Sidebar.tsx — top-level shell, composes the tree + footer CTA</span>
+<span style="color:var(--text-muted);font-style:italic">// uses native @radix-ui/react-collapsible IF we need controlled tree-expand state</span>
+&lt;<span style="color:oklch(86% 0.12 60)">aside</span> id=<span style="color:oklch(78% 0.14 165)">"sidebar"</span> data-collapsed={collapsed}&gt;
+  &lt;<span style="color:oklch(86% 0.12 60)">Sidebar.Header</span>&gt;
+    &lt;<span style="color:oklch(86% 0.12 60)">Sidebar.Logo</span> /&gt;
+    &lt;<span style="color:oklch(86% 0.12 60)">Sidebar.CollapseButton</span> onClick={toggleCollapsed} /&gt;
+  &lt;/<span style="color:oklch(86% 0.12 60)">Sidebar.Header</span>&gt;
+  &lt;<span style="color:oklch(86% 0.12 60)">Sidebar.Scroll</span>&gt;
+    &lt;<span style="color:oklch(86% 0.12 60)">Sidebar.SectionLabel</span>&gt;                       <span style="color:var(--text-muted);font-style:italic">// inline label, scrolls with tree</span>
+      Projects
+      &lt;<span style="color:oklch(86% 0.12 60)">Sidebar.InlinePlusButton</span> onClick={onNewProject}
+        title=<span style="color:oklch(78% 0.14 165)">"New project · Ctrl+Shift+P"</span> /&gt;
+    &lt;/<span style="color:oklch(86% 0.12 60)">Sidebar.SectionLabel</span>&gt;
+    &lt;<span style="color:oklch(86% 0.12 60)">Sidebar.ProjectTree</span> projects={projects} /&gt;
+    &lt;<span style="color:oklch(86% 0.12 60)">Sidebar.SectionLabel</span>&gt;No Project&lt;/<span style="color:oklch(86% 0.12 60)">Sidebar.SectionLabel</span>&gt;
+    &lt;<span style="color:oklch(86% 0.12 60)">Sidebar.UnsortedMockups</span> mockups={unsorted} /&gt;
+  &lt;/<span style="color:oklch(86% 0.12 60)">Sidebar.Scroll</span>&gt;
+  &lt;<span style="color:oklch(86% 0.12 60)">Sidebar.Footer</span>&gt;
+    &lt;<span style="color:oklch(86% 0.12 60)">Sidebar.NewMockupButton</span> onClick={onUpload}      <span style="color:var(--text-muted);font-style:italic">// opens file picker → new-mockup-dialog</span>
+      title=<span style="color:oklch(78% 0.14 165)">"Upload mockup · Ctrl+U"</span>&gt;
+      New mockup
+    &lt;/<span style="color:oklch(86% 0.12 60)">Sidebar.NewMockupButton</span>&gt;
+  &lt;/<span style="color:oklch(86% 0.12 60)">Sidebar.Footer</span>&gt;
+&lt;/<span style="color:oklch(86% 0.12 60)">aside</span>&gt;
+</pre>
+      <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+        <li><strong>No Radix primitive backs the whole sidebar</strong> — it's an application shell. Individual pieces compose Radix: tree-expand can use <code>@radix-ui/react-collapsible</code> if needed; tooltips on the collapse button + + button use <code>@radix-ui/react-tooltip</code>; keyboard shortcut wiring is custom.</li>
+        <li><strong>Inline Projects label</strong> is just a styled <code>&lt;div&gt;</code> inside the scroll container — no fixed-top sticky behaviour. Pros: simpler markup, matches "No Project" treatment, no flickering on scroll. Cons: when many projects scroll past, "Projects" label disappears off the top. Acceptable since the topbar breadcrumb already orients the user.</li>
+        <li><strong>+ icon-button</strong> is a custom slot, not a Radix DropdownMenu — there's no menu, just a single canonical "New project" action. Match the icon button visual from elsewhere in the project (kebab, plus, etc.) via a shared <code>.btn-icon</code> CSS class.</li>
+        <li><strong>Footer button</strong> opens the system file picker via a hidden native <code>&lt;input type="file"&gt;</code> — same pattern as <a href="./26-empty-state.html" style="color:var(--accent)"><code>empty-state</code></a>. On file selection, opens <a href="./25-new-mockup-dialog.html" style="color:var(--accent)"><code>new-mockup-dialog</code></a> pre-populated.</li>
+        <li><strong>Tree-expand</strong> uses CSS Grid <code>grid-template-rows: 0fr → 1fr</code> with <code>overflow:hidden</code> on the inner — no JS height measurement, no Radix Accordion overhead.</li>
+      </ul>
 
-        <div class="showcase-tile">
-          <div class="tile-label">sticky-pill · glass</div>
-          <div class="mini-sidebar">
-            <div class="mini-header"><span class="mini-logo">Markup<span class="dot">.</span></span></div>
-            <div class="mini-scroll">
-              <div class="projects-pill-header glass">
-                <span>Projects</span>
-                <button class="header-plus-btn"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
-              </div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>🎨 Project Alpha</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>📐 Project Beta</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>✨ Design Demos</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>🧪 Drafts</div>
-            </div>
-            <div class="mini-footer"><button class="cta-pill-footer">+ New Mockup</button></div>
-          </div>
-        </div>
+      <h2 style="margin-top:24px">Anatomy</h2>
+      <dl style="display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px;margin-bottom:18px">
+        <dt style="font-family:var(--font-mono);color:var(--accent);font-size:11.5px">sidebar width<dd style="color:var(--text-dim)">280px (expanded) | 84×40 pill (collapsed)
+        <dt style="font-family:var(--font-mono);color:var(--accent);font-size:11.5px">header height<dd style="color:var(--text-dim)">--topbar-height (52px); collapses to pill height (40px)
+        <dt style="font-family:var(--font-mono);color:var(--accent);font-size:11.5px">Projects label<dd style="color:var(--text-dim)">10px / 600 / 0.06em uppercase, --text-muted, mono — same as other section labels
+        <dt style="font-family:var(--font-mono);color:var(--accent);font-size:11.5px">label padding<dd style="color:var(--text-dim)">8px 12px 4px (top breathing space; tight bottom against rows)
+        <dt style="font-family:var(--font-mono);color:var(--accent);font-size:11.5px">inline-plus btn<dd style="color:var(--text-dim)">20×20, --radius-xs, --text-muted icon; hover → --surface-hover + --accent
+        <dt style="font-family:var(--font-mono);color:var(--accent);font-size:11.5px">footer btn<dd style="color:var(--text-dim)">100% width, 7×12px pad, 13px / 600, --btn-bg, 1px --border, --accent text, --radius-pill
+        <dt style="font-family:var(--font-mono);color:var(--accent);font-size:11.5px">footer btn :hover<dd style="color:var(--text-dim)">--btn-bg-hover bg, --accent-overlay-mid border, --accent-bright text
+        <dt style="font-family:var(--font-mono);color:var(--accent);font-size:11.5px">scroll transition<dd style="color:var(--text-dim)">opacity fade on collapse via --morph-dur (360ms) / --morph-ease
+      </dl>
 
-        <div class="showcase-tile">
-          <div class="tile-label">sempre-visivel · outside scroll</div>
-          <div class="mini-sidebar">
-            <div class="mini-header"><span class="mini-logo">Markup<span class="dot">.</span></span></div>
-            <div class="projects-pill-header">
-              <span>Projects</span>
-              <button class="header-plus-btn"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button>
-            </div>
-            <div class="mini-scroll">
-              <div class="mini-tree-row indent-2"><span class="chev">▾</span>🎨 Project Alpha</div>
-              <div class="mini-tree-row indent-3">Landing</div>
-              <div class="mini-tree-row indent-3 active">Hero Banner</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>📐 Project Beta</div>
-            </div>
-            <div class="mini-footer"><button class="cta-pill-footer">+ New Mockup</button></div>
-          </div>
-        </div>
-
-      </div>
-
-      <h2>New-Mockup CTA — placement variants</h2>
-      <p>Three options for where the upload affordance lives. The footer pill (default) keeps the bottom of the sidebar reserved for the canonical CTA; the header-plus variant uses the Projects pill "+" with a small menu; the both variant ships both paths.</p>
-      <div class="showcase-grid">
-
-        <div class="showcase-tile">
-          <div class="tile-label">footer-button · default</div>
-          <div class="mini-sidebar">
-            <div class="mini-header"><span class="mini-logo">Markup<span class="dot">.</span></span></div>
-            <div class="projects-pill-header"><span>Projects</span><button class="header-plus-btn"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button></div>
-            <div class="mini-scroll">
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>🎨 Project Alpha</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>📐 Project Beta</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>✨ Design Demos</div>
-            </div>
-            <div class="mini-footer"><button class="cta-pill-footer">+ New Mockup</button></div>
-          </div>
-        </div>
-
-        <div class="showcase-tile">
-          <div class="tile-label">header-plus · menu open</div>
-          <div class="mini-sidebar">
-            <div class="mini-header"><span class="mini-logo">Markup<span class="dot">.</span></span></div>
-            <div class="projects-pill-header"><span>Projects</span><button class="header-plus-btn" style="color:var(--accent);background:var(--accent-overlay-soft)"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button></div>
-            <div class="menu-popover">
-              <div class="menu-item">+ New project</div>
-              <div class="menu-item" style="color:var(--accent)">+ New mockup</div>
-            </div>
-            <div class="mini-scroll">
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>🎨 Project Alpha</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>📐 Project Beta</div>
-            </div>
-            <div class="mini-footer" style="opacity:0.5;font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-align:center">no footer CTA</div>
-          </div>
-        </div>
-
-        <div class="showcase-tile">
-          <div class="tile-label">both · footer + header-plus</div>
-          <div class="mini-sidebar">
-            <div class="mini-header"><span class="mini-logo">Markup<span class="dot">.</span></span></div>
-            <div class="projects-pill-header"><span>Projects</span><button class="header-plus-btn"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></button></div>
-            <div class="mini-scroll">
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>🎨 Project Alpha</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>📐 Project Beta</div>
-              <div class="mini-tree-row indent-2"><span class="chev">▸</span>✨ Design Demos</div>
-            </div>
-            <div class="mini-footer"><button class="cta-pill-footer">+ New Mockup</button></div>
-          </div>
-        </div>
-
-      </div>
+      <h2 style="margin-top:24px">Behavior</h2>
+      <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+        <li>Click the collapse button: sidebar morphs to pill (84×40). Scroll + footer fade out before morph completes.</li>
+        <li>Click the pill: sidebar morphs back to 280px. Scroll + footer fade in after morph completes.</li>
+        <li>Click a project row: toggles its children (chevron rotates 90°, children expand via CSS Grid transition).</li>
+        <li>Click a mockup row: navigates to <code>/projects/&lt;slug&gt;/.../&lt;mockup&gt;</code>; row gains <code>.active</code> with --accent left bar.</li>
+        <li>Click + icon-button next to "Projects": opens a small "New project" dialog (single action, no menu).</li>
+        <li>Click the footer "New mockup" button: opens the system file picker. On selection, mounts <a href="./25-new-mockup-dialog.html" style="color:var(--accent)"><code>new-mockup-dialog</code></a> pre-populated.</li>
+        <li>Ctrl/Cmd+U opens the file picker globally. Ctrl/Cmd+Shift+P opens the New project dialog.</li>
+        <li>"Projects" label disappears off the top when the user scrolls deep into the tree — acceptable since the topbar breadcrumb already tells them where they are.</li>
+      </ul>
     </div>
   </div>
 </div>
