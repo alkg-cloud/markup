@@ -459,4 +459,52 @@ describe('NewMockupDialog', () => {
     expect(body).toContain('Docs');
     expect(body).not.toContain('Pricing'); // a p1-only folder
   });
+
+  it('slug resolution: target with projectSlug + null projectId picks the matching project', () => {
+    const target: NewMockupDialogTarget = {
+      projectId: null,
+      folderId: null,
+      projectSlug: 'lumen-coffee',
+      folderPath: ['Hero'],
+    };
+    renderHarness(
+      <Harness initialOpen={true} file={htmlFile('pricing-v3.html')} target={target} />,
+    );
+
+    // The dialog resolves slug → id from the projects list ⇒ p1.
+    const select = document.querySelector('select') as HTMLSelectElement;
+    expect(select.value).toBe('p1');
+    // And asks useFolders for p1's tree.
+    expect(lastUseFoldersCallProjectId).toBe('p1');
+
+    // Folder is resolved from the URL folder names against the loaded
+    // tree → 'Hero' folder pre-selected.
+    const folderTrigger = document.querySelector(
+      '[data-folder-picker-trigger]',
+    ) as HTMLButtonElement;
+    expect(folderTrigger.textContent).toContain('Hero');
+
+    // Submit ⇒ the resolved ids ride along on the upload payload.
+    act(() => findSubmitButton().click());
+    expect(startSpy.mock.calls[0][0]).toMatchObject({
+      mode: 'add',
+      projectId: 'p1',
+      folderId: 'hero',
+    });
+  });
+
+  it('slug resolution: target.projectSlug that has no match keeps selectedProjectId null', () => {
+    const target: NewMockupDialogTarget = {
+      projectId: null,
+      folderId: null,
+      projectSlug: 'does-not-exist',
+      folderPath: [],
+    };
+    renderHarness(
+      <Harness initialOpen={true} file={htmlFile('pricing-v3.html')} target={target} />,
+    );
+    const select = document.querySelector('select') as HTMLSelectElement;
+    // Unsorted option is the empty-string value.
+    expect(select.value).toBe('');
+  });
 });
