@@ -27,21 +27,23 @@ export async function assertCascadeOwnershipForProject(
   viewerId: string,
   projectId: string,
 ): Promise<void> {
-  const foreignMockupCount = await prisma.mockup.count({
-    where: {
-      projectId,
-      OR: [{ createdById: { not: viewerId } }, { createdById: null }],
-    },
-  });
-  if (foreignMockupCount > 0) http(409, 'cascade_blocked_by_other_owner');
-
-  const foreignFolderCount = await prisma.folder.count({
-    where: {
-      projectId,
-      OR: [{ createdById: { not: viewerId } }, { createdById: null }],
-    },
-  });
-  if (foreignFolderCount > 0) http(409, 'cascade_blocked_by_other_owner');
+  const [foreignMockupCount, foreignFolderCount] = await Promise.all([
+    prisma.mockup.count({
+      where: {
+        projectId,
+        OR: [{ createdById: { not: viewerId } }, { createdById: null }],
+      },
+    }),
+    prisma.folder.count({
+      where: {
+        projectId,
+        OR: [{ createdById: { not: viewerId } }, { createdById: null }],
+      },
+    }),
+  ]);
+  if (foreignMockupCount > 0 || foreignFolderCount > 0) {
+    http(409, 'cascade_blocked_by_other_owner');
+  }
 }
 
 /**
@@ -74,21 +76,26 @@ export async function assertCascadeOwnershipForFolder(
     }
   }
 
-  // Check mockups inside any folder in the subtree.
-  const foreignMockupCount = await prisma.mockup.count({
-    where: {
-      folderId: { in: [...subtreeIds] },
-      OR: [{ createdById: { not: viewerId } }, { createdById: null }],
-    },
-  });
-  if (foreignMockupCount > 0) http(409, 'cascade_blocked_by_other_owner');
+  const subtreeIdList = Array.from(subtreeIds);
+  const subFolderIds = subtreeIdList.filter((id) => id !== folderId);
 
-  // Check sub-folders that belong to someone else.
-  const foreignFolderCount = await prisma.folder.count({
-    where: {
-      id: { in: [...subtreeIds].filter((id) => id !== folderId) },
-      OR: [{ createdById: { not: viewerId } }, { createdById: null }],
-    },
-  });
-  if (foreignFolderCount > 0) http(409, 'cascade_blocked_by_other_owner');
+  const [foreignMockupCount, foreignFolderCount] = await Promise.all([
+    // Mockups inside any folder in the subtree.
+    prisma.mockup.count({
+      where: {
+        folderId: { in: subtreeIdList },
+        OR: [{ createdById: { not: viewerId } }, { createdById: null }],
+      },
+    }),
+    // Sub-folders that belong to someone else (exclude the root).
+    prisma.folder.count({
+      where: {
+        id: { in: subFolderIds },
+        OR: [{ createdById: { not: viewerId } }, { createdById: null }],
+      },
+    }),
+  ]);
+  if (foreignMockupCount > 0 || foreignFolderCount > 0) {
+    http(409, 'cascade_blocked_by_other_owner');
+  }
 }
