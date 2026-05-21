@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { validateUrlSafeName } from '@/lib/validation/url-safe-name';
+import { NAME_MAX_LENGTH, validateUrlSafeName } from '@/lib/validation/url-safe-name';
 import styles from './InlineFolderCreate.module.css';
 
 interface InlineFolderCreateProps {
@@ -28,13 +28,10 @@ export function InlineFolderCreate({ indent, onConfirm, onCancel }: InlineFolder
       setError(validation.message);
       return;
     }
-    if (trimmed.length > 255) {
-      setValue(trimmed.slice(0, 255));
-    }
     setSubmitting(true);
     setError(null);
     try {
-      await onConfirm(trimmed.slice(0, 255));
+      await onConfirm(trimmed);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Erro ao criar pasta';
       if (msg.includes('name_exists')) {
@@ -55,6 +52,7 @@ export function InlineFolderCreate({ indent, onConfirm, onCancel }: InlineFolder
         ref={inputRef}
         type="text"
         placeholder="Nome da pasta"
+        maxLength={NAME_MAX_LENGTH}
         value={value}
         onChange={(e) => {
           const next = e.target.value;

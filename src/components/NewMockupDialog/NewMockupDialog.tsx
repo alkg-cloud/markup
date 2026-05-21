@@ -47,7 +47,9 @@ import { AlertBanner } from '@/components/AlertBanner';
 import { RadixDialog } from '@/components/Dialog/RadixDialog';
 import { FolderPicker } from '@/components/FolderPicker';
 import { InputField } from '@/components/InputField';
+import { NameLengthCounter } from '@/components/InputField/NameLengthCounter';
 import { mockupSlugHref } from '@/lib/project/routes';
+import { NAME_MAX_LENGTH } from '@/lib/validation/url-safe-name';
 import { FileChip } from './FileChip';
 import styles from './NewMockupDialog.module.css';
 import { PreviewBox } from './PreviewBox';
@@ -425,6 +427,7 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
               type="text"
               required
               pattern={NAME_PATTERN}
+              maxLength={NAME_MAX_LENGTH}
               value={name}
               onChange={(event) => {
                 setName(event.target.value);
@@ -438,6 +441,7 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
           </InputField.Message>
           <InputField.Message match="valueMissing">A name is required.</InputField.Message>
           {fieldError ? <InputField.Message forceMatch>{fieldError}</InputField.Message> : null}
+          <NameLengthCounter len={name.length} />
         </InputField.Root>
 
         <div className={styles.pickerRow}>

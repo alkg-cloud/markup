@@ -12,7 +12,7 @@ import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
 // See docs/api/authz.md
 
 const patchSchema = z.object({
-  name: urlSafeNameSchema(200).optional(),
+  name: urlSafeNameSchema().optional(),
   icon: z.string().max(100).nullable().optional(),
 });
 
@@ -35,7 +35,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   }
   const { id } = await ctx.params;
   const parsed = patchSchema.safeParse(await req.json().catch(() => ({})));
-  if (!parsed.success) return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+  if (!parsed.success) {
+    const code = parsed.error.issues[0]?.message ?? 'invalid_body';
+    return NextResponse.json({ error: code }, { status: 400 });
+  }
   const updated = await updateProject(id, parsed.data);
   if (!updated) return NextResponse.json({ error: 'not_found' }, { status: 404 });
   return NextResponse.json(updated);

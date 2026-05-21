@@ -1,7 +1,7 @@
 'use client';
 
 import { GoGrabber } from 'react-icons/go';
-import { validateUrlSafeName } from '@/lib/validation/url-safe-name';
+import { NAME_MAX_LENGTH, validateUrlSafeName } from '@/lib/validation/url-safe-name';
 import { InlineFolderCreate } from './InlineFolderCreate';
 import styles from './ProjectTree.module.css';
 import { ChevronIcon, FolderIcon, MockupIcon, ProjectIcon, ProjectIconResolved } from './TreeIcons';
@@ -208,6 +208,7 @@ export function TreeNode({
             <input
               className={cx(styles.renameInput, renameError && styles.renameInputError)}
               value={renameValue}
+              maxLength={NAME_MAX_LENGTH}
               ref={(el) => el?.focus()}
               onClick={(e) => e.stopPropagation()}
               onChange={(e) => {
