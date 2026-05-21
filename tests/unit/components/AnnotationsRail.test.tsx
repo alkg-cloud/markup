@@ -46,7 +46,8 @@ describe('AnnotationsRail', () => {
 
   it('renders the add-annotation button with New annotation label', () => {
     const html = renderToStaticMarkup(<AnnotationsRail badges={[]} />);
-    expect(html).toContain('aria-label="New annotation"');
+    // aria-label includes the OS-aware shortcut hint (e.g. "New annotation (⌘⇧N)" on mac)
+    expect(html).toContain('aria-label="New annotation');
     expect(html).toContain('New annotation');
   });
 

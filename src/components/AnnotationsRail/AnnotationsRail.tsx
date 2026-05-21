@@ -2,7 +2,8 @@
 import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { GoGrabber } from 'react-icons/go';
 import { VscAdd, VscPinned } from 'react-icons/vsc';
-import { modSymbol } from '@/lib/shortcuts/platform';
+import { Kbd } from '@/components/Kbd/Kbd';
+import { formatShortcut } from '@/lib/shortcuts/platform';
 import styles from './AnnotationsRail.module.css';
 
 export interface AnnotationsRailBadge {
@@ -194,10 +195,9 @@ export function AnnotationsRail({
     : undefined;
 
   const visibleCount = count ?? badges.length;
-  // CSR-only — `modSymbol()` reads `navigator` which is always defined
-  // during render, so we can compute the OS-aware label inline without
-  // a state-fed effect.
-  const newAnnotationShortcut = `${modSymbol()}⇧N`;
+  // CSR-only — formatShortcut reads `navigator` which is always defined
+  // during render (app is fully client-side per CLAUDE.md CSR rule).
+  const newAnnotationAria = `New annotation (${formatShortcut(['shift', 'n'])})`;
 
   return (
     <aside
@@ -265,13 +265,18 @@ export function AnnotationsRail({
 
       {/* biome-ignore lint/a11y/noStaticElementInteractions: see comment above. */}
       <div className={styles.foot} onMouseEnter={enter}>
-        <button type="button" className={styles.add} aria-label="New annotation" onClick={onCreate}>
+        <button
+          type="button"
+          className={styles.add}
+          aria-label={newAnnotationAria}
+          onClick={onCreate}
+        >
           <span className={styles.addIcon} aria-hidden="true">
             <VscAdd aria-hidden="true" />
           </span>
           <span className={styles.addLabel}>
             <span>New annotation</span>
-            <span className={styles.shortcut}>{newAnnotationShortcut}</span>
+            <Kbd keys={['mod', 'shift', 'n']} />
           </span>
         </button>
       </div>

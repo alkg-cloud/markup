@@ -40,7 +40,15 @@ export function modSymbol(): string {
 export const isMod = (e: KeyboardEvent | React.KeyboardEvent): boolean =>
   isMac() ? e.metaKey && !e.ctrlKey : e.ctrlKey && !e.metaKey;
 
-/** Format a shortcut for tooltips/menus. e.g. ['shift','n'] => "⌘⇧N". */
+/**
+ * Format a shortcut for tooltips / aria-labels. Implicitly prepends the
+ * platform modifier (⌘ / Ctrl) before the provided keys.
+ *
+ * e.g. `formatShortcut(['shift','n'])` → "⌘⇧N" on Mac, "Ctrl+Shift+N" on
+ * Windows/Linux. Used where a plain text representation is needed (tooltip
+ * text, aria-label strings). For rendered keycap chips use `<Kbd keys={…}>`
+ * from `@/components/Kbd/Kbd` instead.
+ */
 export function formatShortcut(keys: ReadonlyArray<string>): string {
   const parts: string[] = [modSymbol()];
   for (const k of keys) {

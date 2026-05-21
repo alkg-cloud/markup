@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>29 — Kbd</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);
+  --bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);
+  --accent-soft:oklch(28% 0.08 165);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
+  --weight-medium:500;--weight-semibold:600;--weight-bold:700;
+}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms;--motion-slow:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:880px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
+.lede a{color:var(--accent);text-decoration:none}
+.lede a:hover{text-decoration:underline}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  padding:32px;
+}
+.stage+.stage{margin-top:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+
+/* Row-states grid */
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:24px;align-items:start}
+.state{display:flex;flex-direction:column;gap:8px}
+.state-label{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted)}
+
+/* Demo helpers */
+.hint-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted)}
+.hint-row .sep{font-family:var(--font-mono);font-size:10px;color:var(--border-strong)}
+
+/* Pre-formatted API code */
+pre.api{
+  background:var(--bg-card);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:16px 20px;
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--text);
+  line-height:1.65;
+  overflow-x:auto;
+  margin-top:12px;
+  tab-size:2;
+}
+.k{color:oklch(72% 0.18 285)}   /* keyword — purple */
+.s{color:oklch(74.4% 0.193 165)} /* string — teal */
+.c{color:var(--text-muted);font-style:italic} /* comment */
+.t{color:oklch(75% 0.16 60)}     /* type / component — orange */
+
+/* Token anatomy */
+dl.tokens{display:grid;grid-template-columns:max-content 1fr;gap:4px 20px}
+dl.tokens dt{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);padding-top:2px}
+dl.tokens dd{font-size:12px;color:var(--text-dim)}
+
+/* State matrix */
+table.matrix{width:100%;border-collapse:collapse;font-size:12px}
+table.matrix th{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);padding:6px 12px;border-bottom:1px solid var(--border-subtle);text-align:left}
+table.matrix td{padding:8px 12px;border-bottom:1px solid var(--border-subtle);color:var(--text-dim);vertical-align:top}
+table.matrix tr:last-child td{border-bottom:none}
+table.matrix code{font-family:var(--font-mono);font-size:10.5px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:3px;padding:1px 5px;color:var(--text)}
+
+/* ─── Kbd component — canonical recipe ─── */
+.kbd-group{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+}
+/* CUSTOM: disabled state — no consumer yet; hook is here for future use.
+   Flagged at three places per AUTHORING: matrix row + API bullet + here. */
+.kbd-group[data-state="disabled"]{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+.kbd-key{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:20px;
+  padding:2px 6px;
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-bottom:1px solid var(--border-strong); /* one-pixel depth */
+  border-radius:var(--radius-xs);
+  font-family:var(--font-mono);
+  font-size:10.5px;
+  font-weight:600;
+  line-height:1;
+  color:var(--text-dim);
+  text-align:center;
+  white-space:nowrap;
+}
+/* "+" separator between caps — renders only on non-mac */
+.kbd-plus{
+  font-family:var(--font-mono);
+  font-size:10px;
+  color:var(--text-muted);
+  margin:0 1px;
+  line-height:1;
+  user-select:none;
+}
+
+/* Dark panel context for in-context preview */
+.panel-preview{
+  background:var(--bg-card);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:12px 16px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:12px;
+  color:var(--text-muted);
+  font-family:var(--font-mono);
+}
+.panel-preview .sep{color:var(--border-strong);margin:0 2px}
+</style>
+</head>
+<body>
+
+<div class="page" data-ds-component="kbd">
+
+  <h1 class="h1">Kbd</h1>
+  <p class="lede">
+    OS-aware keyboard-shortcut indicator. Renders each key as its own
+    isolated keycap chip (<code>&lt;kbd&gt;</code> for semantics). macOS uses
+    ⌘⇧⌥⌃ symbols with naked adjacency (no <code>+</code> between caps);
+    Windows/Linux uses Ctrl/Shift/Alt text labels with an explicit
+    <code>+</code> separator. Used in the topbar search pill
+    (<a href="03-finder-pill.html">03 — Finder pill</a>), the annotations-rail
+    add button (<a href="18-annotations-rail.html">18 — Annotations rail</a>),
+    and the command palette footer
+    (<a href="04-finder-overlay.html">04 — Finder overlay</a>).
+    No Radix primitive backs this component — custom at
+    <code>src/components/Kbd/</code>.
+  </p>
+
+  <!-- A — All states grid -->
+  <section class="section">
+    <div class="section-title">All states</div>
+    <div class="stage">
+      <div class="row-states">
+        <div class="state">
+          <div class="state-label">Default — single key</div>
+          <span class="kbd-group" role="group" aria-label="shortcut: K">
+            <kbd class="kbd-key" aria-hidden="true">K</kbd>
+          </span>
+        </div>
+        <div class="state">
+          <div class="state-label">Default — combo (mac-style)</div>
+          <span class="kbd-group" role="group" aria-label="shortcut: Command K">
+            <kbd class="kbd-key" aria-hidden="true">⌘</kbd>
+            <kbd class="kbd-key" aria-hidden="true">K</kbd>
+          </span>
+        </div>
+        <div class="state">
+          <div class="state-label">Default — combo (win/linux)</div>
+          <span class="kbd-group" role="group" aria-label="shortcut: Control K">
+            <kbd class="kbd-key" aria-hidden="true">Ctrl</kbd>
+            <span class="kbd-plus" aria-hidden="true">+</span>
+            <kbd class="kbd-key" aria-hidden="true">K</kbd>
+          </span>
+        </div>
+        <div class="state">
+          <div class="state-label">Three-key combo (win/linux)</div>
+          <span class="kbd-group" role="group" aria-label="shortcut: Control Shift N">
+            <kbd class="kbd-key" aria-hidden="true">Ctrl</kbd>
+            <span class="kbd-plus" aria-hidden="true">+</span>
+            <kbd class="kbd-key" aria-hidden="true">Shift</kbd>
+            <span class="kbd-plus" aria-hidden="true">+</span>
+            <kbd class="kbd-key" aria-hidden="true">N</kbd>
+          </span>
+        </div>
+        <div class="state">
+          <!-- CUSTOM disabled state -->
+          <div class="state-label">Disabled (custom)</div>
+          <span class="kbd-group" role="group" aria-label="shortcut: Command K" data-state="disabled">
+            <kbd class="kbd-key" aria-hidden="true">⌘</kbd>
+            <kbd class="kbd-key" aria-hidden="true">K</kbd>
+          </span>
+        </div>
+        <div class="state">
+          <div class="state-label">Escape hatch — multi-glyph</div>
+          <span class="kbd-group" role="group" aria-label="up/down arrows">
+            <kbd class="kbd-key" aria-hidden="true">↑↓</kbd>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="caption">All states. Mac combos use naked adjacency (gap:3px, no + glyph). Win/Linux combos insert a .kbd-plus "+" between each cap. Disabled is custom (no Radix primitive). Multi-glyph via escape hatch.</div>
+  </section>
+
+  <!-- B — In-context preview -->
+  <section class="section">
+    <div class="section-title">In context — command palette footer</div>
+    <div class="stage">
+      <div class="panel-preview">
+        <span class="kbd-group" role="group" aria-label="up/down arrows">
+          <kbd class="kbd-key" aria-hidden="true">↑↓</kbd>
+        </span>
+        navigate
+        <span class="sep">·</span>
+        <span class="kbd-group" role="group" aria-label="shortcut: Enter">
+          <kbd class="kbd-key" aria-hidden="true">↵</kbd>
+        </span>
+        open
+        <span class="sep">·</span>
+        <span class="kbd-group" role="group" aria-label="shortcut: Escape">
+          <kbd class="kbd-key" aria-hidden="true">Esc</kbd>
+        </span>
+        close
+      </div>
+    </div>
+    <div class="caption">Command palette footer: three Kbd groups separated by action labels. ↑↓ is an escape-hatch multi-glyph chip; ↵ and Esc use the primary API.</div>
+  </section>
+
+  <!-- C — React API section -->
+  <section class="section">
+    <div class="section-title">React API</div>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px">
+      No Radix primitive backs this component — Radix Primitives ships no kbd or
+      shortcut primitive. Custom compound at
+      <code style="font-family:var(--font-mono);font-size:11px">src/components/Kbd/Kbd.tsx</code>.
+    </p>
+<pre class="api"><span class="c">// Primary API — OS-aware combo</span>
+<span class="k">import</span> { <span class="t">Kbd</span> } <span class="k">from</span> <span class="s">'@/components/Kbd/Kbd'</span>;
+
+<span class="c">// mac:  [⌘] [⇧] [N]  — naked adjacency, no + between chips</span>
+<span class="c">// win:  [Ctrl] + [Shift] + [N]</span>
+&lt;<span class="t">Kbd</span> keys={[<span class="s">'mod'</span>, <span class="s">'shift'</span>, <span class="s">'n'</span>]} /&gt;
+
+<span class="c">// Single key</span>
+&lt;<span class="t">Kbd</span> keys={[<span class="s">'esc'</span>]} /&gt;
+
+<span class="c">// Disabled (CUSTOM — no Radix equivalent)</span>
+&lt;<span class="t">Kbd</span> keys={[<span class="s">'mod'</span>, <span class="s">'k'</span>]} disabled /&gt;
+
+<span class="c">// Escape hatch — multi-glyph single chip (e.g. ↑↓ navigates up/down)</span>
+&lt;<span class="t">Kbd.Group</span> aria-label=<span class="s">"up/down arrows"</span>&gt;
+  &lt;<span class="t">Kbd.Key</span>&gt;↑↓&lt;/<span class="t">Kbd.Key</span>&gt;
+&lt;/<span class="t">Kbd.Group</span>&gt;
+
+<span class="c">// className pass-through for parent spacing</span>
+&lt;<span class="t">Kbd</span> keys={[<span class="s">'mod'</span>, <span class="s">'k'</span>]} className=<span class="s">"my-offset"</span> /&gt;
+</pre>
+    <ul style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-top:12px;padding-left:20px">
+      <li><code style="font-family:var(--font-mono);font-size:11px">keys</code> — ordered array of <code style="font-family:var(--font-mono);font-size:11px">KbdKey</code> tokens from <code style="font-family:var(--font-mono);font-size:11px">keys.ts</code>. Named modifiers: <code style="font-family:var(--font-mono);font-size:11px">mod</code>, <code style="font-family:var(--font-mono);font-size:11px">shift</code>, <code style="font-family:var(--font-mono);font-size:11px">alt</code>, <code style="font-family:var(--font-mono);font-size:11px">ctrl</code>. Named keys: <code style="font-family:var(--font-mono);font-size:11px">enter</code>, <code style="font-family:var(--font-mono);font-size:11px">esc</code>, <code style="font-family:var(--font-mono);font-size:11px">tab</code>, <code style="font-family:var(--font-mono);font-size:11px">backspace</code>, <code style="font-family:var(--font-mono);font-size:11px">up</code>, <code style="font-family:var(--font-mono);font-size:11px">down</code>, <code style="font-family:var(--font-mono);font-size:11px">left</code>, <code style="font-family:var(--font-mono);font-size:11px">right</code>. Any other string renders uppercase verbatim.</li>
+      <li><code style="font-family:var(--font-mono);font-size:11px">disabled</code> — CUSTOM (no Radix primitive). Sets <code style="font-family:var(--font-mono);font-size:11px">data-state="disabled"</code> on the group wrapper → opacity 0.5 + cursor not-allowed. No consumer yet; CSS hook present for future use. Flagged at three places: state matrix row + this bullet + CSS comment.</li>
+      <li>Accessibility: each <code style="font-family:var(--font-mono);font-size:11px">&lt;kbd&gt;</code> is <code style="font-family:var(--font-mono);font-size:11px">aria-hidden="true"</code>. The outer <code style="font-family:var(--font-mono);font-size:11px">&lt;span role="group"&gt;</code> carries an <code style="font-family:var(--font-mono);font-size:11px">aria-label</code> derived from <code style="font-family:var(--font-mono);font-size:11px">announceCombo()</code> (e.g. "shortcut: Command Shift N"). Screen readers announce the whole combo as one phrase.</li>
+      <li><code style="font-family:var(--font-mono);font-size:11px">Kbd.Group</code> / <code style="font-family:var(--font-mono);font-size:11px">Kbd.Key</code> / <code style="font-family:var(--font-mono);font-size:11px">Kbd.Plus</code> — escape-hatch sub-components for non-standard chips. Callers provide their own <code style="font-family:var(--font-mono);font-size:11px">aria-label</code> on <code style="font-family:var(--font-mono);font-size:11px">Kbd.Group</code>.</li>
+      <li>Mac detection via <code style="font-family:var(--font-mono);font-size:11px">isMac()</code> in <code style="font-family:var(--font-mono);font-size:11px">src/lib/shortcuts/platform.ts</code>. Runs on every render (not cached as a constant) so SSR and hydration produce identical output when <code style="font-family:var(--font-mono);font-size:11px">navigator</code> is absent.</li>
+      <li>No <code style="font-family:var(--font-mono);font-size:11px">+</code> separator on mac — Apple HIG specifies naked adjacency for modifier combos.</li>
+    </ul>
+  </section>
+
+  <!-- D — State decision matrix -->
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>How it triggers</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>default</code></td>
+          <td>Component renders without extra props</td>
+          <td>Keycap chips at full opacity</td>
+          <td>Group <code>aria-label</code> = "shortcut: …" from <code>announceCombo()</code></td>
+        </tr>
+        <tr>
+          <td><code>mac-combo</code></td>
+          <td><code>isMac()</code> returns true at runtime</td>
+          <td>Naked adjacency — no <code>+</code> between chips; modifier glyphs ⌘⇧⌥⌃</td>
+          <td>"shortcut: Command Shift N" (spelled-out human names)</td>
+        </tr>
+        <tr>
+          <td><code>win-linux-combo</code></td>
+          <td><code>isMac()</code> returns false at runtime</td>
+          <td><code>.kbd-plus</code> "+" between each chip; text labels Ctrl/Shift/Alt</td>
+          <td>"shortcut: Control Shift N"</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>Our <code>disabled</code> prop (CUSTOM — no Radix equivalent). Sets <code>data-state="disabled"</code> on <code>.kbd-group</code></td>
+          <td>Opacity 0.5; cursor: not-allowed</td>
+          <td>No aria change — chip is not interactive, always presentation only</td>
+        </tr>
+        <tr>
+          <td><code>escape-hatch</code></td>
+          <td>Caller uses <code>Kbd.Group</code> + <code>Kbd.Key</code> directly; provides own <code>aria-label</code></td>
+          <td>Single chip with multi-glyph content (e.g. ↑↓)</td>
+          <td>Custom <code>aria-label</code> on the group (e.g. "up/down arrows")</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- E — When-to-use vs sibling -->
+  <section class="section">
+    <div class="section-title">When to use Kbd vs plain text</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Use <code>Kbd</code> when…</th><th>Use <code>formatShortcut()</code> plain text when…</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Shortcut hint appears <em>in the UI</em> as a visual affordance (topbar pill, rail button, palette footer)</td>
+          <td>Shortcut appears in an <code>aria-label</code>, <code>data-tooltip</code>, or any invisible/assistive context</td>
+        </tr>
+        <tr>
+          <td>Chip design is part of the surface's visual hierarchy (e.g. "New annotation ⌘⇧N" pill in the rail)</td>
+          <td>The string is dynamically constructed for spoken SR output</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- F — Anatomy -->
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>group wrapper</dt><dd><code>&lt;span role="group"&gt;</code> — inline-flex row, gap 3px; disabled: <code>data-state="disabled"</code></dd>
+      <dt>key chip</dt><dd><code>&lt;kbd&gt;</code> — min-width 20px, padding 2px 6px, bg <code>--bg-elevated</code>, border 1px <code>--border</code> (t/l/r) + 1px <code>--border-strong</code> (bottom, depth), radius <code>--radius-xs</code> (4px)</dd>
+      <dt>key font</dt><dd><code>--font-mono</code>, 10.5px / weight 600 / line-height 1, color <code>--text-dim</code></dd>
+      <dt>plus glyph</dt><dd><code>&lt;span&gt;</code> "+" — <code>--font-mono</code> 10px, color <code>--text-muted</code>, margin 0 1px; non-mac only</dd>
+      <dt>disabled opacity</dt><dd>0.5 on the group wrapper when <code>data-state="disabled"</code></dd>
+      <dt>disabled cursor</dt><dd>not-allowed on the group wrapper when <code>data-state="disabled"</code></dd>
+    </dl>
+  </section>
+
+  <!-- G — Behavior -->
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="font-size:13px;color:var(--text-dim);line-height:1.8;padding-left:20px">
+      <li>Not interactive — no hover, focus, or click states. Chip is purely presentational.</li>
+      <li>OS detection runs synchronously on each render via <code>isMac()</code> (reads <code>navigator.platform</code> / <code>navigator.userAgent</code>). Safe on the client (app is CSR-only); returns <code>false</code> when <code>navigator</code> is absent.</li>
+      <li>Mac: modifier keys resolved to glyphs (⌘ ⇧ ⌥ ⌃), naked adjacency (no "+" separator). Windows/Linux: text labels (Ctrl Shift Alt), "+" separator between chips.</li>
+      <li>Accessibility: individual <code>&lt;kbd&gt;</code> chips carry <code>aria-hidden="true"</code>. The outer <code>&lt;span role="group"&gt;</code> provides a single <code>aria-label</code> (e.g. "shortcut: Command Shift N") so screen readers announce the combo as one phrase, not individual glyphs.</li>
+      <li>Disabled state: <code>data-state="disabled"</code> on the group dims the combo and sets <code>cursor: not-allowed</code>. No consumer uses this yet — the CSS hook exists for future use. Not announced to SR (chip is non-interactive).</li>
+      <li>Escape hatch: <code>Kbd.Group</code> + <code>Kbd.Key</code> allow multi-glyph single chips (e.g. ↑↓). Caller provides <code>aria-label</code> on <code>Kbd.Group</code>. Do not use for regular combos — use <code>&lt;Kbd keys={[…]} /&gt;</code> instead.</li>
+      <li>Plain-text shortcut for aria/tooltip use: <code>formatShortcut()</code> in <code>src/lib/shortcuts/platform.ts</code> (implicitly prepends the platform modifier). Use <code>Kbd</code> for visual chips; use <code>formatShortcut()</code> for <code>aria-label</code> + <code>data-tooltip</code> strings.</li>
+    </ul>
+  </section>
+
+</div>
+
+</body>
+</html>
