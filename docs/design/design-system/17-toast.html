@@ -11,13 +11,19 @@
   --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);
   --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
   --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);
+  --success:oklch(76% 0.16 152);--success-soft:oklch(28% 0.07 152);
+  --warning:oklch(80% 0.15 80);--warning-soft:oklch(30% 0.07 80);
+  --info:oklch(74% 0.13 200);--info-soft:oklch(26% 0.06 200);
   --surface-glass-bg:rgb(7 12 15 / 80%);
   --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
   --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);
-  --motion-fast:160ms;
+  --motion-fast:160ms;--motion-base:220ms;
   --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
   --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
 }
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
@@ -27,11 +33,14 @@ body{
   background-attachment:fixed;
 }
 button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
-.page{padding:48px 32px 96px}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+
+.page{padding:48px 32px 96px;max-width:960px;margin:0 auto}
 .h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
 .lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
 .section{margin-bottom:48px}
 .section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
 .stage{
   background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
   border:1px solid var(--border-subtle);border-radius:var(--radius-md);
@@ -55,8 +64,8 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
   display:inline-flex;align-items:center;gap:8px;
 }
 .toast .ico{display:inline-flex;align-items:center;color:var(--accent-bright)}
-.toast.danger .ico{color:oklch(70% 0.2 25)}
-.toast.success .ico{color:oklch(76% 0.16 152)}
+.toast.danger .ico{color:var(--danger)}
+.toast.success .ico{color:var(--success)}
 
 /* Stack — fixed bottom-center container */
 .stack{display:flex;flex-direction:column-reverse;align-items:center;gap:8px;width:100%}
@@ -73,16 +82,53 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
 .phase.p3 .toast{opacity:1}
 .phase.p4 .toast{opacity:0}
 
-/* Tokens */
-.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
-.tokens dt{color:var(--text-dim)}.tokens dt::before{content:'--'}.tokens dd{color:var(--text-bright)}
+/* All-states grid helpers */
+.row-states{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:24px;
+}
+.state{display:flex;flex-direction:column;gap:8px}
+.state .state-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+}
+.state .state-row{
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:18px;display:flex;align-items:center;justify-content:center;
+  min-height:64px;
+}
+
+/* Anatomy / matrix tables */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;
+  background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  color:var(--text-dim);
+  overflow-x:auto;
+  white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
 
-<div class="page">
+<div class="page" data-ds-component="toast">
   <h1 class="h1">17 — Toast</h1>
-  <p class="lede">Toast notification system (<code>src/components/Toast/Toast.tsx</code>, <code>useToast.ts</code>). Bottom-center fixed container holds a stack of glass pills. Slide-in from below with spring easing; auto-dismiss after a default duration; out-fade on remove. Pills use the glass-surface standard — same recipe as the rail, toolbar, dialog scrim, and every other floating overlay.</p>
+  <p class="lede">Transient bottom-center pill for confirmation messages and lightweight feedback. Implemented as the custom <code>ToastProvider</code> + <code>useToast</code> hook (<code>src/components/Toast/useToast.ts</code> + <code>Toast.tsx</code>) — a context + reducer pair that holds a stack of <code>ToastItem</code>s and auto-removes each after a duration. Renders the container with <code>aria-live="assertive"</code> so SR announces every message. Pills use the glass-surface standard — same recipe as the rail, toolbar, dialog scrim, and other floating overlays. For inline, persistent status (server error inside a form, rate-limit warning) reach for <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> instead.</p>
 
   <section class="section">
     <div class="section-title">A — Default pill (neutral message)</div>
@@ -94,6 +140,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         </div>
       </div>
     </div>
+    <div class="caption">Single pill, bottom-centred. The glass surface (16 px blur, --surface-glass-bg) is the same recipe as the dialog scrim and popover container — only the radius (<code>--radius-pill</code>) is unique to the toast.</div>
   </section>
 
   <section class="section">
@@ -105,7 +152,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         <div class="toast"><span class="ico">✓</span> Copied to clipboard</div>
       </div>
     </div>
-    <p class="lede" style="margin-top:14px">Toasts stack vertically with 8 px gap. Newest pill enters from below — older pills shift up. The container's <code>flex-direction: column-reverse</code> keeps the most recent at the bottom-front while older ones fade away with a stagger.</p>
+    <div class="caption">Toasts stack vertically with 8 px gap. Newest pill enters from below — older pills shift up. The container's <code>flex-direction: column-reverse</code> keeps the most recent at the bottom-front while older ones fade away with a stagger.</div>
   </section>
 
   <section class="section">
@@ -130,7 +177,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         </div>
       </div>
     </div>
-    <p class="lede" style="margin-top:14px">Shipped product only uses the neutral pill today; success / danger pills here illustrate the intent palette via the icon colour. The glass surface stays neutral — colour lives only in the icon, never in the background.</p>
+    <div class="caption">Shipped product only uses the neutral pill today; success / danger pills here illustrate the intent palette via the icon colour. The glass surface stays neutral — colour lives only in the icon, never in the background.</div>
   </section>
 
   <section class="section">
@@ -153,7 +200,153 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
         <div class="toast"><span class="ico">✓</span> Saved</div>
       </div>
     </div>
-    <p class="lede" style="margin-top:14px">Slide-in: opacity 0 → 1, translateY 8 px → 0, scale 0.95 → 1 over <code>--motion-fast</code> (160 ms) with <code>--ease-spring</code>. Hold: ~3 s default. Out: opacity 1 → 0 over 250 ms with <code>--ease-exit</code>. <code>prefers-reduced-motion: reduce</code> zeroes both animations — toasts pop in / out instantly.</p>
+    <div class="caption">Slide-in: opacity 0 → 1, translateY 8 px → 0, scale 0.95 → 1 over <code>--motion-fast</code> (160 ms) with <code>--ease-spring</code>. Hold: ~3 s default. Out: opacity 1 → 0 over 250 ms with <code>--ease-exit</code>. <code>prefers-reduced-motion: reduce</code> zeroes both animations — toasts pop in / out instantly.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">All toast variants — one table</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">Neutral</div>
+        <div class="state-row" style="background:transparent;border:none;padding:0">
+          <div class="toast"><span class="ico">ⓘ</span> Sidebar collapsed</div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">Success</div>
+        <div class="state-row" style="background:transparent;border:none;padding:0">
+          <div class="toast success"><span class="ico">✓</span> Token created</div>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">Danger</div>
+        <div class="state-row" style="background:transparent;border:none;padding:0">
+          <div class="toast danger"><span class="ico">⚠</span> Token revoked</div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Every pill is the same recipe: glass background, 16 px blur, <code>--border</code>, <code>--radius-pill</code>, <code>--shadow-popover</code>. Intent classes (<code>.success</code>, <code>.danger</code>) only colour the leading icon — body stays neutral.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — custom <code>ToastProvider</code> + <code>useToast</code> (not Radix)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">Backed by a custom in-project implementation, <strong>not</strong> <code style="color:var(--accent)">@radix-ui/react-toast</code>. <code>@radix-ui/react-toast</code> is not installed; the lightweight context-+-reducer pair in <code>src/components/Toast/</code> is the canonical surface. Reach for Radix Toast only if a future need surfaces (swipe-to-dismiss, action slot, queue limits) — and add it explicitly to <code>package.json</code> at that time.</p>
+    <pre class="api"><span class="c">// 1) Mount the provider once at the app root</span>
+<span class="k">import</span> { ToastProvider } <span class="k">from</span> <span class="s">'@/components/Toast/useToast'</span>;
+
+<span class="k">export default function</span> AppShell({ children }: { children: <span class="t">ReactNode</span> }) {
+  <span class="k">return</span> &lt;<span class="t">ToastProvider</span>&gt;{children}&lt;/<span class="t">ToastProvider</span>&gt;;     <span class="c">// renders the container + reducer</span>
+}
+
+<span class="c">// 2) Call `show(message, duration?)` from any client component</span>
+<span class="k">import</span> { useToast } <span class="k">from</span> <span class="s">'@/components/Toast/useToast'</span>;
+
+<span class="k">function</span> CopyLinkButton() {
+  <span class="k">const</span> { show } = useToast();
+  <span class="k">return</span> (
+    &lt;<span class="k">button</span> onClick={() =&gt; {
+      navigator.clipboard.writeText(window.location.href);
+      show(<span class="s">'Copied to clipboard'</span>);                  <span class="c">// duration defaults to 3000 ms</span>
+    }}&gt;
+      Copy link
+    &lt;/<span class="k">button</span>&gt;
+  );
+}
+
+<span class="c">// 3) Custom duration (e.g. a longer confirmation)</span>
+show(<span class="s">'Token created — copy now, you won\'t see it again'</span>, <span class="s">5000</span>);
+
+<span class="c">// Public API:</span>
+<span class="c">//   show(message: string, duration?: number = 3000): void</span>
+<span class="c">// The reducer dispatches `add` then schedules `remove` after `duration`.</span></pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Why not Radix Toast.</strong> The current API surface is tiny (one <code>show()</code> call), there's no swipe-to-dismiss requirement, no action slot, no queue policy beyond "remove after N ms". A 60-line custom hook is the right fit; adding <code>@radix-ui/react-toast</code> just imports machinery we don't use.</li>
+      <li><strong>No <code>variant</code> prop yet.</strong> <code>show()</code> takes only <code>message</code> + optional <code>duration</code>. The <code>.success</code> / <code>.danger</code> intent classes shown above are reserved for a future <code>show(message, { variant: 'success', duration: 4000 })</code> signature — flagged here so the DS sees the gap.</li>
+      <li><strong>Auto-dismiss only.</strong> Toasts have no close button — that's the contract. If the user needs to dismiss, use a <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> with <code>onClose</code> instead.</li>
+      <li><strong>Aria.</strong> The container is <code>aria-live="assertive"</code> + <code>aria-atomic="false"</code>; each pill carries <code>role="status"</code>. SR announces every message as it appears.</li>
+      <li><strong>Pointer-events.</strong> The fixed container is <code>pointer-events: none</code>; individual pills are <code>auto</code>. That way the bottom of the canvas remains clickable behind the stack.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>idle</code></td>
+          <td>No pending toasts. Default state.</td>
+          <td>Container exists (aria-live region) but contains no children.</td>
+          <td><code>aria-live="assertive"</code> on the container — quiet until a child appears.</td>
+        </tr>
+        <tr>
+          <td><code>entering</code></td>
+          <td>Reducer dispatch <code>add</code> after <code>show(message)</code>.</td>
+          <td>Pill mounted invisible; immediately animates opacity 0 → 1, translateY 8 → 0, scale 0.95 → 1 over <code>--motion-fast</code> with <code>--ease-spring</code>.</td>
+          <td>Pill carries <code>role="status"</code>. SR reads <code>message</code> as it enters.</td>
+        </tr>
+        <tr>
+          <td><code>visible</code></td>
+          <td>Animation complete. Pill held on screen for <code>duration</code> ms (default 3000).</td>
+          <td>Pill at full opacity, on top of any older pills (newest-bottom-front).</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>exiting</code></td>
+          <td><code>setTimeout</code> fires <code>remove</code> dispatch after <code>duration</code>.</td>
+          <td>Opacity 1 → 0 over 250 ms with <code>--ease-exit</code>. Older pills slide down to fill the slot.</td>
+          <td>SR ignores the disappearance.</td>
+        </tr>
+        <tr>
+          <td><code>success</code> (custom)</td>
+          <td><em>Not yet wired</em> — reserved for the future <code>show(msg, { variant: 'success' })</code> signature.</td>
+          <td>Same glass surface, leading icon coloured <code>--success</code>.</td>
+          <td>Same as visible. SR announcement unchanged (the icon is decorative).</td>
+        </tr>
+        <tr>
+          <td><code>danger</code> (custom)</td>
+          <td><em>Not yet wired</em> — reserved for the future <code>show(msg, { variant: 'danger' })</code> signature.</td>
+          <td>Same glass surface, leading icon coloured <code>--danger</code>.</td>
+          <td>Same as visible. Errors that need user action should use <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a>, not a toast.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">"success" and "danger" are <em>future</em> states — the current <code>useToast</code> hook only ships the neutral pill. Adding them later means extending <code>show()</code> with an options object (no breaking change).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Primitive</th><th>Use for</th><th>Backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>toast</code></td>
+          <td>Transient confirmation ("Copied", "Saved", "Moved to X"). Auto-dismisses. No action.</td>
+          <td>Custom — <code>ToastProvider</code> + <code>useToast</code></td>
+        </tr>
+        <tr>
+          <td><code>alert-banner</code></td>
+          <td>Persistent inline status (rate-limit warning, server error in a form, success of a long-running task). May have a close button or an action.</td>
+          <td>See <a href="./27-alert-banner.html" style="color:var(--accent)"><code>27-alert-banner.html</code></a></td>
+        </tr>
+        <tr>
+          <td><code>dialog</code> + <code>useConfirm</code></td>
+          <td>Destructive confirmations or blocking flows that demand a user choice. Toasts must never be used for "are you sure?".</td>
+          <td>See <a href="./14-dialog.html" style="color:var(--accent)"><code>14-dialog.html</code></a></td>
+        </tr>
+        <tr>
+          <td><code>input-field</code> error</td>
+          <td>Per-field validation message inside a form body. Stays attached to the field.</td>
+          <td>See <a href="./28-input-field.html" style="color:var(--accent)"><code>28-input-field.html</code></a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Rule of thumb: if the user must act on it, it's not a toast. Toasts confirm what just happened — they don't ask for input or stay around.</div>
   </section>
 
   <section class="section">
@@ -162,6 +355,9 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
       <dt>container<dd>position fixed; bottom 24 px; left 50%; translateX(-50%)
       <dt>z-index<dd>2000
       <dt>pointer-events<dd>none (container) / auto (pill)
+      <dt>aria-live<dd>assertive (container)
+      <dt>aria-atomic<dd>false (container — each pill announced independently)
+      <dt>role (pill)<dd>status
       <dt>pill bg<dd>--surface-glass-bg
       <dt>pill backdrop-filter<dd>blur(16px) saturate(140%)
       <dt>pill border<dd>1 px solid --border
@@ -169,11 +365,29 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
       <dt>pill padding<dd>8 px 16 px
       <dt>pill font<dd>13 px / 500, --text-bright
       <dt>pill shadow<dd>--shadow-popover
+      <dt>icon (neutral)<dd>--accent-bright
+      <dt>icon (success)<dd>--success
+      <dt>icon (danger)<dd>--danger
       <dt>gap<dd>8 px between pills
+      <dt>default duration<dd>3000 ms
       <dt>anim in<dd>opacity 0 → 1, translateY 8 → 0, scale 0.95 → 1 — --motion-fast / --ease-spring
       <dt>anim out<dd>opacity 1 → 0 — 250 ms / --ease-exit
-      <dt>reduced-motion<dd>animation: none on .pill / .pillOut
+      <dt>reduced-motion<dd>animations zeroed via :root token override
     </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><strong>Imperative show.</strong> Any client component reads <code>useToast()</code> and calls <code>show(message, duration?)</code>. No render-time wiring required.</li>
+      <li><strong>Stack ordering.</strong> Newest pill at the bottom-front via <code>flex-direction: column-reverse</code>. Older pills shift up — they don't reorder, they just move.</li>
+      <li><strong>Auto-dismiss.</strong> <code>setTimeout</code> fires <code>remove</code> dispatch after <code>duration</code> (default 3000 ms). No manual close — that's intentional.</li>
+      <li><strong>No queue cap.</strong> Multiple <code>show()</code> calls in quick succession stack indefinitely. If this proves noisy in practice, a future cap (e.g. max 3 visible) lives in the reducer, not the consumer.</li>
+      <li><strong>Aria live region.</strong> Container is <code>aria-live="assertive"</code> + <code>aria-atomic="false"</code>; each pill is <code>role="status"</code>. SR announces every message as it appears.</li>
+      <li><strong>Pointer-events: none on container.</strong> The fixed container doesn't block clicks behind it; individual pills are <code>pointer-events: auto</code> so they can be clicked (currently no-op — future variants may add an action button).</li>
+      <li><strong>Position lock.</strong> Container is always bottom-centre, fixed. No portal — the container lives wherever <code>ToastProvider</code> renders (at the app root).</li>
+      <li><strong>Reduced motion.</strong> Under <code>prefers-reduced-motion: reduce</code>, the enter / exit animations collapse to a 0 ms opacity flip via the token override at the top of the file.</li>
+    </ul>
   </section>
 </div>
 
