@@ -28,7 +28,8 @@ import {
   useRef,
 } from 'react';
 import { useToast } from '@/components/Toast/useToast';
-import { type ValidationResult, validateFile } from '@/lib/upload/validate-file';
+import { rejectionMessage } from '@/lib/upload/rejection-message';
+import { validateFile } from '@/lib/upload/validate-file';
 import styles from './UploadEmptyState.module.css';
 
 export type EmptyContext = 'all-projects' | 'project' | 'folder';
@@ -71,26 +72,6 @@ function copyFor(props: UploadEmptyStateProps): Copy {
         sub: 'Drop an HTML or click to upload to this folder',
         ariaLabel: `Upload mockup to ${folder}`,
       };
-  }
-}
-
-/**
- * Maps a {@link ValidationResult} rejection reason to the toast copy.
- * Verbatim strings from the plan §Task 13 so the contract is grep-able.
- */
-function rejectionMessage(
-  reason: Exclude<ValidationResult, { ok: true }>['reason'],
-): string | null {
-  switch (reason) {
-    case 'multi':
-      return 'Drop one file at a time.';
-    case 'wrong-type':
-      return 'Only HTML or ZIP files are supported.';
-    case 'too-large':
-      return 'File too large (limit 10 MB).';
-    case 'empty':
-      // No file at all — silent (e.g. user cancelled the picker).
-      return null;
   }
 }
 
