@@ -8,8 +8,7 @@ import { prisma } from '@/lib/prisma';
 import { deleteProject, getProject, updateProject } from '@/lib/project/service';
 import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
 
-// Admin-only routes point here for the authz reference.
-// See docs/api/authz.md
+// See docs/api/authz.md for the full DELETE permission matrix.
 
 const patchSchema = z.object({
   name: urlSafeNameSchema().optional(),
@@ -58,21 +57,13 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   if (!project) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
   try {
-    const resolvedIdent = await requireOwnerOrAdmin(ident, {
+    const viewer = await requireOwnerOrAdmin(ident, {
       kind: 'project',
       createdById: project.createdById,
     });
-    // Only members need the cascade check — admins may always cascade-delete.
-    const isAdmin =
-      resolvedIdent.kind === 'user' &&
-      (
-        await prisma.user.findUnique({
-          where: { id: resolvedIdent.userId },
-          select: { role: true },
-        })
-      )?.role === 'admin';
-    if (!isAdmin && resolvedIdent.kind === 'user') {
-      await assertCascadeOwnershipForProject(resolvedIdent.userId, id);
+    // Members must own every descendant; admins skip the cascade check.
+    if (viewer.kind === 'user' && viewer.role === 'member') {
+      await assertCascadeOwnershipForProject(viewer.userId, id);
     }
   } catch (e) {
     return handleAuthError(e);

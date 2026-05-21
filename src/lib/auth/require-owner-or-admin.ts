@@ -24,14 +24,15 @@ function http(status: number, message: string): never {
  * - 403 `forbidden_kind` — agent tried to delete a non-message entity.
  * - 403 `forbidden_owner` — member tried to delete someone else's content.
  *
- * Returns the identity on success (for callers that need it).
+ * Returns the resolved `Viewer` (with role) on success so cascade-check
+ * callers don't need to re-query the user's role.
  *
  * See `docs/api/authz.md` for the full permission matrix.
  */
 export async function requireOwnerOrAdmin(
   ident: Identity | null,
   entity: DeletableEntity,
-): Promise<Identity> {
+): Promise<Viewer> {
   requireIdentity(ident);
 
   let viewer: Viewer;
@@ -53,5 +54,5 @@ export async function requireOwnerOrAdmin(
     http(403, 'forbidden_owner');
   }
 
-  return ident;
+  return viewer;
 }
