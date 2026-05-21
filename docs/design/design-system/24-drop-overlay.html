@@ -2,241 +2,311 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>24 — Drop Overlay</title>
+<title>24 — Drop overlay</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
-  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
-  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-tinted:oklch(9% 0.02 165);
+  --surface-hover:rgba(255,255,255,0.04);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);
   --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
   --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
   --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
   --surface-glass-bg:rgb(7 12 15 / 80%);
-  --scrim-glass-bg:oklch(0% 0 0/0.2);
   --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
   --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
-  --motion-fast:160ms;--motion-base:220ms;
-  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-pill:9999px;
+  --motion-fast:160ms;--motion-base:220ms;--motion-slow:320ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
   --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
 }
-@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms;--motion-slow:0ms}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
   background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
   -webkit-font-smoothing:antialiased;
-  background-image:radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%);
-  background-attachment:fixed;min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
 }
-.page{padding:48px 32px 96px;max-width:1200px;margin:0 auto}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:920px;margin:0 auto}
 .h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
-.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px;line-height:1.55}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
 .section{margin-bottom:48px}
 .section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
-.frame{
-  position:relative;background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
   border:1px solid var(--border-subtle);border-radius:var(--radius-md);
-  height:360px;overflow:hidden;
+  padding:32px;
+  min-height:380px;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
 }
-.frame-meta{
-  position:absolute;left:10px;top:10px;z-index:2;
-  font-family:var(--font-mono);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
-  background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-xs);padding:3px 7px;
-}
-.frame-stage{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-}
-/* Fake page content for context behind the overlay */
-.stage-content{
-  display:flex;gap:8px;padding:18px;width:100%;height:100%;align-items:flex-start;
-}
-.fake-card{
-  flex:1;height:120px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
-  padding:10px;
-}
-.fake-card .line{height:8px;background:var(--surface-active);border-radius:2px;margin-bottom:6px}
-.fake-card .line:nth-child(1){width:60%}
-.fake-card .line:nth-child(2){width:90%;background:var(--surface-hover)}
-.fake-card .line:nth-child(3){width:40%;background:var(--surface-hover)}
-
-/* ─── Scrim variants ─── */
-.scrim-glass{
+.stage + .stage{margin-top:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+.fake-app{
   position:absolute;inset:0;
-  background:var(--scrim-glass-bg);
-  backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
-  display:flex;align-items:center;justify-content:center;padding:24px;
-}
-.scrim-leve{
-  position:absolute;inset:0;
-  background:oklch(0% 0 0/0.4);
-  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-  display:flex;align-items:center;justify-content:center;padding:24px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:11px;color:var(--text-muted);
+  letter-spacing:0.1em;text-transform:uppercase;
 }
 
-/* ─── Drop panel (centered, glass) ─── */
-.drop-panel{
+/* ─── drop-overlay — scrim-leve + subtle feedback (singular recipe).
+       Mount during dragenter of a file over the app shell; unmount on
+       drop or debounced dragleave. Portal-rendered at body level. ─── */
+.drop-overlay{
+  position:absolute;inset:0;z-index:1;          /* in app: position:fixed, z-index 90 */
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:auto;
+  animation:dropIn var(--motion-slow) var(--ease-standard);
+}
+@keyframes dropIn{from{opacity:0}to{opacity:1}}
+
+/* Scrim — light dim + light blur (40% --bg tint, 4px blur) */
+.drop-overlay::before{
+  content:'';position:absolute;inset:0;
+  background:oklch(7% 0.02 165 / 0.40);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+}
+
+/* Drop panel — centred glass card with dashed accent border */
+.drop-overlay .drop-panel{
+  position:relative;
+  width:min(480px,90vw);padding:32px 28px;
   background:var(--surface-glass-bg);
-  backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
-  border:1px solid var(--border);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:2px dashed var(--accent-overlay-mid);  /* subtle: dimmer */
   border-radius:var(--radius-md);
-  padding:28px 32px;
-  display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;
   box-shadow:var(--shadow-popover);
-  width:min(440px,calc(100% - 32px));position:relative;
+  text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  opacity:0.94;                                  /* subtle: dimmed */
 }
-.drop-panel.compact{width:min(340px,calc(100% - 32px));padding:18px 22px;gap:8px}
-.drop-panel::before{
-  content:'';position:absolute;inset:6px;border:2px dashed var(--accent-overlay-mid);border-radius:calc(var(--radius-md) - 4px);
-  pointer-events:none;animation:dashCycle 4s linear infinite;
-}
-@keyframes dashCycle{
-  0%{background-position:0 0}
-  100%{background-position:24px 0}
-}
-.drop-icon{
-  width:44px;height:44px;border-radius:50%;
+.drop-overlay .drop-panel .ico{
+  width:56px;height:56px;border-radius:50%;
   background:var(--accent-overlay-soft);
-  display:flex;align-items:center;justify-content:center;color:var(--accent);
+  display:flex;align-items:center;justify-content:center;
 }
-.drop-panel.compact .drop-icon{width:34px;height:34px}
-.drop-title{
-  font-size:18px;font-weight:700;color:var(--text-bright);letter-spacing:-0.01em;
+.drop-overlay .drop-panel .ico svg{width:28px;height:28px;color:var(--accent)}
+.drop-overlay .drop-panel h3{font-size:22px;font-weight:700;color:var(--text-bright);letter-spacing:-0.01em}
+
+/* Path preview pill */
+.drop-overlay .drop-panel .path-preview{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 12px 6px 8px;
+  background:var(--bg-card);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-pill);
+  max-width:100%;flex-wrap:wrap;justify-content:center;
 }
-.drop-panel.compact .drop-title{font-size:14px}
-.drop-sub{
-  font-family:var(--font-mono);font-size:11px;color:var(--text-dim);
+.drop-overlay .drop-panel .path-preview .proj-icon{
+  width:22px;height:22px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:6px;
+  background:var(--bg-tinted);
+  border:1px solid var(--border-subtle);
+  font-size:13px;flex-shrink:0;
+}
+.drop-overlay .drop-panel .path-preview .full-path{
+  font-family:var(--font-mono);font-size:12px;color:var(--text);
+  display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;
+}
+.drop-overlay .drop-panel .path-preview .seg-proj{color:var(--text-bright);font-weight:600}
+.drop-overlay .drop-panel .path-preview .seg-folder{color:var(--accent);font-weight:600}
+.drop-overlay .drop-panel .path-preview .sep{color:var(--text-muted)}
+.drop-overlay .drop-panel .disclaimer{
+  font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);
+  margin-top:4px;font-style:italic;
 }
 
-/* ─── Floating chip variant (dashed-border) ─── */
-.frame.dashed::after{
-  content:'';position:absolute;inset:14px;border:2px dashed var(--accent);border-radius:var(--radius-md);
-  pointer-events:none;
-}
-.drop-chip{
-  position:absolute;top:14px;right:14px;z-index:3;
-  display:inline-flex;align-items:center;gap:6px;
-  background:var(--surface-glass-bg);
-  backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
-  border:1px solid var(--accent-overlay-mid);
-  border-radius:var(--radius-pill);padding:6px 12px;
-  font-family:var(--font-mono);font-size:11px;color:var(--accent);
-  box-shadow:var(--shadow-popover);
-}
-.drop-chip svg{color:var(--accent)}
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
 
-/* ─── Hybrid: dashed + centre chip ─── */
-.frame.hybrid::after{
-  content:'';position:absolute;inset:14px;border:2px dashed var(--accent-overlay-mid);border-radius:var(--radius-md);
-  pointer-events:none;
-}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
 
-/* Footer */
-.footer-note{
-  margin-top:48px;padding-top:24px;border-top:1px solid var(--border-subtle);
-  font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.7;
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  color:var(--text-dim);overflow-x:auto;white-space:pre;
 }
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
+
 <div class="page" data-ds-component="drop-overlay">
-  <h1 class="h1">24 — Drop Overlay</h1>
-  <p class="lede">Full-bleed overlay that appears the moment a file enters the window during drag-n-drop upload. Sits at <code style="font-family:var(--font-mono);font-size:12px">z-index: 90</code> above sidebar, topbar, content, and any mockup iframe. Dismisses on dragleave (120 ms fade) or routes to the New Mockup dialog on drop. Four variants cover the range from imposing scrim to discreet chip.</p>
 
-  <div class="section">
-    <div class="section-title">Variants</div>
-    <div class="grid">
+  <h1 class="h1">Drop overlay</h1>
+  <p class="lede">Full-surface overlay shown when the user drags a file over the app. Communicates "you can drop here" and where — project · folder path — before the drop is processed. Recipe: <strong>scrim-leve</strong> (40% bg tint + 4px blur) + <strong>subtle</strong> feedback (dimmer border, slow fade, 0.94 opacity). Triggers <a href="./25-new-mockup-dialog.html" style="color:var(--accent)"><code>new-mockup-dialog</code></a> on drop.</p>
 
-      <!-- glass-full (default) -->
-      <div class="frame" aria-label="glass-full">
-        <div class="frame-meta">glass-full · default</div>
-        <div class="frame-stage">
-          <div class="stage-content">
-            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
-            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
-            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+  <section class="section">
+    <div class="section-title">Default — overlay visible during drag-over (project view)</div>
+    <div class="stage">
+      <div class="fake-app">app surface · view: project · Lumen Coffee</div>
+      <div class="drop-overlay" role="status" aria-live="polite">
+        <div class="drop-panel">
+          <div class="ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-        </div>
-        <div class="scrim-glass">
-          <div class="drop-panel">
-            <div class="drop-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
-            </div>
-            <div class="drop-title">Drop your HTML here</div>
-            <div class="drop-sub">Will be added to · Lumen Coffee › Hero</div>
+          <h3>Drop your HTML here</h3>
+          <div class="path-preview">
+            <span class="proj-icon">☕</span>
+            <span class="full-path">
+              <span class="seg-proj">Lumen Coffee</span>
+            </span>
           </div>
+          <div class="disclaimer">You can change the project and folder before submitting.</div>
         </div>
       </div>
-
-      <!-- dashed-border -->
-      <div class="frame dashed" aria-label="dashed-border">
-        <div class="frame-meta">dashed-border</div>
-        <div class="frame-stage">
-          <div class="stage-content">
-            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
-            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
-            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
-          </div>
-        </div>
-        <div class="drop-chip">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
-          Drop here · Lumen Coffee › Hero
-        </div>
-      </div>
-
-      <!-- scrim-leve -->
-      <div class="frame" aria-label="scrim-leve">
-        <div class="frame-meta">scrim-leve</div>
-        <div class="frame-stage">
-          <div class="stage-content">
-            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
-            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
-            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
-          </div>
-        </div>
-        <div class="scrim-leve">
-          <div class="drop-panel">
-            <div class="drop-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
-            </div>
-            <div class="drop-title">Drop your HTML here</div>
-            <div class="drop-sub">Will be added to · Lumen Coffee › Hero</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- hybrid -->
-      <div class="frame hybrid" aria-label="hybrid">
-        <div class="frame-meta">hybrid</div>
-        <div class="frame-stage">
-          <div class="stage-content">
-            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
-            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
-            <div class="fake-card"><div class="line"></div><div class="line"></div><div class="line"></div></div>
-          </div>
-        </div>
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:oklch(0% 0 0/0.18);backdrop-filter:blur(6px) saturate(140%);-webkit-backdrop-filter:blur(6px) saturate(140%)">
-          <div class="drop-panel compact">
-            <div class="drop-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14a6 6 0 0 0 6 6h13a5 5 0 0 0 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
-            </div>
-            <div class="drop-title">Drop your HTML here</div>
-            <div class="drop-sub">Lumen Coffee › Hero</div>
-          </div>
-        </div>
-      </div>
-
     </div>
-  </div>
+    <div class="caption">Scrim-leve dims the app (40% --bg tint + 4px blur) so the user knows they're in a drop interaction without losing context. Drop panel: centred, dashed accent border, glass-surface fill, opacity 0.94.</div>
+  </section>
 
-  <div class="footer-note">
-    Tokens: <code>--surface-glass-bg</code>, <code>--scrim-glass-bg</code>, <code>--accent</code>, <code>--accent-overlay-mid</code>, <code>--border</code>.
-    Filter: <code>blur(16px) saturate(140%)</code> on glass variants, <code>blur(4px)</code> on scrim-leve.
-    Motion: 120 ms fade-out on dragleave; entry 220 ms (<code>--motion-base</code>) with <code>--ease-standard</code>.
-    Z-index: 90 — above tweaker (80), dialog scrim (~50), sidebar (100 except when collapsed pill).
-  </div>
+  <section class="section">
+    <div class="section-title">Path preview varies with route (deeply nested folder)</div>
+    <div class="stage">
+      <div class="fake-app">app surface · view: folder · Hero · Section</div>
+      <div class="drop-overlay" role="status" aria-live="polite">
+        <div class="drop-panel">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>Drop your HTML here</h3>
+          <div class="path-preview">
+            <span class="proj-icon">☕</span>
+            <span class="full-path">
+              <span class="seg-proj">Lumen Coffee</span>
+              <span class="sep">›</span>
+              <span class="seg-folder">Hero</span>
+              <span class="sep">›</span>
+              <span class="seg-folder">Section</span>
+            </span>
+          </div>
+          <div class="disclaimer">You can change the project and folder before submitting.</div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Project icon · project name · folder segments. <code>.seg-proj</code> bright white-tinted; <code>.seg-folder</code> accent green; <code>.sep</code> muted.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Path on /all-projects (no project context yet)</div>
+    <div class="stage">
+      <div class="fake-app">app surface · all projects</div>
+      <div class="drop-overlay" role="status" aria-live="polite">
+        <div class="drop-panel">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>Drop your HTML here</h3>
+          <div class="path-preview">
+            <span class="proj-icon">—</span>
+            <span class="full-path">
+              <span class="seg-proj">Unsorted</span>
+            </span>
+          </div>
+          <div class="disclaimer">You can change the project and folder before submitting.</div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">When the user drops on the /all-projects view, the default target is "Unsorted" (no project). The dialog will let them pick a project before submit.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — custom compound (no Radix primitive)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:640px">Radix Primitives doesn't ship a drag-and-drop overlay — drag events are DOM-native and don't need primitive abstractions. The implementation is a custom compound rendered via <code style="color:var(--accent)">@radix-ui/react-portal</code> so it escapes any <code>overflow:hidden</code> ancestor.</p>
+    <pre class="api"><span class="c">// DropOverlay.tsx — portal-mounted custom compound</span>
+<span class="k">import</span> { Portal } <span class="k">from</span> <span class="s">'@radix-ui/react-portal'</span>;
+<span class="k">import</span> { useDragTarget } <span class="k">from</span> <span class="s">'@/hooks/useDragTarget'</span>;
+
+<span class="k">function</span> <span class="t">AppDropOverlay</span>() {
+  <span class="k">const</span> { isOver, target } = useDragTarget();    <span class="c">// listens to dragenter/leave on document</span>
+  <span class="k">if</span> (!isOver) <span class="k">return null</span>;
+
+  <span class="k">return</span> (
+    &lt;<span class="t">Portal</span>&gt;
+      &lt;<span class="t">DropOverlay.Root</span> role=<span class="s">"status"</span> aria-live=<span class="s">"polite"</span>&gt;
+        &lt;<span class="t">DropOverlay.Panel</span>&gt;
+          &lt;<span class="t">DropOverlay.Icon</span> /&gt;
+          &lt;<span class="t">DropOverlay.Title</span>&gt;Drop your HTML here&lt;/<span class="t">DropOverlay.Title</span>&gt;
+          &lt;<span class="t">DropOverlay.Path</span> project={target.project} folder={target.folder} /&gt;
+          &lt;<span class="t">DropOverlay.Disclaimer</span>&gt;
+            You can change the project and folder before submitting.
+          &lt;/<span class="t">DropOverlay.Disclaimer</span>&gt;
+        &lt;/<span class="t">DropOverlay.Panel</span>&gt;
+      &lt;/<span class="t">DropOverlay.Root</span>&gt;
+    &lt;/<span class="t">Portal</span>&gt;
+  );
+}
+</pre>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px;margin-top:12px">
+      <li><strong>Drag detection is DOM-native</strong> (custom). <code>useDragTarget</code> listens to <code>dragenter</code> / <code>dragleave</code> at document level and resolves the current target from the route. Debounces leave by ~60 ms to survive transient leaves across child boundaries.</li>
+      <li><strong>Portal-mounted</strong> via Radix Portal — overlay sits at body level, can't be clipped.</li>
+      <li><strong>Aria role=<code>status</code> + aria-live=<code>polite</code></strong> — announces target path without interrupting focus.</li>
+      <li><strong>No close button</strong> — overlay unmounts on <code>dragleave</code> debounce or on <code>drop</code>. On drop, parent unmounts overlay and mounts <a href="./25-new-mockup-dialog.html" style="color:var(--accent)"><code>NewMockupDialog</code></a> pre-populated with the file + target.</li>
+      <li>Subcomponents accept <code>asChild</code> via <code>@radix-ui/react-slot</code> for icon / title customisation.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead><tr><th>This overlay</th><th>Sibling</th></tr></thead>
+      <tbody>
+        <tr><td>User is dragging a file over the app</td><td>User clicks "New mockup" button → skip overlay, mount <a href="./25-new-mockup-dialog.html" style="color:var(--accent)"><code>new-mockup-dialog</code></a> via file picker</td></tr>
+        <tr><td>Drop target is project / folder / mockup view</td><td>Project is empty → <a href="./26-empty-state.html" style="color:var(--accent)"><code>empty-state</code></a> already provides a giant dropzone</td></tr>
+        <tr><td>Communicating "drop lands here" with full path</td><td>Inline drop affordance on a single button or card (out of scope)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px">
+      <li>Mounts on <code>dragenter</code> when the dragged data contains files (<code>e.dataTransfer.types.includes('Files')</code>).</li>
+      <li>Path preview reflects the current route. Routes: <code>/</code> → "Unsorted"; <code>/projects/&lt;slug&gt;</code> → project; <code>/projects/&lt;slug&gt;/&lt;folder…&gt;</code> → project + folder segments; mockup view inherits the parent folder's path.</li>
+      <li>Unmounts on debounced <code>dragleave</code> (60 ms) or on <code>drop</code>. The debounce survives transient leaves caused by child boundaries.</li>
+      <li>On drop: file read client-side, overlay unmounts, dialog mounts pre-populated with the file + target path.</li>
+      <li>Rejects (non-HTML/ZIP, multiple files, oversize) happen at the dialog, not here — the overlay always shows so the user confirms the drag was detected.</li>
+      <li>Iframe-rendered mockups (<a href="./11-mockup-view.html" style="color:var(--accent)"><code>mockup-view</code></a>): drag events on the iframe bubble to the outer document, so the overlay still shows during a drag over the mockup canvas.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>scrim bg<dd>oklch(7% 0.02 165 / 0.40)
+      <dt>scrim blur<dd>blur(4px) — light, lets the app stay readable
+      <dt>panel bg<dd>--surface-glass-bg + blur(16px) saturate(140%)
+      <dt>panel border<dd>2px dashed --accent-overlay-mid (subtle: dimmer than --accent-bright)
+      <dt>panel opacity<dd>0.94 (subtle: dimmed slightly)
+      <dt>panel radius<dd>--radius-md (12px)
+      <dt>panel padding<dd>32px 28px
+      <dt>panel width<dd>min(480px, 90vw)
+      <dt>icon circle<dd>56×56, --accent-overlay-soft fill, --accent stroke
+      <dt>title<dd>22px / 700 / -0.01em, --text-bright
+      <dt>path pill<dd>--bg-card bg, 1px --border-subtle, --radius-pill
+      <dt>path proj<dd>--text-bright / 600
+      <dt>path folder<dd>--accent / 600
+      <dt>disclaimer<dd>10.5px / 400 italic, --text-muted, mono
+      <dt>enter<dd>opacity 0 → 1 over --motion-slow / --ease-standard (subtle: slower than --motion-base)
+      <dt>z-index in app<dd>90 (above topbar + dialog scrim; below tweaker)
+    </dl>
+  </section>
+
 </div>
+
 </body>
 </html>

@@ -386,6 +386,18 @@
     }
 
     /* Projects pill header — fixed top of sidebar, mono uppercase, "+" affordance */
+    .projects-inline-label {
+      display:flex;align-items:center;justify-content:space-between;
+      padding:8px 12px 4px;
+    }
+    .projects-inline-label .inline-plus-btn {
+      width:20px;height:20px;border-radius:var(--radius-xs);
+      display:flex;align-items:center;justify-content:center;
+      color:var(--text-muted);
+      transition:background var(--motion-fast),color var(--motion-fast);
+    }
+    .projects-inline-label .inline-plus-btn:hover {background:var(--surface-hover);color:var(--accent)}
+    /* Legacy projects-pill-header — kept for any internal demos that still reference it */
     .projects-pill-header {
       display: flex;
       align-items: center;
@@ -1502,13 +1514,13 @@
         <span class="icon-expand"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.00073L1 2.00073V14.0007L2 15.0007H14L15 14.0007V2.00073L14 1.00073H2ZM2 14.0007V2.00073H6V14.0007H2ZM7 14.0007V2.00073H14V14.0007H7Z"/></svg></span>
       </button>
     </div>
-    <div class="projects-pill-header" aria-label="Projects">
-      <span>Projects</span>
-      <button class="header-plus-btn" id="btnNewProject" title="New project · Ctrl+Shift+P" aria-label="New project">
-        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
-      </button>
-    </div>
     <div class="sidebar-scroll" id="sidebarScroll">
+      <div class="sidebar-section-label projects-inline-label">
+        <span>Projects</span>
+        <button class="inline-plus-btn" id="btnNewProject" title="New project · Ctrl+Shift+P" aria-label="New project">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+        </button>
+      </div>
       <div id="sidebarTree" role="tree" aria-label="Project tree"></div>
 
       <div class="sidebar-section-label" style="margin-top:8px">No Project</div>
