@@ -35,11 +35,8 @@
 
 import * as Form from '@radix-ui/react-form';
 import { type ComponentPropsWithoutRef, type ElementRef, forwardRef } from 'react';
+import { cn } from '@/lib/cn';
 import styles from './InputField.module.css';
-
-function cn(...names: Array<string | undefined | false | null>): string {
-  return names.filter(Boolean).join(' ');
-}
 
 type RootProps = ComponentPropsWithoutRef<typeof Form.Field> & {
   /** Server-side state hook. Radix Form's `[data-invalid]` handles sync. */
