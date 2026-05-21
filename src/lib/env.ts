@@ -36,7 +36,12 @@ const envSchema = z.object({
         return { name, secret };
       });
     }),
-  MAX_UPLOAD_MB: z.coerce.number().int().positive().default(50),
+  // Single source of truth for the upload size cap (in megabytes). Both
+  // route-level guards (`POST /api/mockups`, `POST /api/mockups/[id]/version`)
+  // and the zip-extractor's `maxTotalBytes` read from here. The client-side
+  // `MAX_UPLOAD_BYTES` in `src/lib/upload/constants.ts` mirrors this value
+  // and MUST be kept in sync — see the comment in that file.
+  MAX_UPLOAD_MB: z.coerce.number().int().positive().default(10),
   MAX_FILES_PER_UPLOAD: z.coerce.number().int().positive().default(1000),
   MAX_FILE_SIZE_MB: z.coerce.number().int().positive().default(10),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),

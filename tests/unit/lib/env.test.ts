@@ -11,7 +11,7 @@ describe('loadEnv', () => {
       AUTH_SECRET: 'a'.repeat(32),
       DATA_DIR: '/tmp/data',
     });
-    expect(env.MAX_UPLOAD_MB).toBe(50);
+    expect(env.MAX_UPLOAD_MB).toBe(10);
     expect(env.MAX_FILES_PER_UPLOAD).toBe(1000);
     expect(env.LOG_LEVEL).toBe('info');
     expect(env.PUID).toBe(1000);
