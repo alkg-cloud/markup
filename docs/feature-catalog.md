@@ -37,7 +37,7 @@ Global 52 px top bar (`Topbar.tsx`). Present on all authenticated pages. Margin-
 | ID | Surface / Interaction | States |
 |---|---|---|
 | `topbar-bar` | Fixed top bar with search pill (centered), breadcrumbs (left), avatar (right) | visible on all auth pages; margin-left: 80 px when sidebar collapsed, smooth transition via `--morph-dur` |
-| `topbar-search-pill` | Search trigger pill centered in topbar (min 240 px, max 340 px) with VscSearch icon + "Search..." text + platform shortcut hint (`Ctrl+K` on Windows/Linux, `⌘K` on Apple platforms) | default, hover (border brightens to `--border-strong`, bg to `--surface-hover`), focus-visible, active; opens `command-palette` and closes avatar dropdown |
+| `topbar-search-pill` | Search trigger pill centered in topbar (min 240 px, max 340 px) with VscSearch icon + "Search..." text + a `<Kbd keys={['mod','k']} />` chip (platform-aware keycap rendering). `aria-label` includes OS-aware plain-text shortcut hint via `formatShortcut`. | default, hover (border brightens to `--border-strong`, bg to `--surface-hover`), focus-visible, active; opens `command-palette` and closes avatar dropdown |
 | `topbar-avatar-btn` | User avatar button (top-right), 32 px circle with initials | default, hover (border-color accent), focus-visible, active; opens `topbar-avatar-menu` via `usePopover` |
 | `topbar-avatar-menu` | Native HTML popover (`popover="auto"`) anchored to `topbar-avatar-btn` via `usePopover('right')`. Layout for **admin** users: an `Admin` subheading (10 px mono uppercase, 0.12em tracking, `--text-muted`, 6 px / 14 px padding) followed by **Invites** (navigates to `/settings/invites`) and **Agent Tokens** (navigates to `/settings/agents`); a divider; then **Sign Out** (danger variant). Layout for **member** users hides the entire Admin group (subheading + both items) — they see only **Sign Out**. Settings and Notifications items are not shipped. Paints in the browser top-layer — light-dismiss + ESC handled natively. Closes automatically when `command-palette` opens. | closed, open; admin view (full menu), member view (only Sign Out) |
 | `topbar-breadcrumbs` | Breadcrumb strip — starts at project name (no "Markup" / "Home" prefix). Logo serves as root navigation | see `breadcrumbs-*` entries |
@@ -173,7 +173,8 @@ Global command palette (`CommandPalette.tsx`). Opens via `Ctrl+K` / `⌘K` or to
 | `command-palette-results` | Grouped result list: projects first, then folders, then mockups. Each with appropriate icon (project icon, VscFolder, VscFile) | populated, empty ("No results"), loading |
 | `command-palette-result-item` | Individual result row with icon + name + path (mono) | default, hover (`--surface-hover`), focused (keyboard), selected |
 | `command-palette-keyboard-nav` | ArrowUp/Down to move, Enter to select, Escape to close | full keyboard loop |
-| `command-palette-esc-badge` | Escape badge / button in palette footer with keyboard hints | default, hover (`--text` + `--border-strong`) |
+| `command-palette-esc-badge` | Escape badge / button in palette footer that closes the palette on click. Styled identically to a keycap (`.escBadge` rule — `--bg-card`, `--border`, `--font-mono` 10 px). | default, hover (`--text` + `--border-strong`) |
+| `command-palette-footer-hints` | Footer hint row showing ↑↓ navigate / ↵ open / esc close. Keyboard indicators rendered with `<Kbd>`: ↑↓ via `<Kbd.Key>` escape hatch, ↵ and esc via `<Kbd keys={[…]} />`. | always visible while palette is open |
 | `command-palette-dismiss` | Escape key or scrim click | closes palette |
 
 ## new-project-dialog
@@ -402,7 +403,7 @@ Left-side floating panel. See spec §4.
 | `mockup-viewer-rail-pinned` | Sticky 300px width via Lock-open toggle. Also driven externally by bumping `expandSignal` from `AppMainViewer` — a canvas pin click pins the rail open so the matching card is in view. | persists past mouseleave, button shows pressed state |
 | `mockup-viewer-rail-drag` | Drag handle uses the project's shared grab glyph `GoGrabber` from `react-icons/go` (sized 25 × 25 — canonical drag-affordance size across the product; rotated 90° because the rail's grab slot is horizontal and `GoGrabber` ships vertical). Drag handle DOES NOT trigger hover-expand — only the rail body does. Has `touch-action: none` so pointer drag works on touchscreens. Pointerdown calls `setPointerCapture` on the grab handle so fast cursor movement past the 28 px handle can't let the browser escalate the gesture (text selection across the rail body, native HTML5 drag of the inner svg) and fire `pointercancel`; the drag state also recovers cleanly if `pointercancel` does fire (OS preemption etc.) — same release path as `pointerup`. Dragged position is cleared when fullscreen toggles so the rail returns to its spec-default coordinates instead of being stranded off-screen. | grab/grabbing cursor |
 | `mockup-viewer-rail-lock-open` | Lock-open button rendered with `react-icons/vsc` `VscPinned` — "Keep expanded" / "Unlock" tooltip. Pressed state only changes `background` + `color` (no rotation) — the icon stays upright. | aria-pressed reflects state |
-| `mockup-viewer-rail-add-button` | "+ New annotation" button at foot. Morphs round → pill with label + ⌘⇧N (Ctrl+⇧+N on Windows/Linux). Pinned via `flex-shrink: 0` to the spec-default 32 × 32 pill so the inner 30 × 30 icon sits dead-centre even though the collapsed foot inner is narrower than the button's declared width. | collapsed/expanded width transition |
+| `mockup-viewer-rail-add-button` | "+ New annotation" button at foot. Morphs round → pill with label + `<Kbd keys={['mod','shift','n']} />` keycap chip (OS-aware rendering). `aria-label` uses `formatShortcut` for plain-text SR announcement. Pinned via `flex-shrink: 0` to the spec-default 32 × 32 pill so the inner 30 × 30 icon sits dead-centre even though the collapsed foot inner is narrower than the button's declared width. | collapsed/expanded width transition |
 
 ### mockup-viewer-toolbar
 
@@ -688,6 +689,16 @@ Toast notification system (`Toast.tsx`, `useToast.ts`).
 | `toast-container` | Fixed bottom-center container | positioned absolutely |
 | `toast-pill` | Individual toast message pill. Uses the **glass-surface standard**: `--surface-glass-bg`, blur 16 px / saturate 140%, `--surface-glass-border`, `--shadow-popover`. No accent glow ring — toasts are neutral surfaces. | slide-in animation (`--motion-fast` / `--ease-spring`), auto-dismiss |
 | `toast-reduced-motion` | Reduced motion override | animation zeroed via `prefers-reduced-motion` |
+
+## kbd
+
+Keyboard-shortcut keycap chip indicator (`Kbd.tsx`). OS-aware: macOS uses ⌘⇧⌥⌃ symbols with naked adjacency; Windows/Linux uses Ctrl/Shift/Alt text labels with `+` separators. Primary API: `<Kbd keys={['mod', 'k']} />`. Escape hatch for multi-glyph chips: `<Kbd.Group><Kbd.Key>↑↓</Kbd.Key></Kbd.Group>`. No Radix primitive. DS source: `docs/design/design-system/29-kbd.html`.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `kbd-group` | `<span role="group">` wrapper for one keyboard combo. Provides the SR-facing `aria-label` (e.g. "shortcut: Command Shift K"). Inline-flex row, 3 px gap. | default, disabled (`data-state="disabled"` → opacity 0.5) |
+| `kbd-key` | Individual keycap chip (`<kbd>`). 20 px min-width, 2 px 6 px padding. `--bg-elevated` background, 1 px `--border` top/left/right, 1 px `--border-strong` bottom (depth effect). `--font-mono` 10.5 px / 600 weight. `--text-dim`. Glyph is OS-resolved: `mod` → ⌘ on mac / Ctrl on Windows-Linux; `shift` → ⇧ / Shift; `alt` → ⌥ / Alt; etc. | default only (no hover — chip is not interactive) |
+| `kbd-plus` | `+` separator between keycaps. Rendered only on non-mac. `--font-mono` 10 px, `--text-muted`, 1 px side margin. | non-mac only |
 
 ## app-nav
 

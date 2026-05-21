@@ -261,13 +261,3 @@
   font-size: 11px;
   color: var(--text-muted);
 }
-
-.footerHint kbd {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 1px 5px;
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--text-dim);
-}

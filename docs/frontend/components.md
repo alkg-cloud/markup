@@ -137,6 +137,10 @@ src/components/
     useUploadMockup.ts           # XHR-backed upload hook with progress + idle|uploading|success|error state machine
     useFilePreview.ts            # builds an inline preview URL for the dropped file; loading|ready|fallback states
     useFolders.ts                # per-project folder tree fetch keyed on `projectId`; module-level Map cache + AbortController so in-dialog project switches re-fetch (and re-flips back are free)
+  Kbd/
+    Kbd.tsx                 # 'use client' — OS-aware keyboard-shortcut indicator; `<Kbd keys={[...]} />` for combos; `Kbd.Group` / `Kbd.Key` / `Kbd.Plus` for escape-hatch single chips. No Radix primitive. DS source: docs/design/design-system/29-kbd.html
+    Kbd.module.css          # .group (inline-flex, gap 3px, disabled opacity), .key (keycap chip: bg-elevated, border, mono 10.5px/600), .plus ("+" separator, non-mac only)
+    keys.ts                 # KbdKey union type + resolveKey() + announceCombo() — pure, no DOM
   Toast/
     useToast.ts             # 'use client' — ToastProvider (context + reducer) + useToast() hook; show(message, duration?)
     Toast.tsx               # re-exports ToastProvider + useToast

@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VscSearch } from 'react-icons/vsc';
+import { Kbd } from '@/components/Kbd/Kbd';
 import type { TreeProject } from '@/components/ProjectTree/ProjectTree';
 import styles from './CommandPalette.module.css';
 import { filterAndGroup } from './filter';
@@ -311,13 +312,16 @@ export function CommandPalette({ projects }: CommandPaletteProps) {
 
         <div className={styles.footer}>
           <span className={styles.footerHint}>
-            <kbd>{'↑↓'}</kbd> navigate
+            <Kbd.Group aria-label="up/down arrows">
+              <Kbd.Key>↑↓</Kbd.Key>
+            </Kbd.Group>{' '}
+            navigate
           </span>
           <span className={styles.footerHint}>
-            <kbd>{'↵'}</kbd> open
+            <Kbd keys={['enter']} /> open
           </span>
           <span className={styles.footerHint}>
-            <kbd>esc</kbd> close
+            <Kbd keys={['esc']} /> close
           </span>
         </div>
       </div>
