@@ -1,0 +1,61 @@
+/* Skeleton primitive — a single rectangle with a slow shimmer.
+ *
+ * Tokens used (all defined in src/styles/tokens.css):
+ *   --surface-hover     base bar colour
+ *   --border-subtle     overlay sweep colour
+ *   --radius-sm         standard corner
+ *   --motion-slower     shimmer duration source (overridden inline)
+ *   --ease-standard     motion curve
+ *
+ * The shimmer is implemented as a translating gradient overlay so the
+ * underlying bar stays solid (no layout shift, no opacity flicker). At
+ * `prefers-reduced-motion`, the shimmer animation is disabled — the bar
+ * remains visible as a flat surface so users still see "loading" but
+ * don't get an animated stripe sliding across their screen every frame.
+ */
+
+.bar {
+  position: relative;
+  display: block;
+  background: var(--surface-hover);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  /* Default sizing — components opt into specific dimensions via inline
+   * `style={{ width, height }}` or composition classes below. */
+  height: 1em;
+}
+
+.bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, var(--border-subtle) 50%, transparent 100%);
+  transform: translateX(-100%);
+  animation: shimmer 1.4s linear infinite;
+}
+
+.text {
+  /* For inline label-sized bars next to icons. */
+  height: 0.75em;
+  border-radius: var(--radius-pill);
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar::after {
+    animation: none;
+    background: transparent;
+  }
+}

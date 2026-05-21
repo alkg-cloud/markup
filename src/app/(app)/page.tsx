@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
-import { LoadingState } from '@/components/LoadingState/LoadingState';
+import { ProjectSkeleton } from '@/components/Skeleton';
 import type { HomeData } from '@/lib/home/types';
 import { AllProjectsPage } from './AllProjectsPage';
 
@@ -48,7 +48,7 @@ export default function Root() {
   }
 
   if (!data) {
-    return <LoadingState />;
+    return <ProjectSkeleton />;
   }
 
   return <AllProjectsPage data={data} onMutated={reload} />;

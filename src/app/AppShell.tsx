@@ -2,12 +2,14 @@
 
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
 import { useNewMockupDialog } from '@/components/NewMockupDialog';
 import type { TreeMockup, TreeProject } from '@/components/ProjectTree/ProjectTree';
 import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
+import { ShellSkeleton } from '@/components/Skeleton/ShellSkeleton';
 import { type AuthMe, IdentityContext, useRequireAuth } from '@/lib/hooks/use-require-auth';
+import { ShellRefreshContext } from '@/lib/hooks/use-shell-refresh';
 import { resolveTargetFromPath } from '@/lib/upload/resolve-target';
 import styles from './projects/layout.module.css';
 import { ProjectSidebar } from './projects/ProjectSidebar';
@@ -32,6 +34,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { identity, loading: authLoading } = useRequireAuth();
   const [shell, setShell] = useState<ShellPayload | null>(null);
   const [shellError, setShellError] = useState<string | null>(null);
+  // Bumping this triggers the fetch effect; consumers (sidebar rename /
+  // move / delete handlers) call `refreshShell()` from
+  // `useShellRefresh()` to keep the cached payload in sync after a
+  // mutation.
+  const [refreshTick, setRefreshTick] = useState(0);
+  const refreshShell = useCallback(() => setRefreshTick((t) => t + 1), []);
   // Footer "New mockup" button: pop the upload dialog with the picked
   // file. The provider lives at `(app)/layout.tsx` so this hook always
   // resolves; we re-resolve the current route's target here (mirroring
@@ -64,26 +72,29 @@ export function AppShell({ children }: { children: ReactNode }) {
         setShellError(String(e));
       });
     return () => controller.abort();
-  }, [authLoading, identity]);
+  }, [authLoading, identity, refreshTick]);
 
   if (authLoading || !identity || !shell) {
-    return (
-      <div
-        className={styles.shell}
-        aria-busy="true"
-        style={{ display: 'grid', placeItems: 'center', minHeight: '100dvh' }}
-      >
-        <span
-          style={{
-            color: 'var(--text-muted)',
-            fontSize: 'var(--type-sm)',
-            fontFamily: 'var(--font-body)',
-          }}
+    if (shellError) {
+      return (
+        <div
+          className={styles.shell}
+          aria-busy="true"
+          style={{ display: 'grid', placeItems: 'center', minHeight: '100dvh' }}
         >
-          {shellError ? `Failed to load (${shellError})` : 'Loading…'}
-        </span>
-      </div>
-    );
+          <span
+            style={{
+              color: 'var(--text-muted)',
+              fontSize: 'var(--type-sm)',
+              fontFamily: 'var(--font-body)',
+            }}
+          >
+            Failed to load ({shellError})
+          </span>
+        </div>
+      );
+    }
+    return <ShellSkeleton />;
   }
 
   // Prefer the shell payload's name/email (it falls back to the user
@@ -98,18 +109,20 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <IdentityContext.Provider value={shellIdentity}>
-      <div className={styles.shell}>
-        <ProjectSidebar
-          projects={shell.projects}
-          orphanMockups={shell.orphanMockups}
-          mockupNames={shell.mockupNames}
-          recentMockups={shell.recentMockups}
-          defaultCollapsed={shell.sidebarCollapsed}
-          onUploadFile={handleSidebarUpload}
-        />
-        <main className={styles.main}>{children}</main>
-        <CommandPalette projects={shell.projects} />
-      </div>
+      <ShellRefreshContext.Provider value={refreshShell}>
+        <div className={styles.shell}>
+          <ProjectSidebar
+            projects={shell.projects}
+            orphanMockups={shell.orphanMockups}
+            mockupNames={shell.mockupNames}
+            recentMockups={shell.recentMockups}
+            defaultCollapsed={shell.sidebarCollapsed}
+            onUploadFile={handleSidebarUpload}
+          />
+          <main className={styles.main}>{children}</main>
+          <CommandPalette projects={shell.projects} />
+        </div>
+      </ShellRefreshContext.Provider>
     </IdentityContext.Provider>
   );
 }
