@@ -29,8 +29,20 @@ function renderNode(node: React.ReactElement) {
   });
 }
 
+/**
+ * Both the implicit radio role on `<input type="radio">` and our visible
+ * `<label>` wrappers participate in the radiogroup pattern. Tests target
+ * the native inputs (queried by role) for assertions about checked-state
+ * and keyboard behaviour, and the surrounding `<label>` rows when
+ * exercising click semantics — clicks bubble through the label to the
+ * input, which is what end-users actually do.
+ */
+function getRadioInputs(): HTMLInputElement[] {
+  return Array.from(container.querySelectorAll<HTMLInputElement>('input[type="radio"]'));
+}
+
 function getRadioRows(): HTMLElement[] {
-  return Array.from(container.querySelectorAll<HTMLElement>('[role="radio"]'));
+  return Array.from(container.querySelectorAll<HTMLElement>('[data-active]'));
 }
 
 describe('ReplaceToggle', () => {
@@ -52,9 +64,10 @@ describe('ReplaceToggle', () => {
       <ReplaceToggle currentMockupName="lumen-coffee-hero" value="add" onChange={() => {}} />,
     );
 
+    const inputs = getRadioInputs();
     const rows = getRadioRows();
-    expect(rows[0].getAttribute('aria-checked')).toBe('true');
-    expect(rows[1].getAttribute('aria-checked')).toBe('false');
+    expect(inputs[0].checked).toBe(true);
+    expect(inputs[1].checked).toBe(false);
     expect(rows[0].getAttribute('data-active')).toBe('true');
     expect(rows[1].getAttribute('data-active')).toBe('false');
   });
@@ -64,9 +77,10 @@ describe('ReplaceToggle', () => {
       <ReplaceToggle currentMockupName="lumen-coffee-hero" value="replace" onChange={() => {}} />,
     );
 
+    const inputs = getRadioInputs();
     const rows = getRadioRows();
-    expect(rows[0].getAttribute('aria-checked')).toBe('false');
-    expect(rows[1].getAttribute('aria-checked')).toBe('true');
+    expect(inputs[0].checked).toBe(false);
+    expect(inputs[1].checked).toBe(true);
     expect(rows[0].getAttribute('data-active')).toBe('false');
     expect(rows[1].getAttribute('data-active')).toBe('true');
   });
@@ -101,54 +115,40 @@ describe('ReplaceToggle', () => {
     expect(onChange).toHaveBeenCalledWith('replace');
   });
 
-  it('keyboard activation: Enter on the focused Replace row fires onChange("replace")', () => {
+  it('native radios are grouped by a shared name attribute', () => {
+    renderNode(
+      <ReplaceToggle currentMockupName="lumen-coffee-hero" value="add" onChange={() => {}} />,
+    );
+
+    const inputs = getRadioInputs();
+    expect(inputs[0].name).toBe('mockup-replace-mode');
+    expect(inputs[1].name).toBe('mockup-replace-mode');
+  });
+
+  it('native radios are focusable so the browser drives Tab + arrow navigation', () => {
+    renderNode(
+      <ReplaceToggle currentMockupName="lumen-coffee-hero" value="add" onChange={() => {}} />,
+    );
+
+    const inputs = getRadioInputs();
+    inputs[0].focus();
+    expect(document.activeElement).toBe(inputs[0]);
+    inputs[1].focus();
+    expect(document.activeElement).toBe(inputs[1]);
+  });
+
+  it('clicking the input directly fires onChange with the matching mode', () => {
     const onChange = vi.fn();
     renderNode(
       <ReplaceToggle currentMockupName="lumen-coffee-hero" value="add" onChange={onChange} />,
     );
 
-    const rows = getRadioRows();
-    rows[1].focus();
-    expect(document.activeElement).toBe(rows[1]);
-
+    const inputs = getRadioInputs();
     act(() => {
-      rows[1].dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
-      );
+      inputs[1].click();
     });
 
     expect(onChange).toHaveBeenCalledWith('replace');
-  });
-
-  it('keyboard activation: Space on the focused Add row fires onChange("add")', () => {
-    const onChange = vi.fn();
-    renderNode(
-      <ReplaceToggle currentMockupName="lumen-coffee-hero" value="replace" onChange={onChange} />,
-    );
-
-    const rows = getRadioRows();
-    rows[0].focus();
-
-    act(() => {
-      rows[0].dispatchEvent(
-        new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }),
-      );
-    });
-
-    expect(onChange).toHaveBeenCalledWith('add');
-  });
-
-  it('rows are reachable via Tab (tabIndex is set)', () => {
-    renderNode(
-      <ReplaceToggle currentMockupName="lumen-coffee-hero" value="add" onChange={() => {}} />,
-    );
-
-    const rows = getRadioRows();
-    // Both rows must be focusable. Per ARIA radiogroup pattern, only the
-    // checked one needs to be in the tab sequence, but the unchecked one
-    // must at least be programmatically focusable (tabIndex >= -1).
-    expect(rows[0].tabIndex).toBeGreaterThanOrEqual(0);
-    expect(rows[1].tabIndex).toBeGreaterThanOrEqual(-1);
   });
 
   it('emits the name in an accent-styled span (className hook)', () => {
