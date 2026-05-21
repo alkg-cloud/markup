@@ -40,11 +40,8 @@
 
 import * as Popover from '@radix-ui/react-popover';
 import { type ComponentPropsWithoutRef, forwardRef, useMemo, useState } from 'react';
+import { cn } from '@/lib/cn';
 import styles from './FolderPicker.module.css';
-
-function cn(...names: Array<string | undefined | false | null>): string {
-  return names.filter(Boolean).join(' ');
-}
 
 export type FolderPickerFolder = {
   id: string;
