@@ -15,11 +15,6 @@ interface ProjectSkeletonProps {
 export function ProjectSkeleton({ cardCount = 6 }: ProjectSkeletonProps) {
   return (
     <div className={styles.root} aria-busy="true" aria-live="polite">
-      <div className={styles.breadcrumb}>
-        <Skeleton width={80} height={12} variant="text" />
-        <Skeleton width={8} height={8} variant="circle" />
-        <Skeleton width={120} height={12} variant="text" />
-      </div>
       <div className={styles.heading}>
         <Skeleton width={32} height={32} variant="circle" />
         <Skeleton width={240} height={28} />

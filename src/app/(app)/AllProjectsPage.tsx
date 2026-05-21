@@ -11,7 +11,6 @@ import { HomeRecents } from '@/components/HomeRecents/HomeRecents';
 import { useNewMockupDialog } from '@/components/NewMockupDialog';
 import { NewProjectDialog } from '@/components/NewProjectDialog/NewProjectDialog';
 import type { ProjectCardData } from '@/components/ProjectCard/ProjectCard';
-import { Topbar } from '@/components/Topbar/Topbar';
 import type { HomeData } from '@/lib/home/types';
 import { projectHref } from '@/lib/project/routes';
 import styles from './AllProjectsPage.module.css';
@@ -118,13 +117,6 @@ export function AllProjectsPage({ data, onMutated }: AllProjectsPageProps) {
         onClose={() => setEditingId(null)}
         onSaved={handleSaved}
         project={editingProject}
-      />
-
-      <Topbar
-        breadcrumbs={[]}
-        userName={data.identity.name ?? undefined}
-        userEmail={data.identity.email ?? undefined}
-        userRole={data.identity.role}
       />
 
       <main className={styles.main} aria-label="Home">

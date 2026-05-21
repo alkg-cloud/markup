@@ -11,19 +11,6 @@ import { Skeleton } from './Skeleton';
 export function MockupViewerSkeleton() {
   return (
     <div className={styles.root} aria-busy="true" aria-live="polite">
-      <header className={styles.header}>
-        <div className={styles.headerLeft}>
-          <Skeleton width={20} height={20} variant="circle" />
-          <Skeleton width={180} height={14} variant="text" />
-          <Skeleton width={8} height={8} variant="circle" />
-          <Skeleton width={120} height={14} variant="text" />
-        </div>
-        <div className={styles.headerRight}>
-          <Skeleton width={64} height={26} />
-          <Skeleton width={26} height={26} />
-          <Skeleton width={26} height={26} />
-        </div>
-      </header>
       <div className={styles.body}>
         <div className={styles.viewport} />
         <div className={styles.rail}>

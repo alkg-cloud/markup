@@ -39,6 +39,15 @@ export default function ProjectPage() {
   const identity = useIdentity();
   const [data, setData] = useState<ProjectViewPayload | null>(null);
   const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
+  // In-render slug reset — when the URL slug changes, drop the stale
+  // payload BEFORE the next paint so the user never sees the previous
+  // project's content for a frame between click and skeleton.
+  const [storedSlug, setStoredSlug] = useState(slug);
+  if (storedSlug !== slug) {
+    setStoredSlug(slug);
+    setData(null);
+    setStatus('loading');
+  }
 
   useEffect(() => {
     if (!slug) return;
@@ -76,11 +85,15 @@ export default function ProjectPage() {
     return <ErrorState error="Failed to load project." />;
   }
   if (status === 'loading' || !data) {
-    return <ProjectSkeleton />;
+    return (
+      <FadeIn key="loading">
+        <ProjectSkeleton />
+      </FadeIn>
+    );
   }
 
   return (
-    <FadeIn>
+    <FadeIn key="loaded">
       <ProjectContent
         projectName={data.projectName}
         projectSlug={data.projectSlug}
