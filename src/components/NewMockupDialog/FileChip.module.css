@@ -1,0 +1,55 @@
+/* File chip — port of DS 25's `.file-chip` block. Color-coded HTML/ZIP badge
+   + filename + size · MIME meta line. */
+
+.fileChip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.ftype {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ftype[data-type="html"] {
+  background: oklch(35% 0.12 60);
+  color: oklch(85% 0.16 60);
+}
+
+.ftype[data-type="zip"] {
+  background: oklch(35% 0.12 240);
+  color: oklch(85% 0.14 240);
+}
+
+.fmeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.fname {
+  font-weight: 600;
+  color: var(--text-bright);
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fsize {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
