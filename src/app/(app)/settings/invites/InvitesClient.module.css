@@ -250,6 +250,9 @@
   opacity: 0.5;
 }
 
+/* Bare class first, state-prefixed overrides after — keeps Biome's
+   noDescendingSpecificity rule happy and matches the .cardIcon block
+   above. See docs/frontend/styling.md (CSS Modules). */
 .metaState {
   color: var(--text-dim);
 }
