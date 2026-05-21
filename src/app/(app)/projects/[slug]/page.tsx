@@ -4,7 +4,7 @@ import { notFound, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
-import { LoadingState } from '@/components/LoadingState/LoadingState';
+import { ProjectSkeleton } from '@/components/Skeleton';
 import { useIdentity } from '@/lib/hooks/use-require-auth';
 import { ProjectContent } from '../../../projects/[slug]/ProjectContent';
 
@@ -75,7 +75,7 @@ export default function ProjectPage() {
     return <ErrorState error="Failed to load project." />;
   }
   if (status === 'loading' || !data) {
-    return <LoadingState />;
+    return <ProjectSkeleton />;
   }
 
   return (
