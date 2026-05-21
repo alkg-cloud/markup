@@ -4,9 +4,13 @@ import { resolveIconToken } from '@/components/IconPicker/icons';
 
 /* ── Inline SVG icons for the project tree ────────────────────────────────
  *
- * Kept inline (rather than via `react-icons`) so the strokes match the
- * tree's typographic scale exactly and so the bundle doesn't pay for an
- * icon set's entry whenever the sidebar loads.
+ * Tree house glyphs (ChevronIcon, ProjectIcon, FolderIcon, MockupIcon,
+ * KebabIcon) stay inline so the strokes match the tree's typographic scale
+ * exactly and the bundle doesn't pay for an icon set's entry whenever the
+ * sidebar loads.
+ *
+ * User-selected project icons (from the IconPicker) render via
+ * resolveIconToken() → react-icons component, not via dangerouslySetInnerHTML.
  */
 
 export function ChevronIcon() {
@@ -80,6 +84,7 @@ export function KebabIcon() {
 export function ProjectIconResolved({ token }: { token: string }) {
   const resolved = resolveIconToken(token);
   if (!resolved) return <ProjectIcon />;
-  if (resolved.type === 'emoji') return <span aria-hidden="true">{resolved.content}</span>;
-  return <span aria-hidden="true" dangerouslySetInnerHTML={{ __html: resolved.content }} />;
+  if (resolved.kind === 'emoji') return <span aria-hidden="true">{resolved.glyph}</span>;
+  const { Icon } = resolved;
+  return <Icon aria-hidden="true" />;
 }

@@ -204,12 +204,12 @@ Project update dialog (`NewProjectDialog.tsx` in edit mode).
 
 ## icon-picker
 
-Tabbed icon picker popover (`IconPicker.tsx`). Reusable in "New Project" dialog and "Change icon" from project kebab menu. Uses react-icons (VS Code icons from `react-icons/vsc`).
+Tabbed icon picker popover (`IconPicker.tsx`). Reusable in "New Project" dialog and "Change icon" from project kebab menu. Multi-set palette: Code from `react-icons/vsc` (Codicons), Brands from `react-icons/si` (Simple Icons), UI from `react-icons/lu` (Lucide), Emoji as native glyphs. No `dangerouslySetInnerHTML` — all icons render as real React components.
 
 | ID | Surface / Interaction | States |
 |---|---|---|
 | `icon-picker-popover` | Positioned popover/container that fills available inline width | open, closed |
-| `icon-picker-tabs` | 4 category tabs: **Code** (VscCode icons), **Brands** (VscGithub, etc.), **UI** (VscLayout, etc.), **Emoji** (emoji grid) | default tab, active tab (accent underline) |
+| `icon-picker-tabs` | 4 category tabs: **Code** (Codicons via `react-icons/vsc`), **Brands** (Simple Icons via `react-icons/si`), **UI** (Lucide via `react-icons/lu`), **Emoji** (native glyph grid) | default tab, active tab (accent underline) |
 | `icon-picker-search` | Search input with VscSearch icon within picker. Filters icons live | idle, typing |
 | `icon-picker-grid` | 8-column SVG icon grid | populated, empty (no matches for search) |
 | `icon-picker-cell` | Individual icon cell | default, hover (surface-hover), selected (accent border + accent-overlay-soft bg) |
