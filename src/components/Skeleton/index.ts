@@ -1,4 +1,4 @@
-export { MockupViewerSkeleton } from './MockupViewerSkeleton';
+export { HomeSkeleton } from './HomeSkeleton';
 export { ProjectSkeleton } from './ProjectSkeleton';
-export { ShellSkeleton } from './ShellSkeleton';
+export { SidebarTreeSkeleton } from './SidebarTreeSkeleton';
 export { Skeleton } from './Skeleton';

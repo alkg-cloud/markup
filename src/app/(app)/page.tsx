@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { FadeIn } from '@/components/FadeIn';
-import { ProjectSkeleton } from '@/components/Skeleton';
+import { HomeSkeleton } from '@/components/Skeleton';
 import type { HomeData } from '@/lib/home/types';
 import { AllProjectsPage } from './AllProjectsPage';
 
@@ -49,11 +49,9 @@ export default function Root() {
   }
 
   if (!data) {
-    return (
-      <FadeIn key="loading">
-        <ProjectSkeleton />
-      </FadeIn>
-    );
+    // No FadeIn wrap — the skeleton itself is the first paint, and the
+    // real content swap below already lives inside its own FadeIn.
+    return <HomeSkeleton />;
   }
 
   return (

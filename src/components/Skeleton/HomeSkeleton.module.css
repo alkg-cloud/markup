@@ -1,0 +1,111 @@
+/* Home-page skeleton — mirrors `AllProjectsPage` + `HomeHero` + the
+ * per-section grids so the post-load swap doesn't shift the page.
+ * The hero greeting and date are real text (locally derived); the
+ * "N mockups updated since yesterday" count is the only unknown and
+ * shows a mini text skeleton in its place.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+  padding: var(--space-xl) var(--space-lg) var(--space-2xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.greeting {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: 28px;
+  color: var(--text-bright);
+  letter-spacing: var(--tracking-tight);
+}
+
+.sub {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.subCount {
+  /* Slightly narrower than a typical "32 mockups updated since
+   * yesterday" line so the skeleton reads as a placeholder, not as
+   * an over-eager rectangle. */
+  display: inline-block;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: 18px;
+  color: var(--text-bright);
+  letter-spacing: var(--tracking-tight);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-md);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.thumb {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+}
+
+.projectHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: var(--space-md);
+    gap: var(--space-xl);
+  }
+}

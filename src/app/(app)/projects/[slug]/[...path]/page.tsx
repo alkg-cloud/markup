@@ -6,7 +6,7 @@ import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { FadeIn } from '@/components/FadeIn';
 import { MockupViewerPage } from '@/components/MockupViewer/MockupViewerPage';
-import { MockupViewerSkeleton, ProjectSkeleton } from '@/components/Skeleton';
+import { ProjectSkeleton } from '@/components/Skeleton';
 import { useIdentity } from '@/lib/hooks/use-require-auth';
 import { ProjectContent } from '../../../../projects/[slug]/ProjectContent';
 
@@ -103,19 +103,10 @@ export default function ProjectPathPage() {
     return <ErrorState error="Failed to load page." />;
   }
   if (status === 'loading' || !resolution) {
-    // The catch-all serves both folder and mockup paths; we can't know
-    // which one the trailing segments resolve to until the API returns.
-    // The trailing segment count is the best heuristic: a mockup leaf
-    // is typically `…/<mockup-slug>` (one extra segment beyond the
-    // folder path the user navigated through), so we show a viewer
-    // skeleton when the last segment is plausible.
-    const segments = params?.path ?? [];
-    const looksLikeMockup = segments.length > 0 && segments[segments.length - 1].includes('-');
-    return (
-      <FadeIn key="loading">
-        {looksLikeMockup ? <MockupViewerSkeleton /> : <ProjectSkeleton />}
-      </FadeIn>
-    );
+    // Folder and mockup paths share the same skeleton — the URL alone
+    // can't reliably disambiguate the two, and a slightly-off skeleton
+    // is less jarring than the body cross-swapping shapes mid-load.
+    return <ProjectSkeleton />;
   }
 
   if (resolution.kind === 'mockup') {

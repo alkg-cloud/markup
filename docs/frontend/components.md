@@ -41,7 +41,7 @@ export default function MockupPage() {
   }, [id]);
 
   if (error) return <ErrorState code={error} />;
-  if (!data) return <MockupViewerSkeleton />;
+  if (!data) return <ProjectSkeleton />;
   return (
     <FadeIn>
       <ViewerSurface {...data} />
@@ -56,19 +56,22 @@ See [`docs/frontend/data-fetching.md`](data-fetching.md) for the shared `useApi`
 
 **Every loading state in the app MUST render a skeleton.** Bare "Loading…" text, blank screens, and standalone spinners are forbidden — they leave the layout shifting and the user staring at empty pixels on every cold start.
 
+**The structural shell (sidebar logo, collapse button, PROJECTS / NO PROJECT section headers, footer "New mockup" button, and topbar with breadcrumbs + avatar) is NEVER skeletoned.** Those elements paint immediately because they are derived from the URL + auth-me response, not from `/api/shell`. The skeleton only replaces the variable parts: sidebar tree rows, page content cards, the home hero's "N mockups updated since yesterday" count.
+
 The skeleton primitives live in [`src/components/Skeleton/`](../../src/components/Skeleton):
 
 - `<Skeleton />` — single rectangle with shimmer (`block` / `text` / `circle` variants). Use it to compose ad-hoc placeholders.
-- `<ShellSkeleton />` — sidebar + main grid. Mounted by `AppShell` while `/api/shell` and `/api/auth/me` are in flight.
-- `<ProjectSkeleton />` — header + card grid. Use for `/`, `/projects/[slug]`, and the folder branch of `/projects/[slug]/[...path]`.
-- `<MockupViewerSkeleton />` — viewer header + viewport + rail. Use for the mockup branch of the catch-all and any page that hosts `MockupViewerPage`.
+- `<SidebarTreeSkeleton />` — placeholder tree rows mounted inside the real `<Sidebar>` while `/api/shell` is in flight. Brand, collapse, footer, and section labels stay real.
+- `<HomeSkeleton />` — workspace landing skeleton. Renders the real `HomeHero` greeting + date (locally derived) with a mini text skeleton in place of the unknown "N mockups updated since yesterday" count, plus skeleton card grids for Recents, Projects, and No-project sections.
+- `<ProjectSkeleton />` — header + card grid shared by `/projects/[slug]`, the catch-all (`/projects/[slug]/[...path]`), and the mockup viewer's pre-data state. A single skeleton across the three branches keeps the load feeling smooth even when the URL can't disambiguate them upfront.
 
 Rules of thumb:
 
-1. **Mirror the post-load layout.** A skeleton that doesn't match the real layout produces a visible "jump" when the content arrives. Compose new skeletons from `<Skeleton />` to reach pixel parity with the destination surface.
+1. **Mirror the post-load layout where you can.** A skeleton that doesn't match the real layout produces a visible "jump" when the content arrives. Compose new skeletons from `<Skeleton />` to reach pixel parity with the destination surface. (The project/folder/mockup unification accepts a small mismatch since the alternative — swapping between two different placeholders mid-load — feels worse.)
 2. **Wrap the real content in `<FadeIn>`** so the swap from skeleton → content is a 220 ms ease-out cross-fade, not a hard cut. Importing it costs nothing (`src/components/FadeIn/FadeIn.tsx` is a few dozen bytes).
-3. **Respect `prefers-reduced-motion`.** Both the shimmer animation and the fade-in are zeroed under the media query — no opt-in needed; the primitives already do it.
-4. **Don't render the skeleton inside a Suspense boundary that flickers.** If the data source is fast (< 100 ms) the skeleton-then-content swap is itself noise; in that case render nothing while loading and rely on the parent's skeleton for the cold-start case.
+3. **Don't FadeIn the skeleton itself.** The skeleton is the first paint — fading it in just delays feedback. FadeIn wraps only the resolved content branch.
+4. **Respect `prefers-reduced-motion`.** Both the shimmer animation and the fade-in are zeroed under the media query — no opt-in needed; the primitives already do it.
+5. **Don't render the skeleton inside a Suspense boundary that flickers.** If the data source is fast (< 100 ms) the skeleton-then-content swap is itself noise; in that case render nothing while loading and rely on the parent's skeleton for the cold-start case.
 
 The reference page-level pattern:
 
