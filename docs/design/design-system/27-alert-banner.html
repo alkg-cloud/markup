@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>27 — Alert banner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);
+  --surface-hover:rgba(255,255,255,0.04);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);
+  /* Semantic palette — verbatim from src/styles/tokens.css */
+  --danger:oklch(70% 0.2 25);   --danger-soft:oklch(28% 0.09 25);
+  --warning:oklch(80% 0.15 80); --warning-soft:oklch(30% 0.07 80);
+  --success:oklch(76% 0.16 152);--success-soft:oklch(28% 0.07 152);
+  --info:oklch(74% 0.13 200);   --info-soft:oklch(26% 0.06 200);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
+  --shadow-md:0 6px 16px oklch(0% 0 0/0.5);
+}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:880px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  padding:32px;
+}
+.stage + .stage{margin-top:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+.stack{display:flex;flex-direction:column;gap:12px}
+
+/* ─── alert-banner — single canonical surface, four status variants ─── */
+.alert-banner{
+  display:flex;
+  align-items:stretch;
+  gap:10px;
+  padding:10px 14px;
+  border-radius:var(--radius-sm);
+  font-size:12.5px;
+  animation:bannerIn var(--motion-base) var(--ease-spring);
+}
+@keyframes bannerIn{
+  from{opacity:0;transform:translateY(-4px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.alert-banner .icon{
+  width:28px;height:28px;
+  flex-shrink:0;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);
+  font-weight:700;
+  font-size:14px;
+}
+.alert-banner .body{
+  flex:1;
+  display:flex;flex-direction:column;
+  gap:2px;
+  justify-content:center;
+  min-width:0;
+}
+.alert-banner .title{
+  font-weight:700;
+  font-size:13px;
+}
+.alert-banner .body p{
+  opacity:0.9;
+}
+.alert-banner .close-btn{
+  width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-xs);
+  cursor:pointer;
+  align-self:flex-start;
+  opacity:0.7;
+  transition:background var(--motion-fast),opacity var(--motion-fast);
+}
+.alert-banner .close-btn:hover{background:rgba(255,255,255,0.1);opacity:1}
+.alert-banner .close-btn svg{width:12px;height:12px}
+
+/* Action slot — used for "Retry", "Undo", "View" right-side buttons */
+.alert-banner .action{
+  align-self:center;
+  height:26px;
+  padding:0 12px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:var(--radius-pill);
+  font-size:11.5px;
+  font-weight:600;
+  cursor:pointer;
+  white-space:nowrap;
+  flex-shrink:0;
+  transition:background var(--motion-fast);
+}
+.alert-banner .action:hover{background:rgba(255,255,255,0.14)}
+
+/* ── Status: error ── */
+.alert-banner[data-status="error"]{
+  background:linear-gradient(90deg, oklch(35% 0.14 25 / 0.4) 0%, oklch(28% 0.09 25 / 0.23) 100%);
+  border:1px solid var(--danger);
+  color:oklch(96% 0.04 25);
+}
+.alert-banner[data-status="error"] .icon{background:oklch(48% 0.2 25);color:oklch(98% 0.02 25)}
+.alert-banner[data-status="error"] .title{color:oklch(97% 0.04 25)}
+.alert-banner[data-status="error"] .close-btn{color:oklch(90% 0.06 25)}
+.alert-banner[data-status="error"] .action{color:oklch(98% 0.04 25)}
+
+/* ── Status: warning ── */
+.alert-banner[data-status="warning"]{
+  background:linear-gradient(90deg, oklch(35% 0.14 80 / 0.4) 0%, oklch(28% 0.09 80 / 0.23) 100%);
+  border:1px solid var(--warning);
+  color:oklch(96% 0.06 80);
+}
+.alert-banner[data-status="warning"] .icon{background:oklch(55% 0.16 80);color:oklch(18% 0.05 80)}
+.alert-banner[data-status="warning"] .title{color:oklch(97% 0.07 80)}
+.alert-banner[data-status="warning"] .close-btn{color:oklch(92% 0.08 80)}
+.alert-banner[data-status="warning"] .action{color:oklch(98% 0.06 80)}
+
+/* ── Status: success ── */
+.alert-banner[data-status="success"]{
+  background:linear-gradient(90deg, oklch(35% 0.14 152 / 0.4) 0%, oklch(28% 0.09 152 / 0.23) 100%);
+  border:1px solid var(--success);
+  color:oklch(96% 0.05 152);
+}
+.alert-banner[data-status="success"] .icon{background:oklch(50% 0.15 152);color:oklch(98% 0.02 152)}
+.alert-banner[data-status="success"] .title{color:oklch(97% 0.05 152)}
+.alert-banner[data-status="success"] .close-btn{color:oklch(90% 0.06 152)}
+.alert-banner[data-status="success"] .action{color:oklch(98% 0.05 152)}
+
+/* ── Status: info ── */
+.alert-banner[data-status="info"]{
+  background:linear-gradient(90deg, oklch(35% 0.14 200 / 0.4) 0%, oklch(28% 0.09 200 / 0.23) 100%);
+  border:1px solid var(--info);
+  color:oklch(96% 0.04 200);
+}
+.alert-banner[data-status="info"] .icon{background:oklch(50% 0.13 200);color:oklch(98% 0.02 200)}
+.alert-banner[data-status="info"] .title{color:oklch(97% 0.04 200)}
+.alert-banner[data-status="info"] .close-btn{color:oklch(90% 0.06 200)}
+.alert-banner[data-status="info"] .action{color:oklch(98% 0.04 200)}
+
+/* Form preview wrapper for "in context" stage */
+.form-preview{
+  width:min(440px,100%);
+  margin:0 auto;
+  padding:18px;
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  border-radius:14px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.form-preview .form-title{font-size:13px;font-weight:700;color:var(--text-bright);margin-bottom:2px}
+.form-preview .field-label{font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted)}
+.form-preview input{
+  height:34px;padding:0 10px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text-bright);
+  font-size:13.5px;
+}
+
+/* Anatomy / matrix tables */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;
+  background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  color:var(--text-dim);
+  overflow-x:auto;
+  white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
+</style>
+</head>
+<body>
+
+<div class="page" data-ds-component="alert-banner">
+
+  <h1 class="h1">Alert banner</h1>
+  <p class="lede">Inline notice surface anchored to a section or form. Carries <strong>non-field</strong> messages: server failures, network errors, success confirmations, and informational notices. Field-level validation lives on the <a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a> instead. Four statuses share one component — selected via <code>[data-status]</code>.</p>
+
+  <section class="section">
+    <div class="section-title">All statuses</div>
+    <div class="stage">
+      <div class="stack">
+
+        <div class="alert-banner" data-status="error" role="alert">
+          <div class="icon">!</div>
+          <div class="body">
+            <div class="title">Could not upload mockup</div>
+            <p>Network request failed. Check your connection and try again.</p>
+          </div>
+          <button class="action" type="button">Retry</button>
+          <button class="close-btn" type="button" title="Dismiss" aria-label="Dismiss">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg>
+          </button>
+        </div>
+
+        <div class="alert-banner" data-status="warning" role="alert">
+          <div class="icon">⚠</div>
+          <div class="body">
+            <div class="title">You're over the soft quota</div>
+            <p>Uploads above 5 MB will count double until the next quota window.</p>
+          </div>
+          <button class="close-btn" type="button" title="Dismiss" aria-label="Dismiss">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg>
+          </button>
+        </div>
+
+        <div class="alert-banner" data-status="success" role="status">
+          <div class="icon">✓</div>
+          <div class="body">
+            <div class="title">Mockup uploaded</div>
+            <p>Added to <strong>Lumen Coffee › Hero</strong> as <code style="font-family:var(--font-mono);color:inherit">pricing-v3</code>.</p>
+          </div>
+          <button class="action" type="button">View</button>
+          <button class="close-btn" type="button" title="Dismiss" aria-label="Dismiss">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg>
+          </button>
+        </div>
+
+        <div class="alert-banner" data-status="info" role="status">
+          <div class="icon">i</div>
+          <div class="body">
+            <div class="title">Drag a single HTML or ZIP file</div>
+            <p>Multiple files are queued; only the first is processed in this release.</p>
+          </div>
+          <button class="close-btn" type="button" title="Dismiss" aria-label="Dismiss">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
+    <div class="caption">Single recipe, four status hues (25 / 80 / 152 / 200). Background uses a soft 0.4 → 0.23 alpha gradient so the surface behind shows through and the banner doesn't compete with the form's primary content.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">In context — at the top of a dialog body</div>
+    <div class="stage">
+      <div class="form-preview">
+        <div class="form-title">New mockup</div>
+        <div class="alert-banner" data-status="error" role="alert">
+          <div class="icon">!</div>
+          <div class="body">
+            <div class="title">Rate limit reached</div>
+            <p>You've uploaded 30 mockups in the last hour. Try again in 12 minutes.</p>
+          </div>
+          <button class="close-btn" type="button" title="Dismiss" aria-label="Dismiss">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.708.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg>
+          </button>
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:4px">Name</div>
+          <input type="text" value="pricing-v3">
+        </div>
+      </div>
+    </div>
+    <div class="caption">Banner sits inside the same glass surface as the form — does <em>not</em> get its own scrim. Width matches container (flex).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Status</th><th>Use for</th><th>Aria role</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>error</code></td>
+          <td>Server reject, network failure, rate limit, permission denied. Action probably needed.</td>
+          <td><code>alert</code></td>
+        </tr>
+        <tr>
+          <td><code>warning</code></td>
+          <td>Caution; risky path forward; quota near limit. Action recommended but not blocked.</td>
+          <td><code>alert</code></td>
+        </tr>
+        <tr>
+          <td><code>success</code></td>
+          <td>Confirmation of a completed operation. Auto-dismiss is allowed.</td>
+          <td><code>status</code></td>
+        </tr>
+        <tr>
+          <td><code>info</code></td>
+          <td>Neutral guidance, tips, limits explained up front.</td>
+          <td><code>status</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Field-level validation (required, format, length, duplicate name) uses <a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a> error state — not this banner.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — compound component, Radix-aligned conventions</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:640px">Radix Primitives ships <code style="color:var(--accent)">@radix-ui/react-alert-dialog</code> for <em>modal</em> alerts (already used by <code>ConfirmDialog</code>) but has no inline-banner primitive. This component is a custom compound that mirrors Radix's slot pattern so consumers feel at home: <code>Root</code> with status + <code>Icon</code> / <code>Title</code> / <code>Description</code> / <code>Action</code> / <code>Close</code> subcomponents, all accepting <code>asChild</code> via <code>@radix-ui/react-slot</code>.</p>
+    <pre class="api"><span class="c">// AlertBanner.tsx</span>
+<span class="k">import</span> { Slot } <span class="k">from</span> <span class="s">'@radix-ui/react-slot'</span>;
+
+<span class="k">type</span> <span class="t">Status</span> = <span class="s">'error'</span> | <span class="s">'warning'</span> | <span class="s">'success'</span> | <span class="s">'info'</span>;
+
+&lt;<span class="t">AlertBanner.Root</span> status=<span class="s">"error"</span>&gt;
+  &lt;<span class="t">AlertBanner.Icon</span> /&gt;                            <span class="c">// default per status, override via children</span>
+  &lt;<span class="t">AlertBanner.Body</span>&gt;
+    &lt;<span class="t">AlertBanner.Title</span>&gt;Could not upload mockup&lt;/<span class="t">AlertBanner.Title</span>&gt;
+    &lt;<span class="t">AlertBanner.Description</span>&gt;Network request failed.&lt;/<span class="t">AlertBanner.Description</span>&gt;
+  &lt;/<span class="t">AlertBanner.Body</span>&gt;
+  &lt;<span class="t">AlertBanner.Action</span> asChild&gt;                   <span class="c">// Slot — caller chooses element</span>
+    &lt;<span class="k">button</span> onClick={retry}&gt;Retry&lt;/<span class="k">button</span>&gt;
+  &lt;/<span class="t">AlertBanner.Action</span>&gt;
+  &lt;<span class="t">AlertBanner.Close</span> asChild&gt;                    <span class="c">// Slot — caller composes own X button</span>
+    &lt;<span class="k">button</span> aria-label=<span class="s">"Dismiss"</span>&gt;<span class="t">&lt;XIcon /&gt;</span>&lt;/<span class="k">button</span>&gt;
+  &lt;/<span class="t">AlertBanner.Close</span>&gt;
+&lt;/<span class="t">AlertBanner.Root</span>&gt;
+</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:640px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><code>Root</code> sets <code>data-status</code> on the wrapper; all CSS keys off this. Same recipe as Radix Toast (<code>data-state</code>, <code>data-swipe</code>).</li>
+      <li><code>aria-role</code> is picked automatically: <code>alert</code> for error/warning, <code>status</code> for success/info. Override with <code>role</code> prop.</li>
+      <li><code>Action</code> and <code>Close</code> use <code>asChild</code> + <code>Slot</code> so consumers control the element (button, link) and event handlers.</li>
+      <li><code>onOpenChange(open: boolean)</code> on <code>Root</code> reports dismissal — caller manages mount/unmount (typical Radix controlled-pattern).</li>
+      <li>Auto-dismiss via <code>duration={ms}</code> prop on <code>Root</code> — mirrors Toast's API. Omit for sticky.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Buttons — Radix has no <code>Button</code> primitive</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:640px">Worth calling out: <code style="color:var(--accent)">@radix-ui/react-primitives</code> deliberately does <strong>not</strong> ship a styled <code>Button</code> component — buttons are native <code>&lt;button&gt;</code> elements with project-owned styles. The existing <a href="https://github.com/AlexandreCamillo/markup" style="color:var(--accent)"><code>ConfirmDialog</code></a> follows this pattern: <code>AlertDialog.Cancel asChild</code> wraps a plain <code>&lt;button className={styles.cancel}&gt;</code>. We do the same here for <code>Action</code> and <code>Close</code>. So:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li>Banner's <code>Action</code> / <code>Close</code> = <code>Slot</code> wrapping a native <code>&lt;button&gt;</code>.</li>
+      <li>Visual button variants (<code>.action</code> pill here; <code>.btn-secondary</code>, <code>.btn-accent</code>, <code>.btn-danger</code> elsewhere) live in CSS, not in TS components.</li>
+      <li>Where the consumer needs Radix semantics (focus trap, escape, portal), they wrap our button with the right Radix Root — same recipe as <code>ConfirmDialog</code>.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>bg (per status)<dd>linear-gradient(90deg, oklch(35% 0.14 H / 0.4) 0%, oklch(28% 0.09 H / 0.23) 100%) — H = 25/80/152/200
+      <dt>border<dd>1px solid --danger | --warning | --success | --info
+      <dt>radius<dd>--radius-sm (8px)
+      <dt>padding<dd>10px 14px
+      <dt>gap<dd>10px (icon · body · action? · close)
+      <dt>icon<dd>28×28 circle, status-hue fill, mono symbol (!/⚠/✓/i)
+      <dt>title<dd>13px / 700, oklch 97% 0.04-0.07 H
+      <dt>body p<dd>12.5px / 400, opacity 0.9 of the status text colour
+      <dt>action<dd>26px pill, rgba(255,255,255,0.08) fill, .14 hover
+      <dt>close-btn<dd>22×22, transparent, opacity 0.7 → 1 hover
+      <dt>enter<dd>opacity 0 → 1 + translateY(-4px → 0) over --motion-base / --ease-spring
+    </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px">
+      <li><code>error</code> + <code>warning</code> dismiss only on explicit close or programmatic unmount — never auto-dismiss.</li>
+      <li><code>success</code> + <code>info</code> may auto-dismiss; pass <code>duration</code> to Root.</li>
+      <li>SR announces <code>error</code> / <code>warning</code> on insertion (<code>role="alert"</code>). <code>success</code> / <code>info</code> use polite <code>role="status"</code>.</li>
+      <li>Multiple banners stack vertically (gap from parent).</li>
+      <li><code>Action</code> button receives focus on mount when present (typical recovery affordance).</li>
+      <li>Pairs with <a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a> error state — both can coexist (global banner + per-field flags).</li>
+    </ul>
+  </section>
+
+</div>
+
+</body>
+</html>
