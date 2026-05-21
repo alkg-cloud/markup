@@ -38,8 +38,13 @@ import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { RadixDialog } from '@/components/Dialog/RadixDialog';
 import { IconPicker } from '@/components/IconPicker/IconPicker';
 import { InputField } from '@/components/InputField';
+import { NameLengthCounter } from '@/components/InputField/NameLengthCounter';
 import { useToast } from '@/components/Toast/useToast';
-import { URL_SAFE_NAME_PATTERN, validateUrlSafeName } from '@/lib/validation/url-safe-name';
+import {
+  NAME_MAX_LENGTH,
+  URL_SAFE_NAME_PATTERN,
+  validateUrlSafeName,
+} from '@/lib/validation/url-safe-name';
 import styles from './NewProjectDialog.module.css';
 
 interface NewProjectDialogProps {
@@ -127,6 +132,7 @@ export function NewProjectDialog({ open, onClose, onSaved, project }: NewProject
                   type="text"
                   required
                   pattern={NAME_PATTERN}
+                  maxLength={NAME_MAX_LENGTH}
                   placeholder="My-Project"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -135,7 +141,10 @@ export function NewProjectDialog({ open, onClose, onSaved, project }: NewProject
               {nameError ? (
                 <InputField.Message forceMatch>{nameError.message}</InputField.Message>
               ) : (
-                <InputField.Help>Letters, digits, hyphens, or underscores.</InputField.Help>
+                <InputField.Help>
+                  Letters, digits, hyphens, or underscores.{' '}
+                  <NameLengthCounter len={trimmedName.length} />
+                </InputField.Help>
               )}
               <InputField.Message match="patternMismatch">
                 Use letters, digits, hyphens, or underscores only.

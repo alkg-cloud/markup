@@ -6,7 +6,7 @@ import { createProject, listProjects } from '@/lib/project/service';
 import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
 
 const createSchema = z.object({
-  name: urlSafeNameSchema(200),
+  name: urlSafeNameSchema(),
   icon: z.string().max(100).optional(),
 });
 
@@ -27,7 +27,10 @@ export async function POST(req: Request) {
     return handleAuthError(e);
   }
   const parsed = createSchema.safeParse(await req.json().catch(() => ({})));
-  if (!parsed.success) return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+  if (!parsed.success) {
+    const code = parsed.error.issues[0]?.message ?? 'invalid_body';
+    return NextResponse.json({ error: code }, { status: 400 });
+  }
   const project = await createProject({
     name: parsed.data.name,
     icon: parsed.data.icon,

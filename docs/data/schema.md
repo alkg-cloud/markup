@@ -94,6 +94,7 @@ model Project {
 - `icon` is an optional token string (e.g. `vsc:VscFile`, `emoji:🎨`) chosen in the New Project dialog; null when no icon is set
 - `position` controls display order in the sidebar
 - `createdById` is the cuid of the user who created the project. Nullable — rows that predate the `createdById` migration carry `NULL` and are admin-only-deletable. The seed "Unsorted" project has `createdById = NULL` by design (admin-only deletable).
+- `name` is capped at 64 characters at the application layer (`NAME_MAX_LENGTH` in `src/lib/validation/url-safe-name.ts`). The DB column has no length constraint; rows imported before the cap was added are grandfathered and stay valid until renamed.
 - A seed project `"Unsorted"` (slug `unsorted`) is created by migration and receives all pre-existing mockups
 
 ### Folder
@@ -123,6 +124,7 @@ model Folder {
 - Nested folders within a project via self-referencing `parentId`
 - `@@unique([projectId, parentId, name])` prevents sibling folders with the same name (note: SQLite treats NULL parentId as distinct, so root-level duplicates are not caught by the DB constraint alone — enforce in the service layer)
 - `createdById` follows the same nullable-ownership convention as `Project.createdById` — `NULL` means legacy or system row, admin-only-deletable
+- `name` is capped at 64 characters at the application layer (`NAME_MAX_LENGTH` in `src/lib/validation/url-safe-name.ts`). The DB column has no length constraint; rows imported before the cap was added are grandfathered and stay valid until renamed.
 - Cascade: deleting a Project deletes all its Folders; deleting a Folder deletes its children
 
 ### Mockup
@@ -158,6 +160,7 @@ model Mockup {
 - `projectId` and `folderId` are nullable FKs with `onDelete: SetNull` — deleting a Project or Folder orphans the mockup rather than cascading deletion
 - `position` controls display order within its folder/project
 - `createdById` is nullable — `NULL` for mockups created by agents (agent tokens have no `User.id`) or for legacy rows. `NULL`-owned mockups are admin-only-deletable. See [authz.md](../api/authz.md) for the full ownership rule.
+- `name` is capped at 64 characters at the application layer (`NAME_MAX_LENGTH` in `src/lib/validation/url-safe-name.ts`). The DB column has no length constraint; rows imported before the cap was added are grandfathered and stay valid until renamed.
 
 ### MockupVersion
 
