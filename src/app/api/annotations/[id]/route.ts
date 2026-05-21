@@ -90,8 +90,9 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   });
   if (!existing) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
+  let viewer: Awaited<ReturnType<typeof requireOwnerOrAdmin>>;
   try {
-    await requireOwnerOrAdmin(ident, {
+    viewer = await requireOwnerOrAdmin(ident, {
       kind: 'annotation',
       createdBy: existing.createdBy,
       createdByType: existing.createdByType as 'user' | 'agent',
@@ -119,7 +120,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
       event: 'annotation_deleted',
       annotationId: id,
       mockupId: existing.mockupId,
-      identityKind: ident?.kind,
+      identityKind: viewer.kind,
     },
     'annotation deleted',
   );
