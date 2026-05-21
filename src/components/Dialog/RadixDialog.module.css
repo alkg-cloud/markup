@@ -41,6 +41,43 @@
   outline: none;
 }
 
+/* CUSTOM — Radix Dialog ships the Close slot but not the toggle for whether
+   to wrap it in the canonical X chrome. Our RadixDialog.Content mounts this
+   absolutely-positioned variant when showCloseButton is true.
+   See docs/design/design-system/14-dialog.html § closable-via-x state.
+   Custom states: closable-via-x (showCloseButton={true}), close-x-disabled
+   (closeButtonDisabled={true}). */
+.closeBtn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast);
+}
+.closeBtn:hover {
+  background: var(--surface-hover);
+  color: var(--text-bright);
+}
+.closeBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.closeBtn svg {
+  width: 12px;
+  height: 12px;
+}
+
 @keyframes scrimIn {
   from {
     opacity: 0;
