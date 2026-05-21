@@ -4,6 +4,7 @@ import { notFound, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { FadeIn } from '@/components/FadeIn';
 import { MockupViewerPage } from '@/components/MockupViewer/MockupViewerPage';
 import { MockupViewerSkeleton, ProjectSkeleton } from '@/components/Skeleton';
 import { useIdentity } from '@/lib/hooks/use-require-auth';
@@ -105,31 +106,35 @@ export default function ProjectPathPage() {
 
   if (resolution.kind === 'mockup') {
     return (
-      <MockupViewerPage
-        mockupId={resolution.mockupId}
+      <FadeIn>
+        <MockupViewerPage
+          mockupId={resolution.mockupId}
+          breadcrumbs={resolution.breadcrumbs}
+          userName={identity?.name}
+          userEmail={identity?.email}
+          userRole={identity?.role}
+        />
+      </FadeIn>
+    );
+  }
+
+  return (
+    <FadeIn>
+      <ProjectContent
+        projectName={resolution.projectName}
+        projectSlug={resolution.projectSlug}
+        projectId={resolution.projectId}
+        projectIcon={resolution.projectIcon}
+        folderName={resolution.folderName}
+        currentFolderId={resolution.currentFolderId}
+        folderPathNames={resolution.folderPathNames}
+        folders={resolution.folders}
+        mockups={resolution.mockups}
         breadcrumbs={resolution.breadcrumbs}
         userName={identity?.name}
         userEmail={identity?.email}
         userRole={identity?.role}
       />
-    );
-  }
-
-  return (
-    <ProjectContent
-      projectName={resolution.projectName}
-      projectSlug={resolution.projectSlug}
-      projectId={resolution.projectId}
-      projectIcon={resolution.projectIcon}
-      folderName={resolution.folderName}
-      currentFolderId={resolution.currentFolderId}
-      folderPathNames={resolution.folderPathNames}
-      folders={resolution.folders}
-      mockups={resolution.mockups}
-      breadcrumbs={resolution.breadcrumbs}
-      userName={identity?.name}
-      userEmail={identity?.email}
-      userRole={identity?.role}
-    />
+    </FadeIn>
   );
 }
