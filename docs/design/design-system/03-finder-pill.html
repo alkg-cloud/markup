@@ -2,44 +2,296 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>03-finder-pill</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>03 — Finder Pill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--sidebar-collapsed-width:52px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0%,0,0/0.45);--shadow-md:0 6px 16px oklch(0%,0,0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0%,0,0/0.6),0 6px 12px oklch(0%,0,0/0.45),inset 0 1px 0 oklch(100%,0,0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
+  --type-sm:13px;--weight-medium:500;
+  --shadow-sm:0 2px 6px oklch(0% 0 0/0.45);
+  --topbar-height:52px;
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
 @media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
-a{color:inherit;text-decoration:none}
-:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
-mark{background:var(--accent-overlay-mid);color:var(--accent-bright);border-radius:2px;padding:0 1px}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
-.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-pill)}
 
-.demo{max-width:620px;margin:60px auto;padding:0 24px}
-.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
-.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px}
-.finder-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-pill);color:var(--text-muted);font-size:13px;cursor:pointer;transition:border-color var(--motion-fast),background var(--motion-fast)}
-.finder-pill:hover{border-color:var(--border);background:var(--bg-card-active)}
-.pill-icon{display:flex;align-items:center;color:var(--text-muted)}
-.pill-kbd{font-family:var(--font-mono);font-size:10px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-xs);padding:1px 5px;color:var(--text-muted)}
-.note{font-size:12px;color:var(--text-muted);margin-top:20px;line-height:1.6}
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:880px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  min-height:120px;padding:32px;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.stage + .stage{margin-top:24px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
 
+/* ─── Finder pill — Topbar.module.css .searchPill verbatim ─── */
+.finder-pill{
+  display:flex;align-items:center;gap:10px;
+  height:36px;padding:0 14px 0 12px;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-pill);
+  color:var(--text-dim);font-family:var(--font-body);font-weight:var(--weight-medium);font-size:var(--type-sm);
+  cursor:pointer;white-space:nowrap;
+  min-width:240px;max-width:340px;
+  transition:background var(--motion-fast),border-color var(--motion-fast),box-shadow var(--motion-fast),color var(--motion-fast);
+}
+.finder-pill:hover,
+.finder-pill[data-state="hover"]{
+  background:var(--bg-card-active);
+  border-color:var(--border-strong);
+  color:var(--text);
+  box-shadow:var(--shadow-sm);
+}
+.finder-pill[data-state="focused"]{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft);
+  color:var(--text);
+}
+.finder-pill svg{flex-shrink:0;color:var(--text-muted)}
+.pill-text{flex:1}
+.pill-kbd{
+  font-family:var(--font-mono);font-size:10px;font-weight:var(--weight-medium);
+  color:var(--text-muted);background:var(--bg-elevated);
+  border:1px solid var(--border);border-radius:var(--radius-xs);
+  padding:2px 6px;flex-shrink:0;
+}
+
+/* Demo helpers */
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+.state{display:flex;flex-direction:column;gap:8px}
+.state .state-label{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted)}
+.state .state-row{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);padding:18px;display:flex;align-items:center;justify-content:center;min-height:80px}
+
+/* Topbar context */
+.topbar-preview{
+  width:100%;
+  background:var(--bg-elevated);
+  border-bottom:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:0 16px;height:var(--topbar-height);
+  position:relative;display:flex;align-items:center;
+}
+.topbar-preview .finder-pill{position:absolute;left:50%;transform:translateX(-50%)}
+.topbar-bc{font-family:var(--font-mono);font-size:12px;color:var(--text-dim)}
+.topbar-avatar{margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent-bright);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+
+/* Anatomy + matrix + API */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
 
-<div class="demo">
-  <div class="title">Finder Pill</div>
-  <div class="subtitle">Command palette trigger with search icon and keyboard shortcut.</div>
-  <div class="finder-pill">
-    <span class="pill-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97ZM2.5 9C2.5 5.416 5.416 2.5 9 2.5C12.584 2.5 15.5 5.416 15.5 9C15.5 12.584 12.584 15.5 9 15.5C5.416 15.5 2.5 12.584 2.5 9Z"/></svg></span>
-    <span class="pill-text">Search…</span>
-    <span class="pill-kbd">Ctrl+K</span>
-  </div>
-  <p class="note">Clicking the pill or pressing Ctrl+K opens the finder overlay. On Apple platforms the live app shows ⌘K. The pill lives in the top bar and adapts to available width.</p>
+<div class="page" data-ds-component="finder-pill">
+  <h1 class="h1">03 — Finder Pill</h1>
+  <p class="lede">Centred trigger in the <code>topbar</code> that opens the <a href="./04-finder-overlay.html" style="color:var(--accent)"><code>finder-overlay</code></a> (a.k.a. command palette). Implemented inline inside <code>src/components/Topbar/Topbar.tsx</code> as <code>.searchPill</code> — a native <code>&lt;button&gt;</code>. No Radix primitive backs the pill; the overlay it opens is also custom (Radix Primitives ships no Command primitive — that's a <code>cmdk</code>-territory library and the project deliberately rolls its own to keep zero runtime deps for search). The label always reads <strong>Search…</strong>; the keyboard hint reflects the host platform via <code>formatShortcut(['k'])</code> → <code>⌘K</code> on Apple, <code>Ctrl+K</code> elsewhere.</p>
+
+  <section class="section">
+    <div class="section-title">All states</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">Resting</div>
+        <div class="state-row">
+          <button type="button" class="finder-pill" aria-label="Search... (Ctrl+K)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97ZM2.5 9C2.5 5.416 5.416 2.5 9 2.5C12.584 2.5 15.5 5.416 15.5 9C15.5 12.584 12.584 15.5 9 15.5C5.416 15.5 2.5 12.584 2.5 9Z"/></svg>
+            <span class="pill-text">Search...</span>
+            <span class="pill-kbd">Ctrl+K</span>
+          </button>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">Hover</div>
+        <div class="state-row">
+          <button type="button" class="finder-pill" data-state="hover">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97Z"/></svg>
+            <span class="pill-text">Search...</span>
+            <span class="pill-kbd">Ctrl+K</span>
+          </button>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">Focused (keyboard)</div>
+        <div class="state-row">
+          <button type="button" class="finder-pill" data-state="focused">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97Z"/></svg>
+            <span class="pill-text">Search...</span>
+            <span class="pill-kbd">Ctrl+K</span>
+          </button>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">macOS variant (⌘K)</div>
+        <div class="state-row">
+          <button type="button" class="finder-pill">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97Z"/></svg>
+            <span class="pill-text">Search...</span>
+            <span class="pill-kbd">⌘K</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Min-width 240 px / max-width 340 px so the pill stays a consistent target while the topbar resizes. The keyboard label is derived once at render via <code>formatShortcut(['k'])</code> — Pages are CSR-only, so <code>navigator.platform</code> is available synchronously.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">In context — topbar</div>
+    <div class="stage" style="padding:0;align-items:flex-start;min-height:140px">
+      <div class="topbar-preview">
+        <span class="topbar-bc">lumen-coffee › Landing</span>
+        <button type="button" class="finder-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.03 21.97L15.162 14.102C16.31 12.717 17 10.939 17 9C17 4.582 13.418 1 9 1C4.582 1 1 4.582 1 9C1 13.418 4.582 17 9 17C10.939 17 12.717 16.31 14.102 15.162L21.97 23.03L23.031 21.969L23.03 21.97Z"/></svg>
+          <span class="pill-text">Search...</span>
+          <span class="pill-kbd">Ctrl+K</span>
+        </button>
+        <span class="topbar-avatar">A</span>
+      </div>
+    </div>
+    <div class="caption">Pill is <code>position:absolute; left:50%; transform:translateX(-50%)</code> inside the topbar so it stays centred regardless of the <a href="./02-breadcrumb.html" style="color:var(--accent)"><code>breadcrumb</code></a> length (the breadcrumb flex-shrinks; the pill doesn't). The avatar menu lives on the right via <code>margin-left:auto</code>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — custom button + dispatched CustomEvent</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:640px">No Radix primitive — the pill is a native <code>&lt;button&gt;</code> inside <code>Topbar</code>. Click and <code>⌘K</code>/<code>Ctrl+K</code> both dispatch a <code>open-command-palette</code> CustomEvent on <code>document</code>; the <a href="./04-finder-overlay.html" style="color:var(--accent)"><code>finder-overlay</code></a> listens for it and opens. Decoupling via event keeps the Topbar from importing the palette and lets the keyboard shortcut work even when the palette is rendered inside an iframe (the mockup viewer rewires its <code>contentDocument</code> on every version switch).</p>
+    <pre class="api"><span class="c">// Topbar.tsx — pill + dispatch</span>
+<span class="k">import</span> { VscSearch } <span class="k">from</span> <span class="s">'react-icons/vsc'</span>;
+<span class="k">import</span> { formatShortcut } <span class="k">from</span> <span class="s">'@/lib/shortcuts/platform'</span>;
+
+<span class="k">const</span> kbdLabel = formatShortcut([<span class="s">'k'</span>]);   <span class="c">// '⌘K' or 'Ctrl+K'</span>
+
+<span class="k">const</span> handleSearchClick = () =&gt; {
+  document.dispatchEvent(<span class="k">new</span> CustomEvent(<span class="s">'open-command-palette'</span>));
+};
+
+&lt;<span class="k">button</span>
+  type=<span class="s">"button"</span>
+  className={styles.searchPill}
+  aria-label={`Search... (${kbdLabel})`}
+  onClick={handleSearchClick}
+&gt;
+  &lt;<span class="t">VscSearch</span> size={16} aria-hidden=<span class="s">"true"</span> /&gt;
+  &lt;<span class="k">span</span> className={styles.pillText}&gt;Search...&lt;/<span class="k">span</span>&gt;
+  &lt;<span class="k">span</span> className={styles.pillKbd}&gt;{kbdLabel}&lt;/<span class="k">span</span>&gt;
+&lt;/<span class="k">button</span>&gt;</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:640px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><strong>No primitive wrapper.</strong> Radix has no <code>Button</code> / <code>SearchTrigger</code> primitive. The pill is a stock <code>&lt;button type="button"&gt;</code>; visual lives in <code>Topbar.module.css</code> under <code>.searchPill</code>.</li>
+      <li><strong>Trigger via CustomEvent (custom).</strong> The <code>CommandPalette</code> mounts globally inside <code>AppShell</code>; both the pill click and the keyboard listener fire <code>document.dispatchEvent(new CustomEvent('open-command-palette'))</code> so the palette opens without prop drilling and without the Topbar importing it.</li>
+      <li><strong>Platform-aware shortcut.</strong> <code>formatShortcut(['k'])</code> returns <code>'⌘K'</code> on Apple platforms and <code>'Ctrl+K'</code> elsewhere — computed inline (no <code>useEffect</code> needed because the app is client-only).</li>
+      <li><strong>iframe rewiring.</strong> <code>CommandPalette</code> attaches the keyboard listener to every same-origin iframe document via a MutationObserver, so <code>⌘K</code> works inside the mockup viewer even after its <code>contentDocument</code> reloads.</li>
+      <li><strong>Centred via absolute.</strong> The pill is absolutely positioned (<code>left:50%; transform:translateX(-50%)</code>) inside the flex topbar so the centred placement survives a long <a href="./02-breadcrumb.html" style="color:var(--accent)"><code>breadcrumb</code></a> on the left.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>resting</code></td>
+          <td>Default.</td>
+          <td>Bg <code>--bg-card</code>, border <code>--border</code>, text <code>--text-dim</code>, icon + kbd at <code>--text-muted</code>.</td>
+          <td><code>aria-label="Search... (${kbdLabel})"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>hover</code></td>
+          <td>Pointer over.</td>
+          <td>Bg lifts to <code>--bg-card-active</code>, border to <code>--border-strong</code>, text brightens to <code>--text</code>, gains <code>--shadow-sm</code>.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>focused</code></td>
+          <td>Keyboard tab.</td>
+          <td>Standard focus ring via <code>:focus-visible</code> — 2 px <code>--bg</code> inset + 4 px <code>--accent</code> halo, <code>--radius-pill</code>.</td>
+          <td>Native button focus semantics.</td>
+        </tr>
+        <tr>
+          <td><code>shortcut</code> (custom)</td>
+          <td><code>⌘K</code> / <code>Ctrl+K</code> from anywhere — including inside the mockup-viewer iframe.</td>
+          <td>No visual on the pill; opens the <a href="./04-finder-overlay.html" style="color:var(--accent)"><code>finder-overlay</code></a> via dispatched event.</td>
+          <td>Overlay takes over (<code>role="dialog"</code>, <code>aria-modal</code>).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>height<dd>36px
+      <dt>padding<dd>0 14px 0 12px
+      <dt>gap (icon · text · kbd)<dd>10px
+      <dt>min-width / max-width<dd>240px / 340px
+      <dt>radius<dd>var(--radius-pill) = 9999px
+      <dt>background<dd>var(--bg-card) (resting) / var(--bg-card-active) (hover)
+      <dt>border<dd>1px var(--border) → var(--border-strong) hover
+      <dt>shadow hover<dd>var(--shadow-sm)
+      <dt>font<dd>var(--font-body) 13px / weight-medium
+      <dt>colour<dd>var(--text-dim) → var(--text) hover
+      <dt>icon size<dd>16px, --text-muted
+      <dt>kbd block<dd>10px mono / --bg-elevated bg / --border border / --radius-xs
+      <dt>transition<dd>bg + border + shadow + color over --motion-fast
+      <dt>positioning<dd>absolute; left:50%; translateX(-50%) inside topbar
+    </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><strong>Click → palette.</strong> Dispatches <code>open-command-palette</code> on <code>document</code>; the <a href="./04-finder-overlay.html" style="color:var(--accent)"><code>finder-overlay</code></a> listens and mounts.</li>
+      <li><strong>Keyboard shortcut.</strong> <code>⌘K</code> on macOS, <code>Ctrl+K</code> elsewhere — registered by <code>CommandPalette</code> on <code>document</code> AND on every same-origin iframe document (rewired on iframe <code>load</code> via MutationObserver).</li>
+      <li><strong>Platform-aware label.</strong> The kbd badge reflects the host OS via <code>formatShortcut(['k'])</code>.</li>
+      <li><strong>Centred under any breadcrumb.</strong> Absolutely positioned at <code>left:50%</code> so the centred placement survives long breadcrumb chains; nav and avatar flank it via flex.</li>
+      <li><strong>Single overlay invariant.</strong> Opening the palette closes the avatar menu (the Topbar listens for the same event to dismiss its popover) so two overlays never stack.</li>
+      <li><strong>No keyboard hint suppression.</strong> The kbd badge is always visible — the pill is wide enough at min-width 240 px to keep it; on narrower widths it would clip rather than hide (no current viewport hits this).</li>
+      <li><strong>Reduced motion.</strong> Hover transitions collapse to <code>0ms</code> via the token override.</li>
+    </ul>
+  </section>
 </div>
-<div class="demo-label">03-finder-pill</div>
 
 </body>
 </html>
