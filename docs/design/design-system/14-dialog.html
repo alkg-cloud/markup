@@ -39,9 +39,9 @@ input,textarea{font-family:inherit;color:inherit}
 :focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
 
 /* Page chrome */
-.page{padding:48px 32px 96px}
+.page{padding:48px 32px 96px;max-width:880px;margin:0 auto}
 .h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
-.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:600px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
 .section{margin-bottom:48px}
 .section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
 .stage{
@@ -52,7 +52,7 @@ input,textarea{font-family:inherit;color:inherit}
   overflow:hidden;
 }
 .stage + .stage{margin-top:24px}
-.caption{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
 
 /* ─── Glass surface utilities (verbatim from glass.module.css) ─── */
 .floating{
@@ -69,7 +69,7 @@ input,textarea{font-family:inherit;color:inherit}
   display:flex;align-items:center;justify-content:center;
 }
 
-/* ─── Dialog — Dialog.module.css verbatim ─── */
+/* ─── Dialog — RadixDialog.module.css verbatim ─── */
 .dialog{
   width:min(440px,calc(100vw - 32px));
   padding:18px 18px 14px;
@@ -98,7 +98,7 @@ input,textarea{font-family:inherit;color:inherit}
 .error-msg{display:block;margin-top:6px;font-size:11px;line-height:1.4;color:var(--danger)}
 .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
 
-/* Dialog button variants (Dialog.module.css verbatim) */
+/* Dialog button variants (RadixDialog.module.css verbatim) */
 .btn{
   height:30px;padding:0 14px;
   font-size:12px;font-weight:700;letter-spacing:0.02em;
@@ -115,24 +115,53 @@ input,textarea{font-family:inherit;color:inherit}
 /* Show focus-visible ring statefully */
 .btn.focused{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 
-/* Tokens table */
-.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;font-family:var(--font-mono);font-size:11px}
-.tokens dt{color:var(--text-dim)}
-.tokens dd{color:var(--text-bright)}
-.tokens dt::before{content:'--'}
+/* ─── Demo helpers (mirror 27-alert-banner) ─── */
+.row-states{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:24px;
+}
+.state{display:flex;flex-direction:column;gap:8px}
+.state .state-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+}
+.state .state-row{
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:18px;display:flex;align-items:center;justify-content:center;
+  min-height:60px;
+}
 
-/* States grid */
-.states{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:16px}
-.state{padding:18px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm)}
-.state-label{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:12px}
-.state-row{display:flex;align-items:center;gap:8px;justify-content:center;min-height:48px}
+/* Anatomy / matrix tables (mirror 27-alert-banner) */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;
+  background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  color:var(--text-dim);
+  overflow-x:auto;
+  white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
 </style>
 </head>
 <body>
 
-<div class="page">
+<div class="page" data-ds-component="dialog">
   <h1 class="h1">14 — Dialog</h1>
-  <p class="lede">Reusable modal dialog (<code>src/components/Dialog/Dialog.tsx</code>). Shares the glass-surface standard with <code>confirm-dialog</code>, rail, toolbar, composer, and every popover — same <code>--surface-glass-bg</code>, blur 16 px / saturate 140%, glass border, 14 px radius, <code>--shadow-popover</code>.</p>
+  <p class="lede">Modal dialog primitive backing every form, info, or confirmation overlay in the app. Implemented as <code>src/components/Dialog/RadixDialog.tsx</code> — a thin compound wrapper over <code>@radix-ui/react-dialog</code> for non-destructive overlays, with <code>useConfirm</code> in <code>src/components/ConfirmDialog/ConfirmDialog.tsx</code> wrapping <code>@radix-ui/react-alert-dialog</code> for destructive confirms. Shares the glass-surface standard with rail, toolbar, popovers and tooltips: <code>--surface-glass-bg</code>, blur 16 px / saturate 140%, glass border, 14 px radius, <code>--shadow-popover</code>. Form bodies compose <a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a> for per-field validation and <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> for non-field messages.</p>
 
   <section class="section">
     <div class="section-title">A — Create variant (accent primary action)</div>
@@ -172,6 +201,7 @@ input,textarea{font-family:inherit;color:inherit}
         </div>
       </div>
     </div>
+    <div class="caption">Same surface as the create variant — only the title, prefilled input value, and primary-button label differ. The dialog component does not care; both flows mount the same <code>RadixDialog.Content</code>.</div>
   </section>
 
   <section class="section">
@@ -192,7 +222,7 @@ input,textarea{font-family:inherit;color:inherit}
         </div>
       </div>
     </div>
-    <div class="caption">URL-safe validation. Primary action disabled while error stands. Input border + ring use <code>--danger</code> / <code>--danger-soft</code>; hint is replaced by error message at 11 px <code>--danger</code>.</div>
+    <div class="caption">URL-safe validation. Primary action disabled while error stands. Input border + ring use <code>--danger</code> / <code>--danger-soft</code>; hint is replaced by error message at 11 px <code>--danger</code>. Field state is driven by <a href="./28-input-field.html" style="color:var(--accent)"><code>input-field</code></a> — the dialog itself is unchanged.</div>
   </section>
 
   <section class="section">
@@ -209,12 +239,12 @@ input,textarea{font-family:inherit;color:inherit}
         </div>
       </div>
     </div>
-    <div class="caption">Used by the <code>confirm-dialog</code> primitive (Radix <code>AlertDialog</code>). Same glass recipe. Primary button uses the <code>danger</code> variant.</div>
+    <div class="caption">Renders through <code>useConfirm</code> (Radix <code>AlertDialog</code>) — same glass recipe but a different primitive: <code>AlertDialog</code> blocks Escape-to-cancel-by-default and demands an explicit choice (Cancel or Confirm). Primary button uses the <code>danger</code> variant.</div>
   </section>
 
   <section class="section">
     <div class="section-title">Button variants — every state</div>
-    <div class="states">
+    <div class="row-states">
       <div class="state">
         <div class="state-label">Secondary</div>
         <div class="state-row"><button class="btn btn-secondary">Idle</button></div>
@@ -237,6 +267,142 @@ input,textarea{font-family:inherit;color:inherit}
         <div class="state-row"><button class="btn btn-danger" disabled>Disabled</button></div>
       </div>
     </div>
+    <div class="caption">Three button classes live in the dialog's CSS module: <code>.btn-secondary</code> (cancel/dismiss), <code>.btn-accent</code> (primary create/save), <code>.btn-danger</code> (destructive confirm). Native <code>&lt;button&gt;</code> elements — Radix has no <code>Button</code> primitive.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — composes Radix Dialog + Radix AlertDialog (for confirms)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:640px">Two Radix primitives back this DS entry. <code style="color:var(--accent)">@radix-ui/react-dialog</code> powers the regular form/info dialog via the thin <code>RadixDialog</code> compound (open/close controlled by the consumer). <code style="color:var(--accent)">@radix-ui/react-alert-dialog</code> powers the <code>useConfirm</code> hook for destructive confirms — it enforces an explicit choice and uses <code>role="alertdialog"</code> for SR. Form bodies wrap content in <code style="color:var(--accent)">@radix-ui/react-form</code> + <code>InputField</code> for ValidityState-driven validation.</p>
+    <pre class="api"><span class="c">// 1) Regular form/info dialog — RadixDialog wraps @radix-ui/react-dialog</span>
+<span class="k">import</span> { RadixDialog } <span class="k">from</span> <span class="s">'@/components/Dialog/RadixDialog'</span>;
+<span class="k">import</span> { InputField } <span class="k">from</span> <span class="s">'@/components/InputField'</span>;
+<span class="k">import</span> * <span class="k">as</span> Form <span class="k">from</span> <span class="s">'@radix-ui/react-form'</span>;
+
+&lt;<span class="t">RadixDialog.Root</span> open={open} onOpenChange={setOpen}&gt;
+  &lt;<span class="t">RadixDialog.Portal</span>&gt;
+    &lt;<span class="t">RadixDialog.Overlay</span> /&gt;                       <span class="c">// scrim — blur(16px) + --scrim-glass-bg</span>
+    &lt;<span class="t">RadixDialog.Content</span>&gt;                       <span class="c">// glass surface — 14px radius, --shadow-popover</span>
+      &lt;<span class="t">RadixDialog.Title</span>&gt;New project&lt;/<span class="t">RadixDialog.Title</span>&gt;
+
+      &lt;<span class="t">Form.Root</span> onSubmit={handleSubmit}&gt;            <span class="c">// composes @radix-ui/react-form</span>
+        &lt;<span class="t">InputField.Root</span> name=<span class="s">"name"</span>&gt;             <span class="c">// see 28-input-field.html</span>
+          &lt;<span class="t">InputField.Label</span>&gt;Project name&lt;/<span class="t">InputField.Label</span>&gt;
+          &lt;<span class="t">InputField.Control</span> asChild&gt;
+            &lt;<span class="k">input</span> type=<span class="s">"text"</span> required pattern=<span class="s">"[A-Za-z0-9_-]+"</span> /&gt;
+          &lt;/<span class="t">InputField.Control</span>&gt;
+          &lt;<span class="t">InputField.Message</span> match=<span class="s">"patternMismatch"</span>&gt;
+            Use letters, digits, hyphens, or underscores only.
+          &lt;/<span class="t">InputField.Message</span>&gt;
+        &lt;/<span class="t">InputField.Root</span>&gt;
+
+        &lt;<span class="k">div</span> className={styles.actions}&gt;
+          &lt;<span class="t">RadixDialog.Close</span> asChild&gt;                <span class="c">// Slot — caller owns the button</span>
+            &lt;<span class="k">button</span> type=<span class="s">"button"</span> className={styles.btnSecondary}&gt;Cancel&lt;/<span class="k">button</span>&gt;
+          &lt;/<span class="t">RadixDialog.Close</span>&gt;
+          &lt;<span class="t">Form.Submit</span> asChild&gt;
+            &lt;<span class="k">button</span> type=<span class="s">"submit"</span> className={styles.btnAccent}&gt;Create&lt;/<span class="k">button</span>&gt;
+          &lt;/<span class="t">Form.Submit</span>&gt;
+        &lt;/<span class="k">div</span>&gt;
+      &lt;/<span class="t">Form.Root</span>&gt;
+    &lt;/<span class="t">RadixDialog.Content</span>&gt;
+  &lt;/<span class="t">RadixDialog.Portal</span>&gt;
+&lt;/<span class="t">RadixDialog.Root</span>&gt;
+
+<span class="c">// 2) Destructive confirm — useConfirm wraps @radix-ui/react-alert-dialog</span>
+<span class="k">import</span> { useConfirm } <span class="k">from</span> <span class="s">'@/components/ConfirmDialog/ConfirmDialog'</span>;
+
+<span class="k">function</span> ProjectActions() {
+  <span class="k">const</span> { confirm, dialog } = useConfirm();           <span class="c">// `dialog` mounts once in tree</span>
+
+  <span class="k">async function</span> handleDelete() {
+    <span class="k">const</span> ok = <span class="k">await</span> confirm({                       <span class="c">// Promise&lt;boolean&gt;</span>
+      title: <span class="s">'Delete project "lumen-coffee"?'</span>,
+      description: <span class="s">'This cannot be undone.'</span>,
+      confirmLabel: <span class="s">'Delete'</span>,
+      danger: <span class="k">true</span>,                                    <span class="c">// → .btn-danger styling</span>
+    });
+    <span class="k">if</span> (ok) <span class="k">await</span> deleteProject();
+  }
+
+  <span class="k">return</span> &lt;&gt; { dialog } &lt;<span class="k">button</span> onClick={handleDelete}&gt;Delete&lt;/<span class="k">button</span>&gt; &lt;/&gt;;
+}</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:640px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><code>RadixDialog</code> re-exports <code>Root</code> / <code>Trigger</code> / <code>Portal</code> / <code>Close</code> stock and wraps <code>Overlay</code> / <code>Content</code> / <code>Title</code> / <code>Description</code> with the dialog CSS module — see <code>src/components/Dialog/RadixDialog.tsx</code>.</li>
+      <li>The dialog auto-focuses the first focusable element inside <code>Content</code> on open — no <code>autoFocus</code> needed on inputs (and Biome's a11y rule forbids it).</li>
+      <li><code>RadixDialog</code> = regular dialog: Escape closes, click-outside closes, controlled by <code>open</code> + <code>onOpenChange</code>. Use for forms (create / edit / settings) and pure-info dismiss-only dialogs.</li>
+      <li><code>useConfirm</code> = destructive confirm: Promise-based — resolves <code>true</code> on Confirm, <code>false</code> on Cancel / Escape / scrim-click. <strong>Mount <code>dialog</code> once in the consumer's tree</strong> so the portal has a root. See <code>src/components/ConfirmDialog/ConfirmDialog.tsx</code>.</li>
+      <li>Never use <code>window.confirm</code> / <code>alert</code> / <code>prompt</code> — they ignore tokens and hijack touchscreens. <code>useConfirm</code> is the canonical replacement.</li>
+      <li>Custom button classes (<code>.btn-secondary</code>, <code>.btn-accent</code>, <code>.btn-danger</code>) — Radix ships no <code>Button</code> primitive. Wrap native <code>&lt;button&gt;</code> in <code>asChild</code> slots (<code>RadixDialog.Close</code>, <code>Form.Submit</code>, <code>AlertDialog.Cancel</code>, <code>AlertDialog.Action</code>).</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>closed</code></td>
+          <td><code>open={false}</code> — not mounted (Radix unmounts via Portal).</td>
+          <td>Nothing in the DOM. Scrim absent.</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>open</code></td>
+          <td><code>open={true}</code> on <code>RadixDialog.Root</code>.</td>
+          <td>Scrim fades in; dialog scales 0.96 → 1 + translateY 8 → 0 over <code>--motion-base</code> / <code>--ease-spring</code>. First focusable autofocused.</td>
+          <td><code>role="dialog"</code>, <code>aria-modal="true"</code>, <code>aria-labelledby</code> = Title id.</td>
+        </tr>
+        <tr>
+          <td><code>confirming</code> (custom)</td>
+          <td><code>useConfirm().confirm({ … })</code> — Promise pending.</td>
+          <td>Same surface; <code>danger: true</code> swaps primary button to <code>.btn-danger</code>. Cancel and Confirm are required choices (no implicit dismiss-to-true).</td>
+          <td><code>role="alertdialog"</code>, <code>aria-describedby</code> = Description id when present.</td>
+        </tr>
+        <tr>
+          <td><code>submitting</code> (custom)</td>
+          <td>Consumer flips <code>loading</code> after submit; we disable Cancel + primary.</td>
+          <td>Both action buttons <code>:disabled</code> (opacity 0.4, <code>cursor:not-allowed</code>). Dialog remains open until the request resolves.</td>
+          <td>Disabled buttons are SR-announced as <code>disabled</code> via native semantics.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">"confirming" and "submitting" are <em>custom</em> states — Radix Dialog / AlertDialog don't model them. They live as consumer-managed props (<code>danger</code>, <code>loading</code>) and surface visually through the button variant classes.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Primitive</th><th>Use for</th><th>Radix backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>RadixDialog</code></td>
+          <td>Forms (create / edit project, folder, mockup), settings panels, info / preview overlays. Caller controls <code>open</code>; Escape and scrim-click dismiss.</td>
+          <td><code>@radix-ui/react-dialog</code></td>
+        </tr>
+        <tr>
+          <td><code>useConfirm</code> / <code>ConfirmDialog</code></td>
+          <td>Destructive confirms (delete project, delete mockup, discard unsaved changes). Promise-based — resolves <code>true</code> only on explicit Confirm.</td>
+          <td><code>@radix-ui/react-alert-dialog</code></td>
+        </tr>
+        <tr>
+          <td><code>alert-banner</code></td>
+          <td>Inline non-modal notices inside a dialog body or page section (rate limit, server error, success). Pair with either primitive above.</td>
+          <td>Custom — see <a href="./27-alert-banner.html" style="color:var(--accent)"><code>27-alert-banner.html</code></a></td>
+        </tr>
+        <tr>
+          <td><code>input-field</code></td>
+          <td>Per-field sync validation inside a dialog form body. Composes <code>@radix-ui/react-form</code>.</td>
+          <td>See <a href="./28-input-field.html" style="color:var(--accent)"><code>28-input-field.html</code></a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Rule of thumb: if the user can dismiss the overlay with no consequences, use <code>RadixDialog</code>. If <em>dismissing</em> the overlay must mean <em>no</em> (the destructive action does not run), use <code>useConfirm</code>.</div>
   </section>
 
   <section class="section">
@@ -245,17 +411,38 @@ input,textarea{font-family:inherit;color:inherit}
       <dt>surface-glass-bg<dd>rgb(7 12 15 / 80%)
       <dt>surface-glass-blur<dd>blur(16px) saturate(140%)
       <dt>scrim-glass-bg<dd>oklch(0% 0 0 / 0.2)
+      <dt>scrim-blur<dd>blur(16px) saturate(140%)
       <dt>radius<dd>14px
       <dt>padding<dd>18px 18px 14px
       <dt>gap<dd>8px between rows
       <dt>width<dd>min(440px, calc(100vw - 32px))
+      <dt>shadow<dd>--shadow-popover (0 14px 32px /0.6, 0 6px 12px /0.45, inset 0 1px 0 /0.06)
+      <dt>border<dd>1px solid --border
       <dt>title<dd>13px / 700 / 0.01em, --text-bright
+      <dt>description<dd>12px / 400 / 1.55, --text-dim
       <dt>label<dd>10px / 700 / 0.08em uppercase, --text-dim
       <dt>input<dd>34px tall, --bg-card bg, --border border, --radius-xs
       <dt>input focus<dd>border --accent-bright + 3px --accent-soft ring
+      <dt>input error<dd>border --danger + 3px --danger-soft ring
       <dt>button<dd>30px tall, 12px / 700 / 0.02em, --radius-xs
+      <dt>actions gap<dd>8px, justify-content flex-end, margin-top 10px
       <dt>animation<dd>scale 0.96 → 1, translateY 8 → 0 over --motion-base / --ease-spring
     </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><strong>Focus trap.</strong> Radix Focus Scope locks Tab inside <code>Content</code> while open and returns focus to the trigger on close.</li>
+      <li><strong>Autofocus.</strong> First focusable element inside <code>Content</code> is autofocused on open. No <code>autoFocus</code> attribute needed (Biome's a11y rule forbids it).</li>
+      <li><strong>Escape closes.</strong> <code>RadixDialog</code> dismisses on Escape; <code>useConfirm</code> resolves <code>false</code> on Escape (treated as Cancel).</li>
+      <li><strong>Click-outside closes.</strong> Scrim click triggers <code>onOpenChange(false)</code> on <code>RadixDialog</code>; same Cancel behaviour for <code>useConfirm</code>.</li>
+      <li><strong>Scroll lock.</strong> Body scroll is frozen while the overlay is mounted (Radix Remove-Scroll).</li>
+      <li><strong>Portal mount.</strong> Content renders at <code>document.body</code> via <code>RadixDialog.Portal</code> / <code>AlertDialog.Portal</code> — never trapped in a transformed ancestor.</li>
+      <li><strong>Aria wiring.</strong> <code>Title</code> + <code>Description</code> ids are auto-bound to <code>aria-labelledby</code> / <code>aria-describedby</code>. Pass <code>aria-describedby={undefined}</code> to <code>Content</code> when the dialog has no <code>Description</code> child (Radix warns otherwise).</li>
+      <li><strong>Submitting.</strong> Consumer disables Cancel + primary while a request is in flight; dialog stays mounted until the Promise resolves (success closes; failure surfaces an <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> inside the body).</li>
+      <li><strong>Reduced motion.</strong> Under <code>prefers-reduced-motion: reduce</code>, the enter animation collapses to a 0 ms opacity flip (token override at top of file).</li>
+    </ul>
   </section>
 </div>
 
