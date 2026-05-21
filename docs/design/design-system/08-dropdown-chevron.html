@@ -3,66 +3,393 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>08 — Dropdown Chevron</title>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>:root{--bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);--text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);--accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);--accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--danger:oklch(70% 0.2 25);--danger-soft:oklch(28% 0.09 25);--success:oklch(76% 0.16 152);--warning:oklch(80% 0.15 80);--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;--ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--motion-fast:160ms;--motion-base:220ms;--topbar-height:52px;--sidebar-width:280px;--sidebar-collapsed-width:52px;--radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-card:14px;--radius-pill:9999px;--shadow-sm:0 2px 6px oklch(0%,0,0/0.45);--shadow-md:0 6px 16px oklch(0%,0,0/0.5);--shadow-glow:0 0 0 1px oklch(74.4% 0.193 165/0.4),0 0 24px oklch(74.4% 0.193 165/0.18);--shadow-popover:0 14px 32px oklch(0%,0,0/0.6),0 6px 12px oklch(0%,0,0/0.45),inset 0 1px 0 oklch(100%,0,0/0.06);--scrim-strong:oklch(0% 0 0/0.65);--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-soft:oklch(28% 0.08 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
 @media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}input,textarea{font-family:inherit;color:inherit}
-a{color:inherit;text-decoration:none}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;padding:0}
 :focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--radius-pill)}
-.demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
-.title{font-size:20px;font-weight:700;color:var(--text-bright);margin-bottom:4px}.subtitle{font-size:13px;color:var(--text-dim);margin-bottom:24px}
 
-.tree{width:280px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;padding:4px 0}
-.tree-item{display:flex;align-items:center;gap:4px;padding:4px 8px;padding-right:8px;cursor:pointer;position:relative;transition:background var(--motion-fast)}
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:880px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  min-height:340px;padding:40px;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.stage + .stage{margin-top:24px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+
+/* ─── Tree — verbatim from ProjectTree.module.css ─── */
+.tree{
+  width:280px;background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-md);overflow:hidden;padding:4px 0;
+}
+.tree-item{
+  display:flex;align-items:center;gap:4px;padding:4px 8px;
+  cursor:pointer;position:relative;
+  transition:background var(--motion-fast);
+}
 .tree-item:hover{background:var(--surface-hover)}
 .tree-item.active{background:var(--accent-overlay-soft)}
 .tree-item.active .tree-label{color:var(--accent-bright)}
-.tree-chevron{display:flex;align-items:center;justify-content:center;width:16px;height:16px;flex-shrink:0;color:var(--text-muted);transition:transform var(--motion-base) var(--ease-standard),color var(--motion-fast)}
-.tree-chevron.open{transform:rotate(90deg);color:var(--accent)}
-.tree-chevron-spacer{width:16px;height:16px;flex-shrink:0}
+
+/* Chevron — single recipe, [data-state="open"] variant */
+.chevron{
+  width:16px;height:16px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  color:var(--text-muted);background:none;border:none;padding:0;cursor:pointer;
+  transition:transform var(--motion-fast) var(--ease-standard),color var(--motion-fast);
+}
+.chevron[data-state="open"]{transform:rotate(90deg);color:var(--accent)}
+.chevron-spacer{width:16px;height:16px;flex-shrink:0}
+
 .tree-label{flex:1;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tree-kebab{display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:var(--radius-xs);color:var(--text-muted);opacity:0;transition:opacity var(--motion-fast),background var(--motion-fast)}
+.tree-kebab{
+  display:flex;align-items:center;justify-content:center;width:20px;height:20px;
+  border-radius:var(--radius-xs);color:var(--text-muted);opacity:0;
+  transition:opacity var(--motion-fast),background var(--motion-fast);
+}
 .tree-item:hover .tree-kebab{opacity:1}
 .tree-kebab:hover{background:var(--surface-active);color:var(--text)}
-.tree-children{}
+
+/* ─── States grid ─── */
+.row-states{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:24px;align-items:start;
+}
+.state{display:flex;flex-direction:column;gap:10px}
+.state .state-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+}
+.state .state-row{
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:14px;display:flex;align-items:center;justify-content:center;gap:6px;
+  min-height:48px;
+}
+
+/* Anatomy / matrix tables */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
+
+/* Replay button */
+.replay{
+  font-family:var(--font-mono);font-size:10.5px;color:var(--text-dim);
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-xs);padding:4px 10px;letter-spacing:0.05em;
+  text-transform:uppercase;font-weight:700;
+}
+.replay:hover{color:var(--text-bright);border-color:var(--border)}
 </style>
 </head>
 <body>
-<div class="demo" style="padding:32px">
-  <div class="title">Dropdown Chevron</div>
-  <div class="subtitle">Tree items with animated chevron rotation, indent levels, active state, kebab-on-hover.</div>
-  <div class="tree" id="tree">
-    <div class="tree-item" style="padding-left:12px"><span class="tree-chevron open"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span><span class="tree-label">src</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div><div class="tree-children"><div class="tree-item" style="padding-left:28px"><span class="tree-chevron open"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span><span class="tree-label">components</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div><div class="tree-children"><div class="tree-item active" style="padding-left:44px"><span class="tree-chevron-spacer"></span><span class="tree-label">Button.tsx</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div><div class="tree-item" style="padding-left:44px"><span class="tree-chevron-spacer"></span><span class="tree-label">Card.tsx</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div><div class="tree-item" style="padding-left:44px"><span class="tree-chevron-spacer"></span><span class="tree-label">Dialog.tsx</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div></div><div class="tree-item" style="padding-left:28px"><span class="tree-chevron"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span><span class="tree-label">hooks</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div><div class="tree-item" style="padding-left:28px"><span class="tree-chevron open"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span><span class="tree-label">utils</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div><div class="tree-children"><div class="tree-item" style="padding-left:44px"><span class="tree-chevron-spacer"></span><span class="tree-label">cn.ts</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div><div class="tree-item" style="padding-left:44px"><span class="tree-chevron-spacer"></span><span class="tree-label">format.ts</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div></div></div><div class="tree-item" style="padding-left:12px"><span class="tree-chevron"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span><span class="tree-label">public</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div><div class="tree-item" style="padding-left:12px"><span class="tree-chevron-spacer"></span><span class="tree-label">package.json</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div><div class="tree-item" style="padding-left:12px"><span class="tree-chevron-spacer"></span><span class="tree-label">tsconfig.json</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
-  </div>
+
+<div class="page" data-ds-component="dropdown-chevron">
+  <h1 class="h1">08 — Dropdown Chevron</h1>
+  <p class="lede">Animated disclosure chevron used by every expandable row in the project tree. Implemented in <code>src/components/ProjectTree/TreeNode.tsx</code> with the inline <code>ChevronIcon</code> from <code>TreeIcons.tsx</code> and CSS rules in <code>ProjectTree.module.css</code>. Right-pointing at rest; rotates 90° clockwise to point down when its parent row is expanded. Used by project rows, folder rows, and the recents group inside the <a href="./01-sidebar.html" style="color:var(--accent)"><code>sidebar</code></a> tree. Leaf rows (mockups) substitute a <code>.chevron-spacer</code> so labels stay aligned.</p>
+
+  <section class="section">
+    <div class="section-title">All states</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">Collapsed (rest)</div>
+        <div class="state-row">
+          <button class="chevron" type="button" aria-label="Expand"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">Expanded</div>
+        <div class="state-row">
+          <button class="chevron" data-state="open" type="button" aria-label="Collapse"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">Leaf (no chevron)</div>
+        <div class="state-row">
+          <span class="chevron-spacer" aria-hidden="true"></span>
+          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted)">spacer</span>
+        </div>
+      </div>
+      <div class="state">
+        <div class="state-label">Focused</div>
+        <div class="state-row">
+          <button class="chevron" type="button" style="box-shadow:var(--focus-ring);border-radius:var(--radius-xs)" aria-label="Expand"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Single CSS rule. Variant via <code>[data-state="open"]</code> (verbatim from <code>.chevronOpen</code> in source). Spacer placeholder keeps leaf labels aligned with siblings of expandable rows.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Rotation in motion</div>
+    <div class="stage">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
+        <button class="chevron" id="replay-chevron" data-state="open" type="button" style="width:32px;height:32px" aria-label="Toggle"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="replay" id="replay-btn">Replay</button>
+      </div>
+    </div>
+    <div class="caption">Rotates 90° clockwise (closed → open) and back over <code>--motion-fast</code> with <code>--ease-standard</code>. Toggle <code>data-state</code> attribute → CSS transition handles the animation; no JS rotation logic.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">In-context — tree row composition</div>
+    <div class="stage">
+      <div class="tree" id="tree">
+        <div class="tree-item" style="padding-left:12px"><button class="chevron" data-state="open" type="button" aria-label="Collapse src"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="tree-label">src</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
+        <div class="tree-children">
+          <div class="tree-item" style="padding-left:28px"><button class="chevron" data-state="open" type="button" aria-label="Collapse components"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="tree-label">components</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
+          <div class="tree-children">
+            <div class="tree-item active" style="padding-left:44px"><span class="chevron-spacer"></span><span class="tree-label">Button.tsx</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
+            <div class="tree-item" style="padding-left:44px"><span class="chevron-spacer"></span><span class="tree-label">Card.tsx</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
+            <div class="tree-item" style="padding-left:44px"><span class="chevron-spacer"></span><span class="tree-label">Dialog.tsx</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
+          </div>
+          <div class="tree-item" style="padding-left:28px"><button class="chevron" type="button" aria-label="Expand hooks"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="tree-label">hooks</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
+          <div class="tree-item" style="padding-left:28px"><button class="chevron" data-state="open" type="button" aria-label="Collapse utils"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="tree-label">utils</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
+          <div class="tree-children">
+            <div class="tree-item" style="padding-left:44px"><span class="chevron-spacer"></span><span class="tree-label">cn.ts</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
+            <div class="tree-item" style="padding-left:44px"><span class="chevron-spacer"></span><span class="tree-label">format.ts</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
+          </div>
+        </div>
+        <div class="tree-item" style="padding-left:12px"><button class="chevron" type="button" aria-label="Expand public"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="tree-label">public</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
+        <div class="tree-item" style="padding-left:12px"><span class="chevron-spacer"></span><span class="tree-label">package.json</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
+        <div class="tree-item" style="padding-left:12px"><span class="chevron-spacer"></span><span class="tree-label">tsconfig.json</span><span class="tree-kebab"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span></div>
+      </div>
+    </div>
+    <div class="caption">Click a chevron or its parent row to toggle. Leaves (no children) render <code>.chevron-spacer</code> instead so labels stay aligned. Kebab fades in on row hover (see also <a href="./01-sidebar.html" style="color:var(--accent)"><code>sidebar</code></a>).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — custom (no Radix primitive)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:640px">Radix UI's Primitives library does not currently ship a tree-view primitive (<code>@radix-ui/react-collapsible</code> exists but solves a different problem — single-section show/hide rather than a tree where one chevron per row drives both label-alignment and animated rotation). The project ships a <strong>custom compound</strong> in <code>src/components/ProjectTree/</code> that owns expansion state via a <code>Set&lt;string&gt;</code> (<code>useExpandedState.ts</code>) and renders the chevron inline. The chevron itself is a native <code>&lt;button&gt;</code> with <code>data-state</code> driving rotation.</p>
+    <pre class="api"><span class="c">// src/components/ProjectTree/TreeNode.tsx — chevron rendering</span>
+<span class="k">import</span> { ChevronIcon } <span class="k">from</span> <span class="s">'./TreeIcons'</span>;
+<span class="k">import</span> styles <span class="k">from</span> <span class="s">'./ProjectTree.module.css'</span>;
+
+{node.expandable ? (
+  &lt;<span class="k">button</span>
+    type=<span class="s">"button"</span>
+    tabIndex={-1}
+    aria-hidden=<span class="s">"true"</span>                            <span class="c">// row owns aria-expanded</span>
+    className={cx(styles.chevron, node.expanded &amp;&amp; styles.chevronOpen)}
+    onClick={(e) =&gt; {
+      e.stopPropagation();                          <span class="c">// don&apos;t fire row navigation</span>
+      onToggleExpand(node.id);
+    }}
+  &gt;
+    &lt;<span class="t">ChevronIcon</span> /&gt;
+  &lt;/<span class="k">button</span>&gt;
+) : (
+  &lt;<span class="k">span</span> className={styles.chevronSpacer} /&gt;     <span class="c">// keeps leaf labels aligned</span>
+)}
+
+<span class="c">// Parent row exposes the aria contract:</span>
+&lt;<span class="k">div</span>
+  role=<span class="s">"treeitem"</span>
+  aria-expanded={node.expandable ? node.expanded : <span class="k">undefined</span>}
+  aria-level={node.level}
+  …
+&gt;</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:640px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li>The chevron <code>&lt;button&gt;</code> is <code>aria-hidden</code> and <code>tabIndex=-1</code> — the parent <code>div[role="treeitem"]</code> owns the focus + <code>aria-expanded</code> contract per WAI-ARIA treeview pattern. Clicking the row also toggles expansion; the chevron button is a redundant hit-target convenience.</li>
+      <li><code>e.stopPropagation()</code> on the chevron click is required: row <code>onClick</code> handles both toggle AND navigation (<code>onNavigate(href)</code>). Without it, clicking the chevron would also navigate.</li>
+      <li>Expansion state lives in the parent <code>ProjectTree</code> as a <code>Set&lt;string&gt;</code> (<code>useExpandedState</code> hook) keyed by stable node IDs — persists across re-renders and survives lazy-loaded children.</li>
+      <li>The <code>ChevronIcon</code> is inline SVG, not <code>react-icons</code>, so stroke weight matches the tree typography exactly (1.5 px stroke, 16 px viewBox).</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>Trigger</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>collapsed</code></td>
+          <td>Default; <code>expanded.has(id) === false</code>.</td>
+          <td>Chevron at 0°, color <code>--text-muted</code>. Children not in DOM.</td>
+          <td>Parent row: <code>aria-expanded="false"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>expanded</code></td>
+          <td>Click chevron or row; or keyboard Right-arrow.</td>
+          <td>Chevron rotates 90° clockwise over <code>--motion-fast</code>. Color shifts to <code>--accent</code>. Children mount below.</td>
+          <td>Parent row: <code>aria-expanded="true"</code>.</td>
+        </tr>
+        <tr>
+          <td><code>leaf</code> (custom)</td>
+          <td>Node has no children (mockup row, recent-item).</td>
+          <td><code>.chevron-spacer</code> — 16 px reserved gutter, no glyph.</td>
+          <td>Parent row omits <code>aria-expanded</code> entirely (not a disclosure).</td>
+        </tr>
+        <tr>
+          <td><code>focused</code></td>
+          <td>Row keyboard-focused (chevron itself is <code>tabIndex=-1</code>).</td>
+          <td>Standard <code>--focus-ring</code> on the <em>row</em>, not the chevron.</td>
+          <td>Row has <code>tabIndex={index === focusIndex ? 0 : -1}</code> — roving tab.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">"leaf" is a custom DS state with no Radix analogue — Collapsible is binary (open/closed) and has no notion of "non-collapsible peer slot to keep alignment". The spacer is essential when leaves and disclosable items share the same nesting level (folders vs mockups).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Primitive</th><th>Use for</th><th>Backing</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>chevron</code> (this)</td>
+          <td>Tree-row disclosure — one chevron per expandable row, sharing a column with leaf-row spacers.</td>
+          <td>Custom — <code>ProjectTree</code> compound.</td>
+        </tr>
+        <tr>
+          <td><code>@radix-ui/react-collapsible</code></td>
+          <td>Single show/hide section ("Read more", FAQ accordion). Not installed in this project today.</td>
+          <td>Radix Collapsible (would need to be added).</td>
+        </tr>
+        <tr>
+          <td><a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a></td>
+          <td>Floating dropdowns (avatar menu, context kebab) — different mechanic: overlay, not in-flow expansion.</td>
+          <td><code>@radix-ui/react-popover</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="caption">Rule of thumb: if the disclosed content is <em>in-flow</em> and the chevron must align with sibling-leaves' spacers, use this. If it's a floating panel, use <a href="./15-popover.html" style="color:var(--accent)"><code>popover</code></a>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>chevron size<dd>16 × 16 px (button bounds)
+      <dt>chevron glyph<dd>14 px viewBox, 1.5 px stroke, currentColor
+      <dt>icon path<dd>M6 4l4 4-4 4 (right-pointing caret)
+      <dt>rest color<dd>--text-muted
+      <dt>open color<dd>--accent
+      <dt>rotation<dd>90° clockwise on [data-state="open"]
+      <dt>animation<dd>transform var(--motion-fast) var(--ease-standard)
+      <dt>color transition<dd>color var(--motion-fast)
+      <dt>spacer<dd>16 × 16 px reserved gutter (.chevron-spacer)
+      <dt>focus<dd>parent row owns the ring; chevron is tabIndex=-1
+    </dl>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:640px">
+      <li><strong>Toggle propagation.</strong> Clicking the chevron toggles expansion AND stops propagation, so it doesn't fire the row's <code>onNavigate</code>. Clicking the row body (anywhere outside the chevron and the kebab) both toggles expansion and navigates.</li>
+      <li><strong>Roving tab.</strong> The chevron itself has <code>tabIndex=-1</code>; the row is the focusable target. Keyboard users use <code>ArrowRight</code> / <code>ArrowLeft</code> on the focused row to expand / collapse — matches the WAI-ARIA tree pattern.</li>
+      <li><strong>Persistence.</strong> Expansion state is held by the parent <code>ProjectTree</code> in a stable <code>Set&lt;string&gt;</code>; it survives node re-orderings and lazy children loads.</li>
+      <li><strong>Spacer.</strong> Leaf rows render <code>.chevron-spacer</code> (a 16 px non-interactive span), keeping their labels aligned with siblings' labels regardless of expansion state.</li>
+      <li><strong>Color cue.</strong> Open chevrons re-tint to <code>--accent</code> so a glance distinguishes "open" from "closed" without inspecting rotation — useful at small font sizes.</li>
+      <li><strong>Reduced motion.</strong> Under <code>prefers-reduced-motion: reduce</code>, the rotation collapses to 0 ms (token override at top of file) — the chevron snaps instead of sweeping.</li>
+    </ul>
+  </section>
 </div>
-<div class="demo-label">08 — Dropdown Chevron</div>
+
 <script>
 (function(){
-  const tree = document.getElementById('tree');
-  tree.addEventListener('click', function(e) {
-    const item = e.target.closest('.tree-item');
-    if (!item) return;
+  // 1) Replay button — toggles data-state on the showcase chevron
+  var showcase = document.getElementById('replay-chevron');
+  var replayBtn = document.getElementById('replay-btn');
+  if (showcase && replayBtn) {
+    replayBtn.addEventListener('click', function () {
+      var isOpen = showcase.getAttribute('data-state') === 'open';
+      // Force a reflow so re-applying [data-state] re-fires the transition.
+      showcase.removeAttribute('data-state');
+      void showcase.offsetWidth;
+      if (!isOpen) showcase.setAttribute('data-state', 'open');
+    });
+  }
 
-    // kebab click
-    if (e.target.closest('.tree-kebab')) return;
-
-    const chevron = item.querySelector('.tree-chevron');
-    if (chevron) {
-      const isOpen = chevron.classList.contains('open');
-      chevron.classList.toggle('open');
-      const children = item.nextElementSibling;
-      if (children && children.classList.contains('tree-children')) {
-        children.style.display = isOpen ? 'none' : '';
+  // 2) In-context tree demo — click chevron or row to toggle
+  var tree = document.getElementById('tree');
+  if (tree) {
+    tree.addEventListener('click', function (e) {
+      var target = e.target;
+      // The closest chevron handles toggle; chevron-spacer doesn't.
+      var chevron = target.closest('.chevron');
+      if (chevron && !chevron.classList.contains('chevron-spacer')) {
+        e.stopPropagation();
+        var open = chevron.getAttribute('data-state') === 'open';
+        if (open) chevron.removeAttribute('data-state');
+        else chevron.setAttribute('data-state', 'open');
+        var item = chevron.closest('.tree-item');
+        var children = item && item.nextElementSibling;
+        if (children && children.classList.contains('tree-children')) {
+          children.style.display = open ? 'none' : '';
+        }
+        return;
       }
-    }
+      // Kebab is a no-op in this demo.
+      if (target.closest('.tree-kebab')) return;
 
-    // set active
-    tree.querySelectorAll('.tree-item').forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-  });
+      // Row click: toggle if expandable, then set active.
+      var row = target.closest('.tree-item');
+      if (!row) return;
+      var rowChev = row.querySelector('.chevron');
+      if (rowChev) {
+        var rowOpen = rowChev.getAttribute('data-state') === 'open';
+        if (rowOpen) rowChev.removeAttribute('data-state');
+        else rowChev.setAttribute('data-state', 'open');
+        var rowChildren = row.nextElementSibling;
+        if (rowChildren && rowChildren.classList.contains('tree-children')) {
+          rowChildren.style.display = rowOpen ? 'none' : '';
+        }
+      }
+      tree.querySelectorAll('.tree-item').forEach(function (i) { i.classList.remove('active'); });
+      row.classList.add('active');
+    });
+  }
 })();
 </script>
 </body>
