@@ -40,9 +40,7 @@ type DerivedState = 'loading' | 'ready' | 'fallback';
 
 function deriveState(props: PreviewBoxProps): DerivedState {
   if (props.isLoading) return 'loading';
-  if (props.fallbackReason !== null && props.fallbackReason !== undefined) {
-    return 'fallback';
-  }
+  if (props.fallbackReason != null) return 'fallback';
   if (props.previewDataUrl !== null) return 'ready';
   return 'fallback';
 }
