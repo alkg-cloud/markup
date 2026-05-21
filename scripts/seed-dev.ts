@@ -2,11 +2,16 @@
  * Dev seeder — wipes the local DB and re-creates a rich state for QA:
  *
  *   - 1 admin user (credentials below)
- *   - 2 projects with folders
- *   - 3 uploaded mockups from `tests/fixtures/mockups/`
+ *   - 1 peer (editor) user — for cross-author threads
+ *   - 3 projects:
+ *       Lumen-Coffee (Hero + Pricing folders, real fixture mockups)
+ *       Design-Demos (Consoles folder, real fixture mockup)
+ *       Sandbox      (nested folders down to depth 4, mockups at each
+ *                     level; for QA of the tree component + cascade)
+ *   - Orphan mockups (no project, no folder) for QA of loose-mockup state
  *   - Multiple versions on the lumen-coffee mockup (v1/v2/v3)
- *   - 5 annotations across statuses (open / needs review / resolved),
- *     covering single-pin + multi-pin, with replies + reactions
+ *   - 6 annotations on lumen-coffee-hero across statuses + cross-user
+ *     threads + emoji reactions; 1 annotation on helio-pricing
  *   - 1 agent token
  *
  * Usage: `pnpm exec tsx scripts/seed-dev.ts`
@@ -124,6 +129,9 @@ async function createProjects() {
   const demos = await prisma.project.create({
     data: { name: 'Design-Demos', slug: 'design-demos', icon: 'emoji:🎨', position: 1 },
   });
+  const sandbox = await prisma.project.create({
+    data: { name: 'Sandbox', slug: 'sandbox', icon: 'emoji:🧪', position: 2 },
+  });
   const lumenHero = await prisma.folder.create({
     data: { projectId: lumen.id, name: 'Hero', position: 0 },
   });
@@ -133,14 +141,87 @@ async function createProjects() {
   const demosConsoles = await prisma.folder.create({
     data: { projectId: demos.id, name: 'Consoles', position: 0 },
   });
-  return { lumen, demos, lumenHero, lumenPricing, demosConsoles };
+
+  // Sandbox project — nested folder tree exercising depth 2..4 of the
+  // MAX_FOLDER_DEPTH=4 limit. Created via prisma.folder.create directly
+  // (bypasses the service's depth guard, which is fine here since this
+  // is seed data, not user input). Layout:
+  //
+  //   Sandbox/
+  //   ├── Web/                       d=1
+  //   │   ├── Marketing/             d=2
+  //   │   │   ├── Q1-Launch/         d=3
+  //   │   │   │   └── Variants/      d=4 (leaf at max depth)
+  //   │   │   └── Q2-Launch/         d=3
+  //   │   └── Docs/                  d=2
+  //   ├── Mobile/                    d=1
+  //   │   ├── Onboarding/            d=2
+  //   │   │   └── Welcome/           d=3
+  //   │   └── Profile/               d=2
+  //   └── Archive/                   d=1
+  const sbWeb = await prisma.folder.create({
+    data: { projectId: sandbox.id, name: 'Web', position: 0 },
+  });
+  const sbMarketing = await prisma.folder.create({
+    data: { projectId: sandbox.id, parentId: sbWeb.id, name: 'Marketing', position: 0 },
+  });
+  const sbQ1 = await prisma.folder.create({
+    data: { projectId: sandbox.id, parentId: sbMarketing.id, name: 'Q1-Launch', position: 0 },
+  });
+  const sbQ1Variants = await prisma.folder.create({
+    data: { projectId: sandbox.id, parentId: sbQ1.id, name: 'Variants', position: 0 },
+  });
+  const sbQ2 = await prisma.folder.create({
+    data: { projectId: sandbox.id, parentId: sbMarketing.id, name: 'Q2-Launch', position: 1 },
+  });
+  const sbDocs = await prisma.folder.create({
+    data: { projectId: sandbox.id, parentId: sbWeb.id, name: 'Docs', position: 1 },
+  });
+  const sbMobile = await prisma.folder.create({
+    data: { projectId: sandbox.id, name: 'Mobile', position: 1 },
+  });
+  const sbOnboarding = await prisma.folder.create({
+    data: { projectId: sandbox.id, parentId: sbMobile.id, name: 'Onboarding', position: 0 },
+  });
+  const sbWelcome = await prisma.folder.create({
+    data: { projectId: sandbox.id, parentId: sbOnboarding.id, name: 'Welcome', position: 0 },
+  });
+  const sbProfile = await prisma.folder.create({
+    data: { projectId: sandbox.id, parentId: sbMobile.id, name: 'Profile', position: 1 },
+  });
+  const sbArchive = await prisma.folder.create({
+    data: { projectId: sandbox.id, name: 'Archive', position: 2 },
+  });
+
+  return {
+    lumen,
+    demos,
+    sandbox,
+    lumenHero,
+    lumenPricing,
+    demosConsoles,
+    sb: {
+      Web: sbWeb,
+      Marketing: sbMarketing,
+      Q1: sbQ1,
+      Q1Variants: sbQ1Variants,
+      Q2: sbQ2,
+      Docs: sbDocs,
+      Mobile: sbMobile,
+      Onboarding: sbOnboarding,
+      Welcome: sbWelcome,
+      Profile: sbProfile,
+      Archive: sbArchive,
+    },
+  };
 }
 
 async function uploadMockup(opts: {
   name: string;
   slug: string;
   zipName: string;
-  projectId: string;
+  /** Omit to create an orphan mockup (no project, no folder). */
+  projectId?: string;
   folderId?: string;
   authorId: string;
 }) {
@@ -279,7 +360,8 @@ async function main() {
   console.log(`     ${peer.email} / ${PEER_PASSWORD} (role=${peer.role})`);
 
   console.log('  Creating projects + folders …');
-  const { lumen, demos, lumenHero, lumenPricing, demosConsoles } = await createProjects();
+  const { lumen, demos, sandbox, lumenHero, lumenPricing, demosConsoles, sb } =
+    await createProjects();
 
   console.log('  Uploading mockups …');
   const lumenCoffee = await uploadMockup({
@@ -304,6 +386,106 @@ async function main() {
     zipName: 'drone-console.zip',
     projectId: demos.id,
     folderId: demosConsoles.id,
+    authorId: user.id,
+  });
+
+  // Sandbox mockups — one per leaf folder so the tree shows realistic
+  // content at every depth (d=2..d=4). All re-use existing fixture zips;
+  // their contents are duplicated by design (this is QA data, not a
+  // canonical fixture library).
+  console.log('  Uploading Sandbox mockups at every depth …');
+  await uploadMockup({
+    name: 'Hero-Variant-A',
+    slug: 'sb-hero-variant-a',
+    zipName: 'lumen-coffee.zip',
+    projectId: sandbox.id,
+    folderId: sb.Q1Variants.id, // d=4 leaf
+    authorId: user.id,
+  });
+  await uploadMockup({
+    name: 'Hero-Variant-B',
+    slug: 'sb-hero-variant-b',
+    zipName: 'helio-pricing.zip',
+    projectId: sandbox.id,
+    folderId: sb.Q1Variants.id, // d=4 leaf
+    authorId: peer.id,
+  });
+  await uploadMockup({
+    name: 'Q2-Pricing-Tiers',
+    slug: 'sb-q2-pricing-tiers',
+    zipName: 'helio-pricing.zip',
+    projectId: sandbox.id,
+    folderId: sb.Q2.id, // d=3
+    authorId: user.id,
+  });
+  await uploadMockup({
+    name: 'Brand-Docs-Cover',
+    slug: 'sb-brand-docs-cover',
+    zipName: 'valid-simple.zip',
+    projectId: sandbox.id,
+    folderId: sb.Docs.id, // d=2
+    authorId: user.id,
+  });
+  await uploadMockup({
+    name: 'Welcome-Screen',
+    slug: 'sb-welcome-screen',
+    zipName: 'with-thumbnail.zip',
+    projectId: sandbox.id,
+    folderId: sb.Welcome.id, // d=3
+    authorId: user.id,
+  });
+  await uploadMockup({
+    name: 'Onboarding-Loader',
+    slug: 'sb-onboarding-loader',
+    zipName: 'valid-simple.zip',
+    projectId: sandbox.id,
+    folderId: sb.Onboarding.id, // d=2
+    authorId: peer.id,
+  });
+  await uploadMockup({
+    name: 'Profile-Settings',
+    slug: 'sb-profile-settings',
+    zipName: 'drone-console.zip',
+    projectId: sandbox.id,
+    folderId: sb.Profile.id, // d=2
+    authorId: user.id,
+  });
+  await uploadMockup({
+    name: 'Old-Brand-V1',
+    slug: 'sb-old-brand-v1',
+    zipName: 'valid-simple.zip',
+    projectId: sandbox.id,
+    folderId: sb.Archive.id, // d=1
+    authorId: user.id,
+  });
+  // Project-scoped but folder-less (lives in the project root, no folder).
+  await uploadMockup({
+    name: 'Sandbox-Root-Sketch',
+    slug: 'sb-root-sketch',
+    zipName: 'with-thumbnail.zip',
+    projectId: sandbox.id,
+    authorId: user.id,
+  });
+
+  // Orphan mockups — no projectId, no folderId. Exercises the
+  // "loose mockup" UI state and the cascade-check guard rails.
+  console.log('  Uploading orphan mockups …');
+  await uploadMockup({
+    name: 'Sketch-Untitled-1',
+    slug: 'sketch-untitled-1',
+    zipName: 'valid-simple.zip',
+    authorId: user.id,
+  });
+  await uploadMockup({
+    name: 'Sketch-Untitled-2',
+    slug: 'sketch-untitled-2',
+    zipName: 'with-thumbnail.zip',
+    authorId: peer.id,
+  });
+  await uploadMockup({
+    name: 'Inbox-Drop',
+    slug: 'inbox-drop',
+    zipName: 'lumen-coffee.zip',
     authorId: user.id,
   });
 
@@ -465,10 +647,14 @@ async function main() {
   console.log(`  Password: ${TEST_PASSWORD}`);
   console.log(`  Agent token: ${tokenSecret}  (name: qa-agent)`);
   console.log('  ──────────────────────────────────────────────');
-  console.log(`  Projects:   ${lumen.name} (${lumen.slug}), ${demos.name} (${demos.slug})`);
-  console.log(`  Folders:    ${lumenHero.name}, ${lumenPricing.name}, ${demosConsoles.name}`);
   console.log(
-    `  Mockups:    ${lumenCoffee.mockup.slug}, ${helio.mockup.slug}, ${drone.mockup.slug}`,
+    `  Projects:   ${lumen.name}, ${demos.name}, ${sandbox.name} (nested folders to d=4)`,
+  );
+  console.log(
+    `  Folders:    ${lumenHero.name}, ${lumenPricing.name}, ${demosConsoles.name}, +11 in Sandbox`,
+  );
+  console.log(
+    `  Mockups:    lumen-coffee-hero, helio-pricing, drone-console, +9 in Sandbox, +3 orphans`,
   );
   console.log(
     `  Annotations on lumen-coffee-hero: 6  (open×4, needs review×1, resolved×1; one by peer)`,
@@ -479,6 +665,7 @@ async function main() {
   console.log('  Open: http://localhost:3000/  (or your tunnel URL)');
 
   void v2;
+  void drone;
   await prisma.$disconnect();
 }
 
