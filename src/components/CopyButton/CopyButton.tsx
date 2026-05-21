@@ -40,7 +40,12 @@ export interface CopyButtonProps extends UseCopyOptions {
   variant?: 'icon' | 'ghost' | 'secondary' | 'accent';
   className?: string;
   disabled?: boolean;
-  title?: string;
+  /** @deprecated Use data-tooltip instead — title= on interactive elements is forbidden per code-style.md */
+  title?: never;
+  /** Portal tooltip text shown on hover/focus (data-tooltip primitive). */
+  'data-tooltip'?: string;
+  /** Tooltip alignment. Default: left. */
+  'data-tooltip-align'?: 'left' | 'center' | 'right';
 }
 
 /**
@@ -60,7 +65,8 @@ export function CopyButton({
   variant = 'icon',
   className,
   disabled,
-  title,
+  'data-tooltip': dataTooltip,
+  'data-tooltip-align': dataTooltipAlign,
   // useCopy opts
   message = 'Copied to clipboard',
   inlineDurationMs = 1200,
@@ -86,7 +92,8 @@ export function CopyButton({
       data-variant={variant !== 'icon' ? variant : undefined}
       data-state={dataState}
       aria-label={ariaLabel}
-      title={title}
+      data-tooltip={dataTooltip}
+      data-tooltip-align={dataTooltipAlign}
       disabled={disabled}
       onClick={() => void copy(value)}
     >

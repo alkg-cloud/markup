@@ -152,6 +152,7 @@ export function TreeNode({
         aria-posinset={node.posInSet}
         aria-selected={active}
         aria-grabbed={dnd.dragState.kbMoveMode && isDragging ? true : undefined}
+        // title= is the canonical overflow-disclosure primitive for truncated display text — see Tooltip.tsx docstring; icon-button hints use data-tooltip
         title={displayLabel}
         draggable={canDrag(node)}
         onClick={() => {

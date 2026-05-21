@@ -67,6 +67,7 @@ export function ProjectCard({ project, onOpen, onEdit, onDelete }: ProjectCardPr
           <ProjectIconResolved token={project.icon} />
         </span>
         <div className={styles.info}>
+          {/* title= is the canonical overflow-disclosure primitive for truncated display text — see Tooltip.tsx docstring; icon-button hints use data-tooltip */}
           <h2 className={styles.name} title={project.name}>
             {project.name}
           </h2>
