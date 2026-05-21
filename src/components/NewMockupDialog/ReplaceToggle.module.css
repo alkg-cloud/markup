@@ -1,0 +1,72 @@
+/* Replace toggle — port of DS 25's `.replace-toggle` block. Visible only
+   on the mockup view: two radios for "Add as new mockup" vs "Replace as
+   new version of <current>". */
+
+.replaceToggle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: oklch(15% 0.025 165);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+
+.replaceLabel {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.opts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.optRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  cursor: pointer;
+  outline: none;
+}
+
+.optRow:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent-overlay-soft);
+  border-radius: var(--radius-xs);
+}
+
+.radio {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--text-muted);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.optRow.isActive .radio {
+  border-color: var(--accent);
+}
+
+.optRow.isActive .radio::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.lbl {
+  color: var(--text);
+}
+
+.nameQuote {
+  color: var(--accent);
+  font-weight: 600;
+}
