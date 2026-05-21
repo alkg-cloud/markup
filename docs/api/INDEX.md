@@ -58,6 +58,7 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 | `GET` | `/api/mockups` | List (cursor-paged by status) |
 | `POST` | `/api/mockups` | Create from upload (multipart: `name` + `build` — `build` accepts a zip OR a raw HTML doc; optional `projectId` + `folderId`). 413 `file_too_large` when the body exceeds `env().MAX_UPLOAD_MB`. See [agent-loop/uploads](../agent-loop/uploads.md). |
 | `GET` | `/api/mockups/[id]` | Single mockup metadata |
+| `PATCH` | `/api/mockups/[id]` | Mutate mockup metadata (`status`, `name`, `projectId`, `folderId`, `position`). Cookie OR Bearer; `name` is admin-only. See [agent-loop/endpoints.md](../agent-loop/endpoints.md#patch-apimockupsid). |
 | `DELETE` | `/api/mockups/[id]` | Delete mockup (versions, annotations, threads cascade; see [authz.md](authz.md) for ownership gate) |
 | `POST` | `/api/mockups/[id]/move` | Move mockup (`projectId`, `folderId`, `position`) |
 | `POST` | `/api/mockups/[id]/version` | Add new version from upload (zip or raw HTML; same 413 cap as `POST /api/mockups`). See [agent-loop/uploads](../agent-loop/uploads.md). |
