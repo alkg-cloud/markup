@@ -2,13 +2,15 @@
 
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
 import { FadeIn } from '@/components/FadeIn';
 import { useNewMockupDialog } from '@/components/NewMockupDialog';
 import type { TreeMockup, TreeProject } from '@/components/ProjectTree/ProjectTree';
 import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
 import { ShellSkeleton } from '@/components/Skeleton/ShellSkeleton';
+import { Topbar } from '@/components/Topbar/Topbar';
+import { buildBreadcrumbsFromPath } from '@/lib/breadcrumbs/from-path';
 import { type AuthMe, IdentityContext, useRequireAuth } from '@/lib/hooks/use-require-auth';
 import { ShellRefreshContext } from '@/lib/hooks/use-shell-refresh';
 import { resolveTargetFromPath } from '@/lib/upload/resolve-target';
@@ -98,6 +100,19 @@ export function AppShell({ children }: { children: ReactNode }) {
     return <ShellSkeleton />;
   }
 
+  // Breadcrumb is derived from the URL + the already-loaded shell so
+  // navigation updates the trail instantly — no page-level resolver
+  // round-trip needed before the breadcrumb refreshes.
+  const breadcrumbs = useMemo(
+    () =>
+      buildBreadcrumbsFromPath({
+        pathname,
+        projects: shell.projects,
+        recentMockups: shell.recentMockups,
+      }),
+    [pathname, shell.projects, shell.recentMockups],
+  );
+
   // Prefer the shell payload's name/email (it falls back to the user
   // row), but keep the identity `kind` and `id` from the auth check.
   const shellIdentity: AuthMe = {
@@ -120,7 +135,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             defaultCollapsed={shell.sidebarCollapsed}
             onUploadFile={handleSidebarUpload}
           />
-          <main className={styles.main}>{children}</main>
+          <div className={styles.rightCol}>
+            <Topbar
+              breadcrumbs={breadcrumbs}
+              userName={shellIdentity.name}
+              userEmail={shellIdentity.email}
+              userRole={shellIdentity.role}
+            />
+            <main className={styles.main}>{children}</main>
+          </div>
           <CommandPalette projects={shell.projects} />
         </FadeIn>
       </ShellRefreshContext.Provider>

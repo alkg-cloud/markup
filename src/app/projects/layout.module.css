@@ -6,11 +6,24 @@
   overflow: hidden;
 }
 
-.main {
+/* Right column wraps the persistent Topbar and the per-route main
+ * content. Lifting the Topbar one level so navigation doesn't unmount
+ * it — only the child below it swaps when the route changes. */
+.rightCol {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: var(--bg);
+  min-width: 0;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  background: var(--bg);
+  min-height: 0;
 }
 
 @media (max-width: 767px) {
