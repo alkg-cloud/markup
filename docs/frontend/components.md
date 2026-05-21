@@ -41,12 +41,50 @@ export default function MockupPage() {
   }, [id]);
 
   if (error) return <ErrorState code={error} />;
-  if (!data) return <LoadingState />;
-  return <ViewerSurface {...data} />;
+  if (!data) return <MockupViewerSkeleton />;
+  return (
+    <FadeIn>
+      <ViewerSurface {...data} />
+    </FadeIn>
+  );
 }
 ```
 
 See [`docs/frontend/data-fetching.md`](data-fetching.md) for the shared `useApi` hook and the `useRequireAuth` guard.
+
+## Loading states
+
+**Every loading state in the app MUST render a skeleton.** Bare "Loading…" text, blank screens, and standalone spinners are forbidden — they leave the layout shifting and the user staring at empty pixels on every cold start.
+
+The skeleton primitives live in [`src/components/Skeleton/`](../../src/components/Skeleton):
+
+- `<Skeleton />` — single rectangle with shimmer (`block` / `text` / `circle` variants). Use it to compose ad-hoc placeholders.
+- `<ShellSkeleton />` — sidebar + main grid. Mounted by `AppShell` while `/api/shell` and `/api/auth/me` are in flight.
+- `<ProjectSkeleton />` — header + card grid. Use for `/`, `/projects/[slug]`, and the folder branch of `/projects/[slug]/[...path]`.
+- `<MockupViewerSkeleton />` — viewer header + viewport + rail. Use for the mockup branch of the catch-all and any page that hosts `MockupViewerPage`.
+
+Rules of thumb:
+
+1. **Mirror the post-load layout.** A skeleton that doesn't match the real layout produces a visible "jump" when the content arrives. Compose new skeletons from `<Skeleton />` to reach pixel parity with the destination surface.
+2. **Wrap the real content in `<FadeIn>`** so the swap from skeleton → content is a 220 ms ease-out cross-fade, not a hard cut. Importing it costs nothing (`src/components/FadeIn/FadeIn.tsx` is a few dozen bytes).
+3. **Respect `prefers-reduced-motion`.** Both the shimmer animation and the fade-in are zeroed under the media query — no opt-in needed; the primitives already do it.
+4. **Don't render the skeleton inside a Suspense boundary that flickers.** If the data source is fast (< 100 ms) the skeleton-then-content swap is itself noise; in that case render nothing while loading and rely on the parent's skeleton for the cold-start case.
+
+The reference page-level pattern:
+
+```tsx
+if (status === 'loading' || !data) {
+  return <ProjectSkeleton />;        // matches the destination layout
+}
+
+return (
+  <FadeIn>
+    <ProjectContent {...data} />     // real content fades in over 220 ms
+  </FadeIn>
+);
+```
+
+A new page-level surface (e.g. settings sub-page, agent log viewer) that doesn't fit an existing skeleton MUST ship its own composed skeleton in `src/components/Skeleton/<Name>Skeleton.tsx` alongside the page — don't fall back to `<LoadingState />` (kept only for legacy callers being migrated).
 
 ## Auth gating
 

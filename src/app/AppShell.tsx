@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
+import { FadeIn } from '@/components/FadeIn';
 import { useNewMockupDialog } from '@/components/NewMockupDialog';
 import type { TreeMockup, TreeProject } from '@/components/ProjectTree/ProjectTree';
 import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
@@ -110,7 +111,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <IdentityContext.Provider value={shellIdentity}>
       <ShellRefreshContext.Provider value={refreshShell}>
-        <div className={styles.shell}>
+        <FadeIn className={styles.shell}>
           <ProjectSidebar
             projects={shell.projects}
             orphanMockups={shell.orphanMockups}
@@ -121,7 +122,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           />
           <main className={styles.main}>{children}</main>
           <CommandPalette projects={shell.projects} />
-        </div>
+        </FadeIn>
       </ShellRefreshContext.Provider>
     </IdentityContext.Provider>
   );

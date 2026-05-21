@@ -1,0 +1,42 @@
+/* FadeIn — the canonical "skeleton → content" transition.
+ *
+ * The wrapper plays a single 220 ms ease-out animation from
+ *   opacity: 0; transform: translateY(2px)
+ * to its resting state, so the swap from a skeleton placeholder to the
+ * real surface reads as a soft cross-fade rather than a hard cut.
+ *
+ * The animation runs on the first mount only (no `animation-iteration-count`
+ * larger than 1, no `animation-direction: alternate`). Subsequent re-renders
+ * stay at the resting state because CSS animations don't re-trigger without
+ * a new keyframes binding.
+ *
+ * `prefers-reduced-motion: reduce` zeros the animation duration so users
+ * who opt out of motion see the content snap in at full opacity. This
+ * matches the project's reduced-motion policy in docs/frontend/styling.md.
+ *
+ * `will-change: opacity, transform` is intentionally absent — for a single
+ * 220 ms transition the optimisation costs more than it saves (every
+ * subtree mount would promote to its own layer). Browsers handle this case
+ * fine without the hint.
+ */
+
+.root {
+  animation: fadeIn var(--motion-base) var(--ease-standard) both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    animation: none;
+  }
+}
