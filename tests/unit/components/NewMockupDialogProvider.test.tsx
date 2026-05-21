@@ -309,6 +309,56 @@ describe('NewMockupDialogProvider', () => {
     expect(p1TreeAfter.length).toBe(1);
   });
 
+  it('opening with a URL-resolver target (projectLabel = slug) resolves projectId after projects load', async () => {
+    // Mimic what `resolveTargetFromPath('/projects/lumen-coffee/Hero')` returns.
+    const target: DragTarget = {
+      projectId: null,
+      folderId: null,
+      projectLabel: 'lumen-coffee',
+      folderPath: ['Hero'],
+    };
+    renderWithProvider(<Opener target={target} />);
+    const opener = document.querySelector('[data-testid="open-dialog"]') as HTMLButtonElement;
+    act(() => {
+      opener.click();
+    });
+    await flushAsync();
+
+    // The dialog mapped slug → 'p1' and the project <select> reflects it.
+    const select = document.querySelector('select') as HTMLSelectElement;
+    expect(select.value).toBe('p1');
+
+    // The tree for p1 was fetched, and the folder name `Hero` from the
+    // URL path was resolved to its id `hero` (per the mocked tree).
+    const treeCalls = fetchMock.mock.calls.filter((c) => String(c[0]).endsWith('/p1/tree'));
+    expect(treeCalls.length).toBe(1);
+    const folderTrigger = document.querySelector(
+      '[data-folder-picker-trigger]',
+    ) as HTMLButtonElement;
+    expect(folderTrigger.textContent).toContain('Hero');
+  });
+
+  it('opening with a slug that has no match leaves selectedProjectId null', async () => {
+    const target: DragTarget = {
+      projectId: null,
+      folderId: null,
+      projectLabel: 'no-such-slug',
+      folderPath: [],
+    };
+    renderWithProvider(<Opener target={target} />);
+    const opener = document.querySelector('[data-testid="open-dialog"]') as HTMLButtonElement;
+    act(() => {
+      opener.click();
+    });
+    await flushAsync();
+    const select = document.querySelector('select') as HTMLSelectElement;
+    expect(select.value).toBe('');
+    const treeCalls = fetchMock.mock.calls.filter((c) =>
+      /\/api\/projects\/[^/]+\/tree$/.test(String(c[0])),
+    );
+    expect(treeCalls.length).toBe(0);
+  });
+
   it('subsequent openDialog calls swap the active file', async () => {
     renderWithProvider(<Opener file={htmlFile('first.html')} />);
     const opener = document.querySelector('[data-testid="open-dialog"]') as HTMLButtonElement;
