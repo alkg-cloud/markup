@@ -42,6 +42,7 @@ import {
 } from 'react';
 import { useToast } from '@/components/Toast/useToast';
 import { type DragTarget, useDragTarget, useDragTargetActions } from '@/hooks/useDragTarget';
+import { rejectionMessage } from '@/lib/upload/rejection-message';
 import { validateFile } from '@/lib/upload/validate-file';
 import {
   NewMockupDialog,
@@ -99,24 +100,6 @@ function dragTargetToDialogTarget(target: DragTarget | null): NewMockupDialogTar
   };
 }
 
-/**
- * Map a {@link validateFile} rejection to user-visible toast copy.
- * `'empty'` returns `null` because zero-file drops are silent (the user
- * already cancelled or never dropped).
- */
-function rejectionToast(reason: 'empty' | 'multi' | 'wrong-type' | 'too-large'): string | null {
-  switch (reason) {
-    case 'multi':
-      return 'Drop one file at a time.';
-    case 'wrong-type':
-      return 'Only HTML or ZIP files are supported.';
-    case 'too-large':
-      return 'File too large (limit 10 MB).';
-    case 'empty':
-      return null;
-  }
-}
-
 // ── DropHandler ───────────────────────────────────────────────────────
 
 /**
@@ -146,7 +129,7 @@ function DropHandler({ openDialog }: { openDialog: (p: OpenDialogParams) => void
 
     const result = validateFile(drop.files);
     if (!result.ok) {
-      const msg = rejectionToast(result.reason);
+      const msg = rejectionMessage(result.reason);
       if (msg) showToast(msg);
       return;
     }
