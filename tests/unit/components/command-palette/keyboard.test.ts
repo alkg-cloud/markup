@@ -17,6 +17,7 @@ const projects: TreeProject[] = [
     slug: 'website',
     icon: null,
     position: 0,
+    createdById: null,
     folders: [],
     mockups: [],
   },

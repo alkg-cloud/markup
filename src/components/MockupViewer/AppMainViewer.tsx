@@ -76,6 +76,8 @@ export interface AppMainViewerProps {
   onVersionSelect?: (versionId: string) => void;
   onVersionPromote?: (versionId: string) => void;
   onVersionDelete?: (versionId: string) => void;
+  /** Whether the current viewer is an admin — widens delete access on annotations/comments. */
+  viewerIsAdmin?: boolean;
 }
 
 export function AppMainViewer({
@@ -93,6 +95,7 @@ export function AppMainViewer({
   onVersionSelect,
   onVersionPromote,
   onVersionDelete,
+  viewerIsAdmin = false,
 }: AppMainViewerProps) {
   const appMainRef = useRef<HTMLDivElement | null>(null);
 
@@ -313,6 +316,7 @@ export function AppMainViewer({
                 await changeStatus(a.id, status);
               }}
               onAnnotationDelete={() => onAnnotationDeleteRow(a.id)}
+              viewerIsAdmin={viewerIsAdmin}
             />
           ))}
         </AnnotationsRail>

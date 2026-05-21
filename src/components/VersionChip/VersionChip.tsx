@@ -6,6 +6,7 @@ import {
   VscTrash,
   VscTriangleDown,
 } from 'react-icons/vsc';
+import { useCanDelete } from '@/lib/hooks/use-can-delete';
 import { usePopover } from '@/lib/popover/usePopover';
 import styles from './VersionChip.module.css';
 
@@ -14,6 +15,10 @@ export interface VersionRow {
   label: string;
   sub?: string;
   current?: boolean;
+  /** cuid of the user or agent who created this version. */
+  createdBy: string;
+  /** Whether this version was created by a user or an agent. */
+  createdByType: 'user' | 'agent';
 }
 
 export interface VersionChipProps {
@@ -33,6 +38,10 @@ export interface VersionChipProps {
  * surfaces Promote (disabled on current) and Delete. Both popovers
  * use the native HTML popover API (top-layer paint + light dismiss +
  * stacked open).
+ *
+ * The Delete button is hidden when the viewer is not permitted to delete
+ * the version (non-admin + not the creator, or agent-created). See
+ * `docs/api/authz.md` `[fc:delete-button-gating]`.
  *
  * See `docs/code-style.md § Popovers` and the AppMain redesign spec
  * `2026-05-18-app-main-redesign-spec.md` §5.
@@ -102,6 +111,11 @@ interface VersionListRowProps {
  */
 function VersionListRow({ row, onSelect, onPromote, onDelete }: VersionListRowProps) {
   const kebab = usePopover<HTMLButtonElement, HTMLDivElement>('right');
+  const canDelete = useCanDelete({
+    kind: 'mockupVersion',
+    createdBy: row.createdBy,
+    createdByType: row.createdByType,
+  });
   return (
     // biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-checked marks the current row; interactive surfaces are the inner buttons.
     // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard users tab into the inner buttons; row click is a mouse shortcut.
@@ -146,18 +160,20 @@ function VersionListRow({ row, onSelect, onPromote, onDelete }: VersionListRowPr
           <VscArrowUp aria-hidden="true" />
           {row.current ? 'Already current' : 'Promote'}
         </button>
-        <button
-          type="button"
-          className={[styles.action, styles.danger].join(' ')}
-          role="menuitem"
-          onClick={() => {
-            kebab.close();
-            onDelete();
-          }}
-        >
-          <VscTrash aria-hidden="true" />
-          Delete
-        </button>
+        {canDelete && (
+          <button
+            type="button"
+            className={[styles.action, styles.danger].join(' ')}
+            role="menuitem"
+            onClick={() => {
+              kebab.close();
+              onDelete();
+            }}
+          >
+            <VscTrash aria-hidden="true" />
+            Delete
+          </button>
+        )}
       </div>
     </li>
   );

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { identify } from '@/lib/auth/identify';
+import { handleAuthError, identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
+import { requireOwnerOrAdmin } from '@/lib/auth/require-owner-or-admin';
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 
@@ -37,6 +38,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const message = await prisma.message.findUnique({ where: { id: messageId } });
   if (!message) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
+  // Edit remains author-only (no admin override — admins can delete, not edit).
   if (message.authorId !== callerId || message.authorType !== callerType) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
@@ -57,28 +59,30 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 /**
  * DELETE /api/messages/[id] — delete a comment.
  *
- * Only the original author can delete. The primary message (the
- * annotation body — first in thread by createdAt) cannot be deleted —
+ * Author or admin can delete. Agents can delete their own messages.
+ * The primary message (first in thread by createdAt) cannot be deleted —
  * delete the annotation instead. Cascades delete reactions via the
  * Prisma `onDelete: Cascade` relation on `Reaction.messageId`.
  *
- * See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §9.
+ * See docs/api/authz.md for the full permission matrix.
  */
 export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
   const ident = await identify(req);
-  if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-
-  const callerId = ident.kind === 'user' ? ident.userId : ident.tokenId;
-  const callerType = ident.kind === 'user' ? 'user' : 'agent';
 
   const { id: messageId } = await ctx.params;
   const message = await prisma.message.findUnique({ where: { id: messageId } });
   if (!message) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
-  if (message.authorId !== callerId || message.authorType !== callerType) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  try {
+    await requireOwnerOrAdmin(ident, {
+      kind: 'message',
+      authorId: message.authorId,
+      authorType: message.authorType as 'user' | 'agent',
+    });
+  } catch (e) {
+    return handleAuthError(e);
   }
 
   const primary = await prisma.message.findFirst({
@@ -95,7 +99,12 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
 
   await prisma.message.delete({ where: { id: messageId } });
   logger.info(
-    { event: 'message_deleted', messageId, authorType: callerType, threadId: message.threadId },
+    {
+      event: 'message_deleted',
+      messageId,
+      authorType: message.authorType,
+      threadId: message.threadId,
+    },
     'message deleted',
   );
   return NextResponse.json({ ok: true });

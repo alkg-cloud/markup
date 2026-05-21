@@ -155,6 +155,8 @@ export async function buildViewerPayload(
       label: `v${v.number}`,
       sub: `${formatTimestamp(v.createdAt)} · ${resolved?.name ?? `${v.createdByType} ${v.createdBy.slice(-6)}`}`,
       current: isCurrent,
+      createdBy: v.createdBy,
+      createdByType: v.createdByType as 'user' | 'agent',
     };
   });
 

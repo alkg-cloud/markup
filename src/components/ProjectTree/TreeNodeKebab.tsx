@@ -1,5 +1,6 @@
 'use client';
 
+import { useCanDelete } from '@/lib/hooks/use-can-delete';
 import { usePopover } from '@/lib/popover/usePopover';
 import styles from './ProjectTree.module.css';
 import { KebabIcon } from './TreeIcons';
@@ -8,6 +9,8 @@ import type { FlatNode } from './treeTypes';
 interface TreeNodeKebabProps {
   node: FlatNode;
   displayLabel: string;
+  /** `createdById` from the server payload — used to compute delete permission. */
+  createdById: string | null;
   onOpen: () => void;
   onEditProject?: (projectId: string) => void;
   onRename?: () => void;
@@ -23,11 +26,16 @@ interface TreeNodeKebabProps {
  * popover's open state independent — opening one closes the rest via
  * the spec's single-popover-auto invariant.
  *
+ * The Delete item is hidden when the viewer is not permitted to delete
+ * the row (non-admin + not the creator). See `docs/api/authz.md`
+ * `[fc:delete-button-gating]`.
+ *
  * See `docs/code-style.md § Popovers`.
  */
 export function TreeNodeKebab({
   node,
   displayLabel,
+  createdById,
   onOpen,
   onEditProject,
   onRename,
@@ -41,6 +49,10 @@ export function TreeNodeKebab({
   // visual noise without information. `aria-label` keeps the assistive-
   // technology announcement specific (e.g. "Delete project Lumen Coffee").
   const deleteAriaLabel = `Delete ${nodeType} ${displayLabel}`;
+
+  // Compute delete permission from the shared predicate — same logic the
+  // server applies, so the button and the API can never drift.
+  const canDelete = useCanDelete({ kind: nodeType, createdById });
 
   return (
     <>
@@ -129,20 +141,24 @@ export function TreeNodeKebab({
             New folder
           </button>
         )}
-        <div className={styles.kebabMenuDivider} />
-        <button
-          type="button"
-          role="menuitem"
-          className={styles.kebabMenuItemDanger}
-          aria-label={deleteAriaLabel}
-          onClick={(e) => {
-            e.stopPropagation();
-            kebab.close();
-            onDelete?.(node.id, nodeType);
-          }}
-        >
-          Delete
-        </button>
+        {canDelete && (
+          <>
+            <div className={styles.kebabMenuDivider} />
+            <button
+              type="button"
+              role="menuitem"
+              className={styles.kebabMenuItemDanger}
+              aria-label={deleteAriaLabel}
+              onClick={(e) => {
+                e.stopPropagation();
+                kebab.close();
+                onDelete?.(node.id, nodeType);
+              }}
+            >
+              Delete
+            </button>
+          </>
+        )}
       </div>
     </>
   );

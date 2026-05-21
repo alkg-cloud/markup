@@ -14,6 +14,7 @@ describe('flattenProjectTree', () => {
         slug: 'alpha',
         icon: null,
         position: 0,
+        createdById: null,
         folders: [],
         mockups: [],
       },
@@ -39,6 +40,7 @@ describe('flattenProjectTree', () => {
         slug: 'alpha',
         icon: null,
         position: 0,
+        createdById: null,
         folders: [],
         mockups: [
           {
@@ -47,6 +49,7 @@ describe('flattenProjectTree', () => {
             slug: 'homepage',
             status: 'open',
             position: 0,
+            createdById: null,
           },
         ],
       },
@@ -71,12 +74,14 @@ describe('flattenProjectTree', () => {
         slug: 'alpha',
         icon: null,
         position: 0,
+        createdById: null,
         mockups: [],
         folders: [
           {
             id: 'f1',
             name: 'Design',
             position: 0,
+            createdById: null,
             mockups: [
               {
                 id: 'm2',
@@ -84,6 +89,7 @@ describe('flattenProjectTree', () => {
                 slug: 'cards',
                 status: 'open',
                 position: 0,
+                createdById: null,
               },
             ],
             children: [
@@ -91,6 +97,7 @@ describe('flattenProjectTree', () => {
                 id: 'f2',
                 name: 'Icons',
                 position: 0,
+                createdById: null,
                 mockups: [],
                 children: [],
               },
@@ -124,6 +131,7 @@ describe('flattenProjectTree', () => {
         slug: 'a',
         icon: null,
         position: 0,
+        createdById: null,
         folders: [],
         mockups: [],
       },
@@ -133,6 +141,7 @@ describe('flattenProjectTree', () => {
         slug: 'b',
         icon: null,
         position: 1,
+        createdById: null,
         folders: [],
         mockups: [],
       },

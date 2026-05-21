@@ -7,15 +7,18 @@ datasource db {
 }
 
 model User {
-  id             String    @id @default(cuid())
-  email          String    @unique
-  name           String
-  passwordHash   String
-  role           String    @default("admin")
-  createdAt      DateTime  @default(now())
-  sessions       Session[]
-  invitesCreated Invite[]  @relation("InvitesCreated")
-  invitesUsed    Invite[]  @relation("InvitesUsed")
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String
+  passwordHash    String
+  role            String    @default("admin")
+  createdAt       DateTime  @default(now())
+  sessions        Session[]
+  invitesCreated  Invite[]  @relation("InvitesCreated")
+  invitesUsed     Invite[]  @relation("InvitesUsed")
+  projectsCreated Project[] @relation("ProjectsCreated")
+  foldersCreated  Folder[]  @relation("FoldersCreated")
+  mockupsCreated  Mockup[]  @relation("MockupsCreated")
 }
 
 model Session {
@@ -61,33 +64,40 @@ model Invite {
 }
 
 model Project {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  icon      String?
-  position  Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  folders   Folder[]
-  mockups   Mockup[]
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  icon        String?
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  folders     Folder[]
+  mockups     Mockup[]
+  createdById String?
+  createdBy   User?    @relation("ProjectsCreated", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([createdById])
 }
 
 model Folder {
-  id        String   @id @default(cuid())
-  projectId String
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  parentId  String?
-  parent    Folder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: Cascade)
-  children  Folder[] @relation("FolderTree")
-  name      String
-  position  Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  mockups   Mockup[]
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentId    String?
+  parent      Folder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Folder[] @relation("FolderTree")
+  name        String
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  mockups     Mockup[]
+  createdById String?
+  createdBy   User?    @relation("FoldersCreated", fields: [createdById], references: [id], onDelete: SetNull)
 
   @@unique([projectId, parentId, name])
   @@index([projectId])
   @@index([parentId])
+  @@index([createdById])
 }
 
 model Mockup {
@@ -105,10 +115,13 @@ model Mockup {
   updatedAt        DateTime        @updatedAt
   versions         MockupVersion[]
   annotations      Annotation[]
+  createdById      String?
+  createdBy        User?           @relation("MockupsCreated", fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([projectId])
   @@index([folderId])
+  @@index([createdById])
 }
 
 model MockupVersion {

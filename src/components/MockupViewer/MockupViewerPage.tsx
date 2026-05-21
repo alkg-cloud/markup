@@ -109,6 +109,7 @@ export function MockupViewerPage({
         currentUserColorIndex={data.currentUserColorIndex}
         versions={data.versions}
         initialAnnotations={data.annotations}
+        viewerIsAdmin={userRole === 'admin'}
       />
     </>
   );

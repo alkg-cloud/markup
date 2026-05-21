@@ -102,6 +102,7 @@ export async function POST(req: Request) {
       zipPath: tmp,
       createdBy: id.kind === 'user' ? id.userId : id.tokenId,
       createdByType: id.kind,
+      createdById: id.kind === 'user' ? id.userId : null,
       projectId: typeof projectId === 'string' ? projectId : undefined,
       folderId: typeof folderId === 'string' ? folderId : undefined,
     });
