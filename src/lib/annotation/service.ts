@@ -11,11 +11,8 @@ import { logger } from '@/lib/logger';
 import { annotationDir } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
 import { stripScreenshotBase64 } from '@/lib/tldraw/snapshot-screenshot';
-import type { IntentType } from './intent';
 
 const log = logger.child({ name: 'annotation-service' });
-
-export type { IntentType };
 
 interface CreateInput {
   mockupId: string;
@@ -25,7 +22,6 @@ interface CreateInput {
   authorId: string;
   authorType: 'user' | 'agent';
   pinCoords?: PinCoords | null;
-  intentType?: IntentType;
   createdOnVersionId?: string | null;
 }
 
@@ -64,7 +60,6 @@ export async function createAnnotation(input: CreateInput) {
         createdBy: input.authorId,
         createdByType: input.authorType,
         pinCoords: input.pinCoords ? serializePinCoords(input.pinCoords) : null,
-        intentType: input.intentType ?? 'other',
         createdOnVersionId,
       },
     });
@@ -178,11 +173,6 @@ export async function createCommentAnnotation(input: CreateCommentAnnotationInpu
         status: input.status ?? 'open',
         createdBy: input.authorId,
         createdByType: input.authorType,
-        // Comment-flow annotations are content-driven, not classified —
-        // leave the intent at the default until/unless the user picks one
-        // via the (future) chip selector. Per `docs/agent-loop/chips.md`
-        // the value must stay inside INTENT_KINDS.
-        intentType: 'other',
         createdOnVersionId,
       },
     });
