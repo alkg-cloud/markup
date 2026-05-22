@@ -21,8 +21,8 @@
  *   <Kbd.Group><Kbd.Key>↑↓</Kbd.Key></Kbd.Group>
  */
 
-import type { ReactNode } from 'react';
-import { useIsMac } from '@/lib/shortcuts/platform';
+import type { CSSProperties, ReactNode } from 'react';
+import { useIsMacSettled } from '@/lib/shortcuts/platform';
 import styles from './Kbd.module.css';
 import { announceCombo, type KbdKey, resolveKey } from './keys';
 
@@ -36,9 +36,12 @@ interface GroupProps {
   className?: string;
   /** aria-label for the group; callers may supply a custom announcement. */
   'aria-label'?: string;
+  /** Optional inline style; used by the primary `Kbd` component to
+   *  hide the keycap until `useIsMacSettled()` resolves. */
+  style?: CSSProperties;
 }
 
-function Group({ children, disabled, className, 'aria-label': ariaLabel }: GroupProps) {
+function Group({ children, disabled, className, style, 'aria-label': ariaLabel }: GroupProps) {
   return (
     // biome-ignore lint/a11y/useSemanticElements: <fieldset> is block-level; inline keycap groups must use <span role="group">
     <span
@@ -46,6 +49,7 @@ function Group({ children, disabled, className, 'aria-label': ariaLabel }: Group
       aria-label={ariaLabel}
       data-state={disabled ? 'disabled' : undefined}
       className={`${styles.group}${className ? ` ${className}` : ''}`}
+      style={style}
     >
       {children}
     </span>
@@ -81,11 +85,12 @@ export interface KbdProps {
 }
 
 export function Kbd({ keys, disabled, className }: KbdProps) {
-  // Initial render uses the non-Mac branch so SSR + first client paint
-  // agree (the server can't read `navigator`). After mount `useIsMac`
-  // returns the real value and the chip text + aria-label swap to the
-  // Mac glyphs without firing a hydration warning.
-  const mac = useIsMac();
+  // SSR + first client paint use the non-Mac branch so the hydrated
+  // DOM matches the server. After mount `useIsMacSettled` returns the
+  // real value and `settled: true`; the keycap content stays
+  // visibility-hidden until then so Mac users don't see a one-frame
+  // Ctrl→⌘ flicker after hydration.
+  const { mac, settled } = useIsMacSettled();
   const label = announceCombo(keys, mac);
 
   const children: ReactNode[] = [];
@@ -97,7 +102,12 @@ export function Kbd({ keys, disabled, className }: KbdProps) {
   });
 
   return (
-    <Group aria-label={label} disabled={disabled} className={className}>
+    <Group
+      aria-label={label}
+      disabled={disabled}
+      className={className}
+      style={settled ? undefined : { visibility: 'hidden' }}
+    >
       {children}
     </Group>
   );

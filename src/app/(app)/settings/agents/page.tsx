@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
-import { LoadingState } from '@/components/LoadingState/LoadingState';
+import { FadeIn } from '@/components/FadeIn';
+import { SettingsListSkeleton } from '@/components/Skeleton';
 import { AgentsClient } from './AgentsClient';
 
 interface AgentTokenRow {
@@ -56,8 +57,17 @@ export default function AgentsPage() {
     );
   }
   if (!tokens) {
-    return <LoadingState />;
+    return (
+      <SettingsListSkeleton
+        titleText="Agent tokens"
+        subtitleText="Create and revoke API tokens for automation clients."
+      />
+    );
   }
 
-  return <AgentsClient initialTokens={tokens} />;
+  return (
+    <FadeIn>
+      <AgentsClient initialTokens={tokens} />
+    </FadeIn>
+  );
 }

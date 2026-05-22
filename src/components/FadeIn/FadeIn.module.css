@@ -1,9 +1,16 @@
 /* FadeIn — the canonical "skeleton → content" transition.
  *
- * The wrapper plays a single 220 ms ease-out animation from
- *   opacity: 0; transform: translateY(2px)
+ * The wrapper plays a single 360 ms ease-out-expo animation from
+ *   opacity: 0; transform: translateY(6px)
  * to its resting state, so the swap from a skeleton placeholder to the
  * real surface reads as a soft cross-fade rather than a hard cut.
+ *
+ * The duration and easing are deliberately NOT mapped to motion tokens.
+ * `--motion-slow` (320 ms) is too snappy for a cold-start fade — the
+ * extra 40 ms + the ease-out-expo curve (very fast start, long tail)
+ * sells the transition as "content finally arrived" rather than "yet
+ * another component animation". DS 31 § Anatomy documents the values
+ * verbatim; keep all three (this file, DS 31, components.md) in sync.
  *
  * The animation runs on the first mount only (no `animation-iteration-count`
  * larger than 1, no `animation-direction: alternate`). Subsequent re-renders
@@ -15,7 +22,7 @@
  * matches the project's reduced-motion policy in docs/frontend/styling.md.
  *
  * `will-change: opacity, transform` is intentionally absent — for a single
- * 220 ms transition the optimisation costs more than it saves (every
+ * 360 ms transition the optimisation costs more than it saves (every
  * subtree mount would promote to its own layer). Browsers handle this case
  * fine without the hint.
  */

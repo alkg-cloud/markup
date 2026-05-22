@@ -339,11 +339,12 @@ Loading-state primitive + page-level compositions. The shimmer bar lives at `src
 | `home-skeleton` | Workspace landing placeholder. Real greeting + date (locally derived); only the "N mockups updated since yesterday" count is replaced by a mini text skeleton. Skeleton card grids for Recents / Projects / Orphans sections; section headers ("Continue working", "Projects", "No project") stay as real text. | visible while `/api/home` is in flight |
 | `project-skeleton` | Header + card grid. Shared by `/projects/<slug>`, the catch-all `/projects/<slug>/<...path>`, and the mockup viewer's pre-data state — the URL alone can't disambiguate them, and a single shape beats a mid-load shape swap. | visible while the page-level fetch is in flight |
 | `sidebar-tree-skeleton` | Tree-rows placeholder mounted inside the real `<Sidebar>` while `/api/shell` is in flight. Brand, collapse button, "Projects" + "No project" section labels via `<SectionHeader>`, and footer "New mockup" button all stay real. Five fake project rows + two fake orphan rows. | visible while `/api/shell` is in flight |
+| `settings-list-skeleton` | Settings list placeholder. Centered page with real `<h1>` + subtitle text (passed in by the caller), a toolbar row, and 5 skeleton rows. Used by `/settings/invites` and `/settings/agents` while their fetches resolve. | visible while `data === null`, dismissed once the fetch resolves |
 | `fade-in` | Companion wrapper that plays a 360ms opacity + 6px slide-up animation on mount. Wraps the resolved-content branch only — never the skeleton itself (the skeleton IS the first paint). Animation zeroed under `prefers-reduced-motion`. | mount-only (no exit animation) |
 
 ## loading-state
 
-Shared loading placeholder for page-level fetches (`LoadingState.tsx`). Kept only for legacy callers being migrated to `skeleton-*`. New surfaces compose `<Skeleton />` instead.
+Legacy "Loading…" placeholder used by `/annotations/[id]` (the deep-link annotation viewer) and the lazy-loaded `<AnnotationCanvas>` dynamic import. New surfaces compose `<Skeleton />` per DS 31 instead.
 
 | ID | Surface / Interaction | States |
 |---|---|---|

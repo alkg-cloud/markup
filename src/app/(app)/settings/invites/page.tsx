@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
-import { LoadingState } from '@/components/LoadingState/LoadingState';
+import { FadeIn } from '@/components/FadeIn';
+import { SettingsListSkeleton } from '@/components/Skeleton';
 import { type InviteRow, InvitesClient } from './InvitesClient';
 
 interface InvitesResponse {
@@ -47,8 +48,17 @@ export default function InvitesPage() {
     );
   }
   if (!invites) {
-    return <LoadingState />;
+    return (
+      <SettingsListSkeleton
+        titleText="Invites"
+        subtitleText="Generate invite links for new teammates."
+      />
+    );
   }
 
-  return <InvitesClient initialInvites={invites} />;
+  return (
+    <FadeIn>
+      <InvitesClient initialInvites={invites} />
+    </FadeIn>
+  );
 }

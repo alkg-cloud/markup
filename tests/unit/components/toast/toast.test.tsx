@@ -13,8 +13,8 @@ function Trigger({ message, duration }: { message: string; duration?: number }) 
   return null;
 }
 
-function findPill(): HTMLElement | null {
-  return document.querySelector('[data-testid="toast-pill"]');
+function pills(): NodeListOf<HTMLLIElement> {
+  return document.querySelectorAll('[data-testid="toast-pill"]');
 }
 
 describe('ToastProvider (Radix-backed)', () => {
@@ -42,17 +42,14 @@ describe('ToastProvider (Radix-backed)', () => {
         createElement(ToastProvider, null, createElement(Trigger, { message: 'Saved!' })),
       );
     });
-    const pill = findPill();
-    expect(pill).not.toBeNull();
-    expect(pill?.textContent).toContain('Saved!');
+    expect(pills().length).toBe(1);
+    expect(pills()[0].textContent).toContain('Saved!');
   });
 
-  it('mounts the Radix viewport with aria-live + role=region semantics', async () => {
+  it('mounts the Radix viewport as an <ol> with the test handle', async () => {
     await act(async () => {
       root.render(createElement(ToastProvider, null));
     });
-    // Radix Toast.Viewport carries role + tabIndex + aria-label by
-    // default; our class composes the bottom-center container.
     const viewport = document.querySelector('[data-testid="toast-container"]');
     expect(viewport).not.toBeNull();
     expect(viewport?.tagName).toBe('OL');
@@ -70,9 +67,61 @@ describe('ToastProvider (Radix-backed)', () => {
     await act(async () => {
       root.render(createElement(ToastProvider, null, createElement(Multi, null)));
     });
-    const pills = document.querySelectorAll('[data-testid="toast-pill"]');
-    expect(pills.length).toBe(2);
-    expect(pills[0].textContent).toContain('first');
-    expect(pills[1].textContent).toContain('second');
+    expect(pills().length).toBe(2);
+    expect(pills()[0].textContent).toContain('first');
+    expect(pills()[1].textContent).toContain('second');
+  });
+
+  it('removes the toast from the queue after the fallback close timeout', async () => {
+    await act(async () => {
+      root.render(
+        createElement(
+          ToastProvider,
+          null,
+          createElement(Trigger, { message: 'auto-dismiss', duration: 500 }),
+        ),
+      );
+    });
+    expect(pills().length).toBe(1);
+
+    // Advance past the duration so Radix calls onOpenChange(false).
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+    });
+    // After Radix transitions `[data-state]` to "closed" and our
+    // fallback unmount fires, the row leaves the DOM.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
+    expect(pills().length).toBe(0);
+  });
+
+  it('id counter is provider-scoped — remounts reset the count', async () => {
+    function ShowOnMount() {
+      const { show } = useToast();
+      useEffect(() => {
+        show('first-mount');
+      }, [show]);
+      return null;
+    }
+
+    // First mount: render + assert one pill, then unmount.
+    await act(async () => {
+      root.render(createElement(ToastProvider, null, createElement(ShowOnMount, null)));
+    });
+    expect(pills().length).toBe(1);
+    await act(async () => {
+      root.unmount();
+    });
+    expect(pills().length).toBe(0);
+
+    // Fresh root inherits a fresh counterRef — the second mount must
+    // not collide with the first mount's id (which would silently
+    // drop the new toast via React's key-collision dedupe).
+    root = createRoot(container);
+    await act(async () => {
+      root.render(createElement(ToastProvider, null, createElement(ShowOnMount, null)));
+    });
+    expect(pills().length).toBe(1);
   });
 });

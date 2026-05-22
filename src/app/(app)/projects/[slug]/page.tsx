@@ -85,11 +85,8 @@ export default function ProjectPage() {
     return <ErrorState error="Failed to load project." />;
   }
   if (status === 'loading' || !data) {
-    return (
-      <FadeIn key="loading">
-        <ProjectSkeleton />
-      </FadeIn>
-    );
+    // No FadeIn wrap — the skeleton is the first paint per DS 31.
+    return <ProjectSkeleton />;
   }
 
   return (
