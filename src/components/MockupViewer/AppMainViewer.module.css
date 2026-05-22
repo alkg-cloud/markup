@@ -1,0 +1,33 @@
+/* AppMainViewer — local styles owned by the viewer composition.
+ *
+ * Only the canvas-hint pill lives here for now; everything else is
+ * inline (the iframe wrapper) or owned by child components. */
+
+/* Canvas hint banner — shown only while a draft is active. Sits at the
+ * top-center of the canvas with a pointer-events: none pill so it never
+ * eats clicks meant for the mockup underneath. The MdOutlineAddLocationAlt
+ * icon ties the hint to the pin-drop action visually. */
+.canvasHint {
+  position: absolute;
+  left: 50%;
+  top: 18px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--accent-overlay-mid);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-bright);
+  letter-spacing: 0.04em;
+  box-shadow: var(--shadow-md);
+  z-index: 20;
+  pointer-events: none;
+}
+.canvasHint svg {
+  color: var(--accent-bright);
+  flex-shrink: 0;
+}

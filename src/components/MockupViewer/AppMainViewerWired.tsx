@@ -244,6 +244,7 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
   return (
     <>
       <AppMainViewer
+        mockupId={props.mockupId}
         mockupSrc={props.mockupSrc}
         currentUser={props.currentUser}
         versions={props.versions}

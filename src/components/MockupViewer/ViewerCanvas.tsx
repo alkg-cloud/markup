@@ -2,21 +2,28 @@
 
 import { memo } from 'react';
 import { type PinDescriptor, PinLayer } from '@/components/PinLayer';
+import type { Anchor } from '@/lib/anchoring';
 
 interface ViewerCanvasProps {
   mockupSrc: string;
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   canvasRootRef: React.RefObject<Element | null>;
   iframeGen: number;
+  /** Whether a draft is active. Drives the canvas cursor (crosshair)
+   *  so the user reads the canvas as "click to drop a pin." */
   marking: boolean;
   zoom: number;
   pins: PinDescriptor[];
-  onPinClick: (annotationId: string) => void;
+  draftPins?: Anchor[];
+  draftColorIndex?: number;
+  removingPinIndex?: number | null;
+  onPublishedPinClick: (annotationId: string) => void;
+  onDraftPinClick: (pinIndex: number) => void;
   repositionKey: string;
 }
 
 /**
- * Iframe + PinLayer pair. Memoized so re-renders driven by composer/rail
+ * Iframe + PinLayer pair. Memoized so re-renders driven by draft/rail
  * state in the parent don't re-mount the iframe (which would blow away
  * the loaded mockup) or churn the PinLayer when pins haven't changed.
  */
@@ -28,7 +35,11 @@ function ViewerCanvasInner({
   marking,
   zoom,
   pins,
-  onPinClick,
+  draftPins,
+  draftColorIndex,
+  removingPinIndex,
+  onPublishedPinClick,
+  onDraftPinClick,
   repositionKey,
 }: ViewerCanvasProps) {
   return (
@@ -59,7 +70,11 @@ function ViewerCanvasInner({
         key={iframeGen}
         canvasRootRef={canvasRootRef}
         pins={pins}
-        onPinClick={onPinClick}
+        draftPins={draftPins}
+        draftColorIndex={draftColorIndex}
+        removingPinIndex={removingPinIndex}
+        onPublishedPinClick={onPublishedPinClick}
+        onDraftPinClick={onDraftPinClick}
         repositionKey={repositionKey}
       />
     </>
