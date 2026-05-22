@@ -9,9 +9,11 @@
  * screen readers announce for the keycap group — distinct from
  * `formatShortcut` in `src/lib/shortcuts/platform.ts`, which emits
  * the visual glyph string used in parent button aria-labels.
+ *
+ * Both helpers take an explicit `mac: boolean` so callers commit to a
+ * value that matches what they hydrated with (use `useIsMac()` in
+ * components — see `src/lib/shortcuts/platform.ts`).
  */
-
-import { isMac } from '@/lib/shortcuts/platform';
 
 export type KbdKey =
   | 'mod'
@@ -78,21 +80,21 @@ const SR_NAME: Record<string, string> = {
  * Resolve a KbdKey token to its display glyph for the current OS.
  * Single-character tokens not in the map are uppercased.
  */
-export function resolveKey(token: KbdKey): string {
-  const map = isMac() ? GLYPH_MAC : GLYPH_NON_MAC;
+export function resolveKey(token: KbdKey, mac: boolean): string {
+  const map = mac ? GLYPH_MAC : GLYPH_NON_MAC;
   if (token in map) return map[token];
   return token.length === 1 ? token.toUpperCase() : token;
 }
 
 /**
  * Produce the SR-friendly spoken form of a key combo.
- * Example (mac):     announceCombo(['mod','shift','n']) → "shortcut: Command Shift N"
- * Example (non-mac): announceCombo(['mod','shift','n']) → "shortcut: Control Shift N"
+ * Example (mac):     announceCombo(['mod','shift','n'], true)  → "shortcut: Command Shift N"
+ * Example (non-mac): announceCombo(['mod','shift','n'], false) → "shortcut: Control Shift N"
  */
-export function announceCombo(keys: ReadonlyArray<KbdKey>): string {
+export function announceCombo(keys: ReadonlyArray<KbdKey>, mac: boolean): string {
   const parts = keys.map((k) => {
-    if (k === 'mod') return isMac() ? 'Command' : 'Control';
-    if (k === 'alt') return isMac() ? 'Option' : 'Alt';
+    if (k === 'mod') return mac ? 'Command' : 'Control';
+    if (k === 'alt') return mac ? 'Option' : 'Alt';
     if (k in SR_NAME) return SR_NAME[k];
     return k.length === 1 ? k.toUpperCase() : k;
   });

@@ -6,7 +6,7 @@ import { VscKey, VscMail, VscSearch, VscSignOut } from 'react-icons/vsc';
 import { type BreadcrumbSegment, Breadcrumbs } from '@/components/Breadcrumbs/Breadcrumbs';
 import { Kbd } from '@/components/Kbd/Kbd';
 import { usePopover } from '@/lib/popover/usePopover';
-import { formatShortcut } from '@/lib/shortcuts/platform';
+import { formatShortcut, useIsMac } from '@/lib/shortcuts/platform';
 import styles from './Topbar.module.css';
 
 interface TopbarProps {
@@ -44,10 +44,13 @@ export function Topbar({ breadcrumbs, userName, userEmail, userRole, onSearchCli
     router.push('/login');
   }, [accountMenu.close, router]);
 
-  // Pages are CSR-only — `navigator` is always defined during render, so
-  // we can derive the OS-aware label inline via the shared shortcut
-  // formatter instead of round-tripping through state + effect.
-  const kbdLabel = formatShortcut(['k']);
+  // Initial paint (SSR + first client render) treats the user as
+  // non-Mac so the hydrated DOM matches the server's output. After
+  // mount `useIsMac` upgrades to the real value and the label
+  // swaps from "Ctrl+K" → "⌘K" on Mac without firing a hydration
+  // warning.
+  const mac = useIsMac();
+  const kbdLabel = formatShortcut(['k'], mac);
 
   return (
     <header className={styles.topbar}>
