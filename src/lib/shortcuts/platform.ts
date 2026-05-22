@@ -2,15 +2,21 @@
  * OS-aware modifier detection.
  *
  * macOS uses ⌘ (metaKey); Windows + Linux use Ctrl (ctrlKey).
- * Components that show a shortcut hint should display the symbol from
- * `modSymbol`; components that listen for shortcuts should test via
- * `isMod(e)` instead of hardcoding either key.
+ * Components that show a shortcut hint should display the symbol via
+ * the `useIsMac()` hook (so SSR + first paint use the stable non-Mac
+ * value and the swap happens after hydration); components that listen
+ * for shortcuts can use the `isMac()` predicate directly since
+ * `isMod(e)` only ever runs in event handlers (post-mount).
  *
  * See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §13.
  */
 
-/** Detects macOS at module load. Re-detected each call so SSR + hydration
- *  match — `navigator` only exists in the browser. */
+import { useEffect, useState } from 'react';
+
+/** Returns `true` when the current navigator is a Mac. Returns `false`
+ *  on the server (where `navigator` is undefined) and in any other
+ *  pre-mount path. Components that render platform-conditional text
+ *  should use `useIsMac()` instead to avoid hydration mismatches. */
 export const isMac = (): boolean => {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent || '';
@@ -20,15 +26,18 @@ export const isMac = (): boolean => {
 };
 
 /**
- * Display symbol for the primary modifier on the current OS.
- *
- * Called as a function (not a constant) so the value is recomputed each
- * time it's read — important because the module evaluates once at SSR
- * where `navigator` is undefined. Components should call this from a
- * `useEffect`-fed state so the rendered text matches the client's OS.
+ * React hook companion to `isMac()`. Returns `false` during SSR and on
+ * the first client render so the hydrated DOM matches the server's
+ * output (which can't read `navigator`). Then, in a post-mount effect,
+ * upgrades to the real value. The brief Ctrl→⌘ swap is intentional —
+ * it happens after hydration, so React doesn't warn about a mismatch.
  */
-export function modSymbol(): string {
-  return isMac() ? '⌘' : 'Ctrl';
+export function useIsMac(): boolean {
+  const [mac, setMac] = useState(false);
+  useEffect(() => {
+    setMac(isMac());
+  }, []);
+  return mac;
 }
 
 /**
@@ -44,17 +53,20 @@ export const isMod = (e: KeyboardEvent | React.KeyboardEvent): boolean =>
  * Format a shortcut for tooltips / aria-labels. Implicitly prepends the
  * platform modifier (⌘ / Ctrl) before the provided keys.
  *
- * e.g. `formatShortcut(['shift','n'])` → "⌘⇧N" on Mac, "Ctrl+Shift+N" on
- * Windows/Linux. Used where a plain text representation is needed (tooltip
- * text, aria-label strings). For rendered keycap chips use `<Kbd keys={…}>`
- * from `@/components/Kbd/Kbd` instead.
+ * e.g. `formatShortcut(['shift','n'], true)` → "⌘⇧N" on Mac,
+ *      `formatShortcut(['shift','n'], false)` → "Ctrl+Shift+N" elsewhere.
+ *
+ * The `mac` argument is mandatory so callers commit to a value that
+ * matches the value they hydrated with — in React components, that
+ * value should come from `useIsMac()` so the SSR value (false) and
+ * the first client paint agree.
  */
-export function formatShortcut(keys: ReadonlyArray<string>): string {
-  const parts: string[] = [modSymbol()];
+export function formatShortcut(keys: ReadonlyArray<string>, mac: boolean): string {
+  const parts: string[] = [mac ? '⌘' : 'Ctrl'];
   for (const k of keys) {
     if (k === 'shift') parts.push('⇧');
-    else if (k === 'alt') parts.push(isMac() ? '⌥' : 'Alt');
+    else if (k === 'alt') parts.push(mac ? '⌥' : 'Alt');
     else parts.push(k.length === 1 ? k.toUpperCase() : k);
   }
-  return parts.join(isMac() ? '' : '+');
+  return parts.join(mac ? '' : '+');
 }
