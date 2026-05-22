@@ -7,13 +7,11 @@ The unit of work is **one annotation → one fix → one reply**:
 1. **User comments**
    - Open `/mockups/[id]` in the browser
    - Click `+ Comment` to capture the iframe + open the modal
-   - Pick a chip (`visual` / `copy` / `behavior` / `other`) — see [chips](chips.md)
    - Draw + write a free-text comment
-   - Save → creates `Annotation` + `Thread` + first `Message`; tldraw snapshot saved with screenshot base64 stripped; `intentType` and `createdOnVersionId` stamped on the annotation row
+   - Save → creates `Annotation` + `Thread` + first `Message`; tldraw snapshot saved with screenshot base64 stripped; `createdOnVersionId` stamped on the annotation row
 
 2. **Agent reads context**
-   - `GET /api/agent/context/[annotationId]` (Bearer or cookie auth) returns a single payload: annotation metadata + parsed intent (drawings + DOM-resolved bbox + computed styles) + thread + current version source inline + `diff_since_creation`
-   - First call materialises the `intent.json` sidecar (puppeteer cold start ~3s); subsequent calls hit the sidecar (sub-50ms)
+   - `GET /api/agent/context/[annotationId]` (Bearer or cookie auth) returns a single payload: annotation metadata + thread + current version source inline + `diff_since_creation`
    - ETag header allows the agent to short-circuit when nothing has changed
 
 3. **Agent applies the fix**
@@ -46,17 +44,7 @@ Without `/context`, the legacy flow needed:
 5. `GET /api/threads/[id]` — thread state
 6. `POST /api/mockups/[id]/version` — full zip rebuild
 
-That's six round-trips, ~660 KB upstream, and Chrome MCP roundtrips for any agent that wanted DOM-at-bbox resolution. The new flow collapses 1–5 into a single `GET /context` and replaces 6 with a 1–5 KB `PATCH /version-patch`. See [INDEX](INDEX.md) for the byte budget.
-
-## Why intent_type matters
-
-The G1 chip persists `intentType: 'visual' | 'copy' | 'behavior' | 'other'` on the annotation row. This isn't enforced at the routing layer (yet) — every agent sees every annotation. But:
-
-- It seeds **future routing** (item #22 in `docs/future-features.md`) — when multi-agent routing ships, agents declare specialties and the inbox filters annotations by tag derived from `intentType`
-- It surfaces **product analytics** today — what fraction of annotations are visual vs copy vs behavior — without needing to LLM-classify every comment
-- It signals **agent self-routing** — a designer-bot can `GET /agent/context/[aid]` and see `intent_type: 'visual'`, deciding whether to act based on its own scope
-
-Agents that don't care about the chip simply ignore the field. The chip is opt-in for the user, defaulting to `'other'` when they don't pick.
+That's six round-trips, ~660 KB upstream. The new flow collapses 1–5 into a single `GET /context` and replaces 6 with a 1–5 KB `PATCH /version-patch`. See [INDEX](INDEX.md) for the byte budget.
 
 ## Why patch-style versioning
 
@@ -92,6 +80,5 @@ All agent-loop endpoints accept **cookie OR Bearer**. The same surface serves th
 | Failure | Guard |
 |---|---|
 | Agent applies a stale patch | `base_version_id` required on `/version-patch`; conflict returns 409, agent refetches |
-| Agent reads a stale intent | `intent.json` keyed by `(tldraw_mtime, current_version_id)`; cache invalidated by `updateAnnotationTldraw` |
 | Agent infinite-loops on a comment it can't address | No automatic guard — agents must enforce their own per-annotation retry budget |
 | Two agents fix the same annotation simultaneously | Currently no lock; the second `version-patch` will succeed (creates a v3 on top of the agent's v2). Multi-agent claim/lock is parked as #22 |

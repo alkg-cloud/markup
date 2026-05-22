@@ -7,11 +7,9 @@ Silent drift in any of these endpoints breaks consumers. See the [agent-loop rul
 ## Read first
 
 - [Overview](overview.md) — the cycle end-to-end with byte costs
-- [Endpoints](endpoints.md) — `/intent`, `/context`, `/version-patch`, `/region`, `/diff`, `/tldraw`
+- [Endpoints](endpoints.md) — `/context`, `/version-patch`, `/region`, `/diff`, `/tldraw`
 - [Uploads](uploads.md) — `POST /api/mockups`, `POST /api/mockups/[id]/version` (raw HTML + zip, size cap)
-- [Intent payload](intent-payload.md) — what `/intent` returns + caching semantics
 - [Patch format](patch-format.md) — unified-diff conventions for `/version-patch`
-- [Chips](chips.md) — G1 intent vocabulary
 
 ## At a glance
 
@@ -20,7 +18,7 @@ A complete cycle from user comment to agent reply:
 ```
 USER (browser)                    AGENT (Bearer or cookie)
 ─────────────                     ──────────────────
-+ Comment, pick chip [visual]     │
++ Comment                         │
 draw + textarea + save            │
    POST /annotations              │
    creates Annotation +           │
@@ -28,10 +26,7 @@ draw + textarea + save            │
    (base64 stripped)              │
                                   GET /api/agent/context/[aid]
                                    ↓ aggregator (item C)
-                                   ├─ annotation + intent_type
-                                   ├─ intent (item B, sidecar-cached)
-                                   │   ├─ drawings parsed from tldraw
-                                   │   └─ annotated_dom from puppeteer
+                                   ├─ annotation
                                    ├─ thread (msgs + status)
                                    └─ current_version
                                        ├─ files: { "index.html": <inline> }
@@ -59,8 +54,6 @@ These numbers come from the v1.3 spec and are baseline expectations — keep the
 
 The agent-loop endpoints are **not generic CRUD**. They have non-trivial semantics that other parts of the codebase don't need to know about:
 
-- `intent.json` sidecar caching → see [Intent payload](intent-payload.md)
-- Puppeteer browser singleton → see `src/lib/intent/puppeteer.ts`
 - Unified-diff apply / render → see `src/lib/diff/apply-unified.ts` and `render-unified.ts`
 - ETag composition for `/context` → see [Endpoints](endpoints.md)
 
@@ -72,6 +65,6 @@ The following items are designed but not shipped — they live in [`docs/future-
 
 | ID | Item | Why parked |
 |---|---|---|
-| #20 | LLM-derived intent classification | Adds vendor SDK + per-call cost; G1 chips cover the common case |
+| #20 | LLM-derived intent classification | Adds vendor SDK + per-call cost; deferred until a downstream consumer needs it |
 | #21 | Agent sub-role header (`X-Agent-Subrole`) | Cheap (~0.5d), park until 3+ personas are deployed |
 | #22 | Multi-agent routing / inbox | Depends on #20 + #21; co-spec with the multi-agent role taxonomy in #7 |

@@ -52,12 +52,11 @@ The gitignored directories hold per-run artefacts that don't belong in shared hi
 
 ## Agent-loop rule (STRICT — non-negotiable)
 
-Markup is a **mockup review platform whose primary user is an automation agent** (LLM-driven or otherwise). The agent loop — annotation → intent extraction → fix → reply — is a first-class product surface, not a side path.
+Markup is a **mockup review platform whose primary user is an automation agent** (LLM-driven or otherwise). The agent loop — annotation → context → fix → reply — is a first-class product surface, not a side path.
 
 The endpoints that compose the agent loop are documented in [`docs/agent-loop/`](docs/agent-loop/INDEX.md). When changing any of:
 
-- `POST /api/mockups/[id]/annotations` (annotation creation, including `intent_type`)
-- `GET /api/annotations/[id]/intent` (server-side parsed intent + DOM resolution)
+- `POST /api/mockups/[id]/annotations` (annotation creation)
 - `GET /api/agent/context/[annotationId]` (single-call aggregator)
 - `PATCH /api/mockups/[id]/version-patch` (unified-diff versioning)
 - `PATCH /api/mockups/[id]` (mockup metadata: status, placement, name)
@@ -69,7 +68,7 @@ The endpoints that compose the agent loop are documented in [`docs/agent-loop/`]
 
 1. Read the matching doc in `docs/agent-loop/` end to end.
 2. Update the doc **first** if the change alters the contract (response shape, auth model, cache key, error code).
-3. Verify token-cost claims (`intent.json` sidecar size, `/context` payload size, patch body size) still hold; if not, restate them in the doc.
+3. Verify token-cost claims (`/context` payload size, patch body size) still hold; if not, restate them in the doc.
 
 The contract docs make the agent loop **predictable for automation clients that aren't this agent**. Silent drift in any of these endpoints breaks the orchestrators that depend on the published shape — whether they're AI dev assistants (Claude Code, Cursor, Aider), agent frameworks (LangGraph, CrewAI, AutoGen), or in-house CI integrations.
 
