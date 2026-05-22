@@ -393,7 +393,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
         </tr>
         <tr>
           <td><code>pending</code></td>
-          <td><code>status="pending"</code> — composer is marking before persist.</td>
+          <td><code>status="pending"</code> — lives for the full lifetime of a <a href="./32-draft-card.html" style="color:var(--accent)"><code>DraftCard</code></a> (not only during a transient marking-mode toggle). Click on a draft pin removes it from the draft.</td>
           <td>2 px <em>dashed</em> border; 1.6 s ease-in-out pulse (anim-pin-pulse); body shows "+" instead of a number.</td>
           <td><code>aria-label="New annotation pin"</code>.</td>
         </tr>
@@ -476,7 +476,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
       <li><strong>Pin layer owns positioning.</strong> <code>PinLayer</code> resolves each annotation's anchor against the live mockup DOM and writes <code>pin.style.top</code> / <code>left</code>. <code>ResizeObserver</code> + <code>MutationObserver</code> + zoom-change watchers retrigger.</li>
       <li><strong>Anchor types.</strong> Element anchors store a CSS-path + fractional bbox offset; text anchors store a CSS-path + character offset + sub-position. Both reflow correctly on font / wrap / window-size changes.</li>
       <li><strong>Multi-pin annotations.</strong> One annotation can have multiple anchors → multiple pins with the same colorIndex + label. Activating one activates the annotation (all pins share the active visual).</li>
-      <li><strong>Pending state during composer.</strong> While the composer is marking, a dashed-outline pulsing pin renders at the cursor. On persist, it transitions to the idle pin with the next sequential number.</li>
+      <li><strong>Pending state lives for the draft's lifetime.</strong> While a <a href="./32-draft-card.html" style="color:var(--accent)"><code>DraftCard</code></a> is mounted, every anchor in <code>draft.pins</code> renders as a dashed-outline pulsing pin on the canvas. Canvas click on empty area appends a draft pin; click on a draft pin removes it. On send, each pending pin transitions to the idle pin with the new annotation's number.</li>
       <li><strong>Resolved state is opacity-only.</strong> The consumer fades the pin to ~0.4 opacity when the annotation is marked resolved. Shape, hue, and label remain so users can still find the annotation by its mark.</li>
       <li><strong>No hover tooltip.</strong> The rotated -45° base transform makes tooltip positioning flaky. Pair the pin with <code>aria-label</code> for SR; the rail card carries the human-readable body.</li>
       <li><strong>Z-index hierarchy.</strong> Pins are <code>z-index: 10</code> by default and <code>11</code> while active so the active pin reads above overlapping siblings.</li>
