@@ -80,7 +80,7 @@ function renderSidebar(props: Partial<Parameters<typeof ProjectSidebar>[0]> = {}
 }
 
 function findToastPill(): HTMLElement | null {
-  return document.querySelector('.toast-pill');
+  return document.querySelector('[data-testid="toast-pill"]');
 }
 
 /**
