@@ -104,7 +104,7 @@ All routes use `{ error: '<snake_case_code>' }` as the JSON body. Conventions:
 
 | Status | Code prefix | Examples |
 |---|---|---|
-| 400 | `invalid_*` | `invalid_body`, `invalid_intent_type`, `invalid_pin_coords` |
+| 400 | `invalid_*` | `invalid_body`, `invalid_pin_coords` |
 | 401 | `unauthorized` | always exactly this token |
 | 403 | `forbidden_*` | `forbidden_role`, `forbidden_origin` |
 | 404 | `<resource>_not_found` or `not_found` | `not_found`, `base_version_not_found`, `screenshot_missing` |
@@ -128,18 +128,17 @@ Clients match on `error`. The optional fields (`file`, `field`, `limit`) are all
 Route handlers stay thin. Business logic lives in `src/lib/<surface>/service.ts`. The route validates input, calls the service, maps the result to a response.
 
 ```ts
-const result = await createAnnotation({
+const result = await createCommentAnnotation({
   mockupId,
-  screenshotPng: buf,
-  tldrawJson,
-  message: messageRaw,
+  body,
+  anchors,
+  colorIndex,
+  status,
   authorId: id.kind === 'user' ? id.userId : id.tokenId,
   authorType: id.kind,
-  pinCoords,
-  intentType,
 });
 return NextResponse.json(
-  { id: result.annotation.id, threadId: result.thread.id },
+  { id: result.id, threadId: result.threadId, colorIndex: result.colorIndex, status: result.status, anchors: result.anchors },
   { status: 201 },
 );
 ```
