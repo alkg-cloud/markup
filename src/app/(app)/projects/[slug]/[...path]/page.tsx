@@ -111,7 +111,7 @@ export default function ProjectPathPage() {
 
   if (resolution.kind === 'mockup') {
     return (
-      <FadeIn key="loaded-mockup">
+      <FadeIn key="loaded-mockup" fill>
         <MockupViewerPage mockupId={resolution.mockupId} userRole={identity?.role} />
       </FadeIn>
     );
