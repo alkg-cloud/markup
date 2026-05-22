@@ -62,7 +62,7 @@ function findInput(): HTMLInputElement {
 }
 
 function findToastPill(): HTMLElement | null {
-  return document.querySelector('.toast-pill');
+  return document.querySelector('[data-testid="toast-pill"]');
 }
 
 function dispatchDrop(target: EventTarget, files: File[]): void {

@@ -8,6 +8,7 @@ import {
   useContext,
   useReducer,
 } from 'react';
+import styles from './Toast.module.css';
 
 export interface ToastItem {
   id: string;
@@ -51,9 +52,23 @@ export function ToastProvider({ children }: { children?: ReactNode }) {
     children,
     createElement(
       'div',
-      { 'aria-live': 'assertive', 'aria-atomic': 'false', className: 'toast-container' },
+      {
+        'aria-live': 'assertive',
+        'aria-atomic': 'false',
+        className: styles.container,
+        'data-testid': 'toast-container',
+      },
       ...toasts.map((t) =>
-        createElement('div', { key: t.id, className: 'toast-pill', role: 'status' }, t.message),
+        createElement(
+          'div',
+          {
+            key: t.id,
+            className: styles.pill,
+            role: 'status',
+            'data-testid': 'toast-pill',
+          },
+          t.message,
+        ),
       ),
     ),
   );
