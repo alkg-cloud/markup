@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { type IntentType, isIntentType } from '@/lib/annotation/intent';
-import { parsePinCoords } from '@/lib/annotation/pin-coords';
 import {
   type AnchorRecord,
-  createAnnotation,
   createCommentAnnotation,
   listAnnotations,
 } from '@/lib/annotation/service';
@@ -13,8 +10,7 @@ import { identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { prisma } from '@/lib/prisma';
 
-// AppMain redesign: comment-only annotation payload. Detected by JSON
-// content-type — the legacy drawing-based formData path remains below.
+// AppMain redesign: comment-only annotation payload (JSON only).
 const TextAnchorSchema = z.object({
   path: z.string(),
   textOffset: z.number().int().nonnegative(),
@@ -41,96 +37,43 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   if (!id) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id: mockupId } = await ctx.params;
 
-  // Branch on content-type. JSON → comment annotation (no screenshot,
-  // no tldraw). Multipart → legacy drawing-based annotation.
+  // JSON-only: comment annotation (no screenshot, no tldraw). The legacy
+  // drawing-based formData path was dropped with the draft-annotation redesign.
   const contentType = req.headers.get('content-type') ?? '';
-  if (contentType.includes('application/json')) {
-    const body = await req.json().catch(() => null);
-    const parsed = CommentPayloadSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
-    }
-    // Verify mockup exists before writing so the caller gets a clean 404
-    // instead of a Prisma FK constraint 500 (which leaks ORM details).
-    const exists = await prisma.mockup.findUnique({
-      where: { id: mockupId },
-      select: { id: true },
-    });
-    if (!exists) {
-      return NextResponse.json({ error: 'mockup_not_found' }, { status: 404 });
-    }
-    const result = await createCommentAnnotation({
-      mockupId,
-      body: parsed.data.body,
-      anchors: parsed.data.anchors as AnchorRecord[],
-      colorIndex: parsed.data.colorIndex,
-      status: parsed.data.status,
-      authorId: id.kind === 'user' ? id.userId : id.tokenId,
-      authorType: id.kind,
-    });
-    return NextResponse.json(
-      {
-        id: result.annotation.id,
-        threadId: result.thread.id,
-        colorIndex: result.annotation.colorIndex,
-        status: result.annotation.status,
-        anchors: parsed.data.anchors,
-      },
-      { status: 201 },
-    );
+  if (!contentType.includes('application/json')) {
+    return NextResponse.json({ error: 'unsupported_media_type' }, { status: 415 });
   }
-
-  const fd = await req.formData();
-  const screenshot = fd.get('screenshot');
-  const tldrawRaw = fd.get('tldraw');
-  const messageRaw = fd.get('message');
-  if (
-    !(screenshot instanceof Blob) ||
-    typeof tldrawRaw !== 'string' ||
-    typeof messageRaw !== 'string'
-  ) {
+  const body = await req.json().catch(() => null);
+  const parsed = CommentPayloadSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
   }
-  if (!messageRaw.trim()) {
-    return NextResponse.json({ error: 'empty_message' }, { status: 400 });
+  // Verify mockup exists before writing so the caller gets a clean 404
+  // instead of a Prisma FK constraint 500 (which leaks ORM details).
+  const exists = await prisma.mockup.findUnique({
+    where: { id: mockupId },
+    select: { id: true },
+  });
+  if (!exists) {
+    return NextResponse.json({ error: 'mockup_not_found' }, { status: 404 });
   }
-  let tldrawJson: unknown;
-  try {
-    tldrawJson = JSON.parse(tldrawRaw);
-  } catch {
-    return NextResponse.json({ error: 'invalid_tldraw_json' }, { status: 400 });
-  }
-  const pinCoordsRaw = fd.get('pinCoords');
-  let pinCoords: ReturnType<typeof parsePinCoords> = null;
-  if (typeof pinCoordsRaw === 'string') {
-    pinCoords = parsePinCoords(pinCoordsRaw);
-    if (!pinCoords) {
-      return NextResponse.json({ error: 'invalid_pin_coords' }, { status: 400 });
-    }
-  }
-
-  const intentRaw = fd.get('intent_type');
-  let intentType: IntentType | undefined;
-  if (typeof intentRaw === 'string' && intentRaw.length > 0) {
-    if (!isIntentType(intentRaw)) {
-      return NextResponse.json({ error: 'invalid_intent_type' }, { status: 400 });
-    }
-    intentType = intentRaw;
-  }
-
-  const buf = Buffer.from(await screenshot.arrayBuffer());
-  const result = await createAnnotation({
+  const result = await createCommentAnnotation({
     mockupId,
-    screenshotPng: buf,
-    tldrawJson,
-    message: messageRaw,
+    body: parsed.data.body,
+    anchors: parsed.data.anchors as AnchorRecord[],
+    colorIndex: parsed.data.colorIndex,
+    status: parsed.data.status,
     authorId: id.kind === 'user' ? id.userId : id.tokenId,
     authorType: id.kind,
-    pinCoords,
-    intentType,
   });
   return NextResponse.json(
-    { id: result.annotation.id, threadId: result.thread.id },
+    {
+      id: result.annotation.id,
+      threadId: result.thread.id,
+      colorIndex: result.annotation.colorIndex,
+      status: result.annotation.status,
+      anchors: parsed.data.anchors,
+    },
     { status: 201 },
   );
 }
