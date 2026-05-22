@@ -237,7 +237,7 @@ function NewInviteDialog({ open, onClose, onSubmit }: NewInviteDialogProps) {
                 />
               </InputField.Control>
               {emailError ? (
-                <InputField.Message forceMatch>{emailError}</InputField.Message>
+                <InputField.Message>{emailError}</InputField.Message>
               ) : (
                 <InputField.Help>If set, signup requires this exact email.</InputField.Help>
               )}

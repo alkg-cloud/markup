@@ -139,7 +139,7 @@ export function NewProjectDialog({ open, onClose, onSaved, project }: NewProject
                 />
               </InputField.Control>
               {nameError ? (
-                <InputField.Message forceMatch>{nameError.message}</InputField.Message>
+                <InputField.Message>{nameError.message}</InputField.Message>
               ) : (
                 <InputField.Help>
                   Letters, digits, hyphens, or underscores.{' '}
