@@ -32,7 +32,7 @@ pnpm dev
 For columns that must be non-null on every row, set a `@default(...)` in the schema. Prisma generates the column with `NOT NULL DEFAULT '<value>'` and existing rows pick up the default automatically:
 
 ```prisma
-intentType String @default("other")
+status String @default("open")
 ```
 
 This is the simplest case and needs no extra backfill.
