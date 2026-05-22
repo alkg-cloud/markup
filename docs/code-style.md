@@ -90,7 +90,7 @@ The only routes that skip this check are the three documented public surfaces (`
 ## Error responses follow the snake_case-code shape
 
 ```ts
-return NextResponse.json({ error: 'invalid_intent_type' }, { status: 400 });
+return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
 return NextResponse.json({ error: 'patch_conflict', file: 'index.html' }, { status: 409 });
 ```
 
