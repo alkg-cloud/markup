@@ -58,7 +58,7 @@ See [`docs/frontend/data-fetching.md`](data-fetching.md) for the shared `useApi`
 
 **The structural shell (sidebar logo, collapse button, PROJECTS / NO PROJECT section headers, footer "New mockup" button, and topbar with breadcrumbs + avatar) is NEVER skeletoned.** Those elements paint immediately because they are derived from the URL + auth-me response, not from `/api/shell`. The skeleton only replaces the variable parts: sidebar tree rows, page content cards, the home hero's "N mockups updated since yesterday" count.
 
-The skeleton primitives live in [`src/components/Skeleton/`](../../src/components/Skeleton):
+The visual contract is documented in [DS 31 — Skeleton](../design/design-system/31-skeleton.html). The skeleton primitives live in [`src/components/Skeleton/`](../../src/components/Skeleton):
 
 - `<Skeleton />` — single rectangle with shimmer (`block` / `text` / `circle` variants). Use it to compose ad-hoc placeholders.
 - `<SidebarTreeSkeleton />` — placeholder tree rows mounted inside the real `<Sidebar>` while `/api/shell` is in flight. Brand, collapse, footer, and section labels stay real.

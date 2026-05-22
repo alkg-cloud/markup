@@ -329,13 +329,25 @@ Upload-focused empty state — replaces the content of any workspace view when t
 | `empty-state-pill-cta` | Discreet — pill button `+ Upload mockup` (accent text on `--btn-bg`) + sub-line `or drop anywhere on the page` (variation `or drop anywhere · saves to <project|folder>` in scoped views) | default, hover, focus-visible, active |
 | `empty-state-both` | Combines the giant drop zone with a `+ New project` chip in the topbar — two paths surfaced simultaneously. Only used at `/` when the user has zero projects | visible at `/` with no content |
 
-## loading-state
+## skeleton
 
-Shared loading placeholder for page-level fetches (`LoadingState.tsx`).
+Loading-state primitive + page-level compositions. The shimmer bar lives at `src/components/Skeleton/Skeleton.tsx`; the canonical `skeleton → real content` swap is wrapped in `<FadeIn>` from `src/components/FadeIn/`. Documented in [DS 31](./design/design-system/31-skeleton.html).
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `loading-state` | Centered, dimmed status line (`--text-muted`, `--type-sm`) inside a `role="status"` + `aria-live="polite"` + `aria-busy="true"` container. Used by `/`, `/projects/<slug>`, `/projects/<slug>/<...path>`, `/annotations/<id>`, `/settings/agents` while their data fetches are in flight. Accepts an optional `message` prop; defaults to `"Loading…"` | visible while `data === null`, dismissed once the fetch resolves |
+| `skeleton-bar` | Primitive shimmer rectangle with three shapes via `variant="block" \| "text" \| "circle"`. 1.4s linear shimmer loop, zeroed under `prefers-reduced-motion`. Rendered as a single `<span aria-hidden="true">`; the parent surface owns `aria-busy="true"` + `aria-live="polite"`. | block (default), text (0.75em + pill radius), circle (50% radius) |
+| `home-skeleton` | Workspace landing placeholder. Real greeting + date (locally derived); only the "N mockups updated since yesterday" count is replaced by a mini text skeleton. Skeleton card grids for Recents / Projects / Orphans sections; section headers ("Continue working", "Projects", "No project") stay as real text. | visible while `/api/home` is in flight |
+| `project-skeleton` | Header + card grid. Shared by `/projects/<slug>`, the catch-all `/projects/<slug>/<...path>`, and the mockup viewer's pre-data state — the URL alone can't disambiguate them, and a single shape beats a mid-load shape swap. | visible while the page-level fetch is in flight |
+| `sidebar-tree-skeleton` | Tree-rows placeholder mounted inside the real `<Sidebar>` while `/api/shell` is in flight. Brand, collapse button, "Projects" + "No project" section labels via `<SectionHeader>`, and footer "New mockup" button all stay real. Five fake project rows + two fake orphan rows. | visible while `/api/shell` is in flight |
+| `fade-in` | Companion wrapper that plays a 360ms opacity + 6px slide-up animation on mount. Wraps the resolved-content branch only — never the skeleton itself (the skeleton IS the first paint). Animation zeroed under `prefers-reduced-motion`. | mount-only (no exit animation) |
+
+## loading-state
+
+Shared loading placeholder for page-level fetches (`LoadingState.tsx`). Kept only for legacy callers being migrated to `skeleton-*`. New surfaces compose `<Skeleton />` instead.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `loading-state` | Centered, dimmed status line (`--text-muted`, `--type-sm`) inside a `role="status"` + `aria-live="polite"` + `aria-busy="true"` container. Accepts an optional `message` prop; defaults to `"Loading…"` | visible while `data === null`, dismissed once the fetch resolves |
 
 ## error-state
 
