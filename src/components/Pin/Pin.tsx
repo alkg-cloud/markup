@@ -3,11 +3,20 @@ import { forwardRef, type MouseEvent, type Ref } from 'react';
 import styles from './Pin.module.css';
 
 export type PinStatus = 'idle' | 'active' | 'pending';
+export type PinKind = 'published' | 'draft';
 
 export interface PinProps {
   /** Stable identifier — exposed as `data-annotation-id` so click delegation
    *  on the pin layer can map back to the annotation. */
   annotationId: string;
+  /** Pin kind — `published` for committed annotation pins, `draft` for
+   *  pins on the in-flight DraftCard. Surfaces as `data-pin-kind` so the
+   *  canvas click classifier (useViewerCanvas) and PinLayer's event
+   *  delegation can route clicks to the right handler. */
+  kind?: PinKind;
+  /** Index of the draft pin inside `draftPins[]`. Only set when
+   *  `kind === 'draft'`; surfaces as `data-pin-index`. */
+  pinIndex?: number;
   /** Index into the 16-color palette (0..15). */
   colorIndex: number;
   /** Number rendered inside the pin (typically the annotation number). */
@@ -15,6 +24,11 @@ export interface PinProps {
   /** Visual state. `active` adds the pulsing glow; `pending` renders the
    *  dashed-outline composer-placement variant. */
   status?: PinStatus;
+  /** When `true`, the pin fades out (200 ms) and stops receiving pointer
+   *  events. Used by PinLayer when a draft pin is queued for removal so
+   *  the user sees a visible departure rather than a discontinuous
+   *  unmount. */
+  removing?: boolean;
   /** Optional human-friendly label used for `aria-label`. Defaults to
    *  `Annotation #001`. Pins intentionally do NOT render a hover tooltip
    *  — the rotated -45° transform on the pin frame made tooltip
@@ -38,7 +52,7 @@ export interface PinProps {
  * See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §6.
  */
 export const Pin = forwardRef<HTMLButtonElement, PinProps>(function Pin(
-  { annotationId, colorIndex, label, status = 'idle', tooltip, onClick },
+  { annotationId, kind = 'published', pinIndex, colorIndex, label, status = 'idle', removing, tooltip, onClick },
   ref,
 ) {
   const cls = [
@@ -54,7 +68,11 @@ export const Pin = forwardRef<HTMLButtonElement, PinProps>(function Pin(
       type="button"
       className={cls}
       data-annotation-id={annotationId}
+      data-pin-id={annotationId}
+      data-pin-kind={kind}
+      data-pin-index={pinIndex}
       data-color={colorIndex}
+      data-removing={removing ? 'true' : undefined}
       aria-label={tooltip ?? `Annotation #${String(label).padStart(3, '0')}`}
       onClick={onClick}
     >

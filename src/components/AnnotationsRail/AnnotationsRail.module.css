@@ -43,6 +43,14 @@
     var(--shadow-popover),
     0 0 0 1px var(--accent-overlay-soft);
 }
+/* `.forceExpand` — parent-driven expansion (e.g. an active DraftCard).
+   Width matches the expanded state but the pinned-mode accent ring is
+   omitted — the draft is the visual focus, not the rail's lock state.
+   When `forceExpand` flips back to false, the user's prior `pinned`
+   preference takes over again. */
+.rail.forceExpand {
+  width: var(--rail-width-expanded);
+}
 .rail.dragging {
   transition: none;
   cursor: grabbing;
@@ -191,6 +199,48 @@
   font-size: 11px;
   color: var(--text-muted);
   text-align: center;
+}
+
+/* Sticky DraftCard slot — mounted at the top of the expanded body while
+   the parent owns an active draft. Sits between `.head` and `.list` so
+   the card stays visible as the user scrolls through published
+   annotations underneath. */
+.draftSlot {
+  flex-shrink: 0;
+  padding: 8px 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, oklch(10% 0.03 165 / 0.4) 0%, transparent 100%);
+}
+
+/* Sentinel `+` badge prepended to the collapsed badge column while a
+   draft is active. Echoes the DraftCard's accent vocabulary (dashed
+   border + pulse) so the rail's collapsed state still telegraphs
+   "you have an in-flight draft". */
+.draftBadge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: oklch(25% 0.05 165 / 0.5);
+  border: 1.5px dashed oklch(74% 0.18 165 / 0.85);
+  color: var(--accent-bright);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  animation: railDraftBadgePulse 1.6s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes railDraftBadgePulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(74% 0.18 165 / 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 5px transparent;
+  }
 }
 
 /* Sticky add button at the bottom — morphs from circle (collapsed)

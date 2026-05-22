@@ -82,6 +82,16 @@
   }
 }
 
+/* Removing — draft pin queued for removal. Parent (PinLayer) toggles
+   `[data-removing="true"]` for ~200 ms before unmounting the row so the
+   user sees the pin fade rather than disappear instantly. */
+.pin[data-removing="true"] {
+  opacity: 0;
+  transition: opacity 200ms var(--ease-standard);
+  pointer-events: none;
+  animation: none;
+}
+
 /* 16-color rotating palette. Each annotation picks an index 0..15.
    `data-color` propagates from the annotation to every pin / badge /
    avatar so they share visual identity. */
