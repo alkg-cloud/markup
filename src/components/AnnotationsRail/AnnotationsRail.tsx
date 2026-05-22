@@ -3,7 +3,7 @@ import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useStat
 import { GoGrabber } from 'react-icons/go';
 import { VscAdd, VscPinned } from 'react-icons/vsc';
 import { Kbd } from '@/components/Kbd/Kbd';
-import { formatShortcut } from '@/lib/shortcuts/platform';
+import { formatShortcut, useIsMac } from '@/lib/shortcuts/platform';
 import styles from './AnnotationsRail.module.css';
 
 export interface AnnotationsRailBadge {
@@ -195,9 +195,11 @@ export function AnnotationsRail({
     : undefined;
 
   const visibleCount = count ?? badges.length;
-  // CSR-only — formatShortcut reads `navigator` which is always defined
-  // during render (app is fully client-side per CLAUDE.md CSR rule).
-  const newAnnotationAria = `New annotation (${formatShortcut(['shift', 'n'])})`;
+  // SSR-safe: `useIsMac` returns false on first paint so the hydrated
+  // aria-label matches the server's output; the swap to ⌘ on Mac
+  // happens post-mount and doesn't trip a hydration warning.
+  const mac = useIsMac();
+  const newAnnotationAria = `New annotation (${formatShortcut(['shift', 'n'], mac)})`;
 
   return (
     <aside

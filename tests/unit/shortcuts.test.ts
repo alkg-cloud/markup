@@ -29,13 +29,11 @@ describe('shortcuts/platform', () => {
   it('isMac returns true on macOS platform string', async () => {
     const mod = await withPlatform('MacIntel');
     expect(mod.isMac()).toBe(true);
-    expect(mod.modSymbol()).toBe('⌘');
   });
 
   it('isMac returns false on Win32', async () => {
     const mod = await withPlatform('Win32');
     expect(mod.isMac()).toBe(false);
-    expect(mod.modSymbol()).toBe('Ctrl');
   });
 
   it('isMod matches metaKey on mac', async () => {
@@ -54,13 +52,13 @@ describe('shortcuts/platform', () => {
     expect(mod.isMod(e2)).toBe(false);
   });
 
-  it('formatShortcut produces ⌘⇧N on mac', async () => {
-    const mod = await withPlatform('MacIntel');
-    expect(mod.formatShortcut(['shift', 'n'])).toBe('⌘⇧N');
+  it('formatShortcut produces ⌘⇧N when mac=true', async () => {
+    const mod = await import('@/lib/shortcuts/platform');
+    expect(mod.formatShortcut(['shift', 'n'], true)).toBe('⌘⇧N');
   });
 
-  it('formatShortcut produces Ctrl+Shift+N on non-mac', async () => {
-    const mod = await withPlatform('Win32');
-    expect(mod.formatShortcut(['shift', 'n'])).toBe('Ctrl+⇧+N');
+  it('formatShortcut produces Ctrl+⇧+N when mac=false', async () => {
+    const mod = await import('@/lib/shortcuts/platform');
+    expect(mod.formatShortcut(['shift', 'n'], false)).toBe('Ctrl+⇧+N');
   });
 });

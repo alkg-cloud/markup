@@ -22,7 +22,7 @@
  */
 
 import type { ReactNode } from 'react';
-import { isMac } from '@/lib/shortcuts/platform';
+import { useIsMac } from '@/lib/shortcuts/platform';
 import styles from './Kbd.module.css';
 import { announceCombo, type KbdKey, resolveKey } from './keys';
 
@@ -81,15 +81,19 @@ export interface KbdProps {
 }
 
 export function Kbd({ keys, disabled, className }: KbdProps) {
-  const mac = isMac();
-  const label = announceCombo(keys);
+  // Initial render uses the non-Mac branch so SSR + first client paint
+  // agree (the server can't read `navigator`). After mount `useIsMac`
+  // returns the real value and the chip text + aria-label swap to the
+  // Mac glyphs without firing a hydration warning.
+  const mac = useIsMac();
+  const label = announceCombo(keys, mac);
 
   const children: ReactNode[] = [];
   keys.forEach((token, i) => {
     if (i > 0 && !mac) {
       children.push(<Plus key={`plus-${i}`} />);
     }
-    children.push(<Key key={`key-${i}`}>{resolveKey(token)}</Key>);
+    children.push(<Key key={`key-${i}`}>{resolveKey(token, mac)}</Key>);
   });
 
   return (
