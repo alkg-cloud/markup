@@ -2,7 +2,6 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
-import { GET as getIntent } from '@/app/api/annotations/[id]/intent/route';
 import { identify } from '@/lib/auth/identify';
 import { resolveDisplayNames } from '@/lib/auth/resolve-display-name';
 import { renderUnifiedDiff } from '@/lib/diff/render-unified';
@@ -128,25 +127,11 @@ export async function GET(req: Request, ctx: { params: Promise<{ annotationId: s
     messages.map((m) => ({ createdBy: m.authorId, createdByType: m.authorType })),
   );
 
-  // Delegate intent computation to the existing route handler
-  let intent: unknown = null;
-  try {
-    const intentRes = await getIntent(req, {
-      params: Promise.resolve({ id: annotation.id }),
-    });
-    if (intentRes.status === 200) {
-      intent = await intentRes.json();
-    }
-  } catch {
-    intent = null;
-  }
-
   return NextResponse.json(
     {
       annotation: {
         id: annotation.id,
         mockup_id: annotation.mockupId,
-        intent_type: annotation.intentType,
         pin_coords: annotation.pinCoords ? JSON.parse(annotation.pinCoords) : null,
         anchors: safeParseAnchors(annotation.anchors),
         color_index: annotation.colorIndex,
@@ -156,7 +141,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ annotationId: s
         created_at: annotation.createdAt,
         created_on_version_id: annotation.createdOnVersionId,
       },
-      intent,
       thread: {
         id: annotation.thread?.id ?? null,
         status: annotation.thread?.status ?? 'open',

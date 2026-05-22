@@ -8,7 +8,6 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { ThreadTimeline } from '@/components/ThreadTimeline/ThreadTimeline';
 import { Topbar } from '@/components/Topbar/Topbar';
-import { INTENT_PILL_COLORS, type IntentType } from '@/lib/annotation/intent';
 import { ReadOnlyAnnotation } from './ReadOnlyAnnotation';
 
 interface DetailPayload {
@@ -17,7 +16,6 @@ interface DetailPayload {
     createdAt: string;
     createdBy: string;
     createdByType: 'user' | 'agent';
-    intentType: IntentType;
   };
   author: { name: string; kind: 'user' | 'agent' };
   thread: {
@@ -84,7 +82,6 @@ export default function AnnotationDetailPage() {
   }
 
   const { annotation, author, thread, authorNamesById, mockup, screenshot, tldraw } = data;
-  const intentColors = INTENT_PILL_COLORS[annotation.intentType];
 
   return (
     <>
@@ -157,24 +154,6 @@ export default function AnnotationDetailPage() {
               }}
             >
               {author.kind}
-            </span>
-
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                fontSize: 'var(--type-2xs)',
-                fontWeight: 700,
-                letterSpacing: 'var(--tracking-wide)',
-                padding: '4px 10px',
-                borderRadius: 'var(--radius-pill)',
-                textTransform: 'uppercase',
-                background: intentColors.bg,
-                color: intentColors.fg,
-              }}
-            >
-              {annotation.intentType}
             </span>
 
             <time
