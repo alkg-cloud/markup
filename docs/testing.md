@@ -100,14 +100,12 @@ The `params` argument is a `Promise` — match the route's signature literally. 
 
 ## FormData in tests
 
-Multipart routes (annotation creation, version upload) take `FormData`. Build it inline:
+Multipart routes (version upload) take `FormData`. Build it inline:
 
 ```ts
 const fd = new FormData();
-fd.set('screenshot', new Blob([pngBuf], { type: 'image/png' }), 's.png');
-fd.set('tldraw', JSON.stringify({ document: { store: {} } }));
+fd.set('build', new Blob([zipBuf], { type: 'application/zip' }), 'b.zip');
 fd.set('message', 'msg');
-fd.set('intent_type', 'visual');
 ```
 
 A minimal valid PNG buffer (33 bytes) for tests that don't render the image:
