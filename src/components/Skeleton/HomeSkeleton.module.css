@@ -49,9 +49,11 @@
 }
 
 .subCount {
-  /* Slightly narrower than a typical "32 mockups updated since
-   * yesterday" line so the skeleton reads as a placeholder, not as
-   * an over-eager rectangle. */
+  /* Inline-block so the skeleton bar sits flush with the surrounding
+   * "Thursday, May 21 · " mono text instead of forcing a line break.
+   * The width is set inline at the call site (170 px) to match the
+   * typographic rhythm of a real "N mockups updated since yesterday"
+   * tail. */
   display: inline-block;
 }
 

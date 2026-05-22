@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useIdentity } from '@/lib/hooks/use-require-auth';
 import styles from './HomeSkeleton.module.css';
 import { Skeleton } from './Skeleton';
@@ -31,34 +32,53 @@ function formatToday() {
   }).format(new Date());
 }
 
+interface HeroBits {
+  greeting: string;
+  today: string;
+}
+
 /**
- * Workspace landing skeleton. The hero (greeting + date) renders as
- * real text since both are derived locally — only the
- * "N mockups updated since yesterday" count is unknown and gets a
- * mini text skeleton. Section headers ("Continue working", "Projects",
- * "No project") render as real text; the rows below them are skeleton
- * cards that mirror the post-load grid layout.
+ * Workspace landing skeleton. Greeting + date render as real text once
+ * `useEffect` has resolved them on the client — otherwise the server
+ * would produce one locale + timezone and the client another, which
+ * desync after hydration. While the bits are unresolved we paint
+ * skeleton bars at the hero so the layout doesn't shift on arrival.
+ * The "N mockups updated since yesterday" count is always a mini text
+ * skeleton — it depends on the per-tenant API and never paints from
+ * the skeleton state.
  */
 export function HomeSkeleton() {
   const identity = useIdentity();
-  const greeting = `${TIME_OF_DAY_COPY[deriveTimeOfDay()]}, ${deriveFirstName(identity?.name, identity?.email)}`;
+  // Defer hero text to a post-mount effect so SSR + first client paint
+  // agree (both render the skeleton bars), then upgrade to real text.
+  // Avoids the locale + timezone hydration mismatches that
+  // `suppressHydrationWarning` only hides without fixing.
+  const [hero, setHero] = useState<HeroBits | null>(null);
+  useEffect(() => {
+    setHero({
+      greeting: `${TIME_OF_DAY_COPY[deriveTimeOfDay()]}, ${deriveFirstName(identity?.name, identity?.email)}`,
+      today: formatToday(),
+    });
+  }, [identity?.name, identity?.email]);
 
   return (
     <div className={styles.page}>
       <main className={styles.main} aria-label="Home" aria-busy="true" aria-live="polite">
         <header className={styles.hero}>
-          {/* `suppressHydrationWarning` — the server pre-renders with
-              Node's default locale (en-US); the client hydrates with
-              the browser locale (e.g. pt-BR). This single-frame text
-              divergence is intentional and the React-documented escape
-              hatch for it. */}
-          <h1 className={styles.greeting} suppressHydrationWarning>
-            {greeting}
-          </h1>
-          <p className={styles.sub}>
-            <span suppressHydrationWarning>{formatToday()} · </span>
-            <Skeleton className={styles.subCount} width={170} height={10} variant="text" />
-          </p>
+          {hero ? (
+            <>
+              <h1 className={styles.greeting}>{hero.greeting}</h1>
+              <p className={styles.sub}>
+                <span>{hero.today} · </span>
+                <Skeleton className={styles.subCount} width={170} height={10} variant="text" />
+              </p>
+            </>
+          ) : (
+            <>
+              <Skeleton width={280} height={28} />
+              <Skeleton width={220} height={11} variant="text" />
+            </>
+          )}
         </header>
 
         <section className={styles.section} data-section="recents">

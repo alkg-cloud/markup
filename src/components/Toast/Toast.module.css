@@ -44,6 +44,11 @@
   white-space: nowrap;
 }
 
+/* The keyframes below stay scoped to the CSS module (Turbopack does
+ * not accept `@keyframes :global(name)` syntax). The pill's React
+ * `onAnimationEnd` handler matches by substring (`toastOut`,
+ * `toastSwipeOut`) so the CSS-Modules-hashed names still resolve
+ * correctly — see useToast.ts. */
 .pill[data-state="open"] {
   animation: toastIn var(--motion-base) var(--ease-spring);
 }
