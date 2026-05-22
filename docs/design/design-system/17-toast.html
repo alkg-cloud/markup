@@ -128,7 +128,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
 
 <div class="page" data-ds-component="toast">
   <h1 class="h1">17 — Toast</h1>
-  <p class="lede">Transient bottom-center pill for confirmation messages and lightweight feedback. Implemented as the custom <code>ToastProvider</code> + <code>useToast</code> hook (<code>src/components/Toast/useToast.ts</code> + <code>Toast.tsx</code>) — a context + reducer pair that holds a stack of <code>ToastItem</code>s and auto-removes each after a duration. Renders the container with <code>aria-live="assertive"</code> so SR announces every message. Pills use the glass-surface standard — same recipe as the rail, toolbar, dialog scrim, and other floating overlays. For inline, persistent status (server error inside a form, rate-limit warning) reach for <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> instead.</p>
+  <p class="lede">Transient bottom-center pill for confirmation messages and lightweight feedback. Backed by <code>@radix-ui/react-toast</code> (Provider / Viewport / Root / Description) and wrapped with an imperative <code>useToast().show(message, duration?)</code> handle in <code>src/components/Toast/useToast.ts</code>. Radix owns the a11y surface (aria-live region, focus trap, swipe-to-dismiss); our wrapper owns the queue, the visual recipe, and the call-site ergonomics. Pills use the glass-surface standard — same recipe as the rail, toolbar, dialog scrim, and other floating overlays. For inline, persistent status (server error inside a form, rate-limit warning) reach for <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> instead.</p>
 
   <section class="section">
     <div class="section-title">A — Default pill (neutral message)</div>
@@ -229,16 +229,16 @@ pre.api .t{color:oklch(86% 0.12 60)}
   </section>
 
   <section class="section">
-    <div class="section-title">React API — custom <code>ToastProvider</code> + <code>useToast</code> (not Radix)</div>
-    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">Backed by a custom in-project implementation, <strong>not</strong> <code style="color:var(--accent)">@radix-ui/react-toast</code>. <code>@radix-ui/react-toast</code> is not installed; the lightweight context-+-reducer pair in <code>src/components/Toast/</code> is the canonical surface. Reach for Radix Toast only if a future need surfaces (swipe-to-dismiss, action slot, queue limits) — and add it explicitly to <code>package.json</code> at that time.</p>
-    <pre class="api"><span class="c">// 1) Mount the provider once at the app root</span>
+    <div class="section-title">React API — <code>ToastProvider</code> + <code>useToast</code> (Radix-backed)</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">Backed by <code style="color:var(--accent)">@radix-ui/react-toast</code> (Provider / Viewport / Root / Description). The thin wrapper in <code>src/components/Toast/useToast.ts</code> keeps the call-site API imperative — consumers don't manage <code>open</code> state, don't render <code>Toast.Root</code> nodes, and don't know about the Radix tree. They call <code>useToast().show(message, duration?)</code> and the wrapper enqueues an item that drives a Radix Toast with that message and duration.</p>
+    <pre class="api"><span class="c">// 1) Mount the provider once at the app root.</span>
 <span class="k">import</span> { ToastProvider } <span class="k">from</span> <span class="s">'@/components/Toast/useToast'</span>;
 
 <span class="k">export default function</span> AppShell({ children }: { children: <span class="t">ReactNode</span> }) {
-  <span class="k">return</span> &lt;<span class="t">ToastProvider</span>&gt;{children}&lt;/<span class="t">ToastProvider</span>&gt;;     <span class="c">// renders the container + reducer</span>
+  <span class="k">return</span> &lt;<span class="t">ToastProvider</span>&gt;{children}&lt;/<span class="t">ToastProvider</span>&gt;;     <span class="c">// wraps Radix Provider + Viewport</span>
 }
 
-<span class="c">// 2) Call `show(message, duration?)` from any client component</span>
+<span class="c">// 2) Call `show(message, duration?)` from any client component.</span>
 <span class="k">import</span> { useToast } <span class="k">from</span> <span class="s">'@/components/Toast/useToast'</span>;
 
 <span class="k">function</span> CopyLinkButton() {
@@ -253,19 +253,21 @@ pre.api .t{color:oklch(86% 0.12 60)}
   );
 }
 
-<span class="c">// 3) Custom duration (e.g. a longer confirmation)</span>
+<span class="c">// 3) Custom duration (e.g. a longer confirmation).</span>
 show(<span class="s">'Token created — copy now, you won\'t see it again'</span>, <span class="s">5000</span>);
 
 <span class="c">// Public API:</span>
 <span class="c">//   show(message: string, duration?: number = 3000): void</span>
-<span class="c">// The reducer dispatches `add` then schedules `remove` after `duration`.</span></pre>
+<span class="c">// Internally, each show() appends a queue item; the wrapper renders</span>
+<span class="c">// one Radix &lt;Toast.Root&gt; per item and drops it on onOpenChange(false).</span></pre>
     <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
     <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
-      <li><strong>Why not Radix Toast.</strong> The current API surface is tiny (one <code>show()</code> call), there's no swipe-to-dismiss requirement, no action slot, no queue policy beyond "remove after N ms". A 60-line custom hook is the right fit; adding <code>@radix-ui/react-toast</code> just imports machinery we don't use.</li>
+      <li><strong>Imperative call-site, Radix engine.</strong> Consumers never touch <code>Toast.Root</code> / <code>Toast.Description</code> directly — they just call <code>show()</code>. The wrapper is what reaches for Radix.</li>
+      <li><strong>Free swipe-to-dismiss.</strong> Radix wires the <code>[data-swipe]</code> attribute lifecycle; our CSS binds the translate + exit animation to it. Swipe up dismisses (the viewport sits at the bottom).</li>
+      <li><strong>Free a11y.</strong> Radix mounts the <code>aria-live</code> region + the focus-grab on Action buttons. The wrapper doesn't have to reinvent any of that.</li>
       <li><strong>No <code>variant</code> prop yet.</strong> <code>show()</code> takes only <code>message</code> + optional <code>duration</code>. The <code>.success</code> / <code>.danger</code> intent classes shown above are reserved for a future <code>show(message, { variant: 'success', duration: 4000 })</code> signature — flagged here so the DS sees the gap.</li>
       <li><strong>Auto-dismiss only.</strong> Toasts have no close button — that's the contract. If the user needs to dismiss, use a <a href="./27-alert-banner.html" style="color:var(--accent)"><code>alert-banner</code></a> with <code>onClose</code> instead.</li>
-      <li><strong>Aria.</strong> The container is <code>aria-live="assertive"</code> + <code>aria-atomic="false"</code>; each pill carries <code>role="status"</code>. SR announces every message as it appears.</li>
-      <li><strong>Pointer-events.</strong> The fixed container is <code>pointer-events: none</code>; individual pills are <code>auto</code>. That way the bottom of the canvas remains clickable behind the stack.</li>
+      <li><strong>Pointer-events.</strong> The fixed viewport is <code>pointer-events: none</code>; individual pills are <code>auto</code>. That way the bottom of the canvas remains clickable behind the stack while swipe-to-dismiss still works on the pill itself.</li>
     </ul>
   </section>
 

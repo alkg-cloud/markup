@@ -509,11 +509,11 @@ This is the convention in ConfirmDialog.tsx and NewProjectDialog.tsx.
 | `@radix-ui/react-slot` | `asChild` slot on `Action`/`Close` everywhere |
 | `@radix-ui/react-portal` | `DropOverlay`, future portal mounts |
 | `@radix-ui/react-popover` | `FolderPicker` |
+| `@radix-ui/react-toast` | `ToastProvider` / `useToast()` |
 
 ### Currently NOT installed (flag in DS, do not install ad-hoc)
 
 - `@radix-ui/react-tooltip`
-- `@radix-ui/react-toast`
 - `@radix-ui/react-toolbar`
 - `@radix-ui/react-dropdown-menu`
 - `@radix-ui/react-collapsible`
