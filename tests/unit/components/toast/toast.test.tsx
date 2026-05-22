@@ -1,37 +1,78 @@
-import { createElement } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
-import { toastReducer } from '@/components/Toast/useToast';
+// @vitest-environment jsdom
 
-describe('toastReducer', () => {
-  it('add action creates a toast with the given message', () => {
-    const state = toastReducer([], { type: 'add', id: '1', message: 'Hello', duration: 3000 });
-    expect(state).toHaveLength(1);
-    expect(state[0].message).toBe('Hello');
-    expect(state[0].id).toBe('1');
+import { act, createElement, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ToastProvider, useToast } from '@/components/Toast/useToast';
+
+function Trigger({ message, duration }: { message: string; duration?: number }) {
+  const { show } = useToast();
+  useEffect(() => {
+    show(message, duration);
+  }, [message, duration, show]);
+  return null;
+}
+
+function findPill(): HTMLElement | null {
+  return document.querySelector('[data-testid="toast-pill"]');
+}
+
+describe('ToastProvider (Radix-backed)', () => {
+  let container: HTMLDivElement;
+  let root: ReturnType<typeof createRoot>;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    container = document.createElement('div');
+    document.body.append(container);
+    root = createRoot(container);
   });
 
-  it('remove action deletes the matching toast', () => {
-    const initial = [
-      { id: '1', message: 'A' },
-      { id: '2', message: 'B' },
-    ];
-    const state = toastReducer(initial, { type: 'remove', id: '1' });
-    expect(state).toHaveLength(1);
-    expect(state[0].id).toBe('2');
+  afterEach(async () => {
+    await act(async () => {
+      root.unmount();
+    });
+    document.body.innerHTML = '';
+    vi.useRealTimers();
   });
 
-  it('stacks multiple toasts (add twice)', () => {
-    const s1 = toastReducer([], { type: 'add', id: '1', message: 'First', duration: 3000 });
-    const s2 = toastReducer(s1, { type: 'add', id: '2', message: 'Second', duration: 3000 });
-    expect(s2).toHaveLength(2);
+  it('renders a toast with the message after show() is called', async () => {
+    await act(async () => {
+      root.render(
+        createElement(ToastProvider, null, createElement(Trigger, { message: 'Saved!' })),
+      );
+    });
+    const pill = findPill();
+    expect(pill).not.toBeNull();
+    expect(pill?.textContent).toContain('Saved!');
   });
-});
 
-describe('ToastProvider SSR', () => {
-  it('renders aria-live="assertive" container', async () => {
-    const { ToastProvider } = await import('@/components/Toast/useToast');
-    const html = renderToStaticMarkup(createElement(ToastProvider, null));
-    expect(html).toContain('aria-live="assertive"');
+  it('mounts the Radix viewport with aria-live + role=region semantics', async () => {
+    await act(async () => {
+      root.render(createElement(ToastProvider, null));
+    });
+    // Radix Toast.Viewport carries role + tabIndex + aria-label by
+    // default; our class composes the bottom-center container.
+    const viewport = document.querySelector('[data-testid="toast-container"]');
+    expect(viewport).not.toBeNull();
+    expect(viewport?.tagName).toBe('OL');
+  });
+
+  it('stacks multiple toasts when show() is called repeatedly', async () => {
+    function Multi() {
+      const { show } = useToast();
+      useEffect(() => {
+        show('first');
+        show('second');
+      }, [show]);
+      return null;
+    }
+    await act(async () => {
+      root.render(createElement(ToastProvider, null, createElement(Multi, null)));
+    });
+    const pills = document.querySelectorAll('[data-testid="toast-pill"]');
+    expect(pills.length).toBe(2);
+    expect(pills[0].textContent).toContain('first');
+    expect(pills[1].textContent).toContain('second');
   });
 });
