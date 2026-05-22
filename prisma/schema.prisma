@@ -158,7 +158,6 @@ model Annotation {
   colorIndex         Int            @default(0)
   // Visual status surfaced as a pill in the rail header.
   status             String         @default("open") // "open" | "needs review" | "resolved"
-  intentType         String         @default("other")
   createdOnVersionId String?
   createdOnVersion   MockupVersion? @relation("CreatedOnVersion", fields: [createdOnVersionId], references: [id])
   createdAt          DateTime       @default(now())
