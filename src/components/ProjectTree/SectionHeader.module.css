@@ -1,0 +1,52 @@
+/* Sidebar tree section header — used for "Projects", "No project",
+ * and the skeleton placeholders. Same recipe across all three callers
+ * so the rhythm stays consistent.
+ */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 4px;
+  font-family: var(--font-mono);
+  font-size: var(--type-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Companion class for the action element passed via `action`. Callers
+ * import it from `SectionHeader.module.css` so the icon button shares
+ * the same hover / focus surface across every section header. */
+.actionBtn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.actionBtn:hover {
+  background: var(--surface-hover);
+  color: var(--accent);
+}
+
+.actionBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actionBtn {
+    transition: none;
+  }
+}
