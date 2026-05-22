@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Idea — Inline Draft Annotation (v1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ────────────────────────────────────────────────────────────────
+ * Markup tokens — copied verbatim from src/styles/tokens.css.
+ * Aesthetic: editorial-dense control room. Hue 165° teal-leaning
+ * green tint on near-pure-black surfaces. Manrope as the typographic
+ * voice. OKLCH for perceptual uniformity.
+ * ──────────────────────────────────────────────────────────────── */
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);--bg-card-active:oklch(15% 0.025 165);
+  --btn-bg:rgb(39,39,39);--btn-bg-hover:rgb(48,48,48);--btn-bg-active:rgb(56,56,56);
+  --surface-input:rgba(255,255,255,0.03);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);
+  --surface-soft:rgba(255,255,255,0.02);--surface-strong:rgba(255,255,255,0.06);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);--accent-dim:oklch(66% 0.18 165);
+  --accent-soft:oklch(28% 0.08 165);--accent-soft-strong:oklch(34% 0.10 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165/0.18);--accent-overlay-mid:oklch(74.4% 0.193 165/0.35);--accent-overlay-strong:oklch(74.4% 0.193 165/0.40);
+  --success:oklch(76% 0.16 152);--success-soft:oklch(28% 0.07 152);
+  --info:oklch(74% 0.13 200);--info-soft:oklch(26% 0.06 200);
+  --warning:oklch(80% 0.15 80);--warning-soft:oklch(30% 0.07 80);
+  --danger:oklch(70% 0.20 25);--danger-soft:oklch(28% 0.09 25);--danger-border:oklch(40% 0.10 25);
+  --scrim-strong:oklch(0% 0 0/0.65);--scrim-mid:oklch(0% 0 0/0.45);--scrim-glass-bg:oklch(0% 0 0/0.20);
+  --surface-glass-bg:rgb(7 12 15/80%);
+  --rail-width-collapsed:60px;--rail-width-expanded:300px;
+  --font-display:"Manrope",system-ui,sans-serif;--font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",ui-monospace,monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-emphasized:cubic-bezier(0.16,1,0.3,1);--ease-exit:cubic-bezier(0.32,0,0.67,0);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-instant:90ms;--motion-fast:160ms;--motion-base:220ms;--motion-slow:320ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-pill:9999px;--radius-card:14px;
+  --shadow-sm:0 2px 6px oklch(0% 0 0/0.45);
+  --shadow-md:0 6px 16px oklch(0% 0 0/0.50),0 2px 4px oklch(0% 0 0/0.40);
+  --shadow-lg:0 18px 44px oklch(0% 0 0/0.55),0 8px 16px oklch(0% 0 0/0.40);
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
+@media(prefers-reduced-motion:reduce){:root{--motion-instant:0ms;--motion-fast:0ms;--motion-base:0ms;--motion-slow:0ms}}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 1000px 700px at 18% 12%, oklch(20% 0.10 165/0.18), transparent 60%),
+    radial-gradient(ellipse 800px 600px at 82% 88%, oklch(22% 0.12 165/0.12), transparent 60%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;font-size:inherit}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+
+/* ─── page layout ─────────────────────────────────────────────── */
+.page{padding:48px 32px 96px;max-width:1320px;margin:0 auto}
+.h1{font-family:var(--font-display);font-size:34px;font-weight:800;color:var(--text-bright);letter-spacing:-0.02em;margin-bottom:6px;line-height:1.05}
+.h1 .ver{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:0.04em;vertical-align:5px;margin-left:8px}
+.lede{font-size:14px;color:var(--text-dim);margin-bottom:48px;max-width:760px;line-height:1.6}
+.lede strong{color:var(--text);font-weight:600}
+.section{margin-bottom:56px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.section-title::before{content:'';display:block;width:18px;height:1px;background:var(--accent);opacity:0.6}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:12px;letter-spacing:0.04em;line-height:1.65;max-width:780px}
+.caption code{font-size:10.5px;color:var(--accent)}
+
+/* hero stage: emulates the viewer */
+.stage{
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 14px,oklch(11% 0.02 165) 14px 28px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  min-height:540px;padding:24px;position:relative;overflow:hidden;
+}
+.stage-label{position:absolute;top:10px;left:14px;font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);z-index:1}
+.stage.viewer{
+  /* faux mockup canvas — lit "stage" beneath the rail */
+  min-height:600px;
+  padding:32px;
+  background:
+    radial-gradient(ellipse 100% 60% at 50% 0%, oklch(16% 0.04 165 / 0.6) 0%, transparent 70%),
+    repeating-linear-gradient(45deg,oklch(12% 0.022 165) 0 14px,oklch(10% 0.018 165) 14px 28px);
+}
+
+/* ─── faux "topbar" hint ──────────────────────────────────────── */
+.faux-topbar{
+  position:absolute;top:0;left:0;right:0;height:32px;display:flex;align-items:center;
+  padding:0 14px;font-family:var(--font-mono);font-size:9.5px;color:var(--text-muted);
+  letter-spacing:0.06em;text-transform:uppercase;
+  border-bottom:1px solid var(--border-subtle);
+  background:linear-gradient(180deg,oklch(8% 0.02 165/0.8),transparent);
+}
+.faux-topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:10px;box-shadow:0 0 8px var(--accent-overlay-mid)}
+.faux-topbar .crumb{color:var(--text-dim);font-weight:600}
+.faux-topbar .crumb-sep{margin:0 8px;opacity:0.5}
+
+/* ─── viewer layout: rail + canvas ────────────────────────────── */
+.viewer-layout{position:relative;width:100%;height:540px;margin-top:24px;display:flex;gap:0}
+.rail-slot{position:absolute;top:18px;left:18px;z-index:30;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.canvas-slot{flex:1;margin-left:78px;position:relative;border-radius:var(--radius-sm);overflow:hidden}
+
+/* ─── rail recipe (verbatim from 18-annotations-rail.html) ────── */
+.rail{
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  width:var(--rail-width-collapsed);
+  max-height:520px;
+  border-radius:14px;
+  box-shadow:var(--shadow-popover);
+  display:flex;flex-direction:column;overflow:visible;
+  transition:width var(--motion-base) var(--ease-spring),border-color var(--motion-fast),box-shadow var(--motion-fast);
+}
+.rail.expanded{width:var(--rail-width-expanded)}
+.rail.pinned{
+  width:var(--rail-width-expanded);
+  border-color:var(--accent-overlay-mid);
+  box-shadow:var(--shadow-popover),0 0 0 1px var(--accent-overlay-soft);
+}
+/* Hero rail is a tweaker preview — snap instantly when state changes.
+ * The reference grids in §B/§C keep the original transition for design fidelity. */
+.hero .rail{transition:none}
+
+/* ─── tweaker-driven rail state (unconditional; orthogonal to hasDraft) ─── */
+/* The tweaker is an exploration tool — rail-state is the sole source of truth
+ * for rail width + collapsed/expanded display. hasDraft only controls whether
+ * the DraftCard slot is visible *inside* the expanded body. */
+
+/* collapsed: width 60px, collapsed badge column visible, expanded body hidden */
+[data-ds-component][data-rail-state="collapsed"] .hero .rail{
+  width:var(--rail-width-collapsed);
+  border-color:var(--border);
+  box-shadow:var(--shadow-popover);
+}
+[data-ds-component][data-rail-state="collapsed"] .hero .rail .expanded-body{display:none}
+[data-ds-component][data-rail-state="collapsed"] .hero .rail .collapsed{display:flex}
+
+/* expanded-hover: width 300px, expanded body visible, no accent ring */
+[data-ds-component][data-rail-state="expanded-hover"] .hero .rail{
+  width:var(--rail-width-expanded);
+  border-color:var(--border);
+  box-shadow:var(--shadow-popover);
+}
+[data-ds-component][data-rail-state="expanded-hover"] .hero .rail .expanded-body{display:flex}
+[data-ds-component][data-rail-state="expanded-hover"] .hero .rail .collapsed{display:none}
+[data-ds-component][data-rail-state="expanded-hover"] .hero .rail .lock{background:transparent;color:var(--text-muted)}
+
+/* expanded-pinned: width 300px, expanded body visible, accent ring */
+[data-ds-component][data-rail-state="expanded-pinned"] .hero .rail{
+  width:var(--rail-width-expanded);
+  border-color:var(--accent-overlay-mid);
+  box-shadow:var(--shadow-popover),0 0 0 1px var(--accent-overlay-soft);
+}
+[data-ds-component][data-rail-state="expanded-pinned"] .hero .rail .expanded-body{display:flex}
+[data-ds-component][data-rail-state="expanded-pinned"] .hero .rail .collapsed{display:none}
+
+.grab{display:flex;align-items:center;justify-content:center;width:100%;height:28px;flex-shrink:0;color:var(--text-muted);cursor:grab}
+.grab-icon{width:25px;height:25px;transform:rotate(90deg);color:var(--text-muted)}
+
+/* collapsed badge column */
+.collapsed{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0;overflow-y:auto}
+.rail.expanded .collapsed,.rail.pinned .collapsed{display:none}
+/* sentinel "draft in progress" badge only shows while a draft exists */
+[data-ds-component][data-has-draft="false"] .hero .badge.draft{display:none}
+.badge{
+  --pin-h:165;--pin-c:0.18;
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:oklch(30% calc(var(--pin-c) * 0.7) var(--pin-h) / 0.32);
+  border:1px solid oklch(60% var(--pin-c) var(--pin-h) / 0.45);
+  color:oklch(85% var(--pin-c) var(--pin-h));
+  font-size:12px;font-weight:700;font-family:var(--font-mono);cursor:pointer;
+  flex-shrink:0;
+}
+.badge.active{
+  background:oklch(45% var(--pin-c) var(--pin-h) / 0.55);
+  color:oklch(95% calc(var(--pin-c) * 0.6) var(--pin-h));
+  box-shadow:0 0 0 2px var(--bg),0 0 0 4px oklch(74% var(--pin-c) var(--pin-h)),0 0 14px oklch(74% var(--pin-c) var(--pin-h) / 0.55);
+}
+.badge[data-color="0"]{--pin-h:165;--pin-c:0.18}
+.badge[data-color="1"]{--pin-h:195;--pin-c:0.15}
+.badge[data-color="2"]{--pin-h:220;--pin-c:0.14}
+.badge[data-color="3"]{--pin-h:325;--pin-c:0.12}
+.badge[data-color="4"]{--pin-h:50;--pin-c:0.14}
+.badge[data-color="5"]{--pin-h:120;--pin-c:0.15}
+/* draft-active sentinel — appears in collapsed when draft hidden */
+.badge.draft{
+  --pin-h:165;--pin-c:0.18;
+  background:oklch(25% 0.05 165 / 0.5);
+  border:1.5px dashed oklch(74% 0.18 165 / 0.85);
+  color:var(--accent-bright);
+  animation:badgePulse 1.6s ease-in-out infinite;
+}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 0 0 oklch(74% 0.18 165 / 0.45)}50%{box-shadow:0 0 0 5px transparent}}
+
+/* expanded view */
+.expanded-body{display:none;flex-direction:column;flex:1;min-height:0}
+.rail.expanded .expanded-body,.rail.pinned .expanded-body{display:flex}
+.head{display:flex;align-items:center;justify-content:space-between;padding:8px 12px 8px 14px;border-bottom:1px solid var(--border-subtle)}
+.head-title{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim)}
+.count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;background:var(--bg-card-active);border-radius:9999px;font-family:var(--font-mono);font-size:10px;font-weight:800;color:var(--text-bright)}
+.lock{width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);border-radius:var(--radius-xs);transition:background var(--motion-fast),color var(--motion-fast)}
+.lock.pressed{background:var(--accent-soft);color:var(--accent-bright)}
+.lock svg{width:14px;height:14px}
+
+/* cards list */
+.list{list-style:none;padding:8px 8px 8px;overflow-y:auto;flex:1;min-height:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.card{
+  background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  padding:10px;display:flex;flex-direction:column;gap:6px;cursor:pointer;position:relative;
+  transition:border-color var(--motion-fast),background var(--motion-fast);
+}
+.card:hover{border-color:var(--border)}
+.card.active{background:oklch(45% 0.13 165 / 0.18);border-color:var(--accent-overlay-mid)}
+.card.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:2px;background:var(--accent);border-radius:0 2px 2px 0}
+.card .meta{display:flex;align-items:center;gap:8px}
+.dot-badge{
+  width:18px;height:18px;border-radius:50%;font-family:var(--font-mono);font-size:9px;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:oklch(30% 0.12 165 / 0.32);border:1px solid oklch(60% 0.16 165 / 0.45);color:oklch(85% 0.16 165);
+}
+.dot-badge[data-color="1"]{background:oklch(30% 0.10 195 / 0.32);border-color:oklch(60% 0.14 195 / 0.45);color:oklch(85% 0.14 195)}
+.dot-badge[data-color="2"]{background:oklch(30% 0.09 220 / 0.32);border-color:oklch(60% 0.13 220 / 0.45);color:oklch(85% 0.13 220)}
+.dot-badge[data-color="3"]{background:oklch(30% 0.08 325 / 0.32);border-color:oklch(60% 0.11 325 / 0.45);color:oklch(85% 0.11 325)}
+.author{font-size:11.5px;font-weight:600;color:var(--text-bright)}
+.status{margin-left:auto;padding:1px 7px;border-radius:9999px;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase}
+.status.open{background:var(--info-soft);color:var(--info)}
+.status.review{background:var(--warning-soft);color:var(--warning)}
+.status.resolved{background:var(--success-soft);color:var(--success)}
+.card .body-text{font-size:12px;color:var(--text);line-height:1.5}
+.foot{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:9px;color:var(--text-muted)}
+.replies{margin-left:auto;display:inline-flex;align-items:center;gap:4px}
+
+/* foot add button */
+.foot-area{
+  position:sticky;bottom:0;display:flex;justify-content:flex-start;padding:8px 14px;
+  background:linear-gradient(to bottom,transparent,var(--surface-glass-bg) 40%);flex-shrink:0;
+  border-bottom-left-radius:14px;border-bottom-right-radius:14px;
+}
+.add{
+  display:flex;align-items:center;height:32px;width:32px;padding:0;
+  background:var(--accent-soft);color:var(--accent-bright);
+  border:1px solid var(--accent-overlay-mid);border-radius:9999px;overflow:hidden;flex-shrink:0;
+  transition:width var(--motion-base) var(--ease-spring);
+  position:relative;
+}
+.add-icon{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px}
+.add-label{display:none;align-items:center;justify-content:space-between;gap:8px;flex:1;padding:0 14px 0 4px;font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap}
+.rail.expanded .add,.rail.pinned .add{width:100%}
+.rail.expanded .add-label,.rail.pinned .add-label{display:flex}
+
+/* hide the add button when draft is active (it's the draft entry) — EXCEPT when tooltip preview is requested */
+[data-ds-component][data-has-draft="true"]:not([data-show-tooltip="true"]) .hero .foot-area{display:none}
+[data-ds-component][data-has-draft="true"]:not([data-show-tooltip="true"]) .hero .rail{padding-bottom:0}
+/* force tooltip visible when the show-tooltip knob is on */
+[data-ds-component][data-show-tooltip="true"] .hero .add-tooltip{opacity:1}
+
+/* tooltip on the add button (visible when [data-show-tooltip="true"] on the page or focus/hover) */
+.add-tooltip{
+  position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);
+  background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:6px 10px;display:flex;align-items:center;gap:8px;
+  font-size:11px;color:var(--text);white-space:nowrap;
+  box-shadow:var(--shadow-md);
+  pointer-events:none;
+  opacity:0;transform-origin:left center;
+  transition:opacity var(--motion-fast);
+}
+.add-tooltip::before{
+  content:'';position:absolute;left:-5px;top:50%;transform:translateY(-50%) rotate(45deg);
+  width:8px;height:8px;background:var(--bg-elevated);border-left:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+.add:hover .add-tooltip,
+[data-ds-component][data-show-tooltip="true"] .add-tooltip{opacity:1}
+
+/* keycap chips — verbatim from src/components/Kbd/Kbd.module.css (DS 29-kbd) */
+.kbd-group{display:inline-flex;align-items:center;gap:3px}
+.kbd-key{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:20px;padding:2px 6px;
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-bottom:1px solid var(--border-strong);
+  border-radius:var(--radius-xs);
+  font-family:var(--font-mono);font-size:10.5px;font-weight:600;line-height:1;
+  color:var(--text-dim);
+  text-align:center;white-space:nowrap;
+}
+.kbd-plus{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin:0 1px;line-height:1;user-select:none}
+
+/* ───────────────────────────────────────────────────────────────
+ * DraftCard recipe (NEW — this is the spec hero)
+ * Lives in its own .draft-slot OUTSIDE the published cards list so
+ * its action row never scrolls out of view.
+ * ─────────────────────────────────────────────────────────────── */
+.draft-slot{
+  display:none;
+  flex-shrink:0;
+  padding:8px 8px 0;
+  border-bottom:1px solid var(--border-subtle);
+  background:linear-gradient(180deg,oklch(10% 0.03 165 / 0.4) 0%,transparent 100%);
+}
+[data-ds-component][data-has-draft="true"] .hero .draft-slot{display:block}
+.draft-slot .draft-card{margin:0 0 8px}
+
+.draft-card{
+  position:relative;
+  margin:8px 8px 6px;
+  padding:12px 12px 10px;
+  background:linear-gradient(180deg,oklch(15% 0.04 165 / 0.7) 0%,oklch(13% 0.03 165 / 0.6) 100%);
+  border:1px solid var(--accent-overlay-mid);
+  border-radius:var(--radius-sm);
+  display:flex;flex-direction:column;gap:10px;
+  box-shadow:inset 0 1px 0 oklch(100% 0 0 / 0.04),0 4px 12px oklch(0% 0 0 / 0.25);
+  overflow:hidden;
+}
+.draft-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 0%,var(--accent) 50%,transparent 100%);
+  opacity:0.6;
+}
+.draft-card[data-density="compact"]{padding:9px 10px 8px;gap:7px}
+
+.draft-header{display:flex;align-items:center;gap:8px}
+.draft-marker{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--font-mono);font-size:9.5px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--accent-bright);
+}
+.draft-marker::before{
+  content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-overlay-soft);
+  animation:draftDot 2.4s ease-in-out infinite;
+}
+@keyframes draftDot{0%,100%{box-shadow:0 0 0 3px var(--accent-overlay-soft)}50%{box-shadow:0 0 0 5px oklch(74% 0.18 165 / 0.0)}}
+.draft-spacer{flex:1}
+.draft-count-chars{
+  font-family:var(--font-mono);font-size:9.5px;color:var(--text-muted);letter-spacing:0.04em;
+  font-variant-numeric:tabular-nums;
+}
+[data-ds-component][data-body-state="over-limit"] .draft-count-chars{color:var(--danger)}
+[data-ds-component][data-body-state="empty"] .draft-count-chars{display:none}
+
+.draft-textarea{
+  width:100%;min-height:64px;max-height:240px;
+  resize:none;
+  background:var(--surface-input);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-xs);
+  padding:8px 10px;
+  font-family:var(--font-body);font-size:12.5px;color:var(--text-bright);line-height:1.55;
+  outline:none;
+  transition:border-color var(--motion-fast),background var(--motion-fast);
+}
+.draft-textarea::placeholder{color:var(--text-muted)}
+.draft-textarea:focus-visible{box-shadow:var(--focus-ring)}
+.draft-textarea:hover{border-color:var(--border)}
+[data-ds-component][data-body-state="over-limit"] .draft-textarea{border-color:var(--danger-border)}
+
+.draft-pin-row{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--font-mono);font-size:10.5px;color:var(--text-dim);letter-spacing:0.02em;
+}
+.draft-pin-row .pin-mini{
+  width:14px;height:14px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  border:1.5px dashed var(--accent-bright);
+  background:oklch(7% 0.02 165 / 0.7);
+  flex-shrink:0;
+  position:relative;
+}
+.draft-pin-row .pin-mini::after{
+  content:'+';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(45deg);
+  font-family:var(--font-mono);font-size:9px;font-weight:900;color:var(--accent-bright);
+}
+.draft-pin-row .hint{color:var(--text-muted)}
+.draft-pin-row strong{color:var(--text-bright);font-weight:700;font-variant-numeric:tabular-nums}
+[data-ds-component][data-pin-count="max20"] .draft-pin-row .hint{color:var(--warning)}
+
+.draft-actions{
+  display:flex;align-items:center;gap:8px;justify-content:flex-end;
+  padding-top:2px;
+}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  font-family:var(--font-body);font-weight:600;font-size:11.5px;letter-spacing:0.02em;
+  border-radius:var(--radius-pill);
+  padding:5px 12px;height:28px;
+  cursor:pointer;
+  transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast),box-shadow var(--motion-fast);
+  white-space:nowrap;
+}
+.btn-ghost{background:transparent;color:var(--text-dim)}
+.btn-ghost:hover{color:var(--text-bright);background:var(--surface-hover)}
+.btn-secondary{background:var(--btn-bg);color:var(--text-bright);border:1px solid var(--border-strong)}
+.btn-secondary:hover{background:var(--btn-bg-hover)}
+.btn-secondary[disabled]{opacity:0.45;cursor:default}
+.btn-secondary[disabled]:hover{background:var(--btn-bg)}
+.btn-primary{
+  background:var(--accent-soft);color:var(--accent-bright);
+  border:1px solid var(--accent-overlay-mid);
+  box-shadow:inset 0 1px 0 oklch(100% 0 0 / 0.05);
+}
+.btn-primary:hover{background:var(--accent-soft-strong);border-color:var(--accent-overlay-strong);color:var(--text-bright)}
+.btn-primary[disabled]{opacity:0.4;cursor:default;color:var(--text-muted);background:var(--bg-card-active);border-color:var(--border)}
+/* Inside button: kbd chips use the canonical DS recipe verbatim
+ * (.kbd-key from src/components/Kbd/Kbd.module.css). No overrides. */
+.btn .kbd-group{margin-left:4px}
+
+.draft-status{
+  font-family:var(--font-mono);font-size:9.5px;color:var(--text-muted);letter-spacing:0.04em;
+  text-align:right;min-height:14px;
+  display:flex;align-items:center;justify-content:flex-end;gap:6px;
+}
+.draft-status .dot{width:5px;height:5px;border-radius:50%;background:var(--text-muted);flex-shrink:0}
+.draft-status[data-status="unsaved"]{color:var(--warning)}
+.draft-status[data-status="unsaved"] .dot{background:var(--warning)}
+.draft-status[data-status="saving"]{color:var(--text-dim)}
+.draft-status[data-status="saving"] .dot{background:var(--accent);animation:savingPulse 0.9s ease-in-out infinite}
+@keyframes savingPulse{0%,100%{opacity:0.3}50%{opacity:1}}
+.draft-status[data-status="saved"]{color:var(--success)}
+.draft-status[data-status="saved"] .dot{background:var(--success)}
+.draft-status[data-status="sending"]{color:var(--accent-bright)}
+.draft-status[data-status="sending"] .dot{background:var(--accent-bright);animation:savingPulse 0.6s ease-in-out infinite}
+.draft-status[data-status="error"]{color:var(--danger)}
+.draft-status[data-status="error"] .dot{background:var(--danger)}
+
+/* ─── send button state coupling with body-state ─────────────── */
+[data-ds-component][data-body-state="empty"] .btn-primary,
+[data-ds-component][data-body-state="over-limit"] .btn-primary{
+  opacity:0.4;color:var(--text-muted);background:var(--bg-card-active);border-color:var(--border);
+  pointer-events:none;
+}
+/* save button disabled when no changes since last save */
+[data-ds-component][data-draft-status="saved"] .btn-save{opacity:0.45}
+
+/* ─── empty state alternate ───────────────────────────────────── */
+.empty-state{
+  flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 18px;gap:16px;text-align:center;
+}
+[data-ds-component][data-has-draft="false"][data-has-published="false"] .hero .empty-state{display:flex}
+[data-ds-component][data-has-published="false"] .hero .list{display:none}
+
+.empty-illust{
+  width:64px;height:64px;border-radius:50%;
+  background:radial-gradient(circle at 50% 30%,oklch(20% 0.06 165 / 0.7),oklch(13% 0.03 165 / 0.5));
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.empty-illust::before{
+  content:'';position:absolute;inset:-6px;border-radius:50%;
+  border:1px dashed var(--accent-overlay-mid);opacity:0.5;
+}
+.empty-illust .pin{transform:rotate(-45deg) scale(0.9);opacity:0.85}
+.empty-title{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--text-bright);line-height:1.3;max-width:200px}
+.empty-sub{font-size:11.5px;color:var(--text-dim);line-height:1.5;max-width:220px}
+.empty-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 14px;border-radius:var(--radius-pill);
+  background:var(--accent-soft);color:var(--accent-bright);
+  border:1px solid var(--accent-overlay-mid);
+  font-size:11.5px;font-weight:700;letter-spacing:0.04em;
+}
+.empty-cta:hover{background:var(--accent-soft-strong);color:var(--text-bright)}
+
+/* ───────────────────────────────────────────────────────────────
+ * canvas + pins
+ * ─────────────────────────────────────────────────────────────── */
+.canvas{
+  position:absolute;inset:18px 18px 18px 78px;
+  background:
+    linear-gradient(135deg,oklch(99% 0 0) 0%,oklch(95% 0.005 165) 100%);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-md);
+  overflow:hidden;
+}
+[data-ds-component][data-has-draft="true"] .canvas{cursor:crosshair}
+.canvas::after{
+  content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,oklch(0% 0 0 / 0.06));pointer-events:none;
+}
+.canvas .canvas-stage-label{
+  position:absolute;top:10px;left:14px;font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:oklch(50% 0.02 165);z-index:2
+}
+
+/* faux marketing page content inside the canvas */
+.faux-page{
+  position:absolute;inset:0;padding:64px 56px 40px;
+  display:flex;flex-direction:column;gap:18px;color:oklch(18% 0 0);
+}
+.faux-page .nav{
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--font-display);
+}
+.faux-page .logo{font-size:18px;font-weight:800;letter-spacing:-0.02em;color:oklch(15% 0 0)}
+.faux-page .logo span{color:oklch(60% 0.18 165)}
+.faux-page .nav-links{display:flex;gap:18px;font-size:12px;color:oklch(35% 0 0)}
+.faux-page h1.hero-h1{
+  font-family:var(--font-display);font-size:38px;font-weight:800;line-height:1.05;letter-spacing:-0.02em;
+  color:oklch(12% 0 0);max-width:560px;margin-top:14px;
+}
+.faux-page .hero-h1 em{font-style:normal;color:oklch(60% 0.18 165);font-weight:800}
+.faux-page p.hero-p{
+  font-size:13px;line-height:1.6;color:oklch(36% 0 0);max-width:480px;
+}
+.faux-page .hero-cta{
+  display:inline-flex;align-items:center;gap:10px;margin-top:8px;
+  padding:9px 18px;background:oklch(15% 0 0);color:oklch(98% 0 0);
+  font-size:12px;font-weight:700;border-radius:9999px;width:fit-content;
+  letter-spacing:0.02em;
+}
+.faux-page .feats{
+  margin-top:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+}
+.faux-page .feat{
+  border:1px solid oklch(88% 0.005 165);background:oklch(98% 0.003 165);
+  border-radius:8px;padding:12px;
+}
+.faux-page .feat .feat-num{font-family:var(--font-mono);font-size:9px;color:oklch(60% 0.18 165);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px}
+.faux-page .feat .feat-h{font-size:12.5px;font-weight:700;color:oklch(18% 0 0);margin-bottom:4px}
+.faux-page .feat .feat-p{font-size:11px;line-height:1.5;color:oklch(38% 0 0)}
+
+/* pin recipe (verbatim from 20-pins.html) */
+.pin{
+  --pin-h:165;--pin-c:0.18;
+  position:absolute;
+  width:30px;height:30px;box-sizing:border-box;
+  border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);
+  background:rgb(7 12 15 / 70%);
+  backdrop-filter:blur(6px) saturate(140%);
+  -webkit-backdrop-filter:blur(6px) saturate(140%);
+  border:1.5px solid oklch(78% var(--pin-c) var(--pin-h));
+  box-shadow:0 3px 8px rgba(0,0,0,0.25);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;opacity:0.62;
+  padding:0;z-index:10;
+  transition:opacity var(--motion-fast),border-color var(--motion-fast),box-shadow var(--motion-fast),transform var(--motion-fast);
+}
+.pin > span{
+  transform:rotate(45deg);
+  color:oklch(82% var(--pin-c) var(--pin-h));
+  font-weight:800;font-size:12px;font-family:var(--font-mono);line-height:1;
+  pointer-events:none;
+}
+.pin:hover{opacity:1;border-color:oklch(88% var(--pin-c) var(--pin-h))}
+.pin.active,.pin[data-status="active"]{
+  opacity:1;z-index:11;
+  border-color:oklch(88% var(--pin-c) var(--pin-h));
+  box-shadow:0 4px 12px rgba(0,0,0,0.4),0 0 0 2px oklch(82% var(--pin-c) var(--pin-h) / 0.45);
+}
+.pin.pending,.pin[data-status="pending"]{
+  border:2px dashed oklch(82% var(--pin-c) var(--pin-h));
+  box-shadow:0 3px 8px rgba(0,0,0,0.25);
+  opacity:0.95;
+  animation:pendingPulse 1.6s ease-in-out infinite;
+}
+.pin.pending > span,.pin[data-status="pending"] > span{
+  color:oklch(90% var(--pin-c) var(--pin-h));font-weight:900
+}
+[data-ds-component][data-pulse="false"] .pin.pending{animation:none}
+@keyframes pendingPulse{
+  0%,100%{box-shadow:0 0 0 0 oklch(74% var(--pin-c) var(--pin-h) / 0.45)}
+  50%{box-shadow:0 0 0 6px transparent}
+}
+.pin[data-color="0"]{--pin-h:165;--pin-c:0.18}
+.pin[data-color="1"]{--pin-h:195;--pin-c:0.15}
+.pin[data-color="2"]{--pin-h:220;--pin-c:0.14}
+.pin[data-color="3"]{--pin-h:245;--pin-c:0.13}
+.pin[data-color="4"]{--pin-h:265;--pin-c:0.13}
+.pin[data-color="5"]{--pin-h:285;--pin-c:0.13}
+.pin[data-color="6"]{--pin-h:305;--pin-c:0.12}
+.pin[data-color="7"]{--pin-h:325;--pin-c:0.12}
+.pin[data-color="9"]{--pin-h:50;--pin-c:0.14}
+.pin[data-color="12"]{--pin-h:120;--pin-c:0.15}
+.pin.resolved{opacity:0.38}
+
+/* ─── canvas hint banner: "click to add pin" while draft active ── */
+.canvas-hint{
+  position:absolute;left:50%;transform:translateX(-50%);
+  display:none;align-items:center;gap:8px;
+  padding:7px 12px;
+  background:var(--bg-elevated);border:1px solid var(--accent-overlay-mid);border-radius:9999px;
+  font-family:var(--font-mono);font-size:10.5px;color:var(--text-bright);letter-spacing:0.04em;
+  box-shadow:var(--shadow-md);
+  z-index:20;
+  pointer-events:none;
+}
+[data-ds-component][data-hint-position="top"] .canvas-hint{top:18px;bottom:auto}
+[data-ds-component][data-hint-position="bottom"] .canvas-hint{bottom:18px;top:auto}
+[data-ds-component][data-has-draft="true"] .canvas-hint{display:inline-flex}
+.canvas-hint .hint-icon{
+  width:16px;height:16px;color:var(--accent-bright);flex-shrink:0;
+}
+
+/* ─── AlertDialog overlay (cancel confirm) ───────────────────── */
+.scrim{
+  display:none;position:absolute;inset:0;
+  background:var(--scrim-glass-bg);
+  backdrop-filter:blur(8px) saturate(120%);
+  -webkit-backdrop-filter:blur(8px) saturate(120%);
+  z-index:50;align-items:center;justify-content:center;
+}
+[data-ds-component][data-cancel-dialog="true"] .scrim{display:flex}
+.alert{
+  width:380px;background:linear-gradient(180deg,oklch(14% 0.02 165 / 0.97),oklch(11% 0.02 165 / 0.97));
+  border:1px solid var(--border-strong);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-lg);
+  padding:20px;display:flex;flex-direction:column;gap:14px;
+}
+.alert-icon{
+  width:36px;height:36px;border-radius:50%;
+  background:oklch(35% 0.10 25 / 0.25);border:1px solid var(--danger-border);
+  display:flex;align-items:center;justify-content:center;color:var(--danger);font-size:18px;
+  font-family:var(--font-mono);font-weight:800;
+}
+.alert-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text-bright);line-height:1.3}
+.alert-body{font-size:12.5px;color:var(--text-dim);line-height:1.55}
+.alert-body strong{color:var(--text);font-weight:600}
+.alert-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.btn-danger{
+  background:oklch(30% 0.10 25 / 0.5);color:oklch(86% 0.15 25);
+  border:1px solid var(--danger-border);
+}
+.btn-danger:hover{background:oklch(36% 0.12 25 / 0.65);color:oklch(95% 0.10 25)}
+
+/* ──────────────────────────────────────────────────────────────
+ * Reference grids (static, not tweaker-controlled)
+ * ────────────────────────────────────────────────────────────── */
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.row-states.compact{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.state{display:flex;flex-direction:column;gap:8px}
+.state .state-label{
+  font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);
+}
+.state .state-row{
+  background:var(--bg-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm);
+  padding:14px;display:flex;align-items:center;justify-content:center;min-height:80px;
+}
+.state .state-row.tall{min-height:220px;padding:8px}
+
+/* anatomy */
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px;max-width:780px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+
+/* footnote */
+.foot-meta{
+  display:flex;align-items:center;gap:14px;justify-content:space-between;
+  margin-top:64px;padding:20px 4px 0;border-top:1px solid var(--border-subtle);
+  font-family:var(--font-mono);font-size:10px;color:var(--text-muted);letter-spacing:0.06em;
+}
+.foot-meta a{color:var(--accent);text-decoration:none}
+.foot-meta a:hover{text-decoration:underline}
+
+/* tweaker placement adjust (the tweaker is fixed top-right at z=999999) */
+@media (max-width:980px){
+  .viewer-layout{height:auto;flex-direction:column}
+  .canvas-slot{margin-left:0;margin-top:380px}
+  .rail-slot{position:static}
+}
+</style>
+</head>
+<body>
+
+<div class="page" data-ds-component="draft-card"
+     data-rail-state="expanded-pinned"
+     data-has-draft="true"
+     data-has-published="true"
+     data-cancel-dialog="false"
+     data-hint-position="bottom"
+     data-pin-count="some"
+     data-draft-status="saved"
+     data-body-state="typing"
+     data-density="comfortable"
+     data-pulse="true"
+     data-show-tooltip="false">
+
+  <h1 class="h1">Inline Draft Annotation <span class="ver">idea · v1</span></h1>
+  <p class="lede">
+    The "Add comment" modal disappears. Composition lives in the <strong>annotations rail</strong>
+    as an inline <em>DraftCard</em> pinned to the top. Any click on the canvas adds a pin to the
+    active draft — no marking-mode toggle. Three terminal actions: <strong>Cancel</strong>,
+    <strong>Draft</strong>, <strong>Send</strong>. Content (text + pins) survives reloads
+    via <code style="color:var(--accent)">localStorage</code>. See
+    <a href="../../superpowers/specs/2026-05-22-draft-annotation-spec.md" style="color:var(--accent)">2026-05-22-draft-annotation-spec.md</a>
+    for the full surface.
+  </p>
+
+  <!-- ════════════════════════════════════════════════════════════
+       HERO — viewer scene with rail (DraftCard active) + canvas + pins
+       ════════════════════════════════════════════════════════════ -->
+  <section class="section hero">
+    <div class="section-title">A · Hero scene</div>
+    <div class="stage viewer" style="min-height:660px;padding:0">
+      <div class="faux-topbar">
+        <span class="dot"></span>
+        <span class="crumb">acme</span><span class="crumb-sep">/</span>
+        <span class="crumb">landing</span><span class="crumb-sep">/</span>
+        <span style="color:var(--text-bright);font-weight:700">v3 — annual-discount-cta</span>
+        <span style="margin-left:auto;color:var(--text-muted);font-size:9px">PRESS <kbd class="kbd-key" style="font-size:9px">N</kbd> TO START A NEW ANNOTATION</span>
+      </div>
+
+      <div class="viewer-layout">
+        <!-- floating rail (left) — DraftCard on top + AnnotationCards below -->
+        <div class="rail-slot">
+          <div class="rail">
+            <div class="grab">
+              <svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+            </div>
+
+            <!-- collapsed view — visible only when rail is collapsed -->
+            <div class="collapsed">
+              <div class="badge draft" title="Draft in progress">+</div>
+              <div class="badge active" data-color="0">1</div>
+              <div class="badge" data-color="1">2</div>
+              <div class="badge" data-color="3">3</div>
+              <div class="badge" data-color="4">4</div>
+            </div>
+
+            <!-- expanded view — DraftCard + published cards -->
+            <div class="expanded-body">
+              <div class="head">
+                <span class="head-title">Annotations <span class="count" id="published-count">3</span></span>
+                <button class="lock pressed" aria-pressed="true" title="Unlock">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a3 3 0 0 0-3 3v3H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-1V4a3 3 0 0 0-3-3zm-2 6V4a2 2 0 1 1 4 0v3H6z"/></svg>
+                </button>
+              </div>
+
+              <!-- ✨ DraftCard — lives OUTSIDE the published list so its action row never scrolls out of view -->
+              <div class="draft-slot">
+                <div class="draft-card" id="hero-draft-card">
+                  <div class="draft-header">
+                    <span class="draft-marker">Draft</span>
+                    <span class="draft-spacer"></span>
+                    <span class="draft-count-chars"><span id="hero-char-count">147</span> / 10 000</span>
+                  </div>
+                  <textarea class="draft-textarea" rows="3"
+                    placeholder="What's wrong here? What would you change?"
+                    id="hero-textarea">Logo está cortado nas bordas em telas menores, e o espaçamento do título para o subtítulo parece apertado demais. Consigo reproduzir no Chrome 130.</textarea>
+                  <div class="draft-pin-row">
+                    <span class="pin-mini" aria-hidden="true"></span>
+                    <strong id="hero-pin-count">3 pins</strong>
+                    <span class="hint" id="hero-pin-hint">· click pin to remove</span>
+                  </div>
+                  <div class="draft-actions">
+                    <button class="btn btn-ghost" id="hero-cancel" title="Esc">Cancel</button>
+                    <button class="btn btn-secondary btn-save" id="hero-save">Draft <span class="kbd-group"><kbd class="kbd-key">⌘S</kbd></span></button>
+                    <button class="btn btn-primary" id="hero-send">Send <span class="kbd-group"><kbd class="kbd-key">⌘↵</kbd></span></button>
+                  </div>
+                  <div class="draft-status" data-status="saved" id="hero-status"><span class="dot"></span><span id="hero-status-text">Draft saved 12 s ago</span></div>
+                </div>
+              </div>
+
+              <ul class="list">
+                <!-- published annotation cards (scrollable; DraftCard is sticky above) -->
+                <li class="card active">
+                  <div class="meta">
+                    <span class="dot-badge" data-color="0">1</span>
+                    <span class="author">Alex</span>
+                    <span class="status open">Open</span>
+                  </div>
+                  <div class="body-text">Hero heading misaligned by ~6 px on desktop — feels heavy on the left edge.</div>
+                  <div class="foot">2 h ago <span class="replies">↩ 2</span></div>
+                </li>
+                <li class="card">
+                  <div class="meta">
+                    <span class="dot-badge" data-color="1">2</span>
+                    <span class="author">Jordan</span>
+                    <span class="status review">Needs review</span>
+                  </div>
+                  <div class="body-text">CTA copy should match the spec — "Start free", not "Get started".</div>
+                  <div class="foot">5 h ago <span class="replies">↩ 1</span></div>
+                </li>
+                <li class="card">
+                  <div class="meta">
+                    <span class="dot-badge" data-color="3">3</span>
+                    <span class="author">Sam</span>
+                    <span class="status resolved">Resolved</span>
+                  </div>
+                  <div class="body-text">Pricing card shadow too soft at 1× zoom.</div>
+                  <div class="foot">1 d ago</div>
+                </li>
+              </ul>
+
+              <!-- empty state (alternate, controlled by tweaker) -->
+              <div class="empty-state">
+                <div class="empty-illust">
+                  <div class="pin pending" data-color="0" style="position:static"><span>+</span></div>
+                </div>
+                <div>
+                  <div class="empty-title">No annotations yet</div>
+                  <div class="empty-sub">Click anywhere on the mockup or press <kbd class="kbd-key">N</kbd> to start the first one.</div>
+                </div>
+                <button class="empty-cta"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg> Start with a new annotation</button>
+              </div>
+
+              <!-- footer add button (hidden when draft is active) -->
+              <div class="foot-area">
+                <button class="add" aria-label="New annotation. Press N">
+                  <span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span>
+                  <span class="add-label">New annotation<span class="kbd-group"><kbd class="kbd-key">N</kbd></span></span>
+                  <span class="add-tooltip"><span>Start a new annotation</span><kbd class="kbd-key">N</kbd></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- canvas (right) — mockup stub + pins -->
+        <div class="canvas">
+          <div class="canvas-stage-label">acme · annual-discount-cta.html — 100%</div>
+          <div class="faux-page">
+            <div class="nav">
+              <div class="logo">acme<span>.</span></div>
+              <div class="nav-links"><span>Product</span><span>Pricing</span><span>Docs</span><span>Sign in</span></div>
+            </div>
+            <h1 class="hero-h1">Save up to <em>40 %</em> on annual plans this quarter.</h1>
+            <p class="hero-p">Switch to annual billing and unlock unlimited mockups, version history, agent-loop access, and SSO — all in one stride. No credit card needed for 14 days.</p>
+            <span class="hero-cta">Start free →</span>
+            <div class="feats">
+              <div class="feat"><div class="feat-num">01 — Mockups</div><div class="feat-h">Unlimited drafts</div><div class="feat-p">Iterate without seat-counting; auto-save in every browser.</div></div>
+              <div class="feat"><div class="feat-num">02 — Reviews</div><div class="feat-h">Threaded annotations</div><div class="feat-p">Pin to anchor, comment in line, resolve in one click.</div></div>
+              <div class="feat"><div class="feat-num">03 — Agents</div><div class="feat-h">Loop access</div><div class="feat-p">Hand off to an automation agent without leaving the canvas.</div></div>
+            </div>
+          </div>
+
+          <!-- pins — published (numbered) -->
+          <div class="pin active" data-color="0" style="left:84px;top:108px"><span>1</span></div>
+          <div class="pin" data-color="1" style="left:312px;top:248px"><span>2</span></div>
+          <div class="pin resolved" data-color="3" style="left:230px;top:418px"><span>3</span></div>
+
+          <!-- pins — DRAFT (pending). Re-rendered by tweaker re: count. -->
+          <div id="draft-pin-container">
+            <div class="pin pending" data-color="0" data-draft-pin style="left:148px;top:188px"><span>+</span></div>
+            <div class="pin pending" data-color="0" data-draft-pin style="left:404px;top:148px"><span>+</span></div>
+            <div class="pin pending" data-color="0" data-draft-pin style="left:498px;top:362px"><span>+</span></div>
+          </div>
+
+          <div class="canvas-hint">
+            <svg class="hint-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path fill="none" d="M0 0h24v24H0z"/>
+              <path d="M20 1v3h3v2h-3v3h-2V6h-3V4h3V1h2zm-8 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1-9.94v2.02A6.53 6.53 0 0 0 12 5c-3.35 0-6 2.57-6 6.2 0 2.34 1.95 5.44 6 9.14 4.05-3.7 6-6.79 6-9.14V11h2v.2c0 3.32-2.67 7.25-8 11.8-5.33-4.55-8-8.48-8-11.8C4 6.22 7.8 3 12 3c.34 0 .67.02 1 .06z"/>
+            </svg>
+            <span>Click anywhere to add a pin · click a draft pin to remove</span>
+          </div>
+
+          <!-- AlertDialog overlay (cancel confirm) — visible when tweaker flips -->
+          <div class="scrim">
+            <div class="alert">
+              <div class="alert-icon">!</div>
+              <div class="alert-title">Discard draft?</div>
+              <div class="alert-body">You'll lose <strong id="alert-pin-count">3 pins</strong> and the text you typed. This can't be undone.</div>
+              <div class="alert-actions">
+                <button class="btn btn-ghost" id="alert-keep">Keep editing</button>
+                <button class="btn btn-danger" id="alert-discard">Discard</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">
+      The DraftCard mounts at the top of the rail's card list, force-pinning the rail open while
+      the draft lives. Canvas cursor switches to <code>crosshair</code>. Clicking a draft pin (the
+      pulsing dashed teardrops with <code>+</code>) removes it; clicking a published pin focuses
+      its card. Status microcopy sits under the action row.
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════
+       B — All DraftCard states
+       ════════════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">B · DraftCard — all states</div>
+    <div class="row-states" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+
+      <div class="state">
+        <div class="state-label">idle · empty body</div>
+        <div class="state-row tall" style="align-items:stretch;padding:0;background:var(--bg-elevated);border:1px solid var(--border-subtle)">
+          <div class="rail pinned" style="margin:8px auto;max-height:none">
+            <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg></div>
+            <div class="expanded-body">
+              <div class="draft-card" style="margin:8px">
+                <div class="draft-header"><span class="draft-marker">Draft</span></div>
+                <textarea class="draft-textarea" placeholder="What's wrong here? What would you change?"></textarea>
+                <div class="draft-pin-row"><span class="pin-mini"></span><strong>0 pins</strong><span class="hint">· click on the mockup to add</span></div>
+                <div class="draft-actions">
+                  <button class="btn btn-ghost">Cancel</button>
+                  <button class="btn btn-secondary" disabled>Draft</button>
+                  <button class="btn btn-primary" disabled>Send</button>
+                </div>
+                <div class="draft-status" data-status="unsaved"><span class="dot"></span>Type to start</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div class="state-label">typing · 3 pins · saving</div>
+        <div class="state-row tall" style="align-items:stretch;padding:0;background:var(--bg-elevated);border:1px solid var(--border-subtle)">
+          <div class="rail pinned" style="margin:8px auto;max-height:none">
+            <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg></div>
+            <div class="expanded-body">
+              <div class="draft-card" style="margin:8px">
+                <div class="draft-header"><span class="draft-marker">Draft</span><span class="draft-spacer"></span><span class="draft-count-chars">62 / 10 000</span></div>
+                <textarea class="draft-textarea">CTA copy should match the spec — "Start free"</textarea>
+                <div class="draft-pin-row"><span class="pin-mini"></span><strong>3 pins</strong><span class="hint">· click pin to remove</span></div>
+                <div class="draft-actions">
+                  <button class="btn btn-ghost">Cancel</button>
+                  <button class="btn btn-secondary">Draft</button>
+                  <button class="btn btn-primary">Send</button>
+                </div>
+                <div class="draft-status" data-status="saving"><span class="dot"></span>Saving…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div class="state-label">saved · pins at max (20 / 20)</div>
+        <div class="state-row tall" style="align-items:stretch;padding:0;background:var(--bg-elevated);border:1px solid var(--border-subtle)">
+          <div class="rail pinned" style="margin:8px auto;max-height:none">
+            <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg></div>
+            <div class="expanded-body">
+              <div class="draft-card" style="margin:8px">
+                <div class="draft-header"><span class="draft-marker">Draft</span><span class="draft-spacer"></span><span class="draft-count-chars">1 412 / 10 000</span></div>
+                <textarea class="draft-textarea">Multiple regressions across the hero band — see pinned anchors. Aligns with the original Figma comp on 2026-05-04 but drifts on the third tier card and breaks the rhythm at 1440 px.</textarea>
+                <div class="draft-pin-row"><span class="pin-mini"></span><strong>20 pins</strong><span class="hint" style="color:var(--warning)">· max reached</span></div>
+                <div class="draft-actions">
+                  <button class="btn btn-ghost">Cancel</button>
+                  <button class="btn btn-secondary" disabled>Draft</button>
+                  <button class="btn btn-primary">Send</button>
+                </div>
+                <div class="draft-status" data-status="saved"><span class="dot"></span>Draft saved 1 m ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div class="state-label">sending · network in flight</div>
+        <div class="state-row tall" style="align-items:stretch;padding:0;background:var(--bg-elevated);border:1px solid var(--border-subtle)">
+          <div class="rail pinned" style="margin:8px auto;max-height:none">
+            <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg></div>
+            <div class="expanded-body">
+              <div class="draft-card" style="margin:8px;opacity:0.85">
+                <div class="draft-header"><span class="draft-marker">Draft</span></div>
+                <textarea class="draft-textarea" readonly>Headline tracking too loose at this weight; tighten by ~ -0.015 em.</textarea>
+                <div class="draft-pin-row"><span class="pin-mini"></span><strong>2 pins</strong><span class="hint">· sending</span></div>
+                <div class="draft-actions">
+                  <button class="btn btn-ghost" disabled>Cancel</button>
+                  <button class="btn btn-secondary" disabled>Draft</button>
+                  <button class="btn btn-primary" disabled>Sending…</button>
+                </div>
+                <div class="draft-status" data-status="sending"><span class="dot"></span>Sending…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div class="state-label">over-limit · 10 001 chars</div>
+        <div class="state-row tall" style="align-items:stretch;padding:0;background:var(--bg-elevated);border:1px solid var(--border-subtle)">
+          <div class="rail pinned" style="margin:8px auto;max-height:none">
+            <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg></div>
+            <div class="expanded-body">
+              <div class="draft-card" style="margin:8px">
+                <div class="draft-header"><span class="draft-marker">Draft</span><span class="draft-spacer"></span><span class="draft-count-chars" style="color:var(--danger)">10 001 / 10 000</span></div>
+                <textarea class="draft-textarea" style="border-color:var(--danger-border)">[long body…]</textarea>
+                <div class="draft-pin-row"><span class="pin-mini"></span><strong>2 pins</strong><span class="hint">· click pin to remove</span></div>
+                <div class="draft-actions">
+                  <button class="btn btn-ghost">Cancel</button>
+                  <button class="btn btn-secondary">Draft</button>
+                  <button class="btn btn-primary" disabled title="Comment is too long">Send</button>
+                </div>
+                <div class="draft-status" data-status="error"><span class="dot"></span>Comment is too long</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div class="state-label">error · POST failed (draft preserved)</div>
+        <div class="state-row tall" style="align-items:stretch;padding:0;background:var(--bg-elevated);border:1px solid var(--border-subtle)">
+          <div class="rail pinned" style="margin:8px auto;max-height:none">
+            <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg></div>
+            <div class="expanded-body">
+              <div class="draft-card" style="margin:8px">
+                <div class="draft-header"><span class="draft-marker">Draft</span></div>
+                <textarea class="draft-textarea">Pricing card shadow needs a redo.</textarea>
+                <div class="draft-pin-row"><span class="pin-mini"></span><strong>4 pins</strong><span class="hint">· click pin to remove</span></div>
+                <div class="draft-actions">
+                  <button class="btn btn-ghost">Cancel</button>
+                  <button class="btn btn-secondary">Draft</button>
+                  <button class="btn btn-primary">Retry</button>
+                </div>
+                <div class="draft-status" data-status="error"><span class="dot"></span>Couldn't send · saved locally</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="caption">
+      Six DraftCard states cover the full lifecycle. <code>Draft</code> disables itself while
+      <code>!hasUnsavedChanges</code>. <code>Send</code> disables on <code>body empty</code> OR
+      <code>over-limit</code>. The status microcopy below the action row stamps the last meaningful
+      event: <em>Type to start · Saving… · Draft saved N s ago · Sending… · Couldn't send</em>.
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════
+       C — Rail states (collapsed / expanded-hover / pinned-with-draft)
+       ════════════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">C · Rail — three states, draft is orthogonal</div>
+    <div class="row-states">
+      <div class="state">
+        <div class="state-label">collapsed (draft hidden, sentinel badge)</div>
+        <div class="state-row tall" style="align-items:stretch;background:transparent;border:none;padding:0">
+          <div class="rail" style="margin:auto">
+            <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="collapsed">
+              <div class="badge draft" title="Draft in progress">+</div>
+              <div class="badge active" data-color="0">1</div>
+              <div class="badge" data-color="1">2</div>
+              <div class="badge" data-color="3">3</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div class="state-label">expanded-hover (no draft)</div>
+        <div class="state-row tall" style="align-items:stretch;background:transparent;border:none;padding:0">
+          <div class="rail expanded" style="margin:auto">
+            <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg></div>
+            <div class="expanded-body">
+              <div class="head"><span class="head-title">Annotations <span class="count">3</span></span><button class="lock"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a3 3 0 0 0-3 3v3H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-1V4a3 3 0 0 0-3-3zm-2 6V4a2 2 0 1 1 4 0v3H6z"/></svg></button></div>
+              <ul class="list" style="padding:6px 8px">
+                <li class="card"><div class="meta"><span class="dot-badge" data-color="0">1</span><span class="author">Alex</span><span class="status open">Open</span></div><div class="body-text">Hero heading misaligned.</div></li>
+                <li class="card"><div class="meta"><span class="dot-badge" data-color="1">2</span><span class="author">Jordan</span><span class="status review">Review</span></div><div class="body-text">CTA copy mismatch.</div></li>
+              </ul>
+              <div class="foot-area">
+                <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="kbd-group"><kbd class="kbd-key">N</kbd></span></span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div class="state-label">pinned + draft active (default while drafting)</div>
+        <div class="state-row tall" style="align-items:stretch;background:transparent;border:none;padding:0">
+          <div class="rail pinned" style="margin:auto">
+            <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg></div>
+            <div class="expanded-body">
+              <div class="head"><span class="head-title">Annotations <span class="count">3</span></span><button class="lock pressed"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a3 3 0 0 0-3 3v3H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-1V4a3 3 0 0 0-3-3zm-2 6V4a2 2 0 1 1 4 0v3H6z"/></svg></button></div>
+              <ul class="list" style="padding-top:0">
+                <li class="draft-card" style="margin-top:8px">
+                  <div class="draft-header"><span class="draft-marker">Draft</span></div>
+                  <textarea class="draft-textarea" rows="2" style="min-height:auto">Logo cortado.</textarea>
+                  <div class="draft-pin-row"><span class="pin-mini"></span><strong>2 pins</strong></div>
+                  <div class="draft-actions" style="gap:6px">
+                    <button class="btn btn-ghost" style="padding:4px 8px;height:24px;font-size:10.5px">Cancel</button>
+                    <button class="btn btn-secondary" style="padding:4px 8px;height:24px;font-size:10.5px">Save</button>
+                    <button class="btn btn-primary" style="padding:4px 8px;height:24px;font-size:10.5px">Send</button>
+                  </div>
+                </li>
+                <li class="card"><div class="meta"><span class="dot-badge" data-color="0">1</span><span class="author">Alex</span><span class="status open">Open</span></div><div class="body-text">Hero heading misaligned.</div></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">
+      <code>hasDraft</code> is orthogonal to the rail's collapsed/expanded/pinned state. While
+      drafting, the rail forces <code>pinned</code>; on send or discard, the rail returns to whatever
+      mode the user had before. The collapsed state shows a sentinel badge (dashed
+      <code>+</code> in the accent hue) so the user can locate the draft even without expanding.
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════
+       D — Pins (published + draft) — close inspection
+       ════════════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">D · Pins on canvas — published vs draft</div>
+    <div class="row-states compact">
+      <div class="state"><div class="state-label">published · idle</div><div class="state-row"><div class="pin" data-color="0"><span>1</span></div></div></div>
+      <div class="state"><div class="state-label">published · active</div><div class="state-row"><div class="pin active" data-color="0"><span>1</span></div></div></div>
+      <div class="state"><div class="state-label">published · resolved</div><div class="state-row"><div class="pin resolved" data-color="12"><span>3</span></div></div></div>
+      <div class="state"><div class="state-label">draft · pending (the new use-case)</div><div class="state-row"><div class="pin pending" data-color="0"><span>+</span></div></div></div>
+      <div class="state"><div class="state-label">draft · pulse disabled (reduced-motion)</div><div class="state-row"><div class="pin pending" data-color="0" style="animation:none"><span>+</span></div></div></div>
+      <div class="state"><div class="state-label">draft · click-to-remove (hover)</div><div class="state-row" style="position:relative">
+        <div class="pin pending" data-color="0" style="opacity:0.5"><span>+</span></div>
+        <span style="position:absolute;left:50%;bottom:8px;transform:translateX(-50%);font-family:var(--font-mono);font-size:9px;color:var(--text-muted);letter-spacing:0.05em">click · -fades out</span>
+      </div></div>
+    </div>
+    <div class="caption">
+      Draft pins reuse the existing <code>.pin.pending</code> recipe from
+      <a href="../design-system/20-pins.html" style="color:var(--accent)">20-pins.html</a>:
+      30 × 30 teardrop, dashed border, <code>+</code> label, 1.6 s soft pulse. Only the lifetime
+      changes — today they exist during composer marking; in this spec they exist for the entire
+      draft lifetime. Click on a draft pin → remove from <code>draft.pins</code> with 200 ms
+      opacity fade.
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════
+       E — Anatomy + tokens
+       ════════════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">E · Anatomy</div>
+    <dl class="tokens">
+      <dt>container bg</dt><dd>linear-gradient 180° from oklch(15% 0.04 165 / 0.7) to oklch(13% 0.03 165 / 0.6)</dd>
+      <dt>container border</dt><dd>1 px solid --accent-overlay-mid</dd>
+      <dt>container radius</dt><dd>--radius-sm (8 px)</dd>
+      <dt>top accent line</dt><dd>1 px linear-gradient(90deg, transparent, --accent, transparent) at 0.6 opacity</dd>
+      <dt>internal padding</dt><dd>12 px (comfortable) / 9 px (compact)</dd>
+      <dt>internal gap</dt><dd>10 px (comfortable) / 7 px (compact)</dd>
+      <dt>DRAFT marker</dt><dd>9.5 px JetBrains Mono · 800 · letter-spacing 0.14 em · --accent-bright + animated dot</dd>
+      <dt>textarea</dt><dd>--surface-input bg · 1 px --border-subtle · auto-grow 64–240 px · 12.5 px Manrope</dd>
+      <dt>pin row icon</dt><dd>14 × 14 mini teardrop with dashed 1.5 px border + <code>+</code> rotated 45°</dd>
+      <dt>pin row text</dt><dd>10.5 px JetBrains Mono · --text-dim (max-reached: --warning)</dd>
+      <dt>action row</dt><dd>justify-end · 8 px gap · 28 px tall pill buttons</dd>
+      <dt>Cancel button</dt><dd>ghost · transparent bg · --text-dim text (hover: --text-bright + --surface-hover)</dd>
+      <dt>Draft button</dt><dd>secondary · --btn-bg · --text-bright text · 1 px --border-strong border</dd>
+      <dt>Send button</dt><dd>primary · --accent-soft bg · --accent-bright text · 1 px --accent-overlay-mid border</dd>
+      <dt>status microcopy</dt><dd>9.5 px JetBrains Mono · right-aligned · color tracks status (saved: --success, sending: --accent-bright, error: --danger, saving: --text-dim, unsaved: --warning)</dd>
+    </dl>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════
+       F — Behavior summary
+       ════════════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-title">F · Behavior summary</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.85;list-style:disc;padding-left:20px;max-width:780px">
+      <li><strong>Entry.</strong> User clicks the rail's <code>+ New annotation</code> button (or presses <kbd class="kbd-key">N</kbd> with no input focused). Rail force-pins; DraftCard mounts at top; textarea autofocuses.</li>
+      <li><strong>Canvas click while drafting.</strong> Cursor becomes <code>crosshair</code>. Click anywhere → new pin appended (<code>+</code> pulsing). Click a draft pin → remove it. Click a published pin → focus that card.</li>
+      <li><strong>Draft.</strong> <kbd class="kbd-key">⌘</kbd> + <kbd class="kbd-key">S</kbd> or button → flush to <code>localStorage</code> (key: <code>markup:draft:&lt;mockupId&gt;:&lt;userId&gt;</code>). Auto-save debounces 800 ms on body / pins change.</li>
+      <li><strong>Send.</strong> <kbd class="kbd-key">⌘</kbd> + <kbd class="kbd-key">↵</kbd> or button (enabled when body ≥ 1 char and ≤ 10 000 chars; pins optional, 0 – 20). POST → optimistic insert; localStorage cleared; rail returns to user's prior pin state.</li>
+      <li><strong>Cancel.</strong> <kbd class="kbd-key">Esc</kbd> or button. Empty draft → silent discard. Non-empty draft → AlertDialog confirms. Confirm clears localStorage; cancel-of-cancel returns to active.</li>
+      <li><strong>Restore.</strong> Viewer mount reads <code>localStorage</code>; if a draft exists for <code>(mockupId, userId)</code>, mount DraftCard prefilled. Stale drafts (lastSavedAt &gt; 30 days) discarded silently.</li>
+      <li><strong>Max pins.</strong> Anchors capped at 20 (API contract). The 21st click is consumed; toast "Maximum 20 pins per annotation"; pin count row reads <code>20 pins · max reached</code> (warning hue).</li>
+      <li><strong>Intent type — removed.</strong> The chip row that used to live above the textarea is gone. <code>Annotation.intentType</code> is dropped from the schema, the agent-loop <code>/intent</code> endpoint, the <code>/agent/context</code> aggregator, the docs in <code>docs/agent-loop/</code>, and all consumer pages. The DraftCard composition is leaner because of it. (See <a href="../../superpowers/specs/2026-05-22-draft-annotation-spec.md#10-companion-scope--remove-annotationintenttype-entirely" style="color:var(--accent)">§10 of the spec</a>.)</li>
+      <li><strong>Reduced motion.</strong> Pulse on draft pins is suppressed under <code>prefers-reduced-motion: reduce</code> (via the global motion-token overrides at <code>:root</code>). DraftCard accent-dot animation also collapses.</li>
+    </ul>
+  </section>
+
+  <div class="foot-meta">
+    <span>idea · v1 · 2026-05-22 · draft-annotation</span>
+    <a href="../../superpowers/specs/2026-05-22-draft-annotation-spec.md">view spec →</a>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     small driver script — char counts + tweaker click handlers
+     ════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+  // hero textarea char counter
+  const ta = document.getElementById('hero-textarea');
+  const cc = document.getElementById('hero-char-count');
+  function updateCount(){ cc.textContent = String(ta.value.length); }
+  ta.addEventListener('input', updateCount);
+  updateCount();
+
+  // click on a draft pin in the canvas — fade out (visual)
+  document.querySelectorAll('[data-draft-pin]').forEach(p => {
+    p.addEventListener('click', () => {
+      p.style.transition = 'opacity 200ms ease-out, transform 200ms ease-out';
+      p.style.opacity = '0';
+      p.style.transform = 'rotate(-45deg) scale(0.7)';
+      setTimeout(() => p.remove(), 220);
+      // update count after the fade
+      setTimeout(() => {
+        const remaining = document.querySelectorAll('[data-draft-pin]').length;
+        const el = document.getElementById('hero-pin-count');
+        if (el) el.textContent = remaining + (remaining === 1 ? ' pin' : ' pins');
+        const hint = document.getElementById('hero-pin-hint');
+        if (hint) hint.textContent = remaining > 0 ? '· click pin to remove' : '· click on the mockup to add';
+      }, 230);
+    });
+  });
+
+  // wire AlertDialog buttons (purely visual — toggles tweaker state)
+  function findRoot(){ return document.querySelector('[data-ds-component]'); }
+  document.getElementById('hero-cancel').addEventListener('click', () => {
+    const r = findRoot();
+    r.dataset.cancelDialog = 'true';
+    if (window.Tweaker && window.Tweaker._setOption) window.Tweaker._setOption('cancelDialogVisible', true);
+  });
+  document.getElementById('alert-keep').addEventListener('click', () => {
+    findRoot().dataset.cancelDialog = 'false';
+    if (window.Tweaker && window.Tweaker._setOption) window.Tweaker._setOption('cancelDialogVisible', false);
+  });
+  document.getElementById('alert-discard').addEventListener('click', () => {
+    findRoot().dataset.cancelDialog = 'false';
+    if (window.Tweaker && window.Tweaker._setOption) window.Tweaker._setOption('cancelDialogVisible', false);
+  });
+
+  // re-render draft pins based on tweaker count
+  window.__renderDraftPins = function(count){
+    const container = document.getElementById('draft-pin-container');
+    if (!container) return;
+    container.innerHTML = '';
+    // canonical anchor positions across the canvas
+    const positions = [
+      {left: 148, top: 188},
+      {left: 404, top: 148},
+      {left: 498, top: 362},
+      {left: 252, top: 312},
+      {left: 376, top: 442},
+    ];
+    for (let i = 0; i < Math.min(count, positions.length); i++) {
+      const p = positions[i];
+      const el = document.createElement('div');
+      el.className = 'pin pending';
+      el.setAttribute('data-color','0');
+      el.setAttribute('data-draft-pin','');
+      el.style.left = p.left + 'px';
+      el.style.top = p.top + 'px';
+      el.innerHTML = '<span>+</span>';
+      el.addEventListener('click', () => {
+        el.style.transition = 'opacity 200ms ease-out, transform 200ms ease-out';
+        el.style.opacity = '0';
+        el.style.transform = 'rotate(-45deg) scale(0.7)';
+        setTimeout(() => el.remove(), 220);
+      });
+      container.appendChild(el);
+    }
+    const cnt = document.getElementById('hero-pin-count');
+    if (cnt) cnt.textContent = count + (count === 1 ? ' pin' : ' pins');
+    const alertPin = document.getElementById('alert-pin-count');
+    if (alertPin) alertPin.textContent = count + (count === 1 ? ' pin' : ' pins');
+    const hint = document.getElementById('hero-pin-hint');
+    if (hint) hint.textContent = count > 0 ? '· click pin to remove' : '· click on the mockup to add';
+  };
+})();
+</script>
+
+<!-- ════════════════════════════════════════════════════════════
+     TWEAKER PANEL — inlined verbatim from
+     /home/coder/projects/design-skills/skills/design-feature/templates/tweaker.html
+     ════════════════════════════════════════════════════════════ -->
+<style>
+  .mdtk-tweaker {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 999999;
+    min-width: 280px;
+    max-width: 360px;
+    font: 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #1f2937;
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+    user-select: none;
+    overflow: hidden;
+  }
+  .mdtk-tweaker[data-collapsed="true"] {
+    min-width: 0;
+    max-width: none;
+    width: auto;
+  }
+  .mdtk-tweaker__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: linear-gradient(180deg, #fafbfc, #f3f4f6);
+    border-bottom: 1px solid #e5e7eb;
+    cursor: grab;
+  }
+  .mdtk-tweaker[data-collapsed="true"] .mdtk-tweaker__header {
+    border-bottom: none;
+    padding: 6px 10px;
+  }
+  .mdtk-tweaker__header:active { cursor: grabbing; }
+  .mdtk-tweaker__title { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mdtk-tweaker__btn {
+    appearance: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #4b5563;
+  }
+  .mdtk-tweaker__btn:hover { background: #e5e7eb; }
+  .mdtk-tweaker__body {
+    padding: 8px 10px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .mdtk-tweaker[data-collapsed="true"] .mdtk-tweaker__body { display: none; }
+  .mdtk-tweaker__group { margin: 8px 0; }
+  .mdtk-tweaker__group-name {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+    margin-bottom: 6px;
+  }
+  .mdtk-tweaker__opt {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 8px;
+    align-items: center;
+    margin: 4px 0;
+  }
+  .mdtk-tweaker__opt-label { color: #374151; }
+  .mdtk-tweaker__segmented {
+    display: inline-flex;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .mdtk-tweaker__segmented button {
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: 4px 8px;
+    cursor: pointer;
+    font: inherit;
+    color: #4b5563;
+  }
+  .mdtk-tweaker__segmented button[aria-pressed="true"] {
+    background: #1f2937;
+    color: #fff;
+  }
+  .mdtk-tweaker__opt input[type="color"] {
+    width: 32px;
+    height: 24px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 0;
+  }
+  .mdtk-tweaker__opt input[type="range"] { width: 100%; }
+  .mdtk-tweaker__opt input[type="text"],
+  .mdtk-tweaker__opt select {
+    width: 100%;
+    padding: 3px 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font: inherit;
+  }
+  .mdtk-tweaker__flash { color: #16a34a; font-weight: 600; }
+</style>
+
+<div class="mdtk-tweaker" data-mdtk-tweaker data-collapsed="false">
+  <div class="mdtk-tweaker__header" data-mdtk-handle>
+    <span class="mdtk-tweaker__title" data-mdtk-title>🎛 Tweaker</span>
+    <button class="mdtk-tweaker__btn" data-mdtk-copy title="Copy options as JSON">📋</button>
+    <button class="mdtk-tweaker__btn" data-mdtk-toggle title="Minimize">—</button>
+  </div>
+  <div class="mdtk-tweaker__body" data-mdtk-body></div>
+</div>
+
+<script>
+(function () {
+  const VERSION = 1;
+  const root = document.querySelector('[data-mdtk-tweaker]');
+  if (!root) return;
+  const header = root.querySelector('[data-mdtk-handle]');
+  const titleEl = root.querySelector('[data-mdtk-title]');
+  const body = root.querySelector('[data-mdtk-body]');
+  const copyBtn = root.querySelector('[data-mdtk-copy]');
+  const toggleBtn = root.querySelector('[data-mdtk-toggle]');
+
+  const KEY_POS = 'mdtk-tweaker-pos:' + location.pathname;
+  const KEY_COLLAPSED = 'mdtk-tweaker-collapsed:' + location.pathname;
+  const KEY_STATE = 'mdtk-tweaker-state:' + location.pathname;
+
+  function lsGet(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function lsSet(key, val) {
+    try { localStorage.setItem(key, val); } catch (e) {}
+  }
+
+  let fullTitle = '🎛 Tweaker';
+  let shortTitle = '🎛 T';
+  function applyTitle() {
+    titleEl.textContent = root.dataset.collapsed === 'true' ? shortTitle : fullTitle;
+  }
+
+  const posRaw = lsGet(KEY_POS);
+  if (posRaw) {
+    try {
+      const pos = JSON.parse(posRaw);
+      if (pos) {
+        root.style.left = pos.left + 'px';
+        root.style.top = pos.top + 'px';
+        root.style.right = 'auto';
+      }
+    } catch (e) { /* JSON malformed */ }
+  }
+
+  if (lsGet(KEY_COLLAPSED) === 'true') {
+    root.dataset.collapsed = 'true';
+    toggleBtn.textContent = '+';
+  }
+  applyTitle();
+
+  let dragging = false, offX = 0, offY = 0;
+  let didMove = false;
+  let downAt = 0;
+  function start(e) {
+    if (e.target.closest('button, input, select')) return;
+    dragging = true;
+    didMove = false;
+    downAt = Date.now();
+    const pt = e.touches ? e.touches[0] : e;
+    const rect = root.getBoundingClientRect();
+    offX = pt.clientX - rect.left;
+    offY = pt.clientY - rect.top;
+    document.addEventListener('mousemove', move, { passive: false });
+    document.addEventListener('mouseup', end);
+    document.addEventListener('touchmove', move, { passive: false });
+    document.addEventListener('touchend', end);
+  }
+  function move(e) {
+    if (!dragging) return;
+    e.preventDefault();
+    didMove = true;
+    const pt = e.touches ? e.touches[0] : e;
+    const w = root.offsetWidth, h = root.offsetHeight;
+    const left = Math.max(0, Math.min(window.innerWidth - w, pt.clientX - offX));
+    const top = Math.max(0, Math.min(window.innerHeight - h, pt.clientY - offY));
+    root.style.left = left + 'px';
+    root.style.top = top + 'px';
+    root.style.right = 'auto';
+  }
+  function end() {
+    if (!dragging) return;
+    dragging = false;
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('mouseup', end);
+    document.removeEventListener('touchmove', move);
+    document.removeEventListener('touchend', end);
+    if (didMove) {
+      const rect = root.getBoundingClientRect();
+      lsSet(KEY_POS, JSON.stringify({ left: rect.left, top: rect.top }));
+    } else if (root.dataset.collapsed === 'true' && Date.now() - downAt < 500) {
+      setCollapsed(false);
+    }
+  }
+  header.addEventListener('mousedown', start);
+  header.addEventListener('touchstart', start, { passive: false });
+
+  function setCollapsed(collapsed) {
+    root.dataset.collapsed = String(collapsed);
+    toggleBtn.textContent = collapsed ? '+' : '—';
+    applyTitle();
+    lsSet(KEY_COLLAPSED, String(collapsed));
+  }
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setCollapsed(root.dataset.collapsed !== 'true');
+  });
+
+  let registered = null;
+  let state = {};
+  const segmentedRefreshers = new Map();
+
+  function render() {
+    if (!registered) return;
+    segmentedRefreshers.clear();
+    body.innerHTML = '';
+    for (const g of registered.groups) {
+      const groupEl = document.createElement('div');
+      groupEl.className = 'mdtk-tweaker__group';
+      const name = document.createElement('div');
+      name.className = 'mdtk-tweaker__group-name';
+      name.textContent = g.name;
+      groupEl.appendChild(name);
+      for (const opt of g.options) {
+        const row = document.createElement('div');
+        row.className = 'mdtk-tweaker__opt';
+        const lbl = document.createElement('div');
+        lbl.className = 'mdtk-tweaker__opt-label';
+        lbl.textContent = opt.label;
+        row.appendChild(lbl);
+        row.appendChild(buildControl(opt));
+        groupEl.appendChild(row);
+      }
+      body.appendChild(groupEl);
+    }
+  }
+
+  function buildControl(opt) {
+    if (opt.type === 'segmented') {
+      const grp = document.createElement('div');
+      grp.className = 'mdtk-tweaker__segmented';
+      const buttons = [];
+      for (const v of opt.values) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = String(v);
+        b.setAttribute('aria-pressed', String(state[opt.id] === v));
+        b.addEventListener('click', () => setOption(opt.id, v));
+        grp.appendChild(b);
+        buttons.push({ btn: b, val: v });
+      }
+      segmentedRefreshers.set(opt.id, () => {
+        for (const { btn, val } of buttons) {
+          btn.setAttribute('aria-pressed', String(state[opt.id] === val));
+        }
+      });
+      return grp;
+    }
+    if (opt.type === 'select') {
+      const sel = document.createElement('select');
+      for (const v of opt.values) {
+        const o = document.createElement('option');
+        o.value = String(v);
+        o.textContent = String(v);
+        if (state[opt.id] === v) o.selected = true;
+        sel.appendChild(o);
+      }
+      sel.addEventListener('change', () => {
+        const restored = opt.values.find((v) => String(v) === sel.value);
+        setOption(opt.id, restored !== undefined ? restored : sel.value);
+      });
+      return sel;
+    }
+    if (opt.type === 'color') {
+      const i = document.createElement('input');
+      i.type = 'color';
+      i.value = state[opt.id];
+      i.addEventListener('input', () => setOption(opt.id, i.value));
+      return i;
+    }
+    if (opt.type === 'range') {
+      const i = document.createElement('input');
+      i.type = 'range';
+      i.min = opt.min ?? 0;
+      i.max = opt.max ?? 100;
+      i.step = opt.step ?? 1;
+      i.value = state[opt.id];
+      i.addEventListener('input', () => setOption(opt.id, Number(i.value)));
+      return i;
+    }
+    if (opt.type === 'text') {
+      const i = document.createElement('input');
+      i.type = 'text';
+      i.value = state[opt.id];
+      i.addEventListener('input', () => setOption(opt.id, i.value));
+      return i;
+    }
+    if (opt.type === 'toggle') {
+      const i = document.createElement('input');
+      i.type = 'checkbox';
+      i.checked = !!state[opt.id];
+      i.addEventListener('change', () => setOption(opt.id, i.checked));
+      return i;
+    }
+    const span = document.createElement('span');
+    span.textContent = '? unsupported type: ' + opt.type;
+    return span;
+  }
+
+  function setOption(id, value) {
+    state[id] = value;
+    lsSet(KEY_STATE, JSON.stringify(state));
+    applyToRoot();
+    const refresh = segmentedRefreshers.get(id);
+    if (refresh) refresh();
+  }
+
+  function findApplyRoot() { return document.querySelector('[data-ds-component]'); }
+
+  function applyToRoot() {
+    const r = findApplyRoot();
+    if (!r || !registered || !registered.apply) return;
+    try { registered.apply(state, r); } catch (e) { console.warn('[Tweaker] apply failed:', e); }
+  }
+
+  window.Tweaker = {
+    register({ title, slug, groups, apply }) {
+      if (registered) {
+        console.warn('[Tweaker] register() called twice; ignoring.');
+        return;
+      }
+      registered = { title, slug, groups, apply };
+      if (title) {
+        fullTitle = '🎛 ' + title;
+        const rest = title.trim();
+        shortTitle = '🎛 ' + (rest.charAt(0).toUpperCase() || 'T');
+      }
+      applyTitle();
+      const defaults = {};
+      for (const g of groups) for (const opt of g.options) defaults[opt.id] = opt.default;
+      let restored = {};
+      const stateRaw = lsGet(KEY_STATE);
+      if (stateRaw) {
+        try { restored = JSON.parse(stateRaw); } catch (e) {}
+      }
+      const knownIds = new Set(Object.keys(defaults));
+      const filtered = {};
+      for (const k of Object.keys(restored)) {
+        if (knownIds.has(k)) filtered[k] = restored[k];
+      }
+      state = Object.assign({}, defaults, filtered);
+      lsSet(KEY_STATE, JSON.stringify(state));
+      render();
+      applyToRoot();
+    },
+    _setOption: setOption,
+  };
+
+  copyBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    if (!registered) {
+      copyBtn.innerHTML = '<span style="color:#dc2626">!</span>';
+      setTimeout(() => { copyBtn.textContent = '📋'; }, 1000);
+      console.warn('[Tweaker] copy clicked before register()');
+      return;
+    }
+    const payload = {
+      slug: registered.slug || '',
+      version: VERSION,
+      choices: state,
+    };
+    const text = JSON.stringify(payload, null, 2);
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    const original = copyBtn.textContent;
+    copyBtn.innerHTML = '<span class="mdtk-tweaker__flash">✓</span>';
+    setTimeout(() => { copyBtn.textContent = original; }, 1000);
+  });
+})();
+</script>
+
+<!-- ════════════════════════════════════════════════════════════
+     TWEAKER REGISTER — exposes every design decision as a knob
+     ════════════════════════════════════════════════════════════ -->
+<script>
+window.Tweaker.register({
+  title: 'Draft Annotation',
+  slug: 'draft-annotation',
+  groups: [
+    {
+      name: 'Layout',
+      options: [
+        { id: 'railState', label: 'Rail state', type: 'segmented',
+          values: ['collapsed', 'expanded-hover', 'expanded-pinned'], default: 'expanded-pinned' },
+        { id: 'hasDraft', label: 'Draft active', type: 'toggle', default: true },
+        { id: 'hasPublishedAnnotations', label: 'Has published', type: 'toggle', default: true },
+        { id: 'cancelDialogVisible', label: 'Cancel dialog', type: 'toggle', default: false },
+        { id: 'showTooltip', label: 'Show + tooltip', type: 'toggle', default: false },
+        { id: 'canvasHintPosition', label: 'Hint position', type: 'segmented',
+          values: ['top', 'bottom'], default: 'bottom' },
+      ],
+    },
+    {
+      name: 'DraftCard',
+      options: [
+        { id: 'pinCountState', label: 'Pin count', type: 'segmented',
+          values: ['zero', 'some', 'max20'], default: 'some' },
+        { id: 'draftStatus', label: 'Status', type: 'segmented',
+          values: ['unsaved', 'saving', 'saved', 'sending', 'error'], default: 'saved' },
+        { id: 'bodyState', label: 'Body', type: 'segmented',
+          values: ['empty', 'typing', 'over-limit'], default: 'typing' },
+      ],
+    },
+    {
+      name: 'Visual / Density',
+      options: [
+        { id: 'density', label: 'Density', type: 'segmented',
+          values: ['compact', 'comfortable'], default: 'comfortable' },
+        { id: 'accent', label: 'Accent', type: 'color', default: '#1cd99a' },
+      ],
+    },
+    {
+      name: 'Pins',
+      options: [
+        { id: 'draftPinCount', label: 'Draft pins', type: 'range',
+          min: 0, max: 5, step: 1, default: 3 },
+        { id: 'pulseEnabled', label: 'Pulse animation', type: 'toggle', default: true },
+      ],
+    },
+  ],
+  apply(state, root) {
+    root.dataset.railState = state.railState;
+    root.dataset.hasDraft = String(!!state.hasDraft);
+    root.dataset.hasPublished = String(!!state.hasPublishedAnnotations);
+    root.dataset.cancelDialog = String(!!state.cancelDialogVisible);
+    root.dataset.showTooltip = String(!!state.showTooltip);
+    root.dataset.hintPosition = state.canvasHintPosition;
+    root.dataset.pinCount = state.pinCountState;
+    root.dataset.draftStatus = state.draftStatus;
+    root.dataset.bodyState = state.bodyState;
+    root.dataset.density = state.density;
+    root.dataset.pulse = String(!!state.pulseEnabled);
+    if (state.accent) {
+      root.style.setProperty('--accent', state.accent);
+    }
+
+    // body-state side effects on the hero textarea + char count
+    const ta = document.getElementById('hero-textarea');
+    const cc = document.getElementById('hero-char-count');
+    if (ta && cc) {
+      if (state.bodyState === 'empty') {
+        ta.value = '';
+        cc.textContent = '0';
+      } else if (state.bodyState === 'typing') {
+        if (ta.value === '' || ta.value.length > 9999) {
+          ta.value = "Logo está cortado nas bordas em telas menores, e o espaçamento do título para o subtítulo parece apertado demais. Consigo reproduzir no Chrome 130.";
+        }
+        cc.textContent = String(ta.value.length);
+      } else if (state.bodyState === 'over-limit') {
+        ta.value = '[long body…]';
+        cc.textContent = '10 001';
+      }
+    }
+
+    // draft-card density on the hero card directly
+    const draftCard = document.getElementById('hero-draft-card');
+    if (draftCard) draftCard.dataset.density = state.density;
+
+    // status microcopy on the hero
+    const status = document.getElementById('hero-status');
+    const statusText = document.getElementById('hero-status-text');
+    if (status && statusText) {
+      status.dataset.status = state.draftStatus;
+      const copy = {
+        unsaved: 'Unsaved changes',
+        saving: 'Saving…',
+        saved: 'Draft saved 12 s ago',
+        sending: 'Sending…',
+        error: "Couldn't send · saved locally",
+      };
+      statusText.textContent = copy[state.draftStatus] || 'Draft saved 12 s ago';
+    }
+
+    // re-render draft pins on canvas
+    if (typeof window.__renderDraftPins === 'function') {
+      const count = state.pinCountState === 'zero' ? 0
+        : state.pinCountState === 'max20' ? 5
+        : Math.max(0, Math.min(5, Number(state.draftPinCount) || 3));
+      window.__renderDraftPins(count);
+    }
+
+    // pin-count badge label (max20 overrides)
+    const pinCnt = document.getElementById('hero-pin-count');
+    if (pinCnt) {
+      if (state.pinCountState === 'max20') pinCnt.textContent = '20 pins';
+      else if (state.pinCountState === 'zero') pinCnt.textContent = '0 pins';
+    }
+    const pinHint = document.getElementById('hero-pin-hint');
+    if (pinHint) {
+      if (state.pinCountState === 'zero') pinHint.textContent = '· click on the mockup to add';
+      else if (state.pinCountState === 'max20') pinHint.textContent = '· max reached';
+      else pinHint.textContent = '· click pin to remove';
+    }
+
+    // disable save button if status is already 'saved'
+    const saveBtn = document.getElementById('hero-save');
+    if (saveBtn) {
+      if (state.draftStatus === 'saved') saveBtn.setAttribute('disabled','');
+      else saveBtn.removeAttribute('disabled');
+    }
+
+    // pin count badge in rail head (sum of published cards)
+    const published = document.getElementById('published-count');
+    if (published) published.textContent = state.hasPublishedAnnotations ? '3' : '0';
+  },
+});
+</script>
+
+</body>
+</html>
