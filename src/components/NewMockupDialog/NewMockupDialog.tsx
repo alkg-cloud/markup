@@ -425,7 +425,7 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
             Use lowercase letters, numbers, or hyphens only.
           </InputField.Message>
           <InputField.Message match="valueMissing">A name is required.</InputField.Message>
-          {fieldError ? <InputField.Message forceMatch>{fieldError}</InputField.Message> : null}
+          {fieldError ? <InputField.Message>{fieldError}</InputField.Message> : null}
           <NameLengthCounter len={name.length} />
         </InputField.Root>
 
