@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>31 — Skeleton</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);
+  --surface-hover:rgba(255,255,255,0.04);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);
+  --motion-fast:160ms;--motion-base:220ms;--motion-slow:320ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
+}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms;--motion-slow:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:920px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:640px}
+.lede a{color:var(--accent);text-decoration:none}
+.lede a:hover{text-decoration:underline}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  padding:32px;
+}
+.stage + .stage{margin-top:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+
+/* Demo helpers — same across every DS file */
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
+.state{display:flex;flex-direction:column;gap:6px}
+.state .state-label{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim)}
+
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
+
+/* ─── skeleton — single canonical bar with shape variants ───────────── */
+.skel{
+  position:relative;
+  display:block;
+  background:var(--surface-hover);
+  border-radius:var(--radius-sm);
+  overflow:hidden;
+  height:1em;
+}
+.skel::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,transparent 0%,var(--border-subtle) 50%,transparent 100%);
+  transform:translateX(-100%);
+  animation:shimmer 1.4s linear infinite;
+}
+.skel[data-shape="text"]{height:0.75em;border-radius:var(--radius-pill)}
+.skel[data-shape="circle"]{border-radius:50%}
+
+@keyframes shimmer{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(100%)}
+}
+@media(prefers-reduced-motion:reduce){
+  .skel::after{animation:none;background:transparent}
+}
+
+/* ─── FadeIn — companion wrapper for the skeleton → content swap ─── */
+.fade-in{animation:fadeIn 360ms cubic-bezier(0.16,1,0.3,1) both}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@media(prefers-reduced-motion:reduce){.fade-in{animation:none}}
+
+/* Composition demos — card placeholder, row placeholder, hero with inline text bar */
+.card-skel{
+  display:flex;flex-direction:column;gap:10px;
+  padding:14px;
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  background:rgba(255,255,255,0.02);
+  width:260px;
+}
+.card-skel .thumb{aspect-ratio:16 / 9;width:100%;height:auto}
+
+.row-skel{
+  display:flex;align-items:center;gap:8px;
+  padding:0 14px;height:32px;
+  width:280px;
+}
+
+.hero-skel{
+  display:flex;flex-direction:column;gap:6px;
+  width:380px;
+}
+.hero-skel .greeting{
+  font-family:var(--font-body);font-size:18px;font-weight:700;color:var(--text-bright);
+  letter-spacing:-0.015em;
+}
+.hero-skel .sub{
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:var(--font-mono);font-size:13px;color:var(--text-dim);
+}
+
+/* In-context: tiny app shell so the loading rhythm is recognisable */
+.app-shell{
+  display:grid;grid-template-columns:160px 1fr;gap:0;
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  overflow:hidden;
+  background:var(--bg-elevated);
+}
+.app-shell .sb{
+  padding:12px 10px;
+  border-right:1px solid var(--border-subtle);
+  display:flex;flex-direction:column;gap:6px;
+}
+.app-shell .sb-label{
+  font-family:var(--font-mono);font-size:10px;font-weight:700;
+  letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);
+  padding:6px 4px 2px;
+}
+.app-shell .main{
+  padding:16px 18px;
+  display:flex;flex-direction:column;gap:12px;
+  min-height:160px;
+}
+.app-shell .grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+}
+.app-shell .grid .card{
+  display:flex;flex-direction:column;gap:6px;
+  padding:8px;border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  background:rgba(255,255,255,0.02);
+}
+.app-shell .grid .card .thumb{aspect-ratio:16 / 9;width:100%}
+</style>
+</head>
+<body>
+
+<div class="page" data-ds-component="skeleton">
+
+  <h1 class="h1">Skeleton</h1>
+  <p class="lede">Loading-state placeholder for content that's still in flight. One primitive bar with a slow shimmer composes every loading surface in the app — sidebar tree rows (<a href="./01-sidebar.html"><code>sidebar</code></a>), card grids (<a href="./05-project-card.html"><code>project-card</code></a>, <a href="./12-project-folder-view.html"><code>project-folder-view</code></a>), and the home hero's "N mockups updated since yesterday" sub-line. Pairs with the <code>fade-in</code> wrapper that animates the skeleton → real content swap. The structural shell (sidebar logo, collapse, section labels, topbar) is <strong>never</strong> skeletoned — those elements derive from the URL + auth state, not from the per-page API.</p>
+
+  <!-- All states grid -->
+  <section class="section">
+    <div class="section-title">All shapes</div>
+    <div class="stage">
+      <div class="row-states">
+        <div class="state">
+          <div class="state-label">Block</div>
+          <span class="skel" style="width:200px;height:80px;border-radius:var(--radius-md)"></span>
+        </div>
+        <div class="state">
+          <div class="state-label">Text</div>
+          <span class="skel" data-shape="text" style="width:160px;height:11px"></span>
+        </div>
+        <div class="state">
+          <div class="state-label">Circle</div>
+          <span class="skel" data-shape="circle" style="width:36px;height:36px"></span>
+        </div>
+      </div>
+    </div>
+    <div class="caption">One bar recipe, three shapes via [data-shape]. The shimmer overlay (translating gradient) is shared across all three.</div>
+  </section>
+
+  <!-- Composition demos -->
+  <section class="section">
+    <div class="section-title">Compositions</div>
+    <div class="stage">
+      <div class="row-states">
+        <div class="state">
+          <div class="state-label">Card placeholder</div>
+          <div class="card-skel">
+            <span class="skel thumb"></span>
+            <span class="skel" data-shape="text" style="width:70%;height:13px"></span>
+            <span class="skel" data-shape="text" style="width:45%;height:10px"></span>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">Row placeholder</div>
+          <div class="row-skel">
+            <span class="skel" data-shape="circle" style="width:12px;height:12px"></span>
+            <span class="skel" data-shape="text" style="width:60%;height:11px"></span>
+          </div>
+          <div class="row-skel">
+            <span class="skel" data-shape="circle" style="width:12px;height:12px"></span>
+            <span class="skel" data-shape="text" style="width:78%;height:11px"></span>
+          </div>
+          <div class="row-skel">
+            <span class="skel" data-shape="circle" style="width:12px;height:12px"></span>
+            <span class="skel" data-shape="text" style="width:50%;height:11px"></span>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">Inline text skel</div>
+          <div class="hero-skel">
+            <div class="greeting">Good evening, Alexandre</div>
+            <div class="sub">
+              <span>Thursday, May 21 ·&nbsp;</span>
+              <span class="skel" data-shape="text" style="width:170px;height:10px;display:inline-block"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Compositions are arrangements of the primitive — they do not get their own DS files. The home-page hero is the canonical "real text + tiny inline skeleton" pattern: render the parts you can derive locally (greeting, date) as real text, skeleton only the truly unknown value.</div>
+  </section>
+
+  <!-- In-context -->
+  <section class="section">
+    <div class="section-title">In context — app shell loading</div>
+    <div class="stage">
+      <div class="app-shell">
+        <div class="sb">
+          <div class="sb-label">Projects</div>
+          <div class="row-skel" style="width:auto;padding:0 6px">
+            <span class="skel" data-shape="circle" style="width:12px;height:12px"></span>
+            <span class="skel" data-shape="text" style="width:70%;height:11px"></span>
+          </div>
+          <div class="row-skel" style="width:auto;padding:0 6px">
+            <span class="skel" data-shape="circle" style="width:12px;height:12px"></span>
+            <span class="skel" data-shape="text" style="width:55%;height:11px"></span>
+          </div>
+          <div class="row-skel" style="width:auto;padding:0 6px">
+            <span class="skel" data-shape="circle" style="width:12px;height:12px"></span>
+            <span class="skel" data-shape="text" style="width:62%;height:11px"></span>
+          </div>
+        </div>
+        <div class="main">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="skel" data-shape="circle" style="width:28px;height:28px"></span>
+            <span class="skel" data-shape="text" style="width:120px;height:14px"></span>
+          </div>
+          <div class="grid">
+            <div class="card">
+              <span class="skel thumb"></span>
+              <span class="skel" data-shape="text" style="width:70%;height:10px"></span>
+            </div>
+            <div class="card">
+              <span class="skel thumb"></span>
+              <span class="skel" data-shape="text" style="width:60%;height:10px"></span>
+            </div>
+            <div class="card">
+              <span class="skel thumb"></span>
+              <span class="skel" data-shape="text" style="width:65%;height:10px"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Sidebar labels ("Projects") render as real text. Only the tree rows + main-area cards are placeholders. The topbar is omitted from this demo for clarity; in the real shell it always paints from the URL + auth response.</div>
+  </section>
+
+  <!-- React API -->
+  <section class="section">
+    <div class="section-title">React API — &lt;Skeleton /&gt; + &lt;FadeIn /&gt;</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:640px"><strong>Radix Primitives does NOT ship a skeleton or loading-state primitive.</strong> The project uses a custom compound at <code>src/components/Skeleton/</code> (the bar) and <code>src/components/FadeIn/</code> (the wrapper). The two are paired in usage but live in separate component folders because <code>FadeIn</code> is also useful outside loading transitions (modal enter, popover content).</p>
+    <pre class="api"><span class="c">// src/components/Skeleton/Skeleton.tsx — primitive bar with shimmer</span>
+<span class="k">import</span> { <span class="t">Skeleton</span> } <span class="k">from</span> <span class="s">'@/components/Skeleton'</span>;
+<span class="k">import</span> { <span class="t">FadeIn</span> } <span class="k">from</span> <span class="s">'@/components/FadeIn'</span>;
+
+<span class="c">// Block (default) — for thumbnails and large rectangular slots</span>
+&lt;<span class="t">Skeleton</span> width={<span class="s">"100%"</span>} height={<span class="s">"160px"</span>} /&gt;
+
+<span class="c">// Text — height: 0.75em, radius: pill — for label-sized bars next to icons</span>
+&lt;<span class="t">Skeleton</span> width=<span class="s">"60%"</span> height={<span class="s">14</span>} variant=<span class="s">"text"</span> /&gt;
+
+<span class="c">// Circle — for avatars / round status dots</span>
+&lt;<span class="t">Skeleton</span> width={<span class="s">28</span>} height={<span class="s">28</span>} variant=<span class="s">"circle"</span> /&gt;
+
+<span class="c">// Canonical "skeleton → content" pattern. Skeleton renders raw (no</span>
+<span class="c">// FadeIn — it IS the first paint). The resolved-content branch fades</span>
+<span class="c">// in over 360ms so the swap doesn't snap.</span>
+<span class="k">if</span> (status === <span class="s">'loading'</span> || !data) {
+  <span class="k">return</span> &lt;<span class="t">ProjectSkeleton</span> /&gt;;
+}
+<span class="k">return</span> (
+  &lt;<span class="t">FadeIn</span>&gt;
+    &lt;<span class="t">ProjectContent</span> {...data} /&gt;
+  &lt;/<span class="t">FadeIn</span>&gt;
+);
+</pre>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;padding-left:18px;margin-top:12px">
+      <li><strong>Three variants, one component.</strong> <code>variant="block" | "text" | "circle"</code>. Block is default and renders as a 1em-tall bar with <code>--radius-sm</code> corners. Text is shorter (0.75em) with a pill radius, sized for labels next to icons. Circle uses 50% radius for avatars / dots.</li>
+      <li><strong>Dimensions are explicit.</strong> Callers pass <code>width</code> and <code>height</code> as strings (<code>"60%"</code>, <code>"120px"</code>) or numbers (<code>14</code>, treated as px). The component has no intrinsic sizing — pass both.</li>
+      <li><strong>Compositions live with the page, not in the DS.</strong> <code>SidebarTreeSkeleton</code>, <code>HomeSkeleton</code>, and <code>ProjectSkeleton</code> are page-level compositions of this primitive. They mirror the post-load layout of their destination, then disappear on data arrival. New page-level surfaces author their own composed skeleton in <code>src/components/Skeleton/&lt;Name&gt;Skeleton.tsx</code>.</li>
+      <li><strong>Pair every skeleton with <code>&lt;FadeIn&gt;</code> on the resolved branch.</strong> The skeleton itself renders raw (it IS the first paint — fading it in would just delay feedback). The resolved-content branch wraps in <code>&lt;FadeIn&gt;</code> so the swap is a 360ms ease-out cross-fade. Never FadeIn both sides — that double-animates.</li>
+      <li><strong>Never replace the structural shell with skeleton.</strong> The sidebar's brand, collapse button, "Projects" / "No project" section labels, footer "New mockup" button, and the topbar's breadcrumbs + avatar paint from the URL + auth response. Only the variable parts (tree rows, page content cards, hero count) get skeletons.</li>
+      <li><strong>Reduced motion is automatic.</strong> The shimmer animation and the FadeIn animation both zero out under <code>@media (prefers-reduced-motion: reduce)</code>. No opt-in flag.</li>
+    </ul>
+  </section>
+
+  <!-- When-to-use vs alternatives -->
+  <section class="section">
+    <div class="section-title">When to use which</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Use <code>&lt;Skeleton /&gt;</code> when…</th><th>Use the alternative when…</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>The eventual layout is predictable — you know roughly where the title, the cards, the avatar will land. Skeleton paints the silhouette so the page doesn't jump on data arrival.</td>
+          <td>The eventual layout is unknown (long-running search results, paginated lists with variable counts) — render a <strong>spinner</strong> instead so you don't promise a shape you might not deliver.</td>
+        </tr>
+        <tr>
+          <td>The wait is &gt; 100 ms. Below that, the skeleton-then-content swap is itself noise; render nothing and let the parent's skeleton cover the cold start.</td>
+          <td>The wait is &lt; 100 ms typical (cached refetch, optimistic UI). Either don't render a placeholder at all, or render <code>aria-busy="true"</code> on the existing content while it refreshes in place.</td>
+        </tr>
+        <tr>
+          <td>The placeholder is the <strong>first paint</strong>. Render the skeleton raw — no <code>&lt;FadeIn&gt;</code> wrap.</td>
+          <td>The placeholder is part of a transition between two real states. Use <code>&lt;FadeIn&gt;</code> on the destination only.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Anatomy -->
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>bar bg<dd>--surface-hover (rgba 255 255 255 / 0.04)
+      <dt>shimmer fill<dd>linear-gradient(90deg, transparent 0%, --border-subtle 50%, transparent 100%)
+      <dt>shimmer cycle<dd>1.4s linear infinite (translateX(-100% → 100%))
+      <dt>block radius<dd>--radius-sm (8 px)
+      <dt>text height<dd>0.75em
+      <dt>text radius<dd>--radius-pill (9999 px)
+      <dt>circle radius<dd>50%
+      <dt>default height<dd>1em (overridden by inline <code>height</code> prop)
+      <dt>fade enter<dd>opacity 0 → 1 + translateY(6px → 0) over 360ms cubic-bezier(0.16, 1, 0.3, 1)
+      <dt>reduced-motion<dd>shimmer animation: none + overlay background: transparent; fade-in: animation: none
+    </dl>
+  </section>
+
+  <!-- Behavior -->
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;padding-left:18px">
+      <li>Renders a single <code>&lt;span aria-hidden="true"&gt;</code> per bar. Hidden from screen readers — the parent surface owns <code>aria-busy="true"</code> + <code>aria-live="polite"</code> so SR users hear "loading" once, not once per bar.</li>
+      <li>Shimmer runs continuously while mounted (1.4s loop). Stops automatically on unmount; no JS lifecycle plumbing required.</li>
+      <li>Under <code>prefers-reduced-motion: reduce</code>, the bar stays visible as a flat surface (no animated stripe). Users still see "loading"; they don't get a stripe sliding across the screen every 1.4s.</li>
+      <li><code>&lt;FadeIn&gt;</code> plays once on mount (360ms ease-out, opacity + 6px slide-up). Subsequent re-renders stay at the resting state — CSS animations don't re-trigger without a fresh keyframes binding.</li>
+      <li><code>&lt;FadeIn&gt;</code> is mount-only — it does NOT animate exits. If you need an exit fade, swap to a CSS-in-JS or Framer Motion solution; the current contract is intentionally one-directional because the skeleton → content transition only ever goes forward.</li>
+      <li>Inline display: <code>&lt;Skeleton variant="text" style={{ display: 'inline-block' }}&gt;</code> sits inside a sentence (e.g. the home hero sub-line where the surrounding date + dot are real text). Default <code>display: block</code> otherwise.</li>
+      <li>The skeleton replaces variable data, never structural chrome. If a region is derivable from the URL or already-loaded shell state, render it as real text — not as a skeleton.</li>
+    </ul>
+  </section>
+
+</div>
+
+</body>
+</html>
