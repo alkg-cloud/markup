@@ -31,6 +31,18 @@
   animation: fadeIn 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* `fill` mode — opt-in flex-column passthrough so consumers whose child
+ * relies on flex sizing (e.g. the mockup viewer's <main flex:1>) don't
+ * collapse to content size (0 height). Without this, `.root`'s default
+ * `flex: 0 1 auto` blocks flex propagation. */
+.fill {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
+  min-width: 0;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
