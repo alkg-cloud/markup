@@ -199,7 +199,6 @@ model Annotation {
   anchors            String         @default("[]")
   colorIndex         Int            @default(0)
   status             String         @default("open")
-  intentType         String         @default("other")
   createdOnVersionId String?
   createdOnVersion   MockupVersion? @relation("CreatedOnVersion", fields: [createdOnVersionId], references: [id])
   createdAt          DateTime       @default(now())
@@ -216,7 +215,6 @@ model Annotation {
 - `anchors` is JSON-encoded `Anchor[]` — each entry is either a text-anchor (`{ path, textOffset, subX, subY }`) or an element-anchor (`{ path, offsetX, offsetY }`). Up to 20 entries per annotation. Defaults to `"[]"` for legacy rows. Defined by the pin-anchoring strategy spec.
 - `colorIndex` is `0..15` into the rotating per-annotation palette. Shared across every pin of the annotation plus the rail badge and the avatar tint.
 - `status` is the visual status pill surfaced in the rail header: `'open' | 'needs review' | 'resolved'` — string, not enum.
-- `intentType` is `'visual' | 'copy' | 'behavior' | 'other'` — set by the G1 chip selector or defaulted; see [`docs/agent-loop/chips.md`](../agent-loop/chips.md)
 - `createdOnVersionId` is the mockup's `currentVersionId` at annotation-creation time — used by `/agent/context` to compute `diff_since_creation`. Nullable to handle race conditions where the version row is gone.
 
 ### Thread

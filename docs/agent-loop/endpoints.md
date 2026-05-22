@@ -2,20 +2,6 @@
 
 Each endpoint is a stable contract. Updates to response shape, auth, or error codes go through this doc first.
 
-## `GET /api/annotations/[id]/intent`
-
-Server-resolved intent payload. Parses the tldraw snapshot into structured drawings and runs headless puppeteer against the current version to resolve DOM-at-bbox + computed styles.
-
-**Auth:** cookie OR Bearer (read-only; mirrors `GET /annotations/[id]`).
-
-**Response 200:** see [Intent payload](intent-payload.md) for the full shape and field meanings.
-
-**Response 401 / 404:** standard.
-
-**Caching:** sidecar `intent.json` keyed by `(tldraw_mtime, current_version_id)`. Cache hit: sub-50ms. Cache miss: 3–5s cold (puppeteer launch) or sub-500ms warm (browser singleton reused).
-
-**Invalidation:** `updateAnnotationTldraw` deletes the sidecar BEFORE writing the new tldraw. Current-version changes are handled by the cache key including `current_version_id`.
-
 ## `GET /api/agent/context/[annotationId]`
 
 Single-call aggregator. Reads everything an agent needs to start working on a fix.
@@ -29,7 +15,6 @@ Single-call aggregator. Reads everything an agent needs to start working on a fi
   "annotation": {
     "id": "cmox…",
     "mockup_id": "cmox…",
-    "intent_type": "visual",
     "pin_coords": { /* parsed JSON or null — LEGACY, dropped after Phase 13 */ },
     "anchors": [
       /* Array of Anchor objects per pin-anchoring spec.
@@ -43,7 +28,6 @@ Single-call aggregator. Reads everything an agent needs to start working on a fi
     "created_at": "2026-05-08T19:19:56.939Z",
     "created_on_version_id": "cmox…"
   },
-  "intent": null | { /* IntentPayload — full /intent response when generation succeeds */ },
   "thread": {
     "id": "cmox…",
     "status": "open",
@@ -69,8 +53,6 @@ Single-call aggregator. Reads everything an agent needs to start working on a fi
 }
 ```
 
-**`intent`** is `null` when intent generation fails — most commonly when puppeteer can't render the current version (missing build dir, headless launch error, navigation timeout) so the DOM-at-bbox resolution step has nothing to read. Failure is silent at this surface: the aggregator catches the error from the in-process `/intent` call and serves the rest of the payload. Clients that need the structured drawings or DOM anchors must guard for `intent === null` and fall back to `annotation.anchors` + `annotation.pin_coords` for positioning. The `/intent` endpoint itself returns the underlying error code; call it directly for diagnostics.
-
 **`current_version.files`** inlines text files only (extensions: `.html`, `.htm`, `.css`, `.js`, `.mjs`, `.json`, `.svg`, `.txt`, `.md`). Binaries are listed by name in `binary_files` — fetch them separately if needed.
 
 **`diff_since_creation`** is empty string when the annotation was created on the current version. When non-empty, it's a unified diff of `index.html` between the creation version and the current version.
@@ -86,8 +68,6 @@ GET /api/agent/context/cmox…
 If-None-Match: "ab12cd34ef567890"
 → 304 Not Modified  (no body)
 ```
-
-**Implementation note:** the aggregator imports the GET handler from `/intent` directly (not via HTTP). This keeps the request in-process and avoids depending on `APP_URL`.
 
 ## `PATCH /api/mockups/[id]/version-patch`
 
@@ -291,7 +271,6 @@ Persist an updated drawing snapshot. Used when the user enters edit mode on an e
 
 **Side effects:**
 - Strips the screenshot base64 from the snapshot before persisting
-- Deletes the `intent.json` sidecar BEFORE writing the new tldraw, so a subsequent `/intent` read regenerates from scratch
 - Does NOT update `pinCoords` — the stored bbox stays at the original drawing's extent. (Future improvement: recompute from the new snapshot's shape bounds.)
 
 ## `POST /api/mockups/[id]/annotations`
@@ -353,7 +332,6 @@ Preserved for backward compatibility with older agents that still upload screens
 | `tldraw` | string (JSON-encoded snapshot) | yes |
 | `message` | string | yes |
 | `pinCoords` | string (JSON-encoded `PinCoords`) | no |
-| `intent_type` | `'visual' \| 'copy' \| 'behavior' \| 'other'` | no |
 
 **Response 201:**
 
@@ -369,7 +347,6 @@ Preserved for backward compatibility with older agents that still upload screens
 | 400 | `empty_message` | `message.trim() === ''` |
 | 400 | `invalid_tldraw_json` | tldraw field doesn't parse as JSON |
 | 400 | `invalid_pin_coords` | `pinCoords` JSON malformed |
-| 400 | `invalid_intent_type` | `intent_type` not in allowed set |
 | 401 | `unauthorized` | No identity |
 | 403 | `forbidden_origin` | Cross-origin request (CSRF guard via `assertSameOrigin`) |
 
@@ -378,7 +355,6 @@ Preserved for backward compatibility with older agents that still upload screens
 **Side effects (both modes):**
 - Strips screenshot base64 from the tldraw snapshot before writing (multipart only — the JSON mode never persists tldraw)
 - Stamps `createdOnVersionId` to the mockup's current version (or the explicit `createdOnVersionId` field if passed; reserved for tooling)
-- Defaults `intentType` to `'other'` when omitted (multipart only — the JSON mode keeps the default at the DB level)
 - Creates a `Thread` row with `status: 'open'` and a first `Message`
 
 ## `POST /api/threads/[id]/reply`
