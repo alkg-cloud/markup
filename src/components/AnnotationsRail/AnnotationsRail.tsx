@@ -38,6 +38,22 @@ export interface AnnotationsRailProps {
    *  outside. When the number changes, the rail pins itself. The user
    *  can still unpin via the lock toggle. */
   expandSignal?: number;
+  /** When set, the parent owns an active draft. The rail mounts the
+   *  `renderDraft()` slot at the top of the expanded body, prepends a
+   *  pulsing `+` badge in the collapsed column, and hides the foot-area
+   *  add button (the draft is already open — clicking + would no-op). */
+  draft?: { active: boolean } | null;
+  /** Forces the rail into the expanded width WITHOUT the pinned accent
+   *  ring. Used while a draft is active so the user has room to type;
+   *  the rail returns to the user's prior pinned/unpinned preference
+   *  when `forceExpand` flips back to false. Distinct from `pinned`
+   *  (which paints the accent ring) and `hover` (transient). */
+  forceExpand?: boolean;
+  /** Render slot for the DraftCard. The rail invokes this when
+   *  `draft?.active === true`. Keeping it as a render prop lets the
+   *  parent own the draft state machine without leaking DraftCard's
+   *  props into this component's signature. */
+  renderDraft?: () => ReactNode;
 }
 
 /**
@@ -61,6 +77,9 @@ export function AnnotationsRail({
   count,
   resetPositionKey,
   expandSignal,
+  draft,
+  forceExpand,
+  renderDraft,
 }: AnnotationsRailProps) {
   const railRef = useRef<HTMLElement | null>(null);
   const [hover, setHover] = useState(false);
@@ -181,10 +200,12 @@ export function AnnotationsRail({
     };
   }, [drag, boundsRef]);
 
+  const draftActive = Boolean(draft?.active);
   const cls = [
     styles.rail,
-    (hover || pinned) && styles.hoverExpanded,
+    (hover || pinned || forceExpand) && styles.hoverExpanded,
     pinned && styles.pinned,
+    forceExpand && styles.forceExpand,
     drag && styles.dragging,
   ]
     .filter(Boolean)
@@ -222,6 +243,11 @@ export function AnnotationsRail({
       {/* biome-ignore lint/a11y/noStaticElementInteractions: hover-expand is
           progressive enhancement; keyboard users tab into the buttons directly. */}
       <div className={styles.collapsed} onMouseEnter={enter}>
+        {draftActive && (
+          <span className={styles.draftBadge} aria-hidden="true">
+            +
+          </span>
+        )}
         {badges.map((b) => (
           <button
             key={b.annotationId}
@@ -258,30 +284,37 @@ export function AnnotationsRail({
             <VscPinned aria-hidden="true" />
           </button>
         </header>
+        {draftActive && renderDraft && (
+          <div className={styles.draftSlot}>{renderDraft()}</div>
+        )}
         {badges.length === 0 ? (
-          <p className={styles.empty}>No annotations yet — drop a pin to capture feedback.</p>
+          !draftActive && (
+            <p className={styles.empty}>No annotations yet — drop a pin to capture feedback.</p>
+          )
         ) : (
           <ul className={styles.list}>{children}</ul>
         )}
       </div>
 
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: see comment above. */}
-      <div className={styles.foot} onMouseEnter={enter}>
-        <button
-          type="button"
-          className={styles.add}
-          aria-label={newAnnotationAria}
-          onClick={onCreate}
-        >
-          <span className={styles.addIcon} aria-hidden="true">
-            <VscAdd aria-hidden="true" />
-          </span>
-          <span className={styles.addLabel}>
-            <span>New annotation</span>
-            <Kbd keys={['mod', 'shift', 'n']} />
-          </span>
-        </button>
-      </div>
+      {!draftActive && (
+        /* biome-ignore lint/a11y/noStaticElementInteractions: see comment above. */
+        <div className={styles.foot} onMouseEnter={enter}>
+          <button
+            type="button"
+            className={styles.add}
+            aria-label={newAnnotationAria}
+            onClick={onCreate}
+          >
+            <span className={styles.addIcon} aria-hidden="true">
+              <VscAdd aria-hidden="true" />
+            </span>
+            <span className={styles.addLabel}>
+              <span>New annotation</span>
+              <Kbd keys={['mod', 'shift', 'n']} />
+            </span>
+          </button>
+        </div>
+      )}
     </aside>
   );
 }
