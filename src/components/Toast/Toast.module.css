@@ -1,3 +1,16 @@
+/* Toast — DS 17 visual contract, Radix-backed (see useToast.ts).
+ *
+ * `.container` styles `Toast.Viewport` (renders as `<ol>` by default).
+ * `.pill`      styles each `Toast.Root` (`<li>` by default). Animations
+ *               bind to Radix's `[data-state="open" | "closed"]` so the
+ *               enter / exit cross-fade Just Works without JS plumbing.
+ *
+ * Swipe-to-dismiss: Radix exposes `[data-swipe="start | move | end"]`
+ * and `[data-swipe-direction="up"]`; we let the platform do the visual
+ * (translate along the swipe axis) and just reset the transform when
+ * the swipe is cancelled.
+ */
+
 .container {
   position: fixed;
   bottom: 24px;
@@ -5,10 +18,18 @@
   transform: translateX(-50%);
   z-index: 2000;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   align-items: center;
   gap: 8px;
+  /* Reset the default <ol> chrome — Radix emits a list. */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  /* The viewport itself never intercepts pointer events; the pills
+   * opt back in below so swipe-to-dismiss still works. */
   pointer-events: none;
+  /* Match other floating overlays (rail, palette). */
+  outline: none;
 }
 
 .pill {
@@ -21,11 +42,30 @@
   font-weight: 500;
   color: var(--text-bright);
   white-space: nowrap;
-  animation: toastIn var(--motion-fast) var(--ease-spring) forwards;
 }
 
-.pillOut {
-  animation: toastOut 250ms var(--ease-exit) forwards;
+.pill[data-state="open"] {
+  animation: toastIn var(--motion-base) var(--ease-spring);
+}
+
+.pill[data-state="closed"] {
+  animation: toastOut 200ms var(--ease-exit);
+}
+
+/* User-initiated swipe — Radix sets the translate on the element; we
+ * cancel the entry animation so it doesn't fight the gesture. */
+.pill[data-swipe="move"] {
+  transform: translateY(var(--radix-toast-swipe-move-y));
+  animation: none;
+}
+
+.pill[data-swipe="cancel"] {
+  transform: translateY(0);
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+
+.pill[data-swipe="end"] {
+  animation: toastSwipeOut 100ms var(--ease-exit);
 }
 
 @keyframes toastIn {
@@ -45,9 +85,21 @@
   }
 }
 
+@keyframes toastSwipeOut {
+  from {
+    transform: translateY(var(--radix-toast-swipe-end-y));
+  }
+  to {
+    transform: translateY(-100px);
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pill,
-  .pillOut {
+  .pill[data-state="open"],
+  .pill[data-state="closed"],
+  .pill[data-swipe="end"] {
     animation: none;
   }
 }
