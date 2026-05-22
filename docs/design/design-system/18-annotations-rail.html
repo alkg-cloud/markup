@@ -466,6 +466,12 @@ pre.api .t{color:oklch(86% 0.12 60)}
           <td>Badge gets a 4 px coloured glow ring + brighter fill; matching card gets <code>.active</code> (accent-overlay bg + 2 px left bar).</td>
           <td>Matching card: <code>aria-current="true"</code>.</td>
         </tr>
+        <tr>
+          <td><code>has-draft</code></td>
+          <td>Orthogonal to expanded/pinned. Set when a <a href="./32-draft-card.html" style="color:var(--accent)"><code>DraftCard</code></a> is mounted via the <code>draft</code> prop.</td>
+          <td>Rail force-expands to 300 px without the pinned accent ring (the user's pre-existing pin state is preserved underneath). A <code>.draft-slot</code> renders the DraftCard in a sticky position at the top of the expanded body, above the scrollable <code>.list</code>. In the collapsed view, a sentinel <code>.badge.draft</code> (dashed accent <code>+</code>, pulsing) appears at the top of the badge column.</td>
+          <td>The DraftCard owns its own <code>aria-live</code> announcements.</td>
+        </tr>
       </tbody>
     </table>
     <div class="caption">"hover-expanded", "pinned-expanded", and "dragging" are <em>internal</em> to the rail — the parent only sets <code>expandSignal</code> for programmatic pin. The drag, hover-expand, and lock toggle are all owned by the component.</div>
@@ -528,6 +534,8 @@ pre.api .t{color:oklch(86% 0.12 60)}
       <dt>count chip<dd>9999 px radius, --bg-card-active bg, 10 px / 800
       <dt>lock<dd>24 × 24 → .pressed gets --accent-soft bg + --accent-bright icon
       <dt>transition<dd>width --motion-base / --ease-spring
+      <dt>draft-slot<dd>sticky top inside .expanded-body when a DraftCard is mounted; flex-shrink:0 so its action row never scrolls out of view
+      <dt>draft sentinel badge<dd>collapsed view, dashed --accent-bright border + "+" glyph + 1.6 s pulse
     </dl>
   </section>
 
@@ -542,6 +550,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
       <li><strong>Badge-card sync.</strong> Setting <code>activeAnnotationId</code> highlights both the badge (in the collapsed column) and the card (in the expanded list).</li>
       <li><strong>Add button.</strong> Native <code>&lt;button&gt;</code>. Morphs from 32 px circle (collapsed) to full-width pill (expanded) — same transition tokens as the rail width.</li>
       <li><strong>Keyboard.</strong> The Ctrl+⇧+N shortcut (rendered on the add button) fires <code>onCreate</code> from anywhere in the canvas — registered globally by the parent.</li>
+      <li><strong>DraftCard slot.</strong> When the parent passes a <code>draft</code> prop, the rail mounts a <a href="./32-draft-card.html" style="color:var(--accent)"><code>DraftCard</code></a> in a sticky <code>.draft-slot</code> at the top of the expanded body. While the slot is filled, the rail force-expands (no accent ring) and the footer add-button hides — the DraftCard is the entry. On send/discard, the rail returns to the user's prior pinned/unpinned preference.</li>
       <li><strong>Reduced motion.</strong> Under <code>prefers-reduced-motion: reduce</code>, both the width transition and the add-button morph collapse to a 0 ms snap via the token override at the top of the file.</li>
     </ul>
   </section>
