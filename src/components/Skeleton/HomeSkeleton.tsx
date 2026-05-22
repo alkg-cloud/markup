@@ -47,9 +47,16 @@ export function HomeSkeleton() {
     <div className={styles.page}>
       <main className={styles.main} aria-label="Home" aria-busy="true" aria-live="polite">
         <header className={styles.hero}>
-          <h1 className={styles.greeting}>{greeting}</h1>
+          {/* `suppressHydrationWarning` — the server pre-renders with
+              Node's default locale (en-US); the client hydrates with
+              the browser locale (e.g. pt-BR). This single-frame text
+              divergence is intentional and the React-documented escape
+              hatch for it. */}
+          <h1 className={styles.greeting} suppressHydrationWarning>
+            {greeting}
+          </h1>
           <p className={styles.sub}>
-            <span>{formatToday()} · </span>
+            <span suppressHydrationWarning>{formatToday()} · </span>
             <Skeleton className={styles.subCount} width={170} height={10} variant="text" />
           </p>
         </header>
