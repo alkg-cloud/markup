@@ -1,46 +1,12 @@
 /* Tree-row skeleton mounted inside the real `<Sidebar>` while
- * `/api/shell` is in flight. The PROJECTS / NO PROJECT section headers
- * are real text so the sidebar reads as a normal sidebar that just
- * hasn't filled in its rows yet.
+ * `/api/shell` is in flight. The Projects / No-project section headers
+ * are rendered by `<SectionHeader>`, so this stylesheet only owns the
+ * fake row layout that sits between them.
  */
 
 .root {
   display: flex;
   flex-direction: column;
-}
-
-.sectionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px 4px;
-  font-family: var(--font-mono);
-  font-size: var(--type-xs);
-  font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.sectionHeaderOrphan {
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  padding: 14px 16px 6px;
-}
-
-.headerBtn {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-xs);
-  color: var(--text-muted);
-  opacity: 0.6;
 }
 
 .row {

@@ -224,10 +224,14 @@ describe('ProjectSidebar', () => {
   describe('inline "Projects" label', () => {
     it('renders the Projects label inside the scrollable tree area, not in a fixed header', () => {
       renderSidebar();
-      // The label is identified by its DS-01 class + textual content.
-      // We grep for "Projects" in the inline label container and assert
-      // it lives under the desktop sidebar's `.scroll` slot.
-      const labels = container.querySelectorAll('[class*="projectsInlineLabel"]');
+      // The label is rendered by the shared <SectionHeader> recipe
+      // whose CSS module emits a class prefixed with "header". We grep
+      // the rendered DOM for an element containing "Projects" that
+      // also carries that class so we exercise the contract: a real
+      // SectionHeader sits inside the scroll wrapper.
+      const labels = Array.from(container.querySelectorAll('[class*="header"]')).filter((el) =>
+        (el.textContent ?? '').includes('Projects'),
+      );
       expect(labels.length).toBeGreaterThan(0);
       const firstLabel = labels[0];
       expect(firstLabel.textContent).toContain('Projects');

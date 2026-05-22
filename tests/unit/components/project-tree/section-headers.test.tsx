@@ -70,7 +70,7 @@ describe('ProjectTree section headers', () => {
     expect(text).not.toContain('PROJECTS');
   });
 
-  it("renders 'NO PROJECT' header above orphan mockups", async () => {
+  it("renders 'No project' header above orphan mockups (CSS uppercases visually)", async () => {
     const { ProjectTree } = await import('@/components/ProjectTree/ProjectTree');
     await act(async () => {
       root.render(
@@ -82,10 +82,10 @@ describe('ProjectTree section headers', () => {
     });
 
     const text = container.textContent ?? '';
-    expect(text).toContain('NO PROJECT');
+    expect(text).toContain('No project');
   });
 
-  it("renders 'NO PROJECT' after the project rows (DOM order)", async () => {
+  it("renders the 'No project' header after the project rows (DOM order)", async () => {
     const { ProjectTree } = await import('@/components/ProjectTree/ProjectTree');
     await act(async () => {
       root.render(
@@ -98,12 +98,12 @@ describe('ProjectTree section headers', () => {
 
     const allText = container.innerHTML;
     const projectPos = allText.indexOf('Project Alpha');
-    const orphanPos = allText.indexOf('NO PROJECT');
+    const orphanPos = allText.indexOf('No project');
     expect(projectPos).toBeGreaterThanOrEqual(0);
     expect(orphanPos).toBeGreaterThan(projectPos);
   });
 
-  it("does not render 'NO PROJECT' when orphanMockups is empty", async () => {
+  it("does not render the 'No project' header when orphanMockups is empty", async () => {
     const { ProjectTree } = await import('@/components/ProjectTree/ProjectTree');
     await act(async () => {
       root.render(
@@ -115,6 +115,6 @@ describe('ProjectTree section headers', () => {
     });
 
     const text = container.textContent ?? '';
-    expect(text).not.toContain('NO PROJECT');
+    expect(text).not.toContain('No project');
   });
 });

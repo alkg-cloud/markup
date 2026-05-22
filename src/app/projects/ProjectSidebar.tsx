@@ -10,6 +10,8 @@ import type { TreeMockup, TreeProject } from '@/components/ProjectTree/ProjectTr
 import { ProjectTree } from '@/components/ProjectTree/ProjectTree';
 import type { RecentMockup } from '@/components/ProjectTree/RecentsSection';
 import { RecentsSection } from '@/components/ProjectTree/RecentsSection';
+import { SectionHeader } from '@/components/ProjectTree/SectionHeader';
+import sectionHeaderStyles from '@/components/ProjectTree/SectionHeader.module.css';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { SidebarTreeSkeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast/useToast';
@@ -279,19 +281,22 @@ export function ProjectSidebar({
   }, []);
 
   const projectsInlineLabel = (
-    <div className={sidebarStyles.projectsInlineLabel}>
-      <span>Projects</span>
-      <button
-        type="button"
-        className={sidebarStyles.inlinePlusBtn}
-        aria-label="New project"
-        data-tooltip="New project"
-        data-tooltip-align="right"
-        onClick={() => setNewProjectOpen(true)}
-      >
-        <VscAdd size={11} aria-hidden="true" />
-      </button>
-    </div>
+    <SectionHeader
+      action={
+        <button
+          type="button"
+          className={sectionHeaderStyles.actionBtn}
+          aria-label="New project"
+          data-tooltip="New project"
+          data-tooltip-align="right"
+          onClick={() => setNewProjectOpen(true)}
+        >
+          <VscAdd size={11} aria-hidden="true" />
+        </button>
+      }
+    >
+      Projects
+    </SectionHeader>
   );
 
   const treeContent = loading ? (

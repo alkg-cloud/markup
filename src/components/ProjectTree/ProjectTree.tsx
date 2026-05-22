@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MAX_FOLDER_DEPTH } from '@/lib/project/constants';
 import { mockupSlugHref } from '@/lib/project/routes';
 import styles from './ProjectTree.module.css';
+import { SectionHeader } from './SectionHeader';
 import { MockupIcon } from './TreeIcons';
 import { type CreatingTarget, type RenameTarget, TreeNode } from './TreeNode';
 import { TreeNodeKebab } from './TreeNodeKebab';
@@ -316,9 +317,7 @@ export function ProjectTree({
         })}
         {orphanMockups.length > 0 && (
           <>
-            <div className={styles.sectionHeader} aria-hidden="true">
-              NO PROJECT
-            </div>
+            <SectionHeader>No project</SectionHeader>
             {orphanMockups.map((m) => {
               // Orphans live under the synthetic `unsorted` project so
               // they still get a canonical path-based URL.
