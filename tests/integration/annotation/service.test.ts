@@ -97,7 +97,7 @@ describe('annotation service', () => {
     expect(got?.thread?.messages[0].body).toBe('hi');
   });
 
-  it('persists intentType and createdOnVersionId from input', async () => {
+  it('persists createdOnVersionId from input', async () => {
     const m = await createMockupFromZip({
       name: 'IntentExplicit',
       zipPath: fixture('valid-simple.zip'),
@@ -111,14 +111,12 @@ describe('annotation service', () => {
       message: 'visual change needed',
       authorId: 'u',
       authorType: 'user',
-      intentType: 'visual',
       createdOnVersionId: m.version.id,
     });
-    expect(r.annotation.intentType).toBe('visual');
     expect(r.annotation.createdOnVersionId).toBe(m.version.id);
   });
 
-  it('defaults intentType to "other" and stamps current mockup version when omitted', async () => {
+  it('stamps current mockup version when createdOnVersionId omitted', async () => {
     const m = await createMockupFromZip({
       name: 'IntentDefault',
       zipPath: fixture('valid-simple.zip'),
@@ -133,7 +131,6 @@ describe('annotation service', () => {
       authorId: 'u',
       authorType: 'user',
     });
-    expect(r.annotation.intentType).toBe('other');
     expect(r.annotation.createdOnVersionId).toBe(m.version.id);
   });
 

@@ -53,7 +53,6 @@ async function makeAnnotation(opts?: { projectId?: string; folderId?: string }) 
     message: 'do something',
     authorId: 'u',
     authorType: 'user',
-    intentType: 'visual',
   });
   return { annotationId: r.annotation.id, mockupId: m.mockup.id, versionId: m.version.id };
 }
@@ -69,7 +68,7 @@ describe('GET /api/agent/context/[annotationId]', () => {
     await prisma.project.deleteMany({ where: { slug: { not: 'unsorted' } } });
   });
 
-  it('returns aggregated annotation + intent + thread + current_version inline', async () => {
+  it('returns aggregated annotation + thread + current_version inline', async () => {
     const cookie = await adminCookie();
     const { annotationId } = await makeAnnotation();
     const res = await GET(
@@ -79,7 +78,6 @@ describe('GET /api/agent/context/[annotationId]', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.annotation.id).toBe(annotationId);
-    expect(body.annotation.intent_type).toBe('visual');
     expect(body.thread.id).toBeDefined();
     expect(body.thread.messages).toHaveLength(1);
     expect(body.thread.messages[0].body).toBe('do something');

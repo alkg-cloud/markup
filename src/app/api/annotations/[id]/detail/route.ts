@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { TLEditorSnapshot } from '@tldraw/tldraw';
 import { NextResponse } from 'next/server';
-import { isIntentType } from '@/lib/annotation/intent';
 import { getAnnotation } from '@/lib/annotation/service';
 import { identify } from '@/lib/auth/identify';
 import { resolveDisplayName, resolveDisplayNames } from '@/lib/auth/resolve-display-name';
@@ -73,7 +72,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
       createdAt: annotation.createdAt.toISOString(),
       createdBy: annotation.createdBy,
       createdByType: annotation.createdByType,
-      intentType: isIntentType(annotation.intentType) ? annotation.intentType : 'other',
     },
     author: { name: authorInfo.name, kind: authorInfo.kind },
     thread: {
