@@ -361,7 +361,7 @@ Shared error placeholder for page-level fetches (`ErrorState.tsx`).
 
 ## mockup-viewer
 
-Mockup viewer at `/projects/<slug>/<...folders>/<mockup-slug>` (the `(app)/projects/[slug]/[...path]/page.tsx` client page detects the mockup-resolution branch of `GET /api/projects/by-slug/[slug]/resolve?path=…` and renders `MockupViewerPage`, which fetches `GET /api/mockups/[id]/viewer` and forwards the payload to `AppMainViewer.tsx`). Canonical viewer URLs are path-based and human-readable; orphan mockups resolve under the synthetic project slug `unsorted`. The viewer composes **floating, draggable chrome** (rail + toolbar + composer + marking-bar) directly above the canvas — no in-canvas toolbar, no side panel.
+Mockup viewer at `/projects/<slug>/<...folders>/<mockup-slug>` (the `(app)/projects/[slug]/[...path]/page.tsx` client page detects the mockup-resolution branch of `GET /api/projects/by-slug/[slug]/resolve?path=…` and renders `MockupViewerPage`, which fetches `GET /api/mockups/[id]/viewer` and forwards the payload to `AppMainViewer.tsx`). Canonical viewer URLs are path-based and human-readable; orphan mockups resolve under the synthetic project slug `unsorted`. The viewer composes **floating, draggable chrome** (rail + toolbar) directly above the canvas — no in-canvas toolbar, no side panel. The draft composer is an inline `draft-card` mounted at the top of the rail rather than a floating overlay.
 
 **Layout in normal mode:** the viewer inhabits the in-shell area to the right
 of the project sidebar and below the topbar, exactly like every other `(app)`
@@ -387,7 +387,7 @@ viewport when its Fullscreen API is active. Glass-bg chrome floats above.
 | ID | Surface / Interaction | States |
 |---|---|---|
 | `mockup-viewer-app-main` | `<main>` hosting canvas-stage + floating overlays. `position: relative; flex: 1; min-height: 0; overflow: hidden`. Sized by the `<main>` flex cell that sits to the right of `sidebar-shell` and below `topbar-bar`. | in-shell (default), fullscreen (via Fullscreen API on this element) |
-| `mockup-viewer-fullscreen-mode` | Fullscreen state. Triggered by `mockup-viewer-toolbar-fullscreen` or `f` shortcut. Uses `appMain.requestFullscreen()`; the browser removes shell chrome until `document.exitFullscreen()` or Esc. Floating rail/toolbar/composer/marking-bar all survive because they live inside the fullscreen element. | inactive, active |
+| `mockup-viewer-fullscreen-mode` | Fullscreen state. Triggered by `mockup-viewer-toolbar-fullscreen` or `f` shortcut. Uses `appMain.requestFullscreen()`; the browser removes shell chrome until `document.exitFullscreen()` or Esc. Floating rail and toolbar (and the inline `draft-card` hosted inside the rail) all survive because they live inside the fullscreen element. | inactive, active |
 | `mockup-viewer-canvas-stage` | Scrollable container around the mockup iframe. `position: absolute; inset: 0; overflow: auto`. | overflow auto when zoomed past container bounds |
 | `mockup-viewer-mockup-doc` | The iframe rendering `/m/[id]/...`. Receives `transform: scale(var(--zoom))` for canvas zoom. | loading, loaded, error |
 | `mockup-viewer-pin-layer` | Non-scaling overlay (sibling of mockup-doc) hosting pin elements. Positions reposition on container resize, scroll, zoom, and fullscreen transitions — NOT just viewport resize. | `pointer-events: none` on layer; pins re-enable for click delegation |
@@ -445,23 +445,25 @@ inside the chip itself.
 | `mockup-viewer-version-action-promote` | Promote version to current | enabled, disabled on current row (with "Already current" tooltip) |
 | `mockup-viewer-version-action-delete` | Per-row "Delete" item (label dropped the redundant noun) — opens a `confirm-dialog` quoting the version label (e.g. "Delete v3") + warning that anchors pointing at this version lose their source-of-truth pin. DELETE `/api/mockups/[id]/versions/[vid]` only after confirm. **Hidden for non-admin viewers when the version's `createdByType === 'agent'` or `createdBy !== viewer.userId`.** See `[fc:delete-button-gating]`. | danger styling |
 
-### annotation-composer (replaces annotation-modal)
+### draft-card (replaces annotation-composer)
 
-Modal-first creation flow with optional multi-pin marking. See spec §7.
+Inline composer mounted in the annotations rail while a user is drafting a new top-level annotation. Persists to localStorage per `(mockupId, userId)`.
 
-| ID | Surface / Interaction | States |
-|---|---|---|
-| `annotation-composer` | Modal dialog hosting textarea + "Add pin" button + Post / Cancel | closed, open (idle), open (marking) |
-| `annotation-composer-scrim` | Backdrop scrim | 0.55 opacity idle, 0 opacity in marking |
-| `annotation-composer-panel` | Glass panel | full opacity idle, 0 opacity in marking |
-| `annotation-composer-textarea` | Annotation body textarea | idle, focused, filled |
-| `annotation-composer-pin-toggle` | "+ Add pin" / pencil "Edit pin" / pencil "Edit pins" morph | 0 / 1 / 2+ pending pins |
-| `annotation-composer-post` | "Post annotation" button | enabled, disabled (empty body) |
-| `annotation-composer-cancel` | Cancel button — discards pending pins | default |
-| `annotation-composer-close` | × close button (top-right) | default |
-| `mockup-viewer-marking-bar` | Top-center mode indicator surfaced during marking | hidden, open |
-| `mockup-viewer-marking-bar-pin-count` | Live pin count pill (`N pins`, singular/plural) | live |
-| `mockup-viewer-marking-bar-done` | Done button — exits marking mode | default |
+| ID | Surface | States |
+|----|---------|--------|
+| `draft-card` | Inline card mounted at the top of `mockup-viewer-rail` while a draft is active | unsaved, saving, saved, sending, error |
+| `draft-card-marker` | "DRAFT" micro-label + pulsing accent dot in the card header | idle, animated |
+| `draft-card-char-counter` | Char counter (`N / 10 000`) on the right of the header | hidden when body empty, red when over-limit |
+| `draft-card-textarea` | Body textarea (Radix Form.Control) | idle, focused, over-limit, sending (disabled) |
+| `draft-card-pin-row` | Mini teardrop icon + `N pins · click pin to remove` hint | zero / some / max |
+| `draft-card-cancel` | Ghost button; opens AlertDialog when body or pins non-empty | enabled, disabled (sending) |
+| `draft-card-cancel-confirm` | Radix AlertDialog "Discard draft?" with Keep editing / Discard | closed, open |
+| `draft-card-save` | Secondary button "Draft ⌘S" — flushes localStorage immediately | disabled (no unsaved changes / saved / sending), enabled |
+| `draft-card-send` | Primary button "Send ⌘↵" / "Retry" / "Sending…" | disabled (body empty / over-limit / sending), enabled |
+| `draft-card-status` | Status footer microcopy + dot (hue per status) | unsaved / saving / saved / sending / error |
+| `mockup-viewer-canvas-hint` | "Click anywhere to add a pin · click a draft pin to remove" pill banner with MdOutlineAddLocationAlt icon at canvas top | hidden, shown while draft active |
+| `mockup-viewer-rail-draft-slot` | Sticky slot at top of expanded body hosting the DraftCard | hidden (no draft), visible (draft active) |
+| `mockup-viewer-rail-draft-badge` | Sentinel dashed `+` badge at the top of the collapsed badge column | hidden (no draft), visible + pulsing (draft active) |
 
 ### annotation-card (one item in the rail's expanded list)
 
@@ -526,7 +528,7 @@ Promise-based replacement for `window.confirm`/`window.alert`/`window.prompt`. N
 
 | ID | Surface / Interaction | States |
 |---|---|---|
-| `glass-surface-standard` | Single source of truth lives in `src/styles/glass.module.css`. Two utilities — `floatingSurface` and `floatingScrim` — declare the canonical property block (`background: var(--surface-glass-bg)` / `backdrop-filter: blur(16px) saturate(140%)` / `border: var(--surface-glass-border)` on the surface; `background: var(--scrim-glass-bg)` / `backdrop-filter: blur(16px) saturate(140%)` on the scrim). Every floating overlay (`rail`, `toolbar`, `composer-panel`, `composer-scrim`, `marking-bar`, `sidebar`, `command-palette-panel`, `command-palette-scrim`, `dialog-card`, `dialog-scrim`, `confirm-dialog-content`, `confirm-dialog-overlay`, `topbar-avatar-menu`, `projecttree-kebab-menu`, `annotation-card-primary-menu`, `comment-kebab-menu`, `emoji-picker`, `version-chip-popover`, `version-chip-row-actions`, `toast-pill`) consumes one of these utilities via CSS Modules `composes:`. The tooltip uses the same property block inline because `Tooltip.css` is global (not a module). **Never** write the property block by hand in a new floating component — `composes:` from the utility. Lightning CSS auto-prefixes the unprefixed `backdrop-filter` for older Safari; the utility ships only the unprefixed declaration to avoid the prefix-dedup bug where Lightning CSS keeps `-webkit-` and drops the standard property. No accent-glow ring on neutral surfaces — `--shadow-glow` is reserved for explicitly accent-tinted elements (e.g. the sidebar pill collapsing morph). | single source of truth |
+| `glass-surface-standard` | Single source of truth lives in `src/styles/glass.module.css`. Two utilities — `floatingSurface` and `floatingScrim` — declare the canonical property block (`background: var(--surface-glass-bg)` / `backdrop-filter: blur(16px) saturate(140%)` / `border: var(--surface-glass-border)` on the surface; `background: var(--scrim-glass-bg)` / `backdrop-filter: blur(16px) saturate(140%)` on the scrim). Every floating overlay (`rail`, `toolbar`, `sidebar`, `command-palette-panel`, `command-palette-scrim`, `dialog-card`, `dialog-scrim`, `confirm-dialog-content`, `confirm-dialog-overlay`, `topbar-avatar-menu`, `projecttree-kebab-menu`, `annotation-card-primary-menu`, `comment-kebab-menu`, `emoji-picker`, `version-chip-popover`, `version-chip-row-actions`, `toast-pill`) consumes one of these utilities via CSS Modules `composes:`. The tooltip uses the same property block inline because `Tooltip.css` is global (not a module). **Never** write the property block by hand in a new floating component — `composes:` from the utility. Lightning CSS auto-prefixes the unprefixed `backdrop-filter` for older Safari; the utility ships only the unprefixed declaration to avoid the prefix-dedup bug where Lightning CSS keeps `-webkit-` and drops the standard property. No accent-glow ring on neutral surfaces — `--shadow-glow` is reserved for explicitly accent-tinted elements (e.g. the sidebar pill collapsing morph). | single source of truth |
 
 ## thread-timeline
 
@@ -800,15 +802,13 @@ Surfaces that compose the agent automation cycle. These are API-driven but have 
 
 | ID | Surface | User-visible in | API endpoint |
 |---|---|---|---|
-| `agent-annotation-create` | Annotation creation: JSON branch with `body` + `anchors[]` + `colorIndex` + `status` for comment-flow (drives `annotation-composer`); multipart branch with `screenshot` + `tldraw` + `pinCoords` retained for legacy/agent clients | `annotation-composer` (JSON branch); no UI for multipart branch | `POST /api/mockups/[id]/annotations` |
-| `agent-intent-chip` | Intent type (visual/copy/behavior/other) persisted on the annotation. Comment-flow defaults to `other`; agents set explicitly via the multipart branch | N/A in current UI | persisted as `Annotation.intentType` |
-| `agent-context-read` | Single-call context aggregator: annotation + intent + thread + inline source + diff_since_creation + project + folder_path. ETag for short-circuit | N/A (agent-only) | `GET /api/agent/context/[annotationId]` |
-| `agent-intent-parse` | Server-side intent extraction: drawings → DOM-resolved bbox + computed styles. Sidecar cached as `intent.json`, keyed by `(tldraw_mtime, current_version_id)` | `annotation-detail-intent-badge` | `GET /api/annotations/[id]/intent` |
+| `agent-annotation-create` | Annotation creation: JSON body with `body` + `anchors[]` + `colorIndex` + `status` for comment-flow (drives `draft-card`); multipart branch with `screenshot` + `tldraw` + `pinCoords` retained for legacy/agent clients | `draft-card` (JSON branch); no UI for multipart branch | `POST /api/mockups/[id]/annotations` |
+| `agent-context-read` | Single-call context aggregator: annotation + thread + inline source + diff_since_creation + project + folder_path. ETag for short-circuit | N/A (agent-only) | `GET /api/agent/context/[annotationId]` |
 | `agent-version-patch` | Diff-based version update with `base_version_id`. Binary files reused by reference. 409 on conflict (stale base) | new version in `mockup-viewer-versions` | `PATCH /api/mockups/[id]/version-patch` |
 | `agent-mockup-patch` | Mockup-metadata mutation. `status` (`open`/`resolved`/`archived`), placement (`projectId`/`folderId`/`position`) writable by both kinds (user + agent); `name` admin-only (agents get 403 `forbidden_field`). Optional close-out step after the last thread on a mockup is resolved. | `mockup-status-pill`, `mockup-actions-menu` (existing UI surfaces) | `PATCH /api/mockups/[id]` |
 | `agent-region-crop` | Bbox-cropped screenshot (sidecar-cached) | N/A (agent-only) | `GET /api/annotations/[id]/region` |
 | `agent-diff-text` | Text-mode unified or JSON diff between versions | used by `diff-viewer` | `GET /api/mockups/[id]/diff` |
-| `agent-tldraw-edit` | Drawing edit persistence. Deletes `intent.json` sidecar BEFORE writing new `tldraw.json` (cache invalidation ordering) | `annotation-detail-save-btn` | `PUT /api/annotations/[id]/tldraw` |
+| `agent-tldraw-edit` | Drawing edit persistence — writes `tldraw.json` for the annotation | `annotation-detail-save-btn` | `PUT /api/annotations/[id]/tldraw` |
 | `agent-thread-reply` | Agent replies in thread (`authorType: 'agent'`) | `thread-timeline-message` | `POST /api/threads/[id]/reply` |
 | `agent-thread-resolve` | Thread resolution | `thread-timeline-resolve-btn` | `POST /api/threads/[id]/resolve` |
 
@@ -819,4 +819,4 @@ Surfaces that compose the agent automation cycle. These are API-driven but have 
 | ID | Surface | States |
 |---|---|---|
 | `mockup-serve` | Static file serving at `/m/[mockupId]/[...path]`. Only non-`/api` route reading from `${DATA_DIR}` | serves current version by default; `?v=<vid>` for specific version |
-| `mockup-serve-iframe` | Iframe consumer of served files. Powers viewer and puppeteer intent resolution | loading, loaded, error (404 if version missing) |
+| `mockup-serve-iframe` | Iframe consumer of served files. Powers the viewer canvas | loading, loaded, error (404 if version missing) |
