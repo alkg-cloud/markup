@@ -67,7 +67,7 @@ The migration is idempotent because the SQLite `redefine table` template uses `I
 
 ```bash
 sqlite3 prisma/dev.db ".schema Annotation"
-sqlite3 prisma/dev.db "SELECT id, intentType FROM Annotation LIMIT 5"
+sqlite3 prisma/dev.db "SELECT id, status, colorIndex FROM Annotation LIMIT 5"
 ```
 
 ## Biome
