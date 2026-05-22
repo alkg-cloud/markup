@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import type { ThreadComment } from '@/components/AnnotationCard';
-import type { BreadcrumbSegment } from '@/components/Breadcrumbs/Breadcrumbs';
 import { AppMainViewerWired } from '@/components/MockupViewer/AppMainViewerWired';
 import { ProjectSkeleton } from '@/components/Skeleton';
 import type { VersionRow } from '@/components/VersionChip';
@@ -26,12 +25,8 @@ export type { Anchor, ThreadComment };
 export interface MockupViewerPageProps {
   /** Database id of the mockup. Resolved upstream from the URL path. */
   mockupId: string;
-  /** Pre-built breadcrumbs from the path resolver. */
-  breadcrumbs: BreadcrumbSegment[];
-  /** Optional viewer profile blurb for the topbar (passed in by the
-   *  parent page; matches what `useRequireAuth` exposes). */
-  userName?: string;
-  userEmail?: string;
+  /** Viewer role — flows into `AppMainViewerWired` so admin-only
+   *  affordances (delete, move) can gate on it. */
   userRole?: 'admin' | 'member';
 }
 

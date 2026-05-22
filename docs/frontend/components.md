@@ -68,7 +68,7 @@ The visual contract is documented in [DS 31 — Skeleton](../design/design-syste
 Rules of thumb:
 
 1. **Mirror the post-load layout where you can.** A skeleton that doesn't match the real layout produces a visible "jump" when the content arrives. Compose new skeletons from `<Skeleton />` to reach pixel parity with the destination surface. (The project/folder/mockup unification accepts a small mismatch since the alternative — swapping between two different placeholders mid-load — feels worse.)
-2. **Wrap the real content in `<FadeIn>`** so the swap from skeleton → content is a 220 ms ease-out cross-fade, not a hard cut. Importing it costs nothing (`src/components/FadeIn/FadeIn.tsx` is a few dozen bytes).
+2. **Wrap the real content in `<FadeIn>`** so the swap from skeleton → content is a 360 ms ease-out-expo cross-fade + 6 px slide-up, not a hard cut. Importing it costs nothing (`src/components/FadeIn/FadeIn.tsx` is a few dozen bytes). DS 31 § Anatomy documents the exact values.
 3. **Don't FadeIn the skeleton itself.** The skeleton is the first paint — fading it in just delays feedback. FadeIn wraps only the resolved content branch.
 4. **Respect `prefers-reduced-motion`.** Both the shimmer animation and the fade-in are zeroed under the media query — no opt-in needed; the primitives already do it.
 5. **Don't render the skeleton inside a Suspense boundary that flickers.** If the data source is fast (< 100 ms) the skeleton-then-content swap is itself noise; in that case render nothing while loading and rely on the parent's skeleton for the cold-start case.
@@ -82,7 +82,7 @@ if (status === 'loading' || !data) {
 
 return (
   <FadeIn>
-    <ProjectContent {...data} />     // real content fades in over 220 ms
+    <ProjectContent {...data} />     // real content fades in over 360 ms
   </FadeIn>
 );
 ```

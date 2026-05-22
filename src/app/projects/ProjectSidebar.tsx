@@ -220,13 +220,16 @@ export function ProjectSidebar({
       }
       // If the user is viewing the deleted item, bounce them to home
       // so they don't sit on a soon-to-404 URL while the sidebar
-      // re-fetches and removes the row.
-      if (
-        pathname &&
-        nodeNameById.get(nodeId) &&
-        pathname.includes(`/${nodeNameById.get(nodeId)}`)
-      ) {
-        router.push('/');
+      // re-fetches and removes the row. Match on a full `/`-segment
+      // boundary — a substring `.includes('/Hero')` would also fire
+      // for `/Heroes/...`, dropping the user off a sibling that
+      // happens to share a prefix.
+      const deletedName = nodeNameById.get(nodeId);
+      if (pathname && deletedName) {
+        const segments = pathname.split('/');
+        if (segments.includes(deletedName)) {
+          router.push('/');
+        }
       }
       refreshShell();
     },

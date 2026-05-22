@@ -31,6 +31,11 @@ export const isMac = (): boolean => {
  * output (which can't read `navigator`). Then, in a post-mount effect,
  * upgrades to the real value. The brief Ctrl→⌘ swap is intentional —
  * it happens after hydration, so React doesn't warn about a mismatch.
+ *
+ * Companion hook `useIsMacSettled()` distinguishes "pre-mount, value
+ * unknown" from "mounted, value known" so consumers can hide the
+ * keycap until the platform is settled (avoids the one-frame Ctrl→⌘
+ * flicker on Mac).
  */
 export function useIsMac(): boolean {
   const [mac, setMac] = useState(false);
@@ -38,6 +43,24 @@ export function useIsMac(): boolean {
     setMac(isMac());
   }, []);
   return mac;
+}
+
+/**
+ * Like `useIsMac()` but returns `{ mac, settled }` so the consumer
+ * can render the keycap with `visibility: hidden` until `settled`
+ * flips to `true`. On non-Mac, the settle is essentially free
+ * (the value never changes); on Mac it suppresses the one-frame
+ * Ctrl→⌘ swap that would otherwise be visible.
+ */
+export function useIsMacSettled(): { mac: boolean; settled: boolean } {
+  const [state, setState] = useState<{ mac: boolean; settled: boolean }>({
+    mac: false,
+    settled: false,
+  });
+  useEffect(() => {
+    setState({ mac: isMac(), settled: true });
+  }, []);
+  return state;
 }
 
 /**
