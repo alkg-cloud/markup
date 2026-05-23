@@ -612,7 +612,7 @@ Painel flutuante esquerdo dentro do mockup viewer (`src/components/AnnotationsRa
 - **Pinned:** sticky 300 px via lock toggle ou `expandSignal` externo. Border `--accent-overlay-mid` + accent ring extra.
 - **Cap:** `max-height: 70vh` (80 vh mobile ≤ 768 px). Lista scrolla internamente.
 - **Card anatomy:** `--bg-card` bg, `--border-subtle` border, `--radius-sm`; padding 10 px; gap 6 px. Active: bg accent-mix + 2 px accent left bar. Meta row: dot-badge (18 px) + author + status pill. Status pill: 9 px / 700 mono, `--info-soft` (open) / `--warning-soft` (needs review) / `--success-soft` (resolved).
-- **Add button:** circle (32 × 32) → pill (full-width) morph sobre `--motion-base` / `--ease-spring`. Inner add icon container 30 × 30 com SVG 14 × 14. Shortcut chip `Ctrl+⇧+N` / `⌘⇧N`.
+- **Add button:** circle (32 × 32) → pill (full-width) morph sobre `--motion-base` / `--ease-spring`. Inner add icon container 30 × 30 com SVG 14 × 14. Shortcut chip single-key `N` (suppressed while any input/textarea/contenteditable is focused).
 
 ### 19 — Canvas Toolbar (`19-toolbar.html`)
 

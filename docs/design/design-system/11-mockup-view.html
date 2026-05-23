@@ -494,7 +494,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
           <div class="foot-area">
             <button class="add" title="New annotation">
               <span class="add-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span>
-              <span class="add-label"><span>New annotation</span><span class="shortcut">⌘⇧N</span></span>
+              <span class="add-label"><span>New annotation</span><span class="shortcut">N</span></span>
             </button>
           </div>
         </aside>
@@ -622,7 +622,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
             <div class="foot-area">
               <button class="add">
                 <span class="add-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span>
-                <span class="add-label"><span>New annotation</span><span class="shortcut">⌘⇧N</span></span>
+                <span class="add-label"><span>New annotation</span><span class="shortcut">N</span></span>
               </button>
             </div>
           </div>
@@ -944,7 +944,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
     <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:700px">
       <li><strong>Same-origin iframe.</strong> Mockups serve from <code>/m/[mockupId]/[...path]/route.ts</code> on the same origin so the parent can reach into the iframe document for click capture and pin coordinate resolution. Cross-origin would break the anchoring runtime; the route handler is the gatekeeper.</li>
       <li><strong>Pin anchoring.</strong> Pins are stored as DOM-relative <code>Anchor</code> records (CSS selector + offset) — see <code>src/lib/anchoring</code> and the strategy doc <code>docs/superpowers/specs/2026-05-18-pin-anchoring-strategy.md</code>. On iframe load <code>useViewerCanvas</code> attaches the canvas root + resolves all anchors to absolute coords for PinLayer to render.</li>
-      <li><strong>Marking mode lifecycle.</strong> Enter: composer opens or user hits ⌘⇧N. Canvas cursor → crosshair; <code>MarkingBar</code> mounts; in-iframe click handler armed. Click in iframe → drop pending pin with next color from palette. Done → POST annotation with pin anchors + body; pending pins promoted to real pins on success. Cancel → drop all pending pins, close composer, exit marking.</li>
+      <li><strong>Annotation flow lifecycle.</strong> The inline <a href="./32-draft-card.html"><code>DraftCard</code></a> mounts at the top of the rail when the user clicks <strong>+ New annotation</strong> or presses <kbd class="kbd-key">N</kbd>. Any subsequent click inside the iframe drops a draft pin (next color from palette); clicking a draft pin removes it. <strong>Send</strong> POSTs the annotation with pin anchors + body — draft pins are promoted to real pins on success and the DraftCard unmounts. <strong>Cancel</strong> discards (with <code>AlertDialog</code> confirm if body or pins are non-empty). There is no separate "marking mode" toggle.</li>
       <li><strong>Active annotation.</strong> Clicking a canvas pin OR a rail card sets <code>activeId</code> — both render the matching pin glowing + the matching card with its <code>.active</code> treatment + (if rail was collapsed) the rail expands and stays pinned. Esc clears <code>activeId</code>.</li>
       <li><strong>Rail collapse / expand / pin.</strong> Hover → expand (300 px, motion-base spring). Pointer leave → collapse, UNLESS pinned. The lock pill toggles a persisted preference (per-user); pinned state survives mockup switches.</li>
       <li><strong>Replies / edit / delete.</strong> Each card's kebab opens an action menu. Delete goes through <code>useConfirm</code> (Radix AlertDialog) — destructive confirmation is non-skippable per <a href="./14-dialog.html" style="color:var(--accent)"><code>14-dialog</code></a>. Reply opens an inline composer; Edit replaces the card body with a textarea.</li>

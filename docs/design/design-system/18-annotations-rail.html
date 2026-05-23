@@ -229,7 +229,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
             <div class="badge" data-color="5">6</div>
           </div>
           <div class="foot-area">
-            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New<span class="kbd-group"><kbd class="kbd-key">Ctrl</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">⇧</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">N</kbd></span></span></button>
+            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New<span class="kbd-group"><kbd class="kbd-key">N</kbd></span></span></button>
           </div>
         </div>
       </div>
@@ -272,7 +272,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
               </li>
             </ul>
             <div class="foot-area">
-              <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="kbd-group"><kbd class="kbd-key">Ctrl</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">⇧</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">N</kbd></span></span></button>
+              <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="kbd-group"><kbd class="kbd-key">N</kbd></span></span></button>
             </div>
           </div>
         </div>
@@ -313,7 +313,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
             </li>
           </ul>
           <div class="foot-area">
-            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="kbd-group"><kbd class="kbd-key">Ctrl</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">⇧</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">N</kbd></span></span></button>
+            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="kbd-group"><kbd class="kbd-key">N</kbd></span></span></button>
           </div>
         </div>
       </div>
@@ -332,10 +332,10 @@ pre.api .t{color:oklch(86% 0.12 60)}
             <button class="lock">📌</button>
           </div>
           <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px 16px;text-align:center;color:var(--text-muted);font-size:11px">
-            No annotations yet. Use <strong style="color:var(--text-dim)">Ctrl+⇧+N</strong> or the button below to add the first.
+            No annotations yet. Press <strong style="color:var(--text-dim)">N</strong> or the button below to add the first.
           </div>
           <div class="foot-area">
-            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="kbd-group"><kbd class="kbd-key">Ctrl</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">⇧</kbd><span class="kbd-plus">+</span><kbd class="kbd-key">N</kbd></span></span></button>
+            <button class="add"><span class="add-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg></span><span class="add-label">New annotation<span class="kbd-group"><kbd class="kbd-key">N</kbd></span></span></button>
           </div>
         </div>
       </div>
@@ -549,7 +549,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
       <li><strong>Programmatic pin.</strong> <code>expandSignal</code> bumps from parent pin the rail open (used after creating a new annotation so the user sees it land in the list).</li>
       <li><strong>Badge-card sync.</strong> Setting <code>activeAnnotationId</code> highlights both the badge (in the collapsed column) and the card (in the expanded list).</li>
       <li><strong>Add button.</strong> Native <code>&lt;button&gt;</code>. Morphs from 32 px circle (collapsed) to full-width pill (expanded) — same transition tokens as the rail width.</li>
-      <li><strong>Keyboard.</strong> The Ctrl+⇧+N shortcut (rendered on the add button) fires <code>onCreate</code> from anywhere in the canvas — registered globally by the parent.</li>
+      <li><strong>Keyboard.</strong> Single-key <kbd class="kbd-key">N</kbd> (rendered on the add button) fires <code>onCreate</code> from anywhere in the canvas — registered globally by the parent and suppressed while any input/textarea/contenteditable is focused so the letter still types normally.</li>
       <li><strong>DraftCard slot.</strong> When the parent passes a <code>draft</code> prop, the rail mounts a <a href="./32-draft-card.html" style="color:var(--accent)"><code>DraftCard</code></a> in a sticky <code>.draft-slot</code> at the top of the expanded body. While the slot is filled, the rail force-expands (no accent ring) and the footer add-button hides — the DraftCard is the entry. On send/discard, the rail returns to the user's prior pinned/unpinned preference.</li>
       <li><strong>Reduced motion.</strong> Under <code>prefers-reduced-motion: reduce</code>, both the width transition and the add-button morph collapse to a 0 ms snap via the token override at the top of the file.</li>
     </ul>

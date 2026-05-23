@@ -49,14 +49,18 @@ function renderDraftCard(props: Partial<DraftCardProps> = {}) {
   return container.querySelector('[data-draft-card-root]') as HTMLElement;
 }
 
-/** Find a button by its rendered text content (case-sensitive substring match). */
+/** Find a button by its rendered text content OR aria-label (icon-only buttons
+ *  like Send have no text). Case-sensitive substring match for strings; regex
+ *  otherwise. Both surfaces are checked because the action row mixes labeled
+ *  buttons (Cancel, Draft) with icon-only ones (Send / Retry). */
 function findButton(rootEl: ParentNode, text: string | RegExp): HTMLButtonElement | null {
   const buttons = Array.from(rootEl.querySelectorAll('button'));
+  const matches = (candidate: string) =>
+    typeof text === 'string' ? candidate.includes(text) : text.test(candidate);
   for (const b of buttons) {
     const t = (b.textContent ?? '').trim();
-    if (typeof text === 'string' ? t.includes(text) : text.test(t)) {
-      return b as HTMLButtonElement;
-    }
+    const label = (b.getAttribute('aria-label') ?? '').trim();
+    if (matches(t) || matches(label)) return b as HTMLButtonElement;
   }
   return null;
 }
@@ -102,24 +106,25 @@ describe('DraftCard', () => {
       draft: baseDraft({ body: 'x', lastSavedAt: Date.now(), hasUnsavedChanges: false }),
       status: 'saved',
     });
-    // The Save button starts with the text "Draft" (followed by the Kbd chip).
+    // The Save button text is just "Draft" (shortcut moved to data-tooltip).
     // The DRAFT marker is a <span>, not a button, so this resolves uniquely.
-    const draftBtn = findButton(rootEl, /^Draft/);
+    const draftBtn = findButton(rootEl, /^Draft$/);
     expect(draftBtn).not.toBeNull();
     expect(draftBtn?.disabled).toBe(true);
   });
 
-  it('Send label becomes "Retry" when status="error"', () => {
+  it('Send aria-label becomes "Retry" when status="error"', () => {
     const rootEl = renderDraftCard({
       draft: baseDraft({ body: 'x', hasUnsavedChanges: true }),
       status: 'error',
     });
     const retry = findButton(rootEl, /Retry/);
     expect(retry).not.toBeNull();
-    // And no "Send" label is shown in that slot.
+    expect(retry?.getAttribute('aria-label')).toBe('Retry');
+    // The submit button is icon-only; no labeled Send remains.
     const buttons = Array.from(rootEl.querySelectorAll('button'));
-    const sendLabels = buttons.filter((b) => /^Send(\b|$)/.test((b.textContent ?? '').trim()));
-    expect(sendLabels.length).toBe(0);
+    const sendByLabel = buttons.filter((b) => (b.getAttribute('aria-label') ?? '') === 'Send');
+    expect(sendByLabel.length).toBe(0);
   });
 
   it('Cancel discards immediately when draft is empty (calls onCancel directly)', () => {
