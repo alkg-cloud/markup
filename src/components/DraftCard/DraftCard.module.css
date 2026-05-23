@@ -163,20 +163,6 @@
   padding-top: 2px;
 }
 
-/* Tighter Kbd inside the action-row buttons — without this the DS-spec
- * Kbd (20 px min-width / 10.5 px font) overflows the 300 px rail and
- * clips the Cancel button. Targets the rendered <kbd> element directly
- * (higher specificity than Kbd.module.css's `.key`) so we don't touch the
- * sibling Kbd consumers (rail add-button, command palette, etc.). */
-.kbdInBtn {
-  gap: 2px;
-}
-.kbdInBtn kbd {
-  min-width: 14px;
-  padding: 1px 4px;
-  font-size: 9.5px;
-}
-
 .btn {
   display: inline-flex;
   align-items: center;
@@ -243,6 +229,39 @@
 .btnDanger:hover {
   background: oklch(36% 0.12 25 / 0.65);
   color: oklch(95% 0.1 25);
+}
+
+/* Icon-only Send button — squared off so the paper-plane glyph reads
+ * as a control, not a label. Keeps the same 28 px height as Cancel/Draft
+ * so the action row baseline stays flush. Shortcut surfaces via tooltip. */
+.btnIcon {
+  width: 28px;
+  padding: 0;
+  gap: 0;
+}
+.btnIcon svg {
+  width: 16px;
+  height: 16px;
+}
+.spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  animation: draftSpin 0.7s linear infinite;
+}
+@keyframes draftSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-top-color: currentColor;
+    opacity: 0.5;
+  }
 }
 
 .root[data-body-state="empty"] .btnPrimary,

@@ -3,7 +3,7 @@
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import * as Form from '@radix-ui/react-form';
 import { forwardRef, type ReactNode, useEffect, useImperativeHandle, useRef } from 'react';
-import { Kbd } from '@/components/Kbd/Kbd';
+import { VscSend } from 'react-icons/vsc';
 import {
   BODY_CHAR_LIMIT,
   type BodyState,
@@ -13,6 +13,7 @@ import {
   derivePinCount,
   type PinCount,
 } from '@/components/MockupViewer/draft-types';
+import { useIsMac } from '@/lib/shortcuts/platform';
 import styles from './DraftCard.module.css';
 
 export interface DraftCardProps {
@@ -114,6 +115,11 @@ export const DraftCard = forwardRef<HTMLTextAreaElement, DraftCardProps>(
     const pinCount: PinCount = derivePinCount(draft.pins.length);
     const hasContent = draft.body.length > 0 || draft.pins.length > 0;
 
+    const mac = useIsMac();
+    const cancelHint = hasContent ? 'Discard draft (Esc)' : 'Close (Esc)';
+    const saveHint = mac ? 'Save draft (⌘S)' : 'Save draft (Ctrl+S)';
+    const sendHint = mac ? 'Send (⌘↵)' : 'Send (Ctrl+↵)';
+
     return (
       <Form.Root
         className={styles.root}
@@ -169,6 +175,7 @@ export const DraftCard = forwardRef<HTMLTextAreaElement, DraftCardProps>(
                   type="button"
                   className={`${styles.btn} ${styles.btnGhost}`}
                   disabled={status === 'sending'}
+                  data-tooltip={cancelHint}
                 >
                   Cancel
                 </button>
@@ -208,6 +215,7 @@ export const DraftCard = forwardRef<HTMLTextAreaElement, DraftCardProps>(
               className={`${styles.btn} ${styles.btnGhost}`}
               onClick={onCancel}
               disabled={status === 'sending'}
+              data-tooltip={cancelHint}
             >
               Cancel
             </button>
@@ -218,19 +226,24 @@ export const DraftCard = forwardRef<HTMLTextAreaElement, DraftCardProps>(
             className={`${styles.btn} ${styles.btnSecondary}`}
             disabled={!draft.hasUnsavedChanges || status === 'sending'}
             onClick={onSave}
+            data-tooltip={saveHint}
           >
             Draft
-            <Kbd keys={['mod', 's']} className={styles.kbdInBtn} />
           </button>
 
           <Form.Submit asChild>
             <button
               type="submit"
-              className={`${styles.btn} ${styles.btnPrimary}`}
+              className={`${styles.btn} ${styles.btnPrimary} ${styles.btnIcon}`}
               disabled={bodyState !== 'typing' || status === 'sending'}
+              data-tooltip={status === 'sending' ? 'Sending…' : sendHint}
+              aria-label={sendLabel(status)}
             >
-              {sendLabel(status)}
-              <Kbd keys={['mod', 'enter']} className={styles.kbdInBtn} />
+              {status === 'sending' ? (
+                <span className={styles.spinner} aria-hidden />
+              ) : (
+                <VscSend aria-hidden focusable={false} />
+              )}
             </button>
           </Form.Submit>
         </div>
