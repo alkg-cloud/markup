@@ -63,3 +63,14 @@
     --motion-base: 0ms;
   }
 }
+
+/* Mobile: hide every keycap chip — there's no physical keyboard,
+   so visually showing shortcuts adds noise without affordance.
+   Spec: docs/superpowers/specs/2026-05-23-mobile-shell-refinement-spec.md §5 */
+@media (max-width: 767px) {
+  .group,
+  .key,
+  .plus {
+    display: none;
+  }
+}
