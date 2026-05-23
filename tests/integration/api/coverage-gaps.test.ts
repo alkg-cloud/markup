@@ -5,7 +5,6 @@ import { DELETE as revokeAgentToken } from '@/app/api/agent-tokens/[id]/route';
 import { POST as createAgentToken } from '@/app/api/agent-tokens/route';
 import { GET as getAnnotation } from '@/app/api/annotations/[id]/route';
 import { GET as getScreenshot } from '@/app/api/annotations/[id]/screenshot/route';
-import { POST as createAnnotation } from '@/app/api/mockups/[id]/annotations/route';
 import { GET as getThumbnail, POST as setThumbnail } from '@/app/api/mockups/[id]/thumbnail/route';
 import { POST as createVersion } from '@/app/api/mockups/[id]/version/route';
 import { GET as getVersionSource } from '@/app/api/mockups/[id]/versions/[vid]/source/route';
@@ -108,43 +107,64 @@ describe('coverage gaps — uncovered route handlers', () => {
   });
 
   describe('annotations/[id] GET', () => {
-    it('returns the annotation row including parsed pinCoords', async () => {
+    it('returns the annotation row including parsed pinCoords (legacy backfill)', async () => {
+      // pinCoords is a legacy column preserved on rows created by the old
+      // drawing flow (formData POST, removed in the DraftCard refactor).
+      // Seed a row directly via Prisma — the modern JSON POST never sets
+      // pinCoords, but GET must still parse it when present.
       const cookie = await adminCookie();
       const created = await uploadMockup(cookie, 'M');
-      const fd = new FormData();
+      const { env } = await import('@/lib/env');
+      const { annotationDir } = await import('@/lib/mockup/storage');
+      const aid = `cov-ann-${Date.now()}-pc`;
+      const dir = annotationDir(env().DATA_DIR, created.id, aid);
+      fs.mkdirSync(dir, { recursive: true });
       const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-      fd.set('screenshot', new Blob([png], { type: 'image/png' }), 's.png');
-      fd.set('tldraw', JSON.stringify({ schema: 'x', records: [] }));
-      fd.set('message', 'msg');
-      fd.set(
-        'pinCoords',
-        JSON.stringify({
-          scrollX: 0,
-          scrollY: 100,
-          viewportWidth: 1280,
-          viewportHeight: 800,
-          bboxX: 50,
-          bboxY: 60,
-          bboxW: 30,
-          bboxH: 20,
-        }),
-      );
-      const ar = await createAnnotation(
-        new Request('http://l', {
-          method: 'POST',
-          headers: { cookie: `mk_session=${cookie}` },
-          body: fd,
-        }),
-        { params: Promise.resolve({ id: created.id }) },
-      );
-      const arBody = await ar.json();
+      fs.writeFileSync(path.join(dir, 'screenshot.png'), png);
+      fs.writeFileSync(path.join(dir, 'tldraw.json'), JSON.stringify({ schema: 'x', records: [] }));
+      const ann = await prisma.annotation.create({
+        data: {
+          id: aid,
+          mockupId: created.id,
+          screenshotPath: `mockups/${created.id}/annotations/${aid}/screenshot.png`,
+          tldrawPath: `mockups/${created.id}/annotations/${aid}/tldraw.json`,
+          pinCoords: JSON.stringify({
+            scrollX: 0,
+            scrollY: 100,
+            viewportWidth: 1280,
+            viewportHeight: 800,
+            bboxX: 50,
+            bboxY: 60,
+            bboxW: 30,
+            bboxH: 20,
+          }),
+          createdBy: 'cov-gaps-seed',
+          createdByType: 'user',
+        },
+      });
+      await prisma.thread.create({
+        data: {
+          id: `${aid}-th`,
+          annotationId: ann.id,
+          status: 'open',
+          messages: {
+            create: {
+              id: `${aid}-msg`,
+              authorId: 'cov-gaps-seed',
+              authorType: 'user',
+              body: 'msg',
+            },
+          },
+        },
+      });
+
       const detail = await getAnnotation(
         new Request('http://l', { headers: { cookie: `mk_session=${cookie}` } }),
-        { params: Promise.resolve({ id: arBody.id }) },
+        { params: Promise.resolve({ id: ann.id }) },
       );
       expect(detail.status).toBe(200);
       const body = await detail.json();
-      expect(body.id).toBe(arBody.id);
+      expect(body.id).toBe(ann.id);
       expect(body.thread).toBeTruthy();
       expect(body.thread.messages.length).toBe(1);
       expect(body.pinCoords).toMatchObject({ bboxX: 50, bboxY: 60 });
@@ -162,26 +182,33 @@ describe('coverage gaps — uncovered route handlers', () => {
   });
 
   describe('annotations/[id]/screenshot GET', () => {
-    it('streams the PNG bytes', async () => {
+    it('streams the PNG bytes (legacy backfill)', async () => {
+      // screenshotPath is a legacy column populated by the old drawing flow.
+      // Seed via Prisma + write the PNG directly so the GET handler exercises
+      // its streaming path without needing the removed formData POST.
       const cookie = await adminCookie();
       const created = await uploadMockup(cookie, 'M');
-      const fd = new FormData();
+      const { env } = await import('@/lib/env');
+      const { annotationDir } = await import('@/lib/mockup/storage');
+      const aid = `cov-ann-${Date.now()}-png`;
+      const dir = annotationDir(env().DATA_DIR, created.id, aid);
+      fs.mkdirSync(dir, { recursive: true });
       const png = Buffer.from([
         0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0,
         0, 0, 1, 8, 2, 0, 0, 0, 144, 119, 83, 222,
       ]);
-      fd.set('screenshot', new Blob([png], { type: 'image/png' }), 's.png');
-      fd.set('tldraw', JSON.stringify({}));
-      fd.set('message', 'pic');
-      const ar = await createAnnotation(
-        new Request('http://l', {
-          method: 'POST',
-          headers: { cookie: `mk_session=${cookie}` },
-          body: fd,
-        }),
-        { params: Promise.resolve({ id: created.id }) },
-      );
-      const aid = (await ar.json()).id;
+      fs.writeFileSync(path.join(dir, 'screenshot.png'), png);
+      fs.writeFileSync(path.join(dir, 'tldraw.json'), '{}');
+      await prisma.annotation.create({
+        data: {
+          id: aid,
+          mockupId: created.id,
+          screenshotPath: `mockups/${created.id}/annotations/${aid}/screenshot.png`,
+          tldrawPath: `mockups/${created.id}/annotations/${aid}/tldraw.json`,
+          createdBy: 'cov-gaps-seed',
+          createdByType: 'user',
+        },
+      });
       const res = await getScreenshot(
         new Request('http://l', { headers: { cookie: `mk_session=${cookie}` } }),
         { params: Promise.resolve({ id: aid }) },
