@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, createElement } from 'react';
+import { act, createElement, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -21,7 +21,7 @@ vi.mock('next/link', () => ({
     href,
     ...rest
   }: {
-    children: unknown;
+    children: ReactNode;
     href: string;
     [k: string]: unknown;
   }) => createElement('a', { href, ...rest }, children),
@@ -66,7 +66,10 @@ afterEach(() => {
 function renderSidebar(props: { defaultCollapsed?: boolean } = {}) {
   act(() => {
     root.render(
-      createElement(Sidebar, { defaultCollapsed: props.defaultCollapsed ?? false }, 'Nav content'),
+      createElement(Sidebar, {
+        defaultCollapsed: props.defaultCollapsed ?? false,
+        children: 'Nav content',
+      }),
     );
   });
 }
