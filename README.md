@@ -1,12 +1,36 @@
-# Markup
+<!-- markdownlint-disable MD041 -->
+<div align="center">
+  <a href="https://github.com/AlexandreCamillo/markup">
+    <img src="./docs/images/logo.svg" alt="Markup" width="128" />
+  </a>
 
-**Self-hosted HTML mockup review for humans and AI agents.**
+  <h1>
+  Self-hosted HTML mockup review for humans and AI agents
+  </h1>
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Built with Next.js 16](https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Tests](https://img.shields.io/badge/tests-168%2F168-success)](docs/testing.md)
+  <p>
+    <a href="#quickstart">Quickstart</a> ·
+    <a href="#install">Install</a> ·
+    <a href="docs/INDEX.md">Docs</a> ·
+    <a href="#agent-api">Agent API</a> ·
+    <a href="#architecture">Architecture</a>
+  </p>
 
-Markup is a single-container web app for reviewing interactive HTML/CSS/JS mockups. Reviewers drop pin-style annotations on the rendered page — same shape as a GitHub PR review, but for live frontends. An equally first-class HTTP API lets AI dev assistants and agent orchestrators (Claude Code, Cursor, Aider, custom LangGraph/CrewAI workflows) read those annotations as structured intent payloads and ship fixes back as small unified diffs.
+  <p>
+    <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+    <a href="https://nextjs.org/"><img alt="Built with Next.js 16" src="https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs&logoColor=white"></a>
+    <a href="https://github.com/AlexandreCamillo/markup/releases"><img alt="Release" src="https://img.shields.io/github/v/release/AlexandreCamillo/markup"></a>
+    <a href="https://github.com/AlexandreCamillo/markup/actions/workflows/test.yml"><img alt="Tests" src="https://img.shields.io/badge/tests-736%2F736-success"></a>
+  </p>
+</div>
+
+[Markup](https://github.com/AlexandreCamillo/markup) is a single-container web app for reviewing interactive HTML/CSS/JS mockups. Reviewers drop pin-style annotations directly on the rendered page — same shape as a GitHub PR review, but for live frontends. An equally first-class HTTP API lets AI dev assistants and agent orchestrators (Claude Code, Cursor, Aider, custom LangGraph/CrewAI workflows) read those annotations as structured payloads and ship fixes back as small unified diffs.
+
+- **Review the live frontend, not screenshots.** See the actual rendered mockup in an iframe, drop a teardrop pin where the issue is, type a comment, and resolve threads as the work lands.
+- **Self-host on a small box.** Single Docker container. SQLite + filesystem. No PostgreSQL, no Redis, no external services. A 256 MB instance is enough for a small team.
+- **An API agents can actually use.** Every surface the UI offers — server-side DOM resolution, computed-style extraction, unified-diff versioning — is exposed as a stable HTTP contract. The same routes the browser hits power autonomous review loops, AI dev assistants, and custom CI integrations.
+
+## Quickstart
 
 ```bash
 docker run -d --name markup \
@@ -16,13 +40,7 @@ docker run -d --name markup \
   ghcr.io/alexandrecamillo/markup:latest
 ```
 
-Open `http://localhost:3000` and follow the setup wizard.
-
-## Why Markup
-
-- **Review the live frontend, not screenshots.** Reviewers see the actual rendered mockup in an iframe, drop a teardrop pin where the issue is, draw with a tldraw-powered canvas if pixels matter, type a comment, and tag the intent.
-- **Self-host on a small box.** Single Docker container. SQLite + filesystem. No PostgreSQL, no Redis, no external services. A 256 MB instance is enough for a small team.
-- **An API that agents can actually use.** Every surface the UI offers — server-side puppeteer DOM resolution, computed-style extraction, unified-diff versioning — is exposed as a stable HTTP contract. The same routes the browser hits power autonomous review loops, AI dev assistants, and custom CI integrations.
+Open `http://localhost:3000` and follow the setup wizard. The first request redirects to `/setup`; create the admin account, then subsequent visits go to `/login`. To seed agent tokens at boot, set `AGENT_TOKENS=name1:secret1,name2:secret2` — the seeder is idempotent across restarts.
 
 ## Install
 
@@ -36,7 +54,7 @@ docker run -d --name markup \
   ghcr.io/alexandrecamillo/markup:latest
 ```
 
-Or with Compose — see `docker-compose.example.yml`.
+Or with Compose — see [`docker-compose.example.yml`](docker-compose.example.yml).
 
 ### From source
 
@@ -49,11 +67,7 @@ pnpm prisma migrate deploy
 pnpm dev
 ```
 
-Requires Node.js 20+ and pnpm. Visit `http://localhost:3000`.
-
-### First-run setup
-
-The first request redirects to `/setup`. Create the admin account; subsequent visits go to `/login`. To seed agent tokens at boot, set `AGENT_TOKENS=name1:secret1,name2:secret2` — the seeder is idempotent across restarts.
+Requires Node.js 22+ and pnpm. Visit `http://localhost:3000`.
 
 ## How it works
 
@@ -65,19 +79,18 @@ Mockup ─< MockupVersion          each mockup is a versioned bundle of HTML / C
 ```
 
 - **Mockup** — a named, sluggable artefact representing one frontend under review. Each upload (zip with `index.html` at the root) is a new immutable `MockupVersion`. The currently-served version is `Mockup.currentVersionId`.
-- **Annotation** — a pin dropped at specific iframe coordinates. Carries a screenshot of the moment, a tldraw drawing snapshot, a free-text comment, an `intent_type` chip (`visual` / `copy` / `behavior` / `other`), and a stamp of which version was current at creation time.
-- **Thread** — one per annotation, holding the conversation. `status` is `open` or `resolved`.
+- **Annotation** — a draft composed in the rail's `DraftCard` and persisted on send. Carries a body, an array of DOM anchors (text-anchor or element-anchor — resilient to reflow), a `colorIndex` shared by all of the annotation's pins, and a stamp of which version was current at creation time.
+- **Thread** — one per annotation, holding the conversation. `status` is `open`, `needs review`, or `resolved`.
 - **Message** — a reply on a thread. Authored by a `user` (cookie session) or an `agent` (Bearer token).
 
 ## Features
 
 | Surface | What it does |
 | --- | --- |
-| **Pin-based review** | Click anywhere on the live mockup to capture and annotate; pins reflow with the layout and persist across reloads. |
-| **Drawing layer** | tldraw-powered canvas overlaid on the captured screenshot — shapes, arrows, highlights, free-text labels. |
-| **Intent chips** | Four-bucket vocabulary (`visual` / `copy` / `behavior` / `other`) seeds routing across multiple agents and gives the team a signal of open work. |
+| **Inline DraftCard** | Mounted at the top of the annotations rail while a user is drafting. Three terminal actions — Cancel · Draft (⌘S) · Send (⌘↵). Survives reloads via `localStorage`. |
+| **Pin-based review** | Click anywhere on the live mockup to drop a pin while a draft is active. Pins reflow with the layout via DOM-anchored coordinates and persist across reloads. |
 | **Versioning** | Every upload is immutable. Side-by-side and overlay diff views compare any two versions; the current version powers the serve route at `/m/<id>/`. |
-| **Agent API** | A single-call aggregator returns annotation metadata, parsed drawings, server-resolved DOM-at-bbox, computed styles, WCAG contrast, the inline current HTML, and a unified diff against the version-at-creation. |
+| **Agent API** | A single-call aggregator returns annotation metadata, the inline current HTML, and a unified diff against the version-at-creation. |
 | **Cookie or Bearer** | Same routes serve the browser UI (cookie JWT) and non-browser clients (Bearer agent tokens). One contract, two front doors. |
 | **Single-mount deploy** | All state lives under `${DATA_DIR}` — SQLite DB, mockup blobs, annotation screenshots, sidecar caches. Mount one volume, back up one tree. |
 
@@ -89,7 +102,7 @@ A typical fix loop is three calls:
 # 1. Read everything an agent needs in a single request
 curl -H "Authorization: Bearer $TOKEN" \
      "http://localhost:3000/api/agent/context/$ANNOTATION_ID"
-# → { annotation, intent, thread, current_version: { files, … }, diff_since_creation }
+# → { annotation, thread, current_version: { files, … }, diff_since_creation }
 
 # 2. Apply a fix as a unified diff (no zip rebuild)
 curl -X POST -H "Authorization: Bearer $TOKEN" \
@@ -105,7 +118,7 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
      "http://localhost:3000/api/threads/$THREAD_ID/reply"
 ```
 
-Typical round-trip is **5–15 KB** on the wire, with sub-50 ms cache hits on the intent payload after the first read. The full contract — response shapes, error codes, cache invalidation rules — is documented under [`docs/agent-loop/`](docs/agent-loop/INDEX.md).
+Typical round-trip is **5–15 KB** on the wire. The full contract — response shapes, error codes, cache invalidation rules — is documented under [`docs/agent-loop/`](docs/agent-loop/INDEX.md).
 
 ## Configuration
 
@@ -113,7 +126,7 @@ Typical round-trip is **5–15 KB** on the wire, with sub-50 ms cache hits on th
 | --- | --- | --- | --- |
 | `AUTH_SECRET` | yes | — | Session JWT signing key, ≥ 32 chars. Rotation invalidates existing sessions. |
 | `DATA_DIR` | yes | — | Root path for SQLite DB and mockup blobs. Mount as a volume in Docker. |
-| `APP_URL` | no | `http://localhost:3000` | Public URL. Required for the puppeteer-backed intent endpoint to reach the serve route. |
+| `APP_URL` | no | `http://localhost:3000` | Public URL. Required for the puppeteer-backed region screenshot endpoint to reach the serve route. |
 | `DATABASE_URL` | no | `file:./prisma/dev.db` | Prisma connection string. |
 | `LOG_LEVEL` | no | `info` | One of `fatal` / `error` / `warn` / `info` / `debug` / `trace`. |
 | `PUID` | no | `1000` | Linux UID the container drops to (Docker only). |
@@ -195,13 +208,13 @@ A single Node process hosts both the web UI and the API. Persistence is split be
 │  Markup container (single Node process)                   │
 │                                                           │
 │   Next.js 16 App Router (standalone build)                │
-│      ├── /m/[id]/...                serve mockup files     │
-│      ├── /api/mockups, /api/annotations, /api/threads      │
-│      ├── /api/agent/context, /intent, /version-patch       │
-│      └── /mockups, /annotations, /settings, /login         │
+│      ├── /m/[id]/...                serve mockup files    │
+│      ├── /api/mockups, /api/annotations, /api/threads     │
+│      ├── /api/agent/context, /version-patch               │
+│      └── /projects, /annotations, /settings, /login       │
 │                                                           │
 │   Headless Chromium (puppeteer)                           │
-│      ↳ on demand for the intent endpoint                  │
+│      ↳ on demand for region screenshots                   │
 │                                                           │
 │   Prisma 7 + better-sqlite3 (WAL mode)                    │
 └──────────────────────────────┬────────────────────────────┘
@@ -213,20 +226,17 @@ A single Node process hosts both the web UI and the API. Persistence is split be
                           ├── thumbnail.png
                           ├── versions/<vid>/build/...
                           └── annotations/<aid>/
-                              ├── screenshot.png
-                              ├── tldraw.json
-                              ├── intent.json   (sidecar cache)
                               └── region.png    (sidecar cache)
 ```
 
 ### Tech stack
 
-- **Next.js 16** App Router, served as a standalone build
-- **React 19** for client islands; everything else is server-rendered
+- **Next.js 16** App Router, served as a standalone build (client-side rendering only)
+- **React 18** for the UI; every page is a `'use client'` component
+- **Radix Primitives** — `react-form`, `react-alert-dialog`, `react-dialog`, `react-popover`, `react-toast`
 - **Prisma 7** + `better-sqlite3` adapter (WAL mode)
-- **tldraw** for the annotation drawing layer
-- **puppeteer** for server-side DOM resolution at the bbox a user drew
-- **sharp** for screenshot cropping
+- **puppeteer** for server-side region cropping at the bbox a user drew
+- **sharp** for screenshot processing
 - **Vitest** + **Biome** for testing and linting
 - **Pino** for structured logs
 
@@ -234,12 +244,15 @@ The full stack and folder layout are documented in [`docs/stack.md`](docs/stack.
 
 ## Documentation
 
-- [`docs/INDEX.md`](docs/INDEX.md) — task-based lookup of every doc
-- [`docs/agent-loop/`](docs/agent-loop/INDEX.md) — the agent API contract (intent payload, patch format, chips)
-- [`docs/api/`](docs/api/INDEX.md) — REST conventions, auth, storage layout
-- [`docs/data/schema.md`](docs/data/schema.md) — Prisma models and relationships
-- [`docs/frontend/`](docs/frontend/INDEX.md) — components, styling tokens, tldraw integration
-- [`docs/ci.md`](docs/ci.md) — CI rules and pre-push checklist
+Browse the full [documentation index](docs/INDEX.md) or jump to a specific area:
+
+- [**Agent loop**](docs/agent-loop/INDEX.md) — the agent API contract (`/context` aggregator, patch format, version-patch flow)
+- [**API conventions**](docs/api/INDEX.md) — REST conventions, auth, storage layout
+- [**Data schema**](docs/data/schema.md) — Prisma models and relationships
+- [**Frontend**](docs/frontend/INDEX.md) — components, styling tokens, design system
+- [**Design system**](docs/design/design-system/AUTHORING.md) — DS authoring guide (mandatory before touching any DS file)
+- [**Task rules**](docs/task-rules.md) — what every change must do before opening a PR
+- [**CI**](docs/ci.md) — pre-push checklist (`pnpm biome check . && pnpm tsc --noEmit && pnpm test && pnpm build`)
 
 ## Releases
 
@@ -252,25 +265,21 @@ Every semver tag (`v*`) pushed to `main` triggers the image workflow and publish
 | `latest` | Points to the most recent `main`-green release |
 | `sha-<7>` | Every `main` push for debugging |
 
-Images pass a mandatory smoke test (`/api/health` 200) before the release is created. No manual approval needed — a green tag is a published release.
+Images pass a mandatory smoke test (`/api/health` → 200) before the release is created. No manual approval needed — a green tag is a published release. Pull a specific version with `docker pull ghcr.io/alexandrecamillo/markup:v1.2.3`. Release notes live on the [releases page](https://github.com/AlexandreCamillo/markup/releases).
 
-To install a specific version:
+## Support
 
-```bash
-docker pull ghcr.io/alexandrecamillo/markup:v1.2.3
-```
-
-Release notes are auto-generated on the [GitHub releases page](https://github.com/AlexandreCamillo/markup/releases).
+Open an [issue](https://github.com/AlexandreCamillo/markup/issues/new) for bug reports, feature requests, or questions about deploying Markup.
 
 ## Contributing
 
-Markup is open source under the MIT licence. Contributions of any size are welcome.
+Contributions of any size are welcome.
 
 1. Read [`docs/INDEX.md`](docs/INDEX.md) — every change starts there.
 2. Run the pre-push checklist from [`docs/ci.md`](docs/ci.md):
 
    ```bash
-   pnpm exec biome check . && pnpm exec tsc --noEmit && pnpm test && pnpm build
+   pnpm biome check . && pnpm tsc --noEmit && pnpm test && pnpm build
    ```
 
 3. Follow the commit conventions in [`docs/git/conventions.md`](docs/git/conventions.md): conventional-commits subject only, no body, no `Co-Authored-By` trailer.
