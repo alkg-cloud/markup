@@ -1,8 +1,8 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { VscAdd, VscNewFile, VscThreeBars } from 'react-icons/vsc';
+import { type ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
+import { VscAdd, VscNewFile } from 'react-icons/vsc';
 import { flattenProjectTree } from '@/components/CommandPalette/flatten';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { NewProjectDialog } from '@/components/NewProjectDialog/NewProjectDialog';
@@ -56,11 +56,8 @@ export function ProjectSidebar({
   onUploadFile,
   loading = false,
 }: ProjectSidebarProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const hamburgerRef = useRef<HTMLButtonElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -236,25 +233,6 @@ export function ProjectSidebar({
     [confirm, nodeNameById, pathname, refreshShell, router],
   );
 
-  useEffect(() => {
-    if (mobileOpen && dialogRef.current && !dialogRef.current.open) {
-      dialogRef.current.showModal();
-    } else if (!mobileOpen && dialogRef.current?.open) {
-      dialogRef.current.close();
-    }
-  }, [mobileOpen]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    const onClose = () => {
-      setMobileOpen(false);
-      hamburgerRef.current?.focus();
-    };
-    dialog.addEventListener('close', onClose);
-    return () => dialog.removeEventListener('close', onClose);
-  }, []);
-
   // Files chosen via the hidden picker flow through `validateFile`
   // before reaching the parent. Invalid files toast; valid ones invoke
   // the upload callback (mounted by T18). The input is reset
@@ -330,10 +308,6 @@ export function ProjectSidebar({
     </>
   );
 
-  // The footer is rendered twice (desktop Sidebar + mobile drawer)
-  // so the hidden `<input type="file">` is hoisted to a single,
-  // top-level mount below to keep `fileInputRef` pointing at exactly
-  // one element across both view modes.
   const footerContent = (
     <button
       type="button"
@@ -378,129 +352,6 @@ export function ProjectSidebar({
       <Sidebar footer={footerContent} defaultCollapsed={defaultCollapsed}>
         {treeContent}
       </Sidebar>
-
-      {/* Mobile hamburger */}
-      <button
-        ref={hamburgerRef}
-        type="button"
-        aria-label="Open navigation menu"
-        onClick={() => setMobileOpen(true)}
-        className="project-sidebar-hamburger"
-        style={{
-          display: 'none',
-          position: 'fixed',
-          top: 'var(--space-sm)',
-          left: 'var(--space-sm)',
-          zIndex: 50,
-          width: 36,
-          height: 36,
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: 'var(--radius-xs)',
-          background: 'var(--btn-bg)',
-          color: 'var(--text-dim)',
-          border: 'none',
-          cursor: 'pointer',
-        }}
-      >
-        <VscThreeBars size={18} aria-hidden="true" />
-      </button>
-
-      {/* Mobile drawer */}
-      <dialog
-        ref={dialogRef}
-        aria-modal="true"
-        aria-label="Navigation menu"
-        onClick={(e) => {
-          if (e.target === dialogRef.current) setMobileOpen(false);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') setMobileOpen(false);
-        }}
-        className="project-sidebar-drawer"
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 100,
-          border: 'none',
-          background: 'transparent',
-          padding: 0,
-          margin: 0,
-          maxWidth: '100vw',
-          maxHeight: '100vh',
-          width: '100vw',
-          height: '100vh',
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'oklch(0% 0 0 / 0.6)',
-          }}
-        />
-        <div
-          style={{
-            position: 'relative',
-            width: 'var(--sidebar-width)',
-            height: '100%',
-            background: 'var(--bg-elevated)',
-            display: 'flex',
-            flexDirection: 'column',
-            boxShadow: 'var(--shadow-md)',
-          }}
-        >
-          <button
-            type="button"
-            aria-label="Close menu"
-            onClick={() => setMobileOpen(false)}
-            style={{
-              position: 'absolute',
-              top: 'var(--space-xs)',
-              right: 'var(--space-xs)',
-              width: 28,
-              height: 28,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 'var(--radius-xs)',
-              background: 'none',
-              color: 'var(--text-muted)',
-              border: 'none',
-              cursor: 'pointer',
-              zIndex: 1,
-            }}
-          >
-            ✕
-          </button>
-          {/* The mobile drawer no longer hosts a fixed "Projects" header
-              — the label has moved inline into the scroll content
-              (`projectsInlineLabel`) so both desktop and mobile share
-              the same singular DS-01 recipe. */}
-          <div
-            style={{
-              flex: 1,
-              overflowY: 'auto',
-              scrollbarWidth: 'thin',
-              scrollbarColor: 'var(--border) transparent',
-              paddingTop: 'var(--space-md)',
-            }}
-          >
-            {treeContent}
-          </div>
-          <div className={sidebarStyles.mobileFooter}>{footerContent}</div>
-        </div>
-      </dialog>
-
-      <style>{`
-        @media (max-width: 767px) {
-          .project-sidebar-hamburger { display: flex !important; }
-        }
-        @media (min-width: 768px) {
-          .project-sidebar-drawer { display: none !important; }
-        }
-        .project-sidebar-drawer::backdrop { background: transparent; }
-      `}</style>
     </div>
   );
 }
