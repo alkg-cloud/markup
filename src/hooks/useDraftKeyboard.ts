@@ -9,6 +9,15 @@ export interface UseDraftKeyboardArgs {
   onSend: () => void;
   onSave: () => void;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  /**
+   * Optional iframe ref. When provided, the same keydown handler is also
+   * attached to the iframe's `contentDocument` so the `N` shortcut works
+   * even when focus has moved into the mockup canvas (same-origin iframe
+   * served by `/m/[mockupId]/...`). Iframe events that bubble to the
+   * iframe's document aren't seen by the parent document by default; we
+   * bridge them explicitly.
+   */
+  iframeRef?: React.RefObject<HTMLIFrameElement | null>;
 }
 
 function isInputFocused(): boolean {
@@ -21,7 +30,7 @@ function isInputFocused(): boolean {
 }
 
 export function useDraftKeyboard(args: UseDraftKeyboardArgs): void {
-  const { draft, onOpen, onCancel, onSend, onSave, textareaRef } = args;
+  const { draft, onOpen, onCancel, onSend, onSave, textareaRef, iframeRef } = args;
   const isMac = useIsMac();
 
   useEffect(() => {
@@ -82,6 +91,39 @@ export function useDraftKeyboard(args: UseDraftKeyboardArgs): void {
       }
     }
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [draft, isMac, onOpen, onCancel, onSend, onSave, textareaRef]);
+
+    // Bridge: also listen inside the iframe's document so shortcuts fire
+    // when the user's focus is on the mockup canvas (same-origin only —
+    // accessing contentDocument on a cross-origin frame throws). Re-attach
+    // on each iframe load so the listener follows version-switches.
+    const iframe = iframeRef?.current ?? null;
+    let cleanupIframe: (() => void) | null = null;
+    function attachIframeListener() {
+      if (!iframe) return;
+      let doc: Document | null = null;
+      try {
+        doc = iframe.contentDocument;
+      } catch {
+        // Cross-origin iframe — nothing to do; default browser behavior.
+        return;
+      }
+      if (!doc) return;
+      doc.addEventListener('keydown', onKey);
+      cleanupIframe = () => {
+        try {
+          doc?.removeEventListener('keydown', onKey);
+        } catch {
+          // Iframe detached — listener is gone with it.
+        }
+      };
+    }
+    attachIframeListener();
+    iframe?.addEventListener('load', attachIframeListener);
+
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      cleanupIframe?.();
+      iframe?.removeEventListener('load', attachIframeListener);
+    };
+  }, [draft, isMac, onOpen, onCancel, onSend, onSave, textareaRef, iframeRef]);
 }
