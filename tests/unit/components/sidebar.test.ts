@@ -2,7 +2,7 @@
 
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const COOKIE_KEY = 'markup-sidebar-collapsed';
 
@@ -11,11 +11,26 @@ function clearSidebarCookie() {
   document.cookie = `${COOKIE_KEY}=; path=/; max-age=0`;
 }
 
+beforeEach(() => {
+  // useIsMobile calls window.matchMedia — stub it so the hook doesn't throw.
+  vi.stubGlobal('matchMedia', (_query: string) => ({
+    matches: false,
+    media: _query,
+    onchange: null,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    dispatchEvent: () => false,
+  }));
+});
+
 describe('Sidebar', () => {
   afterEach(() => {
     document.body.innerHTML = '';
     document.documentElement.style.removeProperty('--sidebar-inset');
     clearSidebarCookie();
+    vi.unstubAllGlobals();
   });
 
   it('persists collapsed state across remounts via the markup-sidebar-collapsed cookie', async () => {
