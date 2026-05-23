@@ -283,7 +283,6 @@ async function seedAnnotation(input: SeedAnnotationInput) {
       anchors: JSON.stringify(input.anchors),
       colorIndex: input.colorIndex,
       status: input.status,
-      intentType: 'other',
       createdBy: input.authorId,
       createdByType: 'user',
       createdOnVersionId: versionId,
