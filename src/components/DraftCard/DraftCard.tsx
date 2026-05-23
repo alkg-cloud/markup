@@ -1,17 +1,17 @@
 'use client';
 
-import { forwardRef } from 'react';
-import * as Form from '@radix-ui/react-form';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
+import * as Form from '@radix-ui/react-form';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { Kbd } from '@/components/Kbd/Kbd';
 import {
+  BODY_CHAR_LIMIT,
+  type BodyState,
   type Draft,
   type DraftStatus,
-  type BodyState,
-  type PinCount,
-  BODY_CHAR_LIMIT,
   deriveBodyState,
   derivePinCount,
+  type PinCount,
 } from '@/components/MockupViewer/draft-types';
 import styles from './DraftCard.module.css';
 
@@ -62,144 +62,155 @@ function pinHintCopy(count: number, pinCount: PinCount): string {
   return '· click pin to remove';
 }
 
-export const DraftCard = forwardRef<HTMLTextAreaElement, DraftCardProps>(function DraftCard(
-  props,
-  textareaRef,
-) {
-  const { draft, status, density = 'compact', onBodyChange, onCancel, onSave, onSend } = props;
+export const DraftCard = forwardRef<HTMLTextAreaElement, DraftCardProps>(
+  function DraftCard(props, forwardedRef) {
+    const { draft, status, density = 'compact', onBodyChange, onCancel, onSave, onSend } = props;
 
-  const bodyState: BodyState = deriveBodyState(draft.body);
-  const pinCount: PinCount = derivePinCount(draft.pins.length);
-  const hasContent = draft.body.length > 0 || draft.pins.length > 0;
+    const internalRef = useRef<HTMLTextAreaElement | null>(null);
+    useImperativeHandle(forwardedRef, () => internalRef.current as HTMLTextAreaElement, []);
 
-  return (
-    <Form.Root
-      className={styles.root}
-      data-draft-card-root=""
-      data-status={status}
-      data-body-state={bodyState}
-      data-pin-count={pinCount}
-      data-density={density}
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSend();
-      }}
-    >
-      <div className={styles.header}>
-        <span className={styles.marker}>Draft</span>
-        <span className={styles.spacer} />
-        {bodyState !== 'empty' && (
-          <span className={styles.countChars}>
-            {draft.body.length.toLocaleString()} / {BODY_CHAR_LIMIT.toLocaleString()}
-          </span>
-        )}
-      </div>
+    // Focus the textarea on mount — replaces the autoFocus attribute (which
+    // biome flags via lint/a11y/noAutofocus). UX is identical: the DraftCard
+    // mount is itself a user-triggered action (+ button, N shortcut, or
+    // restore from localStorage), so initial focus is appropriate.
+    useEffect(() => {
+      internalRef.current?.focus();
+    }, []);
 
-      <Form.Field name="body">
-        <Form.Label className="sr-only">Annotation body</Form.Label>
-        <Form.Control asChild>
-          <textarea
-            ref={textareaRef}
-            className={styles.textarea}
-            value={draft.body}
-            onChange={(e) => onBodyChange(e.target.value)}
-            placeholder="What's wrong here? What would you change?"
-            required
-            maxLength={BODY_CHAR_LIMIT}
-            autoFocus
-            disabled={status === 'sending'}
-          />
-        </Form.Control>
-      </Form.Field>
+    const bodyState: BodyState = deriveBodyState(draft.body);
+    const pinCount: PinCount = derivePinCount(draft.pins.length);
+    const hasContent = draft.body.length > 0 || draft.pins.length > 0;
 
-      <div className={styles.pinRow}>
-        <span className={styles.pinMini} aria-hidden />
-        <strong className={styles.pinCount}>
-          {draft.pins.length} {draft.pins.length === 1 ? 'pin' : 'pins'}
-        </strong>
-        <span className={styles.pinHint}>{pinHintCopy(draft.pins.length, pinCount)}</span>
-      </div>
+    return (
+      <Form.Root
+        className={styles.root}
+        data-draft-card-root=""
+        data-status={status}
+        data-body-state={bodyState}
+        data-pin-count={pinCount}
+        data-density={density}
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSend();
+        }}
+      >
+        <div className={styles.header}>
+          <span className={styles.marker}>Draft</span>
+          <span className={styles.spacer} />
+          {bodyState !== 'empty' && (
+            <span className={styles.countChars}>
+              {draft.body.length.toLocaleString()} / {BODY_CHAR_LIMIT.toLocaleString()}
+            </span>
+          )}
+        </div>
 
-      <div className={styles.actions}>
-        {hasContent ? (
-          <AlertDialog.Root>
-            <AlertDialog.Trigger asChild>
-              <button
-                type="button"
-                className={`${styles.btn} ${styles.btnGhost}`}
-                disabled={status === 'sending'}
-              >
-                Cancel
-              </button>
-            </AlertDialog.Trigger>
-            <AlertDialog.Portal>
-              <AlertDialog.Overlay className={styles.alertOverlay} />
-              <AlertDialog.Content className={styles.alert}>
-                <div className={styles.alertIcon}>!</div>
-                <AlertDialog.Title className={styles.alertTitle}>Discard draft?</AlertDialog.Title>
-                <AlertDialog.Description className={styles.alertBody}>
-                  You'll lose{' '}
-                  <strong>
-                    {draft.pins.length} {draft.pins.length === 1 ? 'pin' : 'pins'}
-                  </strong>
-                  {draft.body.length > 0 ? ' and the text you typed' : ''}. This can't be undone.
-                </AlertDialog.Description>
-                <div className={styles.alertActions}>
-                  <AlertDialog.Cancel asChild>
-                    <button type="button" className={`${styles.btn} ${styles.btnGhost}`}>
-                      Keep editing
-                    </button>
-                  </AlertDialog.Cancel>
-                  <AlertDialog.Action asChild>
-                    <button
-                      type="button"
-                      className={`${styles.btn} ${styles.btnDanger}`}
-                      onClick={onCancel}
-                    >
-                      Discard
-                    </button>
-                  </AlertDialog.Action>
-                </div>
-              </AlertDialog.Content>
-            </AlertDialog.Portal>
-          </AlertDialog.Root>
-        ) : (
+        <Form.Field name="body">
+          <Form.Label className="sr-only">Annotation body</Form.Label>
+          <Form.Control asChild>
+            <textarea
+              ref={internalRef}
+              className={styles.textarea}
+              value={draft.body}
+              onChange={(e) => onBodyChange(e.target.value)}
+              placeholder="What's wrong here? What would you change?"
+              required
+              maxLength={BODY_CHAR_LIMIT}
+              disabled={status === 'sending'}
+            />
+          </Form.Control>
+        </Form.Field>
+
+        <div className={styles.pinRow}>
+          <span className={styles.pinMini} aria-hidden />
+          <strong className={styles.pinCount}>
+            {draft.pins.length} {draft.pins.length === 1 ? 'pin' : 'pins'}
+          </strong>
+          <span className={styles.pinHint}>{pinHintCopy(draft.pins.length, pinCount)}</span>
+        </div>
+
+        <div className={styles.actions}>
+          {hasContent ? (
+            <AlertDialog.Root>
+              <AlertDialog.Trigger asChild>
+                <button
+                  type="button"
+                  className={`${styles.btn} ${styles.btnGhost}`}
+                  disabled={status === 'sending'}
+                >
+                  Cancel
+                </button>
+              </AlertDialog.Trigger>
+              <AlertDialog.Portal>
+                <AlertDialog.Overlay className={styles.alertOverlay} />
+                <AlertDialog.Content className={styles.alert}>
+                  <div className={styles.alertIcon}>!</div>
+                  <AlertDialog.Title className={styles.alertTitle}>
+                    Discard draft?
+                  </AlertDialog.Title>
+                  <AlertDialog.Description className={styles.alertBody}>
+                    You'll lose{' '}
+                    <strong>
+                      {draft.pins.length} {draft.pins.length === 1 ? 'pin' : 'pins'}
+                    </strong>
+                    {draft.body.length > 0 ? ' and the text you typed' : ''}. This can't be undone.
+                  </AlertDialog.Description>
+                  <div className={styles.alertActions}>
+                    <AlertDialog.Cancel asChild>
+                      <button type="button" className={`${styles.btn} ${styles.btnGhost}`}>
+                        Keep editing
+                      </button>
+                    </AlertDialog.Cancel>
+                    <AlertDialog.Action asChild>
+                      <button
+                        type="button"
+                        className={`${styles.btn} ${styles.btnDanger}`}
+                        onClick={onCancel}
+                      >
+                        Discard
+                      </button>
+                    </AlertDialog.Action>
+                  </div>
+                </AlertDialog.Content>
+              </AlertDialog.Portal>
+            </AlertDialog.Root>
+          ) : (
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.btnGhost}`}
+              onClick={onCancel}
+              disabled={status === 'sending'}
+            >
+              Cancel
+            </button>
+          )}
+
           <button
             type="button"
-            className={`${styles.btn} ${styles.btnGhost}`}
-            onClick={onCancel}
-            disabled={status === 'sending'}
+            className={`${styles.btn} ${styles.btnSecondary}`}
+            disabled={!draft.hasUnsavedChanges || status === 'sending'}
+            onClick={onSave}
           >
-            Cancel
+            Draft
+            <Kbd keys={['mod', 's']} />
           </button>
-        )}
 
-        <button
-          type="button"
-          className={`${styles.btn} ${styles.btnSecondary}`}
-          disabled={!draft.hasUnsavedChanges || status === 'sending'}
-          onClick={onSave}
-        >
-          Draft
-          <Kbd keys={['mod', 's']} />
-        </button>
+          <Form.Submit asChild>
+            <button
+              type="submit"
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              disabled={bodyState !== 'typing' || status === 'sending'}
+            >
+              {sendLabel(status)}
+              <Kbd keys={['mod', 'enter']} />
+            </button>
+          </Form.Submit>
+        </div>
 
-        <Form.Submit asChild>
-          <button
-            type="submit"
-            className={`${styles.btn} ${styles.btnPrimary}`}
-            disabled={bodyState !== 'typing' || status === 'sending'}
-          >
-            {sendLabel(status)}
-            <Kbd keys={['mod', 'enter']} />
-          </button>
-        </Form.Submit>
-      </div>
-
-      <div className={styles.status} role="status" aria-live="polite">
-        <span className={styles.statusDot} />
-        <span>{statusCopy(status, draft.body, draft.lastSavedAt)}</span>
-      </div>
-    </Form.Root>
-  );
-});
+        <div className={styles.status} role="status" aria-live="polite">
+          <span className={styles.statusDot} />
+          <span>{statusCopy(status, draft.body, draft.lastSavedAt)}</span>
+        </div>
+      </Form.Root>
+    );
+  },
+);

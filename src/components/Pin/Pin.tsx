@@ -52,7 +52,17 @@ export interface PinProps {
  * See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §6.
  */
 export const Pin = forwardRef<HTMLButtonElement, PinProps>(function Pin(
-  { annotationId, kind = 'published', pinIndex, colorIndex, label, status = 'idle', removing, tooltip, onClick },
+  {
+    annotationId,
+    kind = 'published',
+    pinIndex,
+    colorIndex,
+    label,
+    status = 'idle',
+    removing,
+    tooltip,
+    onClick,
+  },
   ref,
 ) {
   const cls = [
