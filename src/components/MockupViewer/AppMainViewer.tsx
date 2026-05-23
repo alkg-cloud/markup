@@ -43,12 +43,7 @@ import { useDraftKeyboard } from '@/hooks/useDraftKeyboard';
 import { useDraftPersistence } from '@/hooks/useDraftPersistence';
 import type { Anchor } from '@/lib/anchoring';
 import styles from './AppMainViewer.module.css';
-import {
-  MAX_PINS,
-  type DraftState,
-  type DraftStatus,
-  type StoredDraft,
-} from './draft-types';
+import { type DraftState, type DraftStatus, MAX_PINS, type StoredDraft } from './draft-types';
 import { useAppMainAnnotations } from './useAppMainAnnotations';
 import { type PinClick, useViewerCanvas } from './useViewerCanvas';
 import { useViewerFullscreen } from './useViewerFullscreen';
@@ -197,9 +192,7 @@ export function AppMainViewer({
 
   // ── Draft actions ────────────────────────────────────────────────
   const openDraft = useCallback(() => {
-    setDraft((d) =>
-      d ?? { body: '', pins: [], lastSavedAt: null, hasUnsavedChanges: false },
-    );
+    setDraft((d) => d ?? { body: '', pins: [], lastSavedAt: null, hasUnsavedChanges: false });
     setStatus((s) => (s === 'saved' ? s : 'unsaved'));
     // Defer focus so the textarea is in the DOM by the time we focus it.
     setTimeout(() => {
@@ -272,9 +265,7 @@ export function AppMainViewer({
         toast.show(`Maximum ${MAX_PINS} pins per annotation`);
         return;
       }
-      setDraft((d) =>
-        d ? { ...d, pins: [...d.pins, anchor], hasUnsavedChanges: true } : null,
-      );
+      setDraft((d) => (d ? { ...d, pins: [...d.pins, anchor], hasUnsavedChanges: true } : null));
       setStatus('unsaved');
     },
     [draft, toast],
@@ -287,9 +278,7 @@ export function AppMainViewer({
     // the pin and clear the fade marker.
     setTimeout(() => {
       setDraft((d) =>
-        d
-          ? { ...d, pins: d.pins.filter((_, i) => i !== pinIndex), hasUnsavedChanges: true }
-          : null,
+        d ? { ...d, pins: d.pins.filter((_, i) => i !== pinIndex), hasUnsavedChanges: true } : null,
       );
       setRemovingPinIndex(null);
       setStatus('unsaved');
