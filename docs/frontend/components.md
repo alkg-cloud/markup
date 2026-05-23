@@ -355,3 +355,15 @@ There is no form library. Inputs are uncontrolled or controlled with `useState` 
 - Transitions use `var(--motion-fast)` (160ms), `var(--motion-base)` (220ms), `var(--motion-slow)` (320ms) with `var(--ease-standard)` or `var(--ease-spring)`
 - New `@keyframes` rules ship with a matching `@media (prefers-reduced-motion: reduce)` override that zeros the animation
 - Tldraw owns its own animations; we don't try to override them
+
+## Mobile shell pattern
+
+Every authenticated route (home, projects, settings, annotations) uses the same mobile shell:
+
+- The `<Sidebar>` component is the single owner of the mobile entry point. At viewport `< 768 px` it renders only the collapsed pill (logo `M.` + collapse button) anchored top-left.
+- Tapping the pill opens `sidebar-mobile-drawer` — a native `<dialog>` 280 × 100vh that slides in from the left with a `oklch(0% 0 0 / 0.6)` scrim covering the rest of the viewport.
+- The drawer reuses the same `treeContent` and `footerContent` props passed to the desktop `<Sidebar>` — no parallel mobile tree.
+- Four ways to close the drawer: scrim tap, `Esc`, any nav-link tap inside the drawer, the `✕` button in the panel's top-right (28 × 28).
+- `ProjectSidebar` (and any future per-route sidebar) does NOT implement its own hamburger. The `<Sidebar>` component handles it for everyone.
+- The topbar's search-pill collapses to a 32 × 32 icon button between the breadcrumb and the avatar at `< 768 px`. Kbd chips disappear (global rule in `Kbd.module.css`).
+- The command palette adds a `✕` button on mobile to replace the missing ESC affordance.

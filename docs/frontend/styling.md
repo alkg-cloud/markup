@@ -273,6 +273,14 @@ import styles from './CommandPalette.module.css';
 </div>
 ```
 
+## Mobile rules
+
+Component mobile styles live in the component's own module CSS under `@media (max-width: 767px)`. The breakpoint is a single global value — `767 px` (phones-only; tablets in portrait stay on the desktop layout).
+
+The one exception is `<Kbd>` suppression: the rule lives in `Kbd.module.css` because keycap-hiding is component-agnostic — it must apply to every consumer (topbar, command palette, tooltips, dialog footers) without each one having to opt in.
+
+For live JS reactivity (e.g. selecting a different render path based on viewport), use the `useIsMobile()` hook from `src/hooks/useIsMobile.ts`. The hook subscribes to `matchMedia('(max-width: 767px)')` and updates on resize / rotation. SSR returns `false` so the first paint matches the SSR HTML; the hook upgrades on mount.
+
 ## Adding a new token
 
 1. Pick a category (colour, motion, spacing, etc.) — if the value doesn't fit any, add a new category
