@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
-import { createElement, useEffect } from 'react';
-import { act } from 'react';
+import { act, createElement, useEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -9,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/shortcuts/platform', () => ({ useIsMac: () => true }));
 
-import { useDraftKeyboard, type UseDraftKeyboardArgs } from '@/hooks/useDraftKeyboard';
+import { type UseDraftKeyboardArgs, useDraftKeyboard } from '@/hooks/useDraftKeyboard';
 
 let container: HTMLDivElement;
 let root: Root;

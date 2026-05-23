@@ -1,23 +1,22 @@
 // @vitest-environment jsdom
 
-import { createElement, useEffect } from 'react';
-import { act } from 'react';
+import { act, createElement, useEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
 import {
-  useDraftPersistence,
-  type UseDraftPersistenceArgs,
-  type UseDraftPersistenceReturn,
-} from '@/hooks/useDraftPersistence';
-import {
-  STORAGE_SCHEMA_VERSION,
-  STALE_DRAFT_MS,
   DRAFT_DEBOUNCE_MS,
+  STALE_DRAFT_MS,
+  STORAGE_SCHEMA_VERSION,
   storageKey,
 } from '@/components/MockupViewer/draft-types';
+import {
+  type UseDraftPersistenceArgs,
+  type UseDraftPersistenceReturn,
+  useDraftPersistence,
+} from '@/hooks/useDraftPersistence';
 
 const KEY = storageKey('m1', 'u1');
 

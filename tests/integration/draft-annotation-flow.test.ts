@@ -35,7 +35,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
-import { useDraftPersistence } from '@/hooks/useDraftPersistence';
 import {
   type Draft,
   type DraftState,
@@ -43,6 +42,7 @@ import {
   type StoredDraft,
   storageKey,
 } from '@/components/MockupViewer/draft-types';
+import { useDraftPersistence } from '@/hooks/useDraftPersistence';
 
 const MOCKUP_ID = 'm1';
 const USER_ID = 'u1';
@@ -203,7 +203,13 @@ describe('draft-annotation flow (state machine + persistence)', () => {
     // ── Phase 1: Mount harness; open draft; type body; save explicitly.
     let h: HarnessHandle | null = null;
     act(() => {
-      root.render(createElement(Harness, { onReady: (next) => { h = next; } }));
+      root.render(
+        createElement(Harness, {
+          onReady: (next) => {
+            h = next;
+          },
+        }),
+      );
     });
     // Effects (onReady) commit on the second pass.
     await flushAsync();
@@ -247,7 +253,13 @@ describe('draft-annotation flow (state machine + persistence)', () => {
 
     let h2: HarnessHandle | null = null;
     act(() => {
-      root.render(createElement(Harness, { onReady: (next) => { h2 = next; } }));
+      root.render(
+        createElement(Harness, {
+          onReady: (next) => {
+            h2 = next;
+          },
+        }),
+      );
     });
     await flushAsync();
     if (!h2) throw new Error('Second Harness onReady did not fire');
@@ -288,7 +300,13 @@ describe('draft-annotation flow (state machine + persistence)', () => {
   it('send failure keeps the draft locally and surfaces error status', async () => {
     let h: HarnessHandle | null = null;
     act(() => {
-      root.render(createElement(Harness, { onReady: (next) => { h = next; } }));
+      root.render(
+        createElement(Harness, {
+          onReady: (next) => {
+            h = next;
+          },
+        }),
+      );
     });
     await flushAsync();
     if (!h) throw new Error('Harness onReady did not fire');
