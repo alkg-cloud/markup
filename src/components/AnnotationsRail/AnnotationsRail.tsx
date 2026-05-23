@@ -284,9 +284,7 @@ export function AnnotationsRail({
             <VscPinned aria-hidden="true" />
           </button>
         </header>
-        {draftActive && renderDraft && (
-          <div className={styles.draftSlot}>{renderDraft()}</div>
-        )}
+        {draftActive && renderDraft && <div className={styles.draftSlot}>{renderDraft()}</div>}
         {badges.length === 0 ? (
           !draftActive && (
             <p className={styles.empty}>No annotations yet — drop a pin to capture feedback.</p>
