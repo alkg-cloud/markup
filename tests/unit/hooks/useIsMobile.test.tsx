@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, createElement, useEffect } from 'react';
+import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -54,9 +54,6 @@ function mountHook(): { current: boolean } {
   const ref: { current: boolean } = { current: false };
   function Inner() {
     const isMobile = useIsMobile();
-    useEffect(() => {
-      ref.current = isMobile;
-    });
     ref.current = isMobile;
     return null;
   }
@@ -85,10 +82,11 @@ describe('useIsMobile', () => {
     expect(ref.current).toBe(false);
 
     act(() => {
+      // currentMatches is a reader-aid; the MQL closure captured the initial value
       currentMatches = true;
-      listeners.forEach((cb) =>
-        cb({ matches: true, media: '(max-width: 767px)' } as MediaQueryListEvent),
-      );
+      listeners.forEach((cb) => {
+        cb({ matches: true, media: '(max-width: 767px)' } as MediaQueryListEvent);
+      });
     });
 
     expect(ref.current).toBe(true);
