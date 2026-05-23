@@ -147,6 +147,41 @@ describe('Sidebar mobile drawer', () => {
     expect(closeSpy).toHaveBeenCalledTimes(1);
   });
 
+  it('syncs React state when the native dialog close event fires (ESC path)', () => {
+    mockIsMobileValue = true;
+    renderSidebar();
+
+    // Open the drawer.
+    const expandBtn = container.querySelector(
+      'button[aria-label="Expand sidebar"]',
+    ) as HTMLButtonElement;
+    act(() => {
+      expandBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const dialog = container.querySelector(
+      'dialog[aria-label="Navigation menu"]',
+    ) as HTMLDialogElement;
+    expect(dialog).not.toBeNull();
+    expect(dialog.hasAttribute('open')).toBe(true);
+
+    // Mimic the browser's ESC handling: remove the open attr and fire 'close'.
+    act(() => {
+      dialog.removeAttribute('open');
+      dialog.dispatchEvent(new Event('close'));
+    });
+
+    // drawerOpen should be false → pill ("Expand sidebar") is visible again.
+    const pillBtn = container.querySelector(
+      'button[aria-label="Expand sidebar"]',
+    ) as HTMLButtonElement | null;
+    expect(pillBtn).not.toBeNull();
+
+    // showModal should have been called exactly once (open), not again after close.
+    const showModalSpy = HTMLDialogElement.prototype.showModal as ReturnType<typeof vi.spyOn>;
+    expect(showModalSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('closes the drawer when scrim (dialog backdrop) is clicked', () => {
     mockIsMobileValue = true;
     renderSidebar();

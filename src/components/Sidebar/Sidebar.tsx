@@ -64,13 +64,16 @@ export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarP
   }, [drawerOpen, isMobile]);
 
   // The native <dialog> dispatches 'close' on ESC + close() — sync state.
+  // Deps include isMobile so the effect re-runs when the dialog mounts
+  // (first render isMobile=false → no dialog; after hook upgrade isMobile=true
+  // → dialog renders, ref assigned, this effect re-runs and installs the listener).
   useEffect(() => {
     const dlg = dialogRef.current;
     if (!dlg) return;
     const onClose = () => setDrawerOpen(false);
     dlg.addEventListener('close', onClose);
     return () => dlg.removeEventListener('close', onClose);
-  }, []);
+  }, [isMobile]);
 
   // CSS custom prop drives the topbar's left padding when the pill is
   // floating. Only set on desktop (mobile pill overlays content).
@@ -93,7 +96,6 @@ export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarP
         data-tooltip="Go to projects"
         data-tooltip-align="left"
         aria-label="Go to projects"
-        onClick={isMobile ? closeDrawer : undefined}
       >
         M
         <span
@@ -135,8 +137,9 @@ export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarP
       />
 
       {/* Desktop morph sidebar: also hosts the pill on mobile (CSS forces
-       *  collapsed dimensions in the mobile media query). Hidden while the
-       *  drawer is open so we don't paint two sidebar anchors. */}
+       *  collapsed dimensions in the mobile media query).
+       *  `data-drawer-open` is consumed by the mobile CSS to hide the pill
+       *  while the drawer is open — see T5 (Sidebar.module.css). */}
       <nav
         aria-label="Project navigation"
         className={[styles.sidebar, collapsed ? styles.sidebarCollapsed : '']
@@ -150,11 +153,6 @@ export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarP
           className={[styles.scroll, collapsed ? styles.scrollCollapsed : styles.scrollExpanded]
             .filter(Boolean)
             .join(' ')}
-          onClickCapture={(e) => {
-            if (!isMobile) return;
-            const t = e.target as HTMLElement;
-            if (t.closest('a[href]')) closeDrawer();
-          }}
         >
           {children}
         </div>
