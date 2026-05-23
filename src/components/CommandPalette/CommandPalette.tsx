@@ -242,6 +242,15 @@ export function CommandPalette({ projects }: CommandPaletteProps) {
         onKeyDown={handlePanelKeyDown}
       >
         <div className={styles.inputRow}>
+          {/* Mobile-only close affordance — visibility controlled by CSS. */}
+          <button
+            type="button"
+            className={styles.closeBtn}
+            aria-label="Close search"
+            onClick={() => setOpen(false)}
+          >
+            ✕
+          </button>
           <VscSearch className={styles.searchIcon} size={18} aria-hidden="true" />
           <input
             ref={inputRef}

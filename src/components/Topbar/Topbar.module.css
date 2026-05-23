@@ -212,20 +212,26 @@
     padding: 0 var(--space-sm);
   }
 
+  /* Search becomes a 32×32 icon button living inside .topbarRight,
+   * to the LEFT of the avatar. The .topbarRight wrapper provides the
+   * 6 px gap between icons via its own `gap` rule. */
   .searchPill {
     position: static;
     transform: none;
+    width: 32px;
+    height: 32px;
     min-width: 0;
     max-width: none;
-    flex: 1;
+    flex: 0 0 32px;
+    padding: 0;
+    gap: 0;
+    border-radius: var(--radius-pill);
     justify-content: center;
   }
 
   .pillText {
     display: none;
   }
-
-  /* .pillKbd removed — Kbd component uses its own CSS */
 }
 
 @media (prefers-reduced-motion: reduce) {

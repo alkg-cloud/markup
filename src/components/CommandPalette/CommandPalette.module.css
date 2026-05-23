@@ -54,6 +54,7 @@
   padding: 0 var(--space-md);
   height: 56px;
   flex-shrink: 0;
+  position: relative;
 }
 
 .searchIcon {
@@ -260,4 +261,40 @@
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-muted);
+}
+
+@media (max-width: 767px) {
+  /* Footer keycaps don't make sense on touch — hide the row entirely.
+   * The ✕ button in the popover header replaces ESC. */
+  .footer {
+    display: none;
+  }
+
+  /* Show the close button only on mobile. */
+  .closeBtn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: var(--radius-xs);
+    color: var(--text-muted);
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  .closeBtn:hover {
+    background: var(--surface-hover);
+  }
+}
+
+@media (min-width: 768px) {
+  .closeBtn {
+    display: none;
+  }
 }

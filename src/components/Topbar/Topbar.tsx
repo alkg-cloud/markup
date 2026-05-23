@@ -5,6 +5,7 @@ import { useCallback, useEffect } from 'react';
 import { VscKey, VscMail, VscSearch, VscSignOut } from 'react-icons/vsc';
 import { type BreadcrumbSegment, Breadcrumbs } from '@/components/Breadcrumbs/Breadcrumbs';
 import { Kbd } from '@/components/Kbd/Kbd';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { usePopover } from '@/lib/popover/usePopover';
 import { formatShortcut, useIsMac } from '@/lib/shortcuts/platform';
 import styles from './Topbar.module.css';
@@ -50,24 +51,25 @@ export function Topbar({ breadcrumbs, userName, userEmail, userRole, onSearchCli
   // swaps from "Ctrl+K" → "⌘K" on Mac without firing a hydration
   // warning.
   const mac = useIsMac();
+  const isMobile = useIsMobile();
   const kbdLabel = formatShortcut(['k'], mac);
+  const searchAriaLabel = isMobile ? 'Search' : `Search... (${kbdLabel})`;
 
   return (
     <header className={styles.topbar}>
       <Breadcrumbs segments={breadcrumbs} />
 
-      <button
-        type="button"
-        className={styles.searchPill}
-        aria-label={`Search... (${kbdLabel})`}
-        onClick={handleSearchClick}
-      >
-        <VscSearch size={16} aria-hidden="true" />
-        <span className={styles.pillText}>Search...</span>
-        <Kbd keys={['mod', 'k']} />
-      </button>
-
       <div className={styles.topbarRight}>
+        <button
+          type="button"
+          className={styles.searchPill}
+          aria-label={searchAriaLabel}
+          onClick={handleSearchClick}
+        >
+          <VscSearch size={16} aria-hidden="true" />
+          <span className={styles.pillText}>Search...</span>
+          <Kbd keys={['mod', 'k']} />
+        </button>
         <button
           ref={accountMenu.triggerRef}
           type="button"
