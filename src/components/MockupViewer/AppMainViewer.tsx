@@ -243,14 +243,9 @@ export function AppMainViewer({
     }
   }, [draft, onCreateAnnotation, nextColorIndex, prependCreated, clear, toast]);
 
-  useDraftKeyboard({
-    draft,
-    onOpen: openDraft,
-    onCancel: cancelDraft,
-    onSend: sendDraft,
-    onSave: saveDraft,
-    textareaRef,
-  });
+  // useDraftKeyboard is mounted further below — after `useViewerCanvas`
+  // gives us the iframeRef so the hook can bridge keydown events from
+  // inside the mockup iframe (same-origin) into the parent doc handler.
 
   // ── Canvas click dispatcher ──────────────────────────────────────
   // `useViewerCanvas` classifies every click and emits one of:
@@ -305,6 +300,16 @@ export function AppMainViewer({
     onPin: handlePin,
     onPinClick: handlePinClick,
     onMiss: handleMiss,
+  });
+
+  useDraftKeyboard({
+    draft,
+    onOpen: openDraft,
+    onCancel: cancelDraft,
+    onSend: sendDraft,
+    onSave: saveDraft,
+    textareaRef,
+    iframeRef,
   });
 
   const { isFullscreen, toggle: onFullscreenToggle } = useViewerFullscreen(appMainRef);

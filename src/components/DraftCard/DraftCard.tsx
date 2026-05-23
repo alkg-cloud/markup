@@ -2,7 +2,7 @@
 
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import * as Form from '@radix-ui/react-form';
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, type ReactNode, useEffect, useImperativeHandle, useRef } from 'react';
 import { Kbd } from '@/components/Kbd/Kbd';
 import {
   BODY_CHAR_LIMIT,
@@ -56,10 +56,43 @@ function sendLabel(status: DraftStatus): string {
   return 'Send';
 }
 
+/**
+ * Locale-independent thousands separator. DS 32 specifies `10 000` with a
+ * thin (non-breaking) space; `toLocaleString()` swaps in `,` / `.` / ` `
+ * per the browser locale, drifting the counter from the contract.
+ */
+function formatCount(n: number): string {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
 function pinHintCopy(count: number, pinCount: PinCount): string {
   if (pinCount === 'max') return '· max reached';
   if (count === 0) return '· click on the mockup to add';
   return '· click pin to remove';
+}
+
+/**
+ * AlertDialog body copy. Branches over (bodyLength, pinCount) so the
+ * "lose 0 pins" awkwardness is suppressed when only one side is non-empty.
+ * The four branches mirror the four reachable cancel states — Cancel is
+ * disabled on an empty draft, so (0, 0) doesn't surface in practice.
+ */
+function discardCopy(bodyLen: number, pinCount: number): ReactNode {
+  const pins = (
+    <strong>
+      {pinCount} {pinCount === 1 ? 'pin' : 'pins'}
+    </strong>
+  );
+  if (bodyLen > 0 && pinCount > 0) {
+    return <>You'll lose {pins} and the text you typed. This can't be undone.</>;
+  }
+  if (bodyLen > 0) {
+    return <>You'll lose the text you typed. This can't be undone.</>;
+  }
+  if (pinCount > 0) {
+    return <>You'll lose {pins}. This can't be undone.</>;
+  }
+  return <>You'll lose this draft. This can't be undone.</>;
 }
 
 export const DraftCard = forwardRef<HTMLTextAreaElement, DraftCardProps>(
@@ -99,7 +132,7 @@ export const DraftCard = forwardRef<HTMLTextAreaElement, DraftCardProps>(
           <span className={styles.spacer} />
           {bodyState !== 'empty' && (
             <span className={styles.countChars}>
-              {draft.body.length.toLocaleString()} / {BODY_CHAR_LIMIT.toLocaleString()}
+              {formatCount(draft.body.length)} / {formatCount(BODY_CHAR_LIMIT)}
             </span>
           )}
         </div>
@@ -148,11 +181,7 @@ export const DraftCard = forwardRef<HTMLTextAreaElement, DraftCardProps>(
                     Discard draft?
                   </AlertDialog.Title>
                   <AlertDialog.Description className={styles.alertBody}>
-                    You'll lose{' '}
-                    <strong>
-                      {draft.pins.length} {draft.pins.length === 1 ? 'pin' : 'pins'}
-                    </strong>
-                    {draft.body.length > 0 ? ' and the text you typed' : ''}. This can't be undone.
+                    {discardCopy(draft.body.length, draft.pins.length)}
                   </AlertDialog.Description>
                   <div className={styles.alertActions}>
                     <AlertDialog.Cancel asChild>
@@ -191,7 +220,7 @@ export const DraftCard = forwardRef<HTMLTextAreaElement, DraftCardProps>(
             onClick={onSave}
           >
             Draft
-            <Kbd keys={['mod', 's']} />
+            <Kbd keys={['mod', 's']} className={styles.kbdInBtn} />
           </button>
 
           <Form.Submit asChild>
@@ -201,7 +230,7 @@ export const DraftCard = forwardRef<HTMLTextAreaElement, DraftCardProps>(
               disabled={bodyState !== 'typing' || status === 'sending'}
             >
               {sendLabel(status)}
-              <Kbd keys={['mod', 'enter']} />
+              <Kbd keys={['mod', 'enter']} className={styles.kbdInBtn} />
             </button>
           </Form.Submit>
         </div>
