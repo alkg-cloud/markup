@@ -50,10 +50,15 @@ const GLYPH_NON_MAC: Record<string, string> = {
   shift: 'Shift',
   alt: 'Alt',
   ctrl: 'Ctrl',
-  enter: 'Enter',
+  // ↵ matches the Mac glyph — symmetric across OSes, recognisable, and
+  // ~36 px narrower than the "Enter" word. Necessary so the DraftCard's
+  // action-row (Cancel · Draft Ctrl+S · Send Ctrl+↵) fits inside the
+  // 300 px rail on Windows / Linux. Screen-reader announcement still
+  // spells out "Enter" via SR_NAME below.
+  enter: '↵',
   esc: 'Esc',
   tab: 'Tab',
-  backspace: 'Backspace',
+  backspace: '⌫',
   up: '↑',
   down: '↓',
   left: '←',
