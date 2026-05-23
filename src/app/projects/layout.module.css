@@ -29,5 +29,18 @@
 @media (max-width: 767px) {
   .shell {
     grid-template-columns: 1fr;
+    /* The sidebar wrapper collapses to zero in mobile (drawer +
+     * trigger are position:fixed siblings); rightCol takes the
+     * remaining 1fr. Without `auto`, the wrapper's explicit row
+     * would grab `1fr` and push topbar + main offscreen. */
+    grid-template-rows: auto 1fr;
+  }
+
+  .main {
+    /* Desktop: scroll lives in nested containers (.scroll, .viewer).
+     * Mobile: those containers measure too short because the wrapper
+     * row used to swallow the height — let the main scroll itself so
+     * long content (home dashboard, project workspace) is reachable. */
+    overflow-y: auto;
   }
 }
