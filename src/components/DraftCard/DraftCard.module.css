@@ -158,9 +158,23 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   justify-content: flex-end;
   padding-top: 2px;
+}
+
+/* Tighter Kbd inside the action-row buttons — without this the DS-spec
+ * Kbd (20 px min-width / 10.5 px font) overflows the 300 px rail and
+ * clips the Cancel button. Targets the rendered <kbd> element directly
+ * (higher specificity than Kbd.module.css's `.key`) so we don't touch the
+ * sibling Kbd consumers (rail add-button, command palette, etc.). */
+.kbdInBtn {
+  gap: 2px;
+}
+.kbdInBtn kbd {
+  min-width: 14px;
+  padding: 1px 4px;
+  font-size: 9.5px;
 }
 
 .btn {
