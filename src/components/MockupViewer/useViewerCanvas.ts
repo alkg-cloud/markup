@@ -43,7 +43,11 @@ export interface ViewerCanvasOptions {
   onMiss: () => void;
 }
 
-export function useViewerCanvas({ onPin, onPinClick, onMiss }: ViewerCanvasOptions): ViewerCanvasHook {
+export function useViewerCanvas({
+  onPin,
+  onPinClick,
+  onMiss,
+}: ViewerCanvasOptions): ViewerCanvasHook {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const canvasRootRef = useRef<Element | null>(null);
   // Bumped on iframe load to force PinLayer to remount and re-bind to

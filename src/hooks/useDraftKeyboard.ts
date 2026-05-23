@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useIsMac } from '@/lib/shortcuts/platform';
 import type { DraftState } from '@/components/MockupViewer/draft-types';
+import { useIsMac } from '@/lib/shortcuts/platform';
 
 export interface UseDraftKeyboardArgs {
   draft: DraftState;
@@ -29,7 +29,13 @@ export function useDraftKeyboard(args: UseDraftKeyboardArgs): void {
       const mod = isMac ? e.metaKey : e.ctrlKey;
 
       // N — open a new draft when no input is focused
-      if ((e.key === 'n' || e.key === 'N') && !mod && !e.shiftKey && !e.altKey && !isInputFocused()) {
+      if (
+        (e.key === 'n' || e.key === 'N') &&
+        !mod &&
+        !e.shiftKey &&
+        !e.altKey &&
+        !isInputFocused()
+      ) {
         e.preventDefault();
         onOpen();
         return;
@@ -37,10 +43,11 @@ export function useDraftKeyboard(args: UseDraftKeyboardArgs): void {
 
       // Esc — cancel when textarea is focused (or focus within DraftCard)
       if (e.key === 'Escape' && draft) {
-        const focusInDraft = textareaRef.current && document.activeElement
-          ? textareaRef.current.contains(document.activeElement as Node) ||
-            ((document.activeElement as HTMLElement).closest?.('[data-draft-card-root]') !== null)
-          : false;
+        const focusInDraft =
+          textareaRef.current && document.activeElement
+            ? textareaRef.current.contains(document.activeElement as Node) ||
+              (document.activeElement as HTMLElement).closest?.('[data-draft-card-root]') !== null
+            : false;
         if (focusInDraft) {
           e.preventDefault();
           onCancel();
@@ -49,14 +56,26 @@ export function useDraftKeyboard(args: UseDraftKeyboardArgs): void {
       }
 
       // ⌘/Ctrl + Enter — send
-      if (mod && e.key === 'Enter' && draft && textareaRef.current && document.activeElement === textareaRef.current) {
+      if (
+        mod &&
+        e.key === 'Enter' &&
+        draft &&
+        textareaRef.current &&
+        document.activeElement === textareaRef.current
+      ) {
         e.preventDefault();
         onSend();
         return;
       }
 
       // ⌘/Ctrl + S — save (preventDefault)
-      if (mod && (e.key === 's' || e.key === 'S') && draft && textareaRef.current && document.activeElement === textareaRef.current) {
+      if (
+        mod &&
+        (e.key === 's' || e.key === 'S') &&
+        draft &&
+        textareaRef.current &&
+        document.activeElement === textareaRef.current
+      ) {
         e.preventDefault();
         onSave();
         return;
