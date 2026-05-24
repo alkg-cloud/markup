@@ -16,6 +16,15 @@
   z-index: 20;
   transition: box-shadow var(--motion-fast);
 }
+
+/* Mobile browser chrome (Safari URL bar, gesture indicator, etc.) can
+ * cover the bottom ~50 px of the viewport. Raise the default position
+ * by toolbar-height (≈ 44 px) + 10 px so the toolbar stays reachable. */
+@media (max-width: 767px) {
+  .toolbar {
+    bottom: 78px;
+  }
+}
 .toolbar.dragging {
   transition: none;
   box-shadow:
