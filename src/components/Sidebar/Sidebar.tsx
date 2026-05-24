@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { VscLayoutSidebarLeft, VscLayoutSidebarLeftOff } from 'react-icons/vsc';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -26,6 +27,7 @@ interface SidebarProps {
 
 export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarProps) {
   const isMobile = useIsMobile();
+  const pathname = usePathname();
   // On mobile the sidebar is *always* effectively collapsed (the pill is the
   // entry point). Desktop uses the persisted choice.
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
@@ -39,6 +41,13 @@ export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarP
   }, [isMobile]);
 
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+
+  // Close drawer on every route change. Tree rows are <div role="treeitem">
+  // not <a href>, so a click-target selector doesn't catch them; observing
+  // the pathname catches every navigation (tree click, kebab→Open, logo, etc.).
+  useEffect(() => {
+    if (isMobile) setDrawerOpen(false);
+  }, [pathname, isMobile]);
 
   const toggle = useCallback(() => {
     if (isMobile) {
@@ -196,6 +205,11 @@ export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarP
             <div
               className={styles.drawerScroll}
               onClickCapture={(e) => {
+                // Belt-and-suspenders: any click that contains an explicit
+                // <a href> still closes the drawer eagerly (visual snappier
+                // than waiting for the route effect). Tree rows use
+                // role="treeitem" with onClick — those rely on the pathname
+                // effect above to trigger closeDrawer after navigation.
                 const t = e.target as HTMLElement;
                 if (t.closest('a[href]')) closeDrawer();
               }}

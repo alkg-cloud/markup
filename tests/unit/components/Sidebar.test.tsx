@@ -14,6 +14,13 @@ vi.mock('@/hooks/useIsMobile', () => ({
   useIsMobile: () => mockIsMobileValue,
 }));
 
+// Mock next/navigation — Sidebar uses usePathname() to close the drawer on
+// route changes.
+let mockPathname = '/';
+vi.mock('next/navigation', () => ({
+  usePathname: () => mockPathname,
+}));
+
 // Mock next/link — Sidebar uses <Link href="/">.
 vi.mock('next/link', () => ({
   default: ({
@@ -61,6 +68,7 @@ afterEach(() => {
   document.documentElement.style.removeProperty('--sidebar-inset');
   vi.restoreAllMocks();
   mockIsMobileValue = false;
+  mockPathname = '/';
 });
 
 function renderSidebar(props: { defaultCollapsed?: boolean } = {}) {
@@ -213,5 +221,39 @@ describe('Sidebar mobile drawer', () => {
     });
 
     expect(closeSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes the drawer when the route changes (tree nav-link tap)', () => {
+    mockIsMobileValue = true;
+    mockPathname = '/';
+    renderSidebar();
+
+    // Open the drawer.
+    const expandBtn = container.querySelector(
+      'button[aria-label="Expand sidebar"]',
+    ) as HTMLButtonElement;
+    act(() => {
+      expandBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const dialog = container.querySelector(
+      'dialog[aria-label="Navigation menu"]',
+    ) as HTMLDialogElement;
+    expect(dialog.hasAttribute('open')).toBe(true);
+
+    // Tree rows fire router.push internally; that change reflects in
+    // usePathname() on the next render. Simulate by flipping the mock and
+    // re-rendering — the pathname effect should close the drawer.
+    mockPathname = '/projects/lumen-coffee';
+    act(() => {
+      root.render(
+        createElement(Sidebar, {
+          defaultCollapsed: false,
+          children: 'Nav content',
+        }),
+      );
+    });
+
+    expect(dialog.hasAttribute('open')).toBe(false);
   });
 });
