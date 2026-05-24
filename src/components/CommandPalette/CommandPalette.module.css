@@ -270,6 +270,12 @@
     display: none;
   }
 
+  /* "esc" badge inside the input row is the desktop ESC affordance —
+   * on touch it's both wrong (no keyboard) and redundant with .closeBtn. */
+  .escBadge {
+    display: none;
+  }
+
   /* Show the close button only on mobile. */
   .closeBtn {
     position: absolute;
