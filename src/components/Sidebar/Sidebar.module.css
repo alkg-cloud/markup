@@ -219,13 +219,54 @@
     calc(var(--morph-dur) * 0.55);
 }
 
-/* ─── MOBILE ────────── */
+/* ─── MOBILE ──────────
+ * On mobile the same <nav> morphs pill ↔ full sidebar. The only
+ * difference vs desktop: when expanded it's a floating overlay (higher
+ * z-index, scrim sibling) instead of claiming layout via the spacer.
+ * Spec: docs/superpowers/specs/2026-05-23-mobile-shell-refinement-spec.md
+ */
 @media (max-width: 767px) {
   .spacer {
     display: none;
   }
 
+  /* When expanded on mobile, float over content. Desktop already uses
+   * `position: fixed`; we just need a higher z-index so the sidebar
+   * paints above the topbar (z 90) and the scrim (z 150 below). */
   .sidebar {
-    display: none;
+    z-index: 200;
+  }
+}
+
+/* ─── SCRIM (mobile only) ──────────
+ * Sibling of the .sidebar — rendered as a <button> so it's tappable
+ * + keyboard-focusable for a11y. Tap dismisses the overlay.
+ */
+.scrim {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: oklch(0% 0 0 / 0.6);
+  z-index: 150;
+  cursor: pointer;
+  animation: scrimFadeIn var(--motion-base) var(--ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim {
+    animation: none;
+  }
+}
+
+@keyframes scrimFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

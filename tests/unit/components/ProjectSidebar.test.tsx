@@ -15,6 +15,12 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+// Sidebar (rendered by ProjectSidebar) uses useIsMobile which calls
+// window.matchMedia — stub it so jsdom doesn't throw.
+vi.mock('@/hooks/useIsMobile', () => ({
+  useIsMobile: () => false,
+}));
+
 import { ProjectSidebar } from '@/app/projects/ProjectSidebar';
 import { ToastProvider } from '@/components/Toast/useToast';
 

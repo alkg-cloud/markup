@@ -255,6 +255,17 @@ export function CommandPalette({ projects }: CommandPaletteProps) {
           <button type="button" className={styles.escBadge} onClick={closePalette}>
             esc
           </button>
+          {/* Mobile-only close affordance — sits as a flex sibling after
+           *  the input so it never overlaps the typed text. CSS hides it
+           *  on desktop (escBadge replaces it there). */}
+          <button
+            type="button"
+            className={styles.closeBtn}
+            aria-label="Close search"
+            onClick={() => setOpen(false)}
+          >
+            ✕
+          </button>
         </div>
 
         <div className={styles.divider} />

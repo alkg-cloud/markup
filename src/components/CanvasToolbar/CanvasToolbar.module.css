@@ -16,6 +16,16 @@
   z-index: 20;
   transition: box-shadow var(--motion-fast);
 }
+
+/* Mobile browser chrome (Safari URL bar, gesture indicator, etc.) can
+ * cover the bottom of the viewport. Default raise = toolbar-height
+ * (≈ 44 px) + 10 px + 80% of toolbar-height (≈ 35 px) = 89 px above the
+ * 24 px desktop baseline → 113 px. */
+@media (max-width: 767px) {
+  .toolbar {
+    bottom: 113px;
+  }
+}
 .toolbar.dragging {
   transition: none;
   box-shadow:
