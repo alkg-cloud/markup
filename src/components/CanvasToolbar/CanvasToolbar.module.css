@@ -18,11 +18,12 @@
 }
 
 /* Mobile browser chrome (Safari URL bar, gesture indicator, etc.) can
- * cover the bottom ~50 px of the viewport. Raise the default position
- * by toolbar-height (≈ 44 px) + 10 px so the toolbar stays reachable. */
+ * cover the bottom of the viewport. Default raise = toolbar-height
+ * (≈ 44 px) + 10 px + 80% of toolbar-height (≈ 35 px) = 89 px above the
+ * 24 px desktop baseline → 113 px. */
 @media (max-width: 767px) {
   .toolbar {
-    bottom: 78px;
+    bottom: 113px;
   }
 }
 .toolbar.dragging {
