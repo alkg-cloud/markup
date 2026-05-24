@@ -3,7 +3,7 @@
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
@@ -15,6 +15,20 @@ function renderHTML(component: React.ReactElement): string {
 }
 
 describe('Topbar', () => {
+  beforeEach(() => {
+    // useIsMobile calls window.matchMedia — stub it so the hook doesn't throw.
+    vi.stubGlobal('matchMedia', (_query: string) => ({
+      matches: false,
+      media: _query,
+      onchange: null,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    }));
+  });
+
   afterEach(() => {
     document.body.innerHTML = '';
   });
