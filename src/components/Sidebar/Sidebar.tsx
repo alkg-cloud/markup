@@ -84,11 +84,14 @@ export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarP
     return () => dlg.removeEventListener('close', onClose);
   }, [isMobile]);
 
-  // CSS custom prop drives the topbar's left padding when the pill is
-  // floating. Only set on desktop (mobile pill overlays content).
+  // CSS custom prop drives the topbar's left padding so the breadcrumb
+  // doesn't collide with the floating pill. Set on desktop-collapsed AND
+  // mobile (the pill geometry is identical on both — same pill-width /
+  // pill-left tokens). Cleared when the desktop sidebar is expanded
+  // (the spacer + sidebar take real layout space, no inset needed).
   useEffect(() => {
     const root = document.documentElement;
-    if (collapsed && !isMobile) {
+    if (collapsed || isMobile) {
       root.style.setProperty('--sidebar-inset', 'calc(var(--pill-width) + var(--pill-left) + 8px)');
     } else {
       root.style.removeProperty('--sidebar-inset');
