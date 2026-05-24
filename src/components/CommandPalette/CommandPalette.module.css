@@ -54,7 +54,6 @@
   padding: 0 var(--space-md);
   height: 56px;
   flex-shrink: 0;
-  position: relative;
 }
 
 .searchIcon {
@@ -276,13 +275,12 @@
     display: none;
   }
 
-  /* Show the close button only on mobile. */
+  /* Close button is a flex sibling at the end of .inputRow — no
+   * absolute positioning so it never overlaps the typed text. */
   .closeBtn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
     width: 28px;
     height: 28px;
+    flex: 0 0 28px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -291,7 +289,8 @@
     border-radius: var(--radius-xs);
     color: var(--text-muted);
     cursor: pointer;
-    z-index: 1;
+    font-size: 16px;
+    line-height: 1;
   }
 
   .closeBtn:hover {

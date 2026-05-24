@@ -3,6 +3,16 @@
   flex-shrink: 1;
 }
 
+/* Mobile: breadcrumb is hidden — the topbar's left padding clears the
+ * floating pill instead. Keeps the topbar uncluttered at 390 px and
+ * avoids long route names being truncated with no space to recover.
+ * Spec: docs/superpowers/specs/2026-05-23-mobile-shell-refinement-spec.md */
+@media (max-width: 767px) {
+  .nav {
+    display: none;
+  }
+}
+
 .list {
   list-style: none;
   display: flex;

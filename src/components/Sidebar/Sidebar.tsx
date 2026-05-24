@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { VscLayoutSidebarLeft, VscLayoutSidebarLeftOff } from 'react-icons/vsc';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import styles from './Sidebar.module.css';
@@ -28,67 +28,49 @@ interface SidebarProps {
 export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarProps) {
   const isMobile = useIsMobile();
   const pathname = usePathname();
-  // On mobile the sidebar is *always* effectively collapsed (the pill is the
-  // entry point). Desktop uses the persisted choice.
+  // `collapsed` drives the same morph on both desktop and mobile. The only
+  // difference between the two: on mobile, the expanded state floats over
+  // content with a scrim — on desktop it claims layout via the spacer.
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
-  // Drawer open/closed — only meaningful on mobile.
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
-  // Sync collapsed=true whenever we cross into mobile so the pill renders.
+  // Force the collapsed pill whenever we cross into mobile so the morph
+  // starts from the pill side. Desktop keeps the persisted choice.
   useEffect(() => {
     if (isMobile) setCollapsed(true);
   }, [isMobile]);
 
-  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
-
-  // Close drawer on every route change. Tree rows are <div role="treeitem">
-  // not <a href>, so a click-target selector doesn't catch them; observing
-  // the pathname catches every navigation (tree click, kebab→Open, logo, etc.).
+  // Close the mobile overlay on every route change so a tree-row tap that
+  // navigates also dismisses the sidebar. Tree rows are <div role="treeitem">
+  // (not <a href>), which is why a click-target selector wouldn't catch them.
   useEffect(() => {
-    if (isMobile) setDrawerOpen(false);
+    if (isMobile) setCollapsed(true);
   }, [pathname, isMobile]);
 
   const toggle = useCallback(() => {
-    if (isMobile) {
-      setDrawerOpen(true);
-      return;
-    }
     setCollapsed((current) => {
       const next = !current;
-      writeStoredCollapsedState(next);
+      // Only persist the desktop choice — on mobile, "expanded" is a
+      // transient overlay, not a layout preference.
+      if (!isMobile) writeStoredCollapsedState(next);
       return next;
     });
   }, [isMobile]);
 
-  // Imperatively open/close the native <dialog> so ESC + focus-trap come for free.
+  // ESC dismisses the mobile overlay. Listener only attached while open
+  // so we don't intercept ESC for other UI (modals, popovers) at other times.
   useEffect(() => {
-    const dlg = dialogRef.current;
-    if (!dlg || !isMobile) return;
-    if (drawerOpen && !dlg.open) {
-      dlg.showModal();
-    } else if (!drawerOpen && dlg.open) {
-      dlg.close();
-    }
-  }, [drawerOpen, isMobile]);
+    if (!isMobile || collapsed) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setCollapsed(true);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isMobile, collapsed]);
 
-  // The native <dialog> dispatches 'close' on ESC + close() — sync state.
-  // Deps include isMobile so the effect re-runs when the dialog mounts
-  // (first render isMobile=false → no dialog; after hook upgrade isMobile=true
-  // → dialog renders, ref assigned, this effect re-runs and installs the listener).
-  useEffect(() => {
-    const dlg = dialogRef.current;
-    if (!dlg) return;
-    const onClose = () => setDrawerOpen(false);
-    dlg.addEventListener('close', onClose);
-    return () => dlg.removeEventListener('close', onClose);
-  }, [isMobile]);
-
-  // CSS custom prop drives the topbar's left padding so the breadcrumb
-  // doesn't collide with the floating pill. Set on desktop-collapsed AND
-  // mobile (the pill geometry is identical on both — same pill-width /
-  // pill-left tokens). Cleared when the desktop sidebar is expanded
-  // (the spacer + sidebar take real layout space, no inset needed).
+  // CSS custom prop drives the topbar's left padding so the breadcrumb (or
+  // any future left-aligned content) doesn't collide with the floating pill.
+  // Set when the pill is the visible shape: desktop-collapsed OR mobile
+  // (where the pill is always present unless the overlay is open).
   useEffect(() => {
     const root = document.documentElement;
     if (collapsed || isMobile) {
@@ -98,68 +80,75 @@ export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarP
     }
   }, [collapsed, isMobile]);
 
-  const headerBody = (
-    <div
-      className={[styles.header, collapsed ? styles.headerCollapsed : ''].filter(Boolean).join(' ')}
-    >
-      <Link
-        href="/"
-        className={styles.logo}
-        data-tooltip="Go to projects"
-        data-tooltip-align="left"
-        aria-label="Go to projects"
-      >
-        M
-        <span
-          className={[
-            styles.logoFull,
-            collapsed ? styles.logoFullCollapsed : styles.logoFullExpanded,
-          ].join(' ')}
-        >
-          arkup
-        </span>
-        <span className={styles.logoDot}>.</span>
-      </Link>
-
-      <button
-        type="button"
-        className={[styles.collapseBtn, collapsed ? styles.collapseBtnCollapsed : '']
-          .filter(Boolean)
-          .join(' ')}
-        onClick={toggle}
-        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-      >
-        <span className={styles.iconCollapse} aria-hidden="true">
-          <VscLayoutSidebarLeft />
-        </span>
-        <span className={styles.iconExpand} aria-hidden="true">
-          <VscLayoutSidebarLeftOff />
-        </span>
-      </button>
-    </div>
-  );
-
   return (
     <>
-      {/* Spacer maintains layout flow while sidebar is position: fixed. */}
+      {/* Spacer maintains layout flow while sidebar is position: fixed.
+       *  Hidden on mobile via CSS — the mobile sidebar is an overlay. */}
       <div
         className={[styles.spacer, collapsed ? styles.spacerCollapsed : '']
           .filter(Boolean)
           .join(' ')}
       />
 
-      {/* Desktop morph sidebar: also hosts the pill on mobile (CSS forces
-       *  collapsed dimensions in the mobile media query).
-       *  `data-drawer-open` is consumed by the mobile CSS to hide the pill
-       *  while the drawer is open — see T5 (Sidebar.module.css). */}
+      {/* Scrim — only rendered when the mobile overlay is open. Tap to dismiss. */}
+      {isMobile && !collapsed && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          className={styles.scrim}
+          onClick={() => setCollapsed(true)}
+        />
+      )}
+
+      {/* The same <nav> morphs pill ↔ expanded on both desktop and mobile.
+       *  Mobile gets `position: fixed` + higher z-index from the media query
+       *  so the expanded state floats over the topbar/main with the scrim. */}
       <nav
         aria-label="Project navigation"
         className={[styles.sidebar, collapsed ? styles.sidebarCollapsed : '']
           .filter(Boolean)
           .join(' ')}
-        data-drawer-open={isMobile && drawerOpen ? 'true' : undefined}
       >
-        {headerBody}
+        <div
+          className={[styles.header, collapsed ? styles.headerCollapsed : '']
+            .filter(Boolean)
+            .join(' ')}
+        >
+          <Link
+            href="/"
+            className={styles.logo}
+            data-tooltip="Go to projects"
+            data-tooltip-align="left"
+            aria-label="Go to projects"
+          >
+            M
+            <span
+              className={[
+                styles.logoFull,
+                collapsed ? styles.logoFullCollapsed : styles.logoFullExpanded,
+              ].join(' ')}
+            >
+              arkup
+            </span>
+            <span className={styles.logoDot}>.</span>
+          </Link>
+
+          <button
+            type="button"
+            className={[styles.collapseBtn, collapsed ? styles.collapseBtnCollapsed : '']
+              .filter(Boolean)
+              .join(' ')}
+            onClick={toggle}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <span className={styles.iconCollapse} aria-hidden="true">
+              <VscLayoutSidebarLeft />
+            </span>
+            <span className={styles.iconExpand} aria-hidden="true">
+              <VscLayoutSidebarLeftOff />
+            </span>
+          </button>
+        </div>
 
         <div
           className={[styles.scroll, collapsed ? styles.scrollCollapsed : styles.scrollExpanded]
@@ -179,50 +168,6 @@ export function Sidebar({ children, footer, defaultCollapsed = false }: SidebarP
           </div>
         )}
       </nav>
-
-      {/* Mobile drawer: native <dialog> for focus-trap + ESC. Renders only on mobile. */}
-      {isMobile && (
-        <dialog
-          ref={dialogRef}
-          aria-label="Navigation menu"
-          className={styles.drawer}
-          onClick={(e) => {
-            // Tap on the dialog element itself (the backdrop scrim) closes.
-            if (e.target === dialogRef.current) closeDrawer();
-          }}
-          onKeyDown={(e) => {
-            // ESC is handled natively by <dialog>; this satisfies the
-            // a11y lint rule requiring a keyboard counterpart for onClick.
-            if (e.key === 'Escape') closeDrawer();
-          }}
-        >
-          <div className={styles.drawerPanel}>
-            <button
-              type="button"
-              className={styles.drawerClose}
-              aria-label="Close menu"
-              onClick={closeDrawer}
-            >
-              ✕
-            </button>
-            <div
-              className={styles.drawerScroll}
-              onClickCapture={(e) => {
-                // Belt-and-suspenders: any click that contains an explicit
-                // <a href> still closes the drawer eagerly (visual snappier
-                // than waiting for the route effect). Tree rows use
-                // role="treeitem" with onClick — those rely on the pathname
-                // effect above to trigger closeDrawer after navigation.
-                const t = e.target as HTMLElement;
-                if (t.closest('a[href]')) closeDrawer();
-              }}
-            >
-              {children}
-            </div>
-            {footer && <div className={styles.drawerFooter}>{footer}</div>}
-          </div>
-        </dialog>
-      )}
     </>
   );
 }

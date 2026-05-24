@@ -242,15 +242,6 @@ export function CommandPalette({ projects }: CommandPaletteProps) {
         onKeyDown={handlePanelKeyDown}
       >
         <div className={styles.inputRow}>
-          {/* Mobile-only close affordance — visibility controlled by CSS. */}
-          <button
-            type="button"
-            className={styles.closeBtn}
-            aria-label="Close search"
-            onClick={() => setOpen(false)}
-          >
-            ✕
-          </button>
           <VscSearch className={styles.searchIcon} size={18} aria-hidden="true" />
           <input
             ref={inputRef}
@@ -263,6 +254,17 @@ export function CommandPalette({ projects }: CommandPaletteProps) {
           />
           <button type="button" className={styles.escBadge} onClick={closePalette}>
             esc
+          </button>
+          {/* Mobile-only close affordance — sits as a flex sibling after
+           *  the input so it never overlaps the typed text. CSS hides it
+           *  on desktop (escBadge replaces it there). */}
+          <button
+            type="button"
+            className={styles.closeBtn}
+            aria-label="Close search"
+            onClick={() => setOpen(false)}
+          >
+            ✕
           </button>
         </div>
 

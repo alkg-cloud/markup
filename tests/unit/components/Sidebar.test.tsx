@@ -7,21 +7,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // React 19 requires this flag for act(...) inside vitest's jsdom env.
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
-// Mock useIsMobile before importing Sidebar so the module-level import
-// resolves to the mock.
 let mockIsMobileValue = false;
 vi.mock('@/hooks/useIsMobile', () => ({
   useIsMobile: () => mockIsMobileValue,
 }));
 
-// Mock next/navigation — Sidebar uses usePathname() to close the drawer on
-// route changes.
 let mockPathname = '/';
 vi.mock('next/navigation', () => ({
   usePathname: () => mockPathname,
 }));
 
-// Mock next/link — Sidebar uses <Link href="/">.
 vi.mock('next/link', () => ({
   default: ({
     children,
@@ -43,21 +38,6 @@ beforeEach(() => {
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
-
-  // jsdom does not implement HTMLDialogElement methods — define then spy.
-  if (!HTMLDialogElement.prototype.showModal) {
-    HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement) {
-      this.setAttribute('open', '');
-    };
-  }
-  if (!HTMLDialogElement.prototype.close) {
-    HTMLDialogElement.prototype.close = function (this: HTMLDialogElement) {
-      this.removeAttribute('open');
-      this.dispatchEvent(new Event('close'));
-    };
-  }
-  vi.spyOn(HTMLDialogElement.prototype, 'showModal');
-  vi.spyOn(HTMLDialogElement.prototype, 'close');
 });
 
 afterEach(() => {
@@ -82,178 +62,138 @@ function renderSidebar(props: { defaultCollapsed?: boolean } = {}) {
   });
 }
 
-describe('Sidebar mobile drawer', () => {
+function reRender(defaultCollapsed = false) {
+  act(() => {
+    root.render(
+      createElement(Sidebar, {
+        defaultCollapsed,
+        children: 'Nav content',
+      }),
+    );
+  });
+}
+
+describe('Sidebar', () => {
   it('renders pill (collapsed) on mobile regardless of defaultCollapsed', () => {
     mockIsMobileValue = true;
     renderSidebar({ defaultCollapsed: false });
-    // On mobile the sidebar must always show the "Expand sidebar" button
-    // (i.e. collapsed pill), even if defaultCollapsed is false.
-    const expandBtn = container.querySelector(
-      'button[aria-label="Expand sidebar"]',
-    ) as HTMLButtonElement | null;
-    expect(expandBtn).not.toBeNull();
-    const collapseBtn = container.querySelector('button[aria-label="Collapse sidebar"]');
-    expect(collapseBtn).toBeNull();
+    // On mobile the React layer force-collapses on mount, so the "Expand
+    // sidebar" button (the pill chevron) is what renders.
+    expect(container.querySelector('button[aria-label="Expand sidebar"]')).not.toBeNull();
+    expect(container.querySelector('button[aria-label="Collapse sidebar"]')).toBeNull();
   });
 
   it('respects defaultCollapsed on desktop', () => {
     mockIsMobileValue = false;
     renderSidebar({ defaultCollapsed: false });
-    // On desktop with defaultCollapsed=false, sidebar renders expanded.
+    expect(container.querySelector('button[aria-label="Collapse sidebar"]')).not.toBeNull();
+    expect(container.querySelector('button[aria-label="Expand sidebar"]')).toBeNull();
+  });
+
+  it('expands the overlay on mobile when the pill chevron is tapped', () => {
+    mockIsMobileValue = true;
+    renderSidebar();
+
+    // Before tap: collapsed pill, no scrim.
+    expect(container.querySelector('button[aria-label="Close menu"]')).toBeNull();
+
+    const expandBtn = container.querySelector(
+      'button[aria-label="Expand sidebar"]',
+    ) as HTMLButtonElement;
+    act(() => {
+      expandBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    // After tap: the chevron flips to "Collapse sidebar" and the scrim
+    // ("Close menu" button) is present.
+    expect(container.querySelector('button[aria-label="Collapse sidebar"]')).not.toBeNull();
+    expect(container.querySelector('button[aria-label="Close menu"]')).not.toBeNull();
+  });
+
+  it('collapses the overlay when the collapse chevron is tapped again', () => {
+    mockIsMobileValue = true;
+    renderSidebar();
+
+    // Open.
+    const expandBtn = container.querySelector(
+      'button[aria-label="Expand sidebar"]',
+    ) as HTMLButtonElement;
+    act(() => {
+      expandBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    // The same button now labeled "Collapse sidebar" — tap to close.
     const collapseBtn = container.querySelector(
       'button[aria-label="Collapse sidebar"]',
-    ) as HTMLButtonElement | null;
-    expect(collapseBtn).not.toBeNull();
-    const expandBtn = container.querySelector('button[aria-label="Expand sidebar"]');
-    expect(expandBtn).toBeNull();
+    ) as HTMLButtonElement;
+    act(() => {
+      collapseBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(container.querySelector('button[aria-label="Expand sidebar"]')).not.toBeNull();
+    expect(container.querySelector('button[aria-label="Close menu"]')).toBeNull();
   });
 
-  it('opens the drawer on mobile when the pill is tapped', () => {
+  it('collapses the overlay when the scrim is tapped', () => {
     mockIsMobileValue = true;
     renderSidebar();
 
-    const showModalSpy = HTMLDialogElement.prototype.showModal as ReturnType<typeof vi.spyOn>;
-
-    const expandBtn = container.querySelector(
-      'button[aria-label="Expand sidebar"]',
-    ) as HTMLButtonElement;
-    expect(expandBtn).not.toBeNull();
-
+    // Open.
     act(() => {
-      expandBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      (
+        container.querySelector('button[aria-label="Expand sidebar"]') as HTMLButtonElement
+      ).dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(showModalSpy).toHaveBeenCalledTimes(1);
+    const scrim = container.querySelector('button[aria-label="Close menu"]') as HTMLButtonElement;
+    act(() => {
+      scrim.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
 
-    // The <dialog> element should have the open attribute.
-    const dialog = container.querySelector('dialog[aria-label="Navigation menu"]');
-    expect(dialog).not.toBeNull();
-    expect(dialog?.hasAttribute('open')).toBe(true);
+    expect(container.querySelector('button[aria-label="Expand sidebar"]')).not.toBeNull();
+    expect(container.querySelector('button[aria-label="Close menu"]')).toBeNull();
   });
 
-  it('closes the drawer when the close button is tapped', () => {
+  it('collapses the overlay on ESC keydown', () => {
     mockIsMobileValue = true;
     renderSidebar();
 
-    const closeSpy = HTMLDialogElement.prototype.close as ReturnType<typeof vi.spyOn>;
-
-    // Open the drawer first.
-    const expandBtn = container.querySelector(
-      'button[aria-label="Expand sidebar"]',
-    ) as HTMLButtonElement;
+    // Open.
     act(() => {
-      expandBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      (
+        container.querySelector('button[aria-label="Expand sidebar"]') as HTMLButtonElement
+      ).dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    // Now close via the "Close menu" button.
-    const closeBtn = container.querySelector(
-      'button[aria-label="Close menu"]',
-    ) as HTMLButtonElement | null;
-    expect(closeBtn).not.toBeNull();
+    expect(container.querySelector('button[aria-label="Close menu"]')).not.toBeNull();
 
+    // Dispatch ESC on document — the effect listens at the document level.
     act(() => {
-      closeBtn!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
 
-    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('button[aria-label="Expand sidebar"]')).not.toBeNull();
+    expect(container.querySelector('button[aria-label="Close menu"]')).toBeNull();
   });
 
-  it('syncs React state when the native dialog close event fires (ESC path)', () => {
-    mockIsMobileValue = true;
-    renderSidebar();
-
-    // Open the drawer.
-    const expandBtn = container.querySelector(
-      'button[aria-label="Expand sidebar"]',
-    ) as HTMLButtonElement;
-    act(() => {
-      expandBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-
-    const dialog = container.querySelector(
-      'dialog[aria-label="Navigation menu"]',
-    ) as HTMLDialogElement;
-    expect(dialog).not.toBeNull();
-    expect(dialog.hasAttribute('open')).toBe(true);
-
-    // Mimic the browser's ESC handling: remove the open attr and fire 'close'.
-    act(() => {
-      dialog.removeAttribute('open');
-      dialog.dispatchEvent(new Event('close'));
-    });
-
-    // drawerOpen should be false → pill ("Expand sidebar") is visible again.
-    const pillBtn = container.querySelector(
-      'button[aria-label="Expand sidebar"]',
-    ) as HTMLButtonElement | null;
-    expect(pillBtn).not.toBeNull();
-
-    // showModal should have been called exactly once (open), not again after close.
-    const showModalSpy = HTMLDialogElement.prototype.showModal as ReturnType<typeof vi.spyOn>;
-    expect(showModalSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('closes the drawer when scrim (dialog backdrop) is clicked', () => {
-    mockIsMobileValue = true;
-    renderSidebar();
-
-    const closeSpy = HTMLDialogElement.prototype.close as ReturnType<typeof vi.spyOn>;
-
-    // Open the drawer first.
-    const expandBtn = container.querySelector(
-      'button[aria-label="Expand sidebar"]',
-    ) as HTMLButtonElement;
-    act(() => {
-      expandBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-
-    const dialog = container.querySelector(
-      'dialog[aria-label="Navigation menu"]',
-    ) as HTMLDialogElement | null;
-    expect(dialog).not.toBeNull();
-
-    // Simulate a click whose target is the dialog element itself (the backdrop scrim).
-    act(() => {
-      const event = new MouseEvent('click', { bubbles: true });
-      // Override target so e.target === dialogElement.
-      Object.defineProperty(event, 'target', { value: dialog, configurable: true });
-      dialog!.dispatchEvent(event);
-    });
-
-    expect(closeSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('closes the drawer when the route changes (tree nav-link tap)', () => {
+  it('collapses the overlay on pathname change (tree nav-link tap)', () => {
     mockIsMobileValue = true;
     mockPathname = '/';
     renderSidebar();
 
-    // Open the drawer.
-    const expandBtn = container.querySelector(
-      'button[aria-label="Expand sidebar"]',
-    ) as HTMLButtonElement;
+    // Open.
     act(() => {
-      expandBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      (
+        container.querySelector('button[aria-label="Expand sidebar"]') as HTMLButtonElement
+      ).dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
+    expect(container.querySelector('button[aria-label="Close menu"]')).not.toBeNull();
 
-    const dialog = container.querySelector(
-      'dialog[aria-label="Navigation menu"]',
-    ) as HTMLDialogElement;
-    expect(dialog.hasAttribute('open')).toBe(true);
-
-    // Tree rows fire router.push internally; that change reflects in
-    // usePathname() on the next render. Simulate by flipping the mock and
-    // re-rendering — the pathname effect should close the drawer.
+    // Simulate route change — re-render with new pathname.
     mockPathname = '/projects/lumen-coffee';
-    act(() => {
-      root.render(
-        createElement(Sidebar, {
-          defaultCollapsed: false,
-          children: 'Nav content',
-        }),
-      );
-    });
+    reRender();
 
-    expect(dialog.hasAttribute('open')).toBe(false);
+    expect(container.querySelector('button[aria-label="Expand sidebar"]')).not.toBeNull();
+    expect(container.querySelector('button[aria-label="Close menu"]')).toBeNull();
   });
 });
