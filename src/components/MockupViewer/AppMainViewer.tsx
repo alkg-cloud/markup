@@ -248,7 +248,9 @@ export function AppMainViewer({
   // inside the mockup iframe (same-origin) into the parent doc handler.
 
   // ── Canvas click dispatcher ──────────────────────────────────────
-  // `useViewerCanvas` classifies every click and emits one of:
+  // `useViewerCanvas` only engages anchor classification when a draft is
+  // open (gated via `draftActive` below); existing pin clicks are routed
+  // independently. The hook emits one of:
   //   - onPin(anchor)        — empty-area click that resolved to an anchor
   //   - onPinClick({ kind }) — click landed on an existing pin
   //   - onMiss()             — unresolvable click (no anchor, no pin)
@@ -297,6 +299,10 @@ export function AppMainViewer({
   }, []);
 
   const { iframeRef, canvasRootRef, iframeGen } = useViewerCanvas({
+    // Gate the anchor-capture path on draft state. Outside drafting the
+    // mockup iframe stays interactive (links, buttons, embedded UI).
+    // Matches the existing `if (!draft) return` guard in `handlePin`.
+    draftActive: draft !== null,
     onPin: handlePin,
     onPinClick: handlePinClick,
     onMiss: handleMiss,
