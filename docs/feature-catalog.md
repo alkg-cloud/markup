@@ -390,6 +390,9 @@ viewport when its Fullscreen API is active. Glass-bg chrome floats above.
 | `mockup-viewer-fullscreen-mode` | Fullscreen state. Triggered by `mockup-viewer-toolbar-fullscreen` or `f` shortcut. Uses `appMain.requestFullscreen()`; the browser removes shell chrome until `document.exitFullscreen()` or Esc. Floating rail and toolbar (and the inline `draft-card` hosted inside the rail) all survive because they live inside the fullscreen element. | inactive, active |
 | `mockup-viewer-canvas-stage` | Scrollable container around the mockup iframe. `position: absolute; inset: 0; overflow: auto`. | overflow auto when zoomed past container bounds |
 | `mockup-viewer-mockup-doc` | The iframe rendering `/m/[id]/...`. Receives `transform: scale(var(--zoom))` for canvas zoom. Outside a draft, clicks inside the iframe reach the mockup's own content (buttons, links, embedded overlays such as design-feature tweakers). While a draft is open, clicks on empty mockup area drop pins instead. Clicks on an existing pin always open its card in the rail, regardless of draft state. | loading, loaded, error |
+| `viewer-iframe-viewport-fit` | Fit mode (default) preserves the legacy `width: 100%; height: 100%` iframe sizing — no backdrop, no shadow, no handles. | default state on first mockup visit |
+| `viewer-iframe-viewport-sized` | When viewport mode ≠ fit, the iframe receives explicit `width: ${w}px; height: ${h}px` with a drop shadow (`--shadow-md`) over the canvas backdrop. Iframe top-left aligned in the canvas (locked center=top-left); excess area scrolls. | desktop preset, tablet preset, mobile preset, custom |
+| `viewer-iframe-viewport-handles` | Three drag handles overlaid on the iframe in Custom mode (right edge · bottom edge · bottom-right corner). 6 px thick edges + 12 × 12 corner. Cursors: `ew-resize` · `ns-resize` · `nwse-resize`. Min 240 × 320; drag clamps to canvas bounds. Keyboard-accessible: Arrow keys nudge 8 px, Shift+Arrow 32 px. | base, hover (accent fill brightens), active / `[data-dragging="true"]` (accent-bright + glow ring), focus-visible (focus ring) |
 | `mockup-viewer-pin-layer` | Non-scaling overlay (sibling of mockup-doc) hosting pin elements. Positions reposition on container resize, scroll, zoom, and fullscreen transitions — NOT just viewport resize. | `pointer-events: none` on layer; pins re-enable for click delegation |
 | `mockup-viewer-in-shell-topbar` | The `topbar-bar` rendered above the viewer with breadcrumbs `[Project] / [Folder] / [Mockup]`. Hidden in fullscreen mode. | visible (in-shell), hidden (fullscreen) |
 | `mockup-viewer-in-shell-sidebar` | The `sidebar-shell` rendered to the left of the viewer. Same expand/collapse persistence as every other in-shell page. Hidden in fullscreen mode. | visible (in-shell), hidden (fullscreen) |
@@ -430,6 +433,16 @@ Center-bottom floating dock. See spec §5.
 | `mockup-viewer-toolbar-zoom-in` | Zoom-in button (`⌘+`) | enabled, disabled at 400% max |
 | `mockup-viewer-toolbar-fullscreen` | Fullscreen toggle (F) | inactive, active (pressed) |
 | `mockup-viewer-toolbar-drag` | Drag handle on right edge — `GoGrabber` from `react-icons/go` (25 × 25 — matches `mockup-viewer-rail-drag`; default vertical orientation matches the toolbar's tall slot). Drag clamps to `mockup-viewer-app-main` bounds (8 px margin), NOT viewport. Has `touch-action: none` so pointer drag works on touchscreens (without this, the browser's native page-pan claims the gesture). Pointerdown calls `setPointerCapture` on the grab handle and the drag effect listens for `pointercancel` alongside `pointerup` so a cancelled pointer (OS preemption, escalated native gesture) doesn't pin the toolbar in its dragging state. Dragged position is cleared when fullscreen toggles so the toolbar returns to its centered-bottom default after the containing block's bounds shift. | grab/grabbing cursor |
+
+### canvas-toolbar
+
+Viewport control and zoom group slots in the floating dock.
+
+| ID | Surface / Interaction | States |
+|---|---|---|
+| `canvas-toolbar-zoom-group` | Zoom out / label / zoom in group in the dock. Out and in buttons step by 10%; label is clickable and resets to 100%. Both side buttons disable at min/max. Selecting any preset or Custom in `canvas-toolbar-viewport-trigger` resets zoom to 100% in the same tick. | enabled, disabled (at min or max) |
+| `canvas-toolbar-viewport-trigger` | Icon-only 28 × 28 button at the start of the dock. Icon reflects the active mode (Fit · Desktop · Tablet · Mobile · Custom). `aria-label` includes the active size (e.g. `Viewport: Mobile 390 × 844`). `aria-haspopup="dialog"`, `aria-expanded` follows popover state. Opens `canvas-toolbar-viewport-popover` via Radix Popover. | default, hover (border brightens), focus-visible, active, open (`[data-state="open"]` — bg + border shift to accent) |
+| `canvas-toolbar-viewport-popover` | Radix popover anchored above the trigger (`side="top"`). Contains a 5-chip radiogroup (Fit · Desktop · Tablet · Mobile · Custom), a rotate button (visible only for Tablet/Mobile), Custom W/H inputs (visible only for Custom), and a footer line showing `Mode · W × H`. Popover content uses the glass surface standard (compact density: 12 px padding). | closed, open; per-mode chip-active treatment with `aria-checked="true"` |
 
 ### mockup-viewer-version-chip
 
