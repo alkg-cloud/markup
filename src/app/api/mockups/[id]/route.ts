@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { handleAuthError, identify, requireAdmin } from '@/lib/auth/identify';
+import { handleAuthError, identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { requireOwnerOrAdmin } from '@/lib/auth/require-owner-or-admin';
 import { logger } from '@/lib/logger';
@@ -15,8 +15,8 @@ import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
  * PATCH /api/mockups/[id] — mutate mockup metadata.
  *
  * Agent-loop surface. Auth: cookie OR Bearer.
- * Field-level gating: `name` is admin-only (agents get 403 `forbidden_field`).
- * Status, projectId, folderId, position are writable by any authenticated identity.
+ * Whole request is gated by owner-or-admin against the mockup's
+ * `(createdBy, createdByType)` ownership pair.
  */
 const patchSchema = z
   .object({
@@ -57,18 +57,21 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: 'no_fields' }, { status: 400 });
   }
 
-  // Field-level gating: `name` is admin-only.
-  // Agents get 403 forbidden_field before any role lookup.
-  if (fields.name !== undefined) {
-    if (ident.kind === 'agent') {
-      return NextResponse.json({ error: 'forbidden_field', field: 'name' }, { status: 403 });
-    }
-    // Cookie users still need admin role for name changes.
-    try {
-      await requireAdmin(ident);
-    } catch (e) {
-      return handleAuthError(e);
-    }
+  // Gate the whole request by owner-or-admin against the mockup's ownership pair.
+  const existingRow = await prisma.mockup.findUnique({
+    where: { id: mockupId },
+    select: { id: true, createdBy: true, createdByType: true },
+  });
+  if (!existingRow) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+
+  try {
+    await requireOwnerOrAdmin(ident, {
+      kind: 'mockup',
+      createdBy: existingRow.createdBy,
+      createdByType: existingRow.createdByType as 'user' | 'agent' | null,
+    });
+  } catch (e) {
+    return handleAuthError(e);
   }
 
   // Existing mockup + FK targets run in parallel — none depend on each other.
@@ -136,9 +139,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
  * Deletes a mockup and all its version build directories from disk. Cascade
  * rules in Prisma handle annotations, threads, messages, and reactions.
  *
- * Auth: admin OR the user who created the mockup (`Mockup.createdById`).
- *       Agents are rejected with 403 `forbidden_kind` (docs/api/authz.md §4).
- *       Legacy rows (createdById = NULL) are admin-only-deletable.
+ * Auth: admin OR the identity that created the mockup
+ *       (`Mockup.createdBy` + `Mockup.createdByType`). Agents own the
+ *       mockups they created; users own theirs.
+ *       Legacy rows (createdBy = NULL) are admin-only-deletable.
  */
 export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
@@ -148,12 +152,16 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
 
   const mockup = await prisma.mockup.findUnique({
     where: { id: mockupId },
-    select: { id: true, createdById: true },
+    select: { id: true, createdBy: true, createdByType: true },
   });
   if (!mockup) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
   try {
-    await requireOwnerOrAdmin(ident, { kind: 'mockup', createdById: mockup.createdById });
+    await requireOwnerOrAdmin(ident, {
+      kind: 'mockup',
+      createdBy: mockup.createdBy,
+      createdByType: mockup.createdByType as 'user' | 'agent' | null,
+    });
   } catch (e) {
     return handleAuthError(e);
   }
