@@ -19,13 +19,14 @@ import { type Anchor, buildAnchorFromClick } from '@/lib/anchoring';
  *     the parent decide what to do (drop a draft pin / deactivate the
  *     active annotation / open a pin's annotation in the rail).
  *
- * No more marking-mode gate — the parent owns the draft state and
- * decides whether a click should create a pin. The hook just classifies
- * the hit and emits one of:
- *   - `onPin(anchor)` for empty-area clicks that resolved to an anchor
- *   - `onPinClick(click)` for clicks that landed on an existing pin
- *     (draft or published — the parent decides what to do based on kind)
- *   - `onMiss()` for unresolvable clicks (no anchor + not on a pin)
+ * Click routing:
+ *   - Clicks on existing pins ALWAYS dispatch `onPinClick({ kind })` and
+ *     cancel default (independent of draft state — clicking a published
+ *     pin opens its card in the rail, clicking a draft pin removes it).
+ *   - Empty-area clicks dispatch `onPin(anchor)` / `onMiss()` AND cancel
+ *     default ONLY while `draftActive` is true. Outside draft mode the
+ *     click is left intact so the mockup's own interactive content
+ *     (buttons, links, embedded controls, tweaker UI) keeps working.
  */
 export interface ViewerCanvasHook {
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
@@ -38,12 +39,18 @@ export type PinClick =
   | { kind: 'published'; annotationId: string };
 
 export interface ViewerCanvasOptions {
+  /** Whether a draft is currently open. Gates the empty-area anchor
+   *  capture: when false, clicks on iframe content (other than existing
+   *  pins) pass through without being cancelled, so the mockup's own
+   *  interactive elements keep working. */
+  draftActive: boolean;
   onPin: (anchor: Anchor) => void;
   onPinClick: (click: PinClick) => void;
   onMiss: () => void;
 }
 
 export function useViewerCanvas({
+  draftActive,
   onPin,
   onPinClick,
   onMiss,
@@ -103,6 +110,10 @@ export function useViewerCanvas({
         }
       }
 
+      // Outside draft mode the iframe content is interactive: let the
+      // click reach its target so buttons, links, and tweaker UI work.
+      if (!draftActive) return;
+
       const anchor = buildAnchorFromClick({
         canvasRoot: root,
         target,
@@ -119,7 +130,7 @@ export function useViewerCanvas({
     };
     doc.addEventListener('click', onClick, true);
     return () => doc.removeEventListener('click', onClick, true);
-  }, [iframeGen, onPin, onPinClick, onMiss]);
+  }, [iframeGen, draftActive, onPin, onPinClick, onMiss]);
 
   return { iframeRef, canvasRootRef, iframeGen };
 }
