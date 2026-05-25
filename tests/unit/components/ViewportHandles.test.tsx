@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, createElement, createRef } from 'react';
+import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -29,21 +29,20 @@ afterEach(() => {
 });
 
 function render(viewport: ViewportState, setViewport = vi.fn()) {
-  const canvasRef = createRef<HTMLDivElement>();
   act(() => {
     root.render(
       createElement(
         'div',
-        { ref: canvasRef, style: { width: 800, height: 600, position: 'relative' } },
-        createElement(ViewportHandles, { viewport, setViewport, canvasRef }),
+        { style: { width: 800, height: 600, position: 'relative' } },
+        createElement(ViewportHandles, { viewport, setViewport }),
       ),
     );
   });
-  return { canvasRef, setViewport };
+  return { setViewport };
 }
 
 describe('ViewportHandles', () => {
-  it('renders nothing when mode is not custom', () => {
+  it('renders nothing in Fit mode', () => {
     render(DEFAULT_VIEWPORT);
     expect(container.querySelectorAll('[role="separator"]')).toHaveLength(0);
   });
@@ -63,6 +62,14 @@ describe('ViewportHandles', () => {
     expect(seps[1].getAttribute('aria-orientation')).toBe('horizontal');
     expect(seps[2].getAttribute('aria-orientation')).toBeNull();
   });
+
+  it.each(['desktop', 'tablet', 'mobile'] as const)(
+    'renders all three handles in %s mode',
+    (mode) => {
+      render({ mode, width: 1024, height: 768, orientation: 'portrait' });
+      expect(container.querySelectorAll('[role="separator"]')).toHaveLength(3);
+    },
+  );
 
   it('handles are keyboard-focusable', () => {
     render(CUSTOM);

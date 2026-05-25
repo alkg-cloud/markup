@@ -4,11 +4,8 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { type PinDescriptor, PinLayer } from '@/components/PinLayer';
 import type { Anchor } from '@/lib/anchoring';
 import { ViewportHandles } from './ViewportHandles';
-import type { ViewportMode, ViewportState } from './viewport-presets';
+import { VIEWPORT_PRESETS, type ViewportMode, type ViewportState } from './viewport-presets';
 
-/** Distance the iframe keeps from each canvas edge when auto-fitting on
- *  a preset/chip selection. The visible mockup always has this much
- *  breathing room before "touching" the canvas border. */
 const FIT_MARGIN = 10;
 
 interface ViewerCanvasProps {
@@ -31,7 +28,7 @@ interface ViewerCanvasProps {
   repositionKey: string;
 }
 
-const PRESET_MODES: ViewportMode[] = ['desktop', 'tablet', 'mobile'];
+const PRESET_MODES = Object.keys(VIEWPORT_PRESETS) as ViewportMode[];
 
 function computeFit(
   vw: number | null,
@@ -43,12 +40,6 @@ function computeFit(
   return Math.min((canvasW - 2 * FIT_MARGIN) / vw, (canvasH - 2 * FIT_MARGIN) / vh, 1);
 }
 
-/**
- * Iframe + PinLayer + ViewportHandles. Memoized so re-renders driven
- * by draft/rail state in the parent don't re-mount the iframe (which
- * would blow away the loaded mockup) or churn the PinLayer when pins
- * haven't changed.
- */
 function ViewerCanvasInner({
   mockupSrc,
   iframeRef,
@@ -68,17 +59,13 @@ function ViewerCanvasInner({
 }: ViewerCanvasProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [canvasSize, setCanvasSize] = useState({ w: 0, h: 0 });
-  // The fit scale is LOCKED at the moment a preset is selected (or canvas
-  // resizes). Subsequent drag/numeric-input changes do NOT recompute it,
-  // so the handle follows the cursor 1:1 in screen px and the iframe can
-  // overflow the canvas (wrapper scrolls). Initial 1; first ResizeObserver
-  // callback recomputes against the actual canvas size.
+  // Fit scale is LOCKED at preset selection (and canvas resize). Drag /
+  // numeric-input changes don't recompute it, so handles follow the cursor
+  // 1:1 in screen px and the iframe can overflow the canvas (wrapper scrolls).
   const [lockedScale, setLockedScale] = useState(1);
   const prevModeRef = useRef<ViewportMode>(viewport.mode);
   const isFit = viewport.mode === 'fit';
 
-  // Track wrapper inner size for the fit calculation. ResizeObserver
-  // fires on window resize, fullscreen toggle, and sidebar collapse.
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
@@ -90,25 +77,18 @@ function ViewerCanvasInner({
     return () => ro.disconnect();
   }, []);
 
-  // Refit on viewport.mode transitions — preset chip clicks. We DO NOT
-  // recompute on drag-induced transitions (preset → custom), because the
-  // user's intent is to tweak from the preset baseline; reverting to a
-  // fresh fit-scale would jump the iframe under their cursor.
+  // Refit on chip selection only. Drag-induced preset→custom transitions
+  // are skipped — refitting mid-drag would jump the iframe under the cursor.
+  // width/height intentionally not deps so this doesn't fire on drag ticks.
   useEffect(() => {
     const prev = prevModeRef.current;
     const curr = viewport.mode;
     prevModeRef.current = curr;
     if (prev === curr) return;
     if (PRESET_MODES.includes(prev) && curr === 'custom') return;
-    // viewport.width/height intentionally NOT deps — we read the values
-    // that landed in the same render the mode changed (effects run after
-    // render). Including them would also re-fire on every drag tick,
-    // defeating the lock.
     setLockedScale(computeFit(viewport.width, viewport.height, canvasSize.w, canvasSize.h));
   }, [viewport.mode]);
 
-  // Refit on canvas resize. Same deal — we don't include viewport.width
-  // here to avoid firing during drag.
   useEffect(() => {
     if (canvasSize.w === 0 || canvasSize.h === 0) return;
     setLockedScale(computeFit(viewport.width, viewport.height, canvasSize.w, canvasSize.h));
@@ -144,11 +124,9 @@ function ViewerCanvasInner({
             }}
           />
         ) : (
-          // Double-wrap: outer takes the SCALED layout box (so flex sizes
-          // the iframe by its visual footprint); inner holds the iframe
-          // at the requested viewport dimensions and applies the visual
-          // scale. Handles live inside the inner box → pinned to iframe
-          // edges + scale visually with the iframe.
+          // Double-wrap: outer takes the scaled layout box so flex sizes
+          // the iframe by its visual footprint; inner holds native-pixel
+          // coordinates the handles live in, scaled visually.
           <div
             style={{
               width: `${(viewport.width ?? 0) * effectiveScale}px`,
@@ -181,7 +159,6 @@ function ViewerCanvasInner({
               <ViewportHandles
                 viewport={viewport}
                 setViewport={setViewport}
-                canvasRef={wrapperRef}
                 dragScale={effectiveScale}
               />
             </div>

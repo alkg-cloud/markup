@@ -164,13 +164,9 @@ export function AppMainViewer({
   const { viewport, setViewport, presets } = useViewport(mockupId);
   const handleViewportChange = useCallback(
     (next: ViewportState) => {
-      // Reset zoom ONLY on chip selection — heuristic: mode changed AND
-      // the new dimensions land on a canonical preset size (Desktop /
-      // Tablet / Mobile, either orientation, OR Desktop-size used to
-      // seed Custom from a chip click). Drag-induced changes (preset →
-      // custom on first drag, then custom → custom on subsequent moves)
-      // keep their pixel-precise W/H and so don't match a canonical
-      // preset, leaving zoom intact.
+      // Reset zoom only on chip selection. Heuristic: a chip click lands
+      // on a canonical preset size (either orientation); a drag yields
+      // pixel-precise W/H that won't match, leaving zoom intact.
       const isCanonicalPresetSize =
         next.width !== null &&
         next.height !== null &&
