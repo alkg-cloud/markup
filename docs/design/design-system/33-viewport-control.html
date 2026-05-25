@@ -163,20 +163,29 @@ pre.api .t{color:oklch(86% 0.12 60)}
 }
 .vp-popover__rotate svg{width:12px;height:12px}
 .vp-popover__rotate:hover{background:var(--surface-hover);color:var(--text-bright)}
-.vp-popover__inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.vp-popover__input-row{display:flex;align-items:center;gap:6px}
+.vp-popover__inputs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+.vp-popover__input-row{display:flex;align-items:center;gap:4px;min-width:0}
 .vp-popover__input-label{
-  font-family:var(--font-mono);font-size:11px;color:var(--text-muted);
+  font-family:var(--font-mono);font-size:10px;color:var(--text-muted);
   text-transform:uppercase;letter-spacing:0.12em;font-weight:600;
+  flex-shrink:0;
 }
 .vp-popover__input{
-  flex:1;min-width:0;
-  padding:4px 8px;
+  flex:1;min-width:0;width:100%;
+  padding:3px 6px;
   background:var(--surface-input);
   border:1px solid var(--border-subtle);
   border-radius:var(--radius-xs);
-  color:var(--text);font-family:var(--font-mono);font-size:12px;
+  color:var(--text);font-family:var(--font-mono);font-size:11px;
   font-variant-numeric:tabular-nums;
+  /* Strip the browser's number-input spinner UI — its intrinsic width
+     fights flex shrinking even with min-width: 0. */
+  appearance:textfield;
+  -moz-appearance:textfield;
+}
+.vp-popover__input::-webkit-outer-spin-button,
+.vp-popover__input::-webkit-inner-spin-button{
+  -webkit-appearance:none;margin:0;
 }
 .vp-popover__input:focus{outline:none;border-color:var(--accent)}
 .vp-popover__note{grid-column:1 / -1;font-size:11px;color:var(--text-muted);margin-top:4px}
