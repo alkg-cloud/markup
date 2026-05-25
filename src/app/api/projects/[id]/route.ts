@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { assertCascadeOwnershipForProject } from '@/lib/auth/cascade-check';
-import { handleAuthError, identify, requireAdmin } from '@/lib/auth/identify';
+import { handleAuthError, identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { requireOwnerOrAdmin } from '@/lib/auth/require-owner-or-admin';
 import { prisma } from '@/lib/prisma';
 import { deleteProject, getProject, updateProject } from '@/lib/project/service';
 import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
-
-// See docs/api/authz.md for the full DELETE permission matrix.
 
 const patchSchema = z.object({
   name: urlSafeNameSchema().optional(),
@@ -27,12 +25,25 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
+  const ident = await identify(req);
+  const { id } = await ctx.params;
+
+  const project = await prisma.project.findUnique({
+    where: { id },
+    select: { id: true, createdBy: true, createdByType: true },
+  });
+  if (!project) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+
   try {
-    await requireAdmin(await identify(req));
+    await requireOwnerOrAdmin(ident, {
+      kind: 'project',
+      createdBy: project.createdBy,
+      createdByType: project.createdByType as 'user' | 'agent' | null,
+    });
   } catch (e) {
     return handleAuthError(e);
   }
-  const { id } = await ctx.params;
+
   const parsed = patchSchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) {
     const code = parsed.error.issues[0]?.message ?? 'invalid_body';
@@ -49,10 +60,9 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   const ident = await identify(req);
   const { id } = await ctx.params;
 
-  // Load project first so we can pass the ownership field to requireOwnerOrAdmin.
   const project = await prisma.project.findUnique({
     where: { id },
-    select: { id: true, createdById: true },
+    select: { id: true, createdBy: true, createdByType: true },
   });
   if (!project) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
@@ -60,19 +70,25 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   try {
     viewer = await requireOwnerOrAdmin(ident, {
       kind: 'project',
-      createdById: project.createdById,
+      createdBy: project.createdBy,
+      createdByType: project.createdByType as 'user' | 'agent' | null,
     });
   } catch (e) {
     return handleAuthError(e);
   }
 
-  // Cascade-check + delete atomically: closes the window where a concurrent
-  // POST /api/mockups could insert a foreign-owned row between the check
-  // and the delete. Per docs/api/authz.md "Cascade semantics".
   try {
     const deleted = await prisma.$transaction(async (tx) => {
-      if (viewer.kind === 'user' && viewer.role === 'member') {
-        await assertCascadeOwnershipForProject(viewer.userId, id, tx);
+      // Skip cascade-check for admins (admin override).
+      if (!(viewer.kind === 'user' && viewer.role === 'admin')) {
+        await assertCascadeOwnershipForProject(
+          {
+            id: viewer.kind === 'user' ? viewer.userId : viewer.tokenId,
+            type: viewer.kind,
+          },
+          id,
+          tx,
+        );
       }
       return deleteProject(id, tx);
     });
