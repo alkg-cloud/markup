@@ -37,6 +37,8 @@ async function bootstrap() {
     zipPath: fixture('valid-simple.zip'),
     createdBy: 'u',
     createdByType: 'user',
+    versionCreatedBy: 'u',
+    versionCreatedByType: 'user',
   });
   const annotation = await createAnnotation({
     mockupId: mockup.mockup.id,
