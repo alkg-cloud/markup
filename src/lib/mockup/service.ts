@@ -17,10 +17,20 @@ interface CreateInput {
   name: string;
   slug?: string;
   zipPath: string;
-  createdBy: string;
-  createdByType: 'user' | 'agent';
-  /** User-id of the human who initiated the upload. `null` for agent-created mockups. */
-  createdById?: string | null;
+  /**
+   * Polymorphic mockup ownership. `createdBy` is the User-id or Agent-id of the
+   * principal that owns this mockup; `createdByType` discriminates which table
+   * it references. Both nullable for legacy / system-created rows.
+   */
+  createdBy: string | null;
+  createdByType: 'user' | 'agent' | null;
+  /**
+   * Attribution stamped on the first MockupVersion row. Always required —
+   * every version is created by a known principal even when the parent
+   * mockup's ownership is unknown.
+   */
+  versionCreatedBy: string;
+  versionCreatedByType: 'user' | 'agent';
   projectId?: string;
   folderId?: string;
 }
@@ -110,7 +120,8 @@ export async function createMockupFromZip(input: CreateInput) {
       status: 'open',
       projectId: input.projectId ?? null,
       folderId: input.folderId ?? null,
-      createdById: input.createdById ?? null,
+      createdBy: input.createdBy,
+      createdByType: input.createdByType,
     },
   });
   const version = await prisma.mockupVersion.create({
@@ -119,8 +130,8 @@ export async function createMockupFromZip(input: CreateInput) {
       mockupId: mid,
       number: 1,
       path: path.posix.join('mockups', mid, 'versions', vid, 'build'),
-      createdBy: input.createdBy,
-      createdByType: input.createdByType,
+      createdBy: input.versionCreatedBy,
+      createdByType: input.versionCreatedByType,
     },
   });
   const mockup = await prisma.mockup.update({
