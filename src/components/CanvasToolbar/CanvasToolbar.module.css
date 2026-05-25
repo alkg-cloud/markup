@@ -135,3 +135,10 @@
   width: 25px;
   height: 25px;
 }
+
+.divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  margin: 0 4px;
+}

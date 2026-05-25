@@ -47,7 +47,9 @@ import { type DraftState, type DraftStatus, MAX_PINS, type StoredDraft } from '.
 import { useAppMainAnnotations } from './useAppMainAnnotations';
 import { type PinClick, useViewerCanvas } from './useViewerCanvas';
 import { useViewerFullscreen } from './useViewerFullscreen';
+import { useViewport } from './useViewport';
 import { ViewerCanvas } from './ViewerCanvas';
+import type { ViewportState } from './viewport-presets';
 
 export interface AppMainAnnotation {
   id: string;
@@ -159,6 +161,28 @@ export function AppMainViewer({
   const [removingPinIndex, setRemovingPinIndex] = useState<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [zoom, setZoom] = useState(1);
+  const { viewport, setViewport, presets } = useViewport(mockupId);
+  const handleViewportChange = useCallback(
+    (next: ViewportState) => {
+      // Reset zoom only on chip selection. Heuristic: a chip click lands
+      // on a canonical preset size (either orientation); a drag yields
+      // pixel-precise W/H that won't match, leaving zoom intact.
+      const isCanonicalPresetSize =
+        next.width !== null &&
+        next.height !== null &&
+        Object.values(presets).some(
+          (p) =>
+            (next.width === p.width && next.height === p.height) ||
+            (next.width === p.height && next.height === p.width),
+        );
+      const modeChanged = next.mode !== viewport.mode;
+      if (modeChanged && next.mode !== 'fit' && isCanonicalPresetSize) {
+        setZoom(1);
+      }
+      setViewport(next);
+    },
+    [viewport.mode, setViewport, presets],
+  );
   // Bumped each time the user clicks a canvas pin so the rail pins
   // itself open. Decoupling the trigger from `activeId` lets the rail
   // stay collapsed when the active annotation changes from the rail
@@ -379,7 +403,8 @@ export function AppMainViewer({
   // canvas bounds. Used to invalidate the pin layer's positioning
   // cache and to clear the rail/toolbar's dragged coordinates.
   const layoutKey = isFullscreen ? 'fs' : 'win';
-  const repositionKey = `${zoom}:${layoutKey}`;
+  const viewportKey = viewport.mode === 'fit' ? 'fit' : `${viewport.width}x${viewport.height}`;
+  const repositionKey = `${zoom}:${layoutKey}:${viewportKey}`;
 
   const onAnnotationDeleteRow = useCallback(
     async (annotationId: string) => {
@@ -409,6 +434,8 @@ export function AppMainViewer({
           iframeGen={iframeGen}
           marking={draftActive}
           zoom={zoom}
+          viewport={viewport}
+          setViewport={handleViewportChange}
           pins={pins}
           draftPins={draftPins}
           draftColorIndex={nextColorIndex}
@@ -480,6 +507,8 @@ export function AppMainViewer({
           onFullscreenToggle={onFullscreenToggle}
           isFullscreen={isFullscreen}
           resetPositionKey={layoutKey}
+          viewport={viewport}
+          setViewport={handleViewportChange}
           versionChip={
             <VersionChip
               versions={versions}
