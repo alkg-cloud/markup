@@ -37,11 +37,7 @@ function clampH(h: number): number {
   return Math.max(VIEWPORT_MIN_HEIGHT, Math.min(DRAG_MAX, Math.round(h)));
 }
 
-export function ViewportHandles({
-  viewport,
-  setViewport,
-  dragScale = 1,
-}: ViewportHandlesProps) {
+export function ViewportHandles({ viewport, setViewport, dragScale = 1 }: ViewportHandlesProps) {
   const dragRef = useRef<DragState | null>(null);
   const grids = useRef<{
     right?: HTMLDivElement;

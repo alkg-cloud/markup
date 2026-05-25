@@ -6,12 +6,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
+import { ViewportControl } from '@/components/CanvasToolbar/ViewportControl';
 import {
   DEFAULT_VIEWPORT,
   VIEWPORT_PRESETS,
   type ViewportState,
 } from '@/components/MockupViewer/viewport-presets';
-import { ViewportControl } from '@/components/CanvasToolbar/ViewportControl';
 
 let container: HTMLDivElement;
 let root: Root;
@@ -51,8 +51,8 @@ describe('ViewportControl', () => {
     });
   }
   function findChip(label: RegExp): HTMLButtonElement | null {
-    return Array.from(document.querySelectorAll('button[role="radio"]')).find(
-      (b) => label.test(b.getAttribute('aria-label') ?? ''),
+    return Array.from(document.querySelectorAll('button[role="radio"]')).find((b) =>
+      label.test(b.getAttribute('aria-label') ?? ''),
     ) as HTMLButtonElement | null;
   }
 
@@ -75,10 +75,7 @@ describe('ViewportControl', () => {
 
   it('clicking Fit chip clears width/height', () => {
     const setViewport = vi.fn();
-    render(
-      { mode: 'mobile', width: 390, height: 844, orientation: 'portrait' },
-      setViewport,
-    );
+    render({ mode: 'mobile', width: 390, height: 844, orientation: 'portrait' }, setViewport);
     openPopover();
     const fit = findChip(/Fit/);
     expect(fit).toBeTruthy();
@@ -109,10 +106,7 @@ describe('ViewportControl', () => {
 
   it('rotate swaps width and height for Tablet', () => {
     const setViewport = vi.fn();
-    render(
-      { mode: 'tablet', width: 768, height: 1024, orientation: 'portrait' },
-      setViewport,
-    );
+    render({ mode: 'tablet', width: 768, height: 1024, orientation: 'portrait' }, setViewport);
     openPopover();
     const rotate = document.querySelector(
       'button[aria-label="Rotate orientation"]',

@@ -22,7 +22,7 @@
 }
 
 .handle:active,
-.handle[data-dragging='true'] {
+.handle[data-dragging="true"] {
   background: var(--accent-bright);
   border-color: var(--accent-bright);
   box-shadow: 0 0 0 3px var(--accent-overlay-soft);
@@ -68,8 +68,10 @@
 }
 
 .handleCorner:active,
-.handleCorner[data-dragging='true'] {
-  box-shadow: 0 0 0 2px var(--bg-iframe), 0 0 0 5px var(--accent-overlay-soft);
+.handleCorner[data-dragging="true"] {
+  box-shadow:
+    0 0 0 2px var(--bg-iframe),
+    0 0 0 5px var(--accent-overlay-soft);
 }
 
 .grip {
@@ -102,6 +104,6 @@
 }
 
 .handle:hover .grip,
-.handle[data-dragging='true'] .grip {
+.handle[data-dragging="true"] .grip {
   opacity: 0.9;
 }

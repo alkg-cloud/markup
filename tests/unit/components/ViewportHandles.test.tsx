@@ -6,11 +6,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
-import {
-  DEFAULT_VIEWPORT,
-  type ViewportState,
-} from '@/components/MockupViewer/viewport-presets';
 import { ViewportHandles } from '@/components/MockupViewer/ViewportHandles';
+import { DEFAULT_VIEWPORT, type ViewportState } from '@/components/MockupViewer/viewport-presets';
 
 let container: HTMLDivElement;
 let root: Root;
@@ -63,13 +60,14 @@ describe('ViewportHandles', () => {
     expect(seps[2].getAttribute('aria-orientation')).toBeNull();
   });
 
-  it.each(['desktop', 'tablet', 'mobile'] as const)(
-    'renders all three handles in %s mode',
-    (mode) => {
-      render({ mode, width: 1024, height: 768, orientation: 'portrait' });
-      expect(container.querySelectorAll('[role="separator"]')).toHaveLength(3);
-    },
-  );
+  it.each([
+    'desktop',
+    'tablet',
+    'mobile',
+  ] as const)('renders all three handles in %s mode', (mode) => {
+    render({ mode, width: 1024, height: 768, orientation: 'portrait' });
+    expect(container.querySelectorAll('[role="separator"]')).toHaveLength(3);
+  });
 
   it('handles are keyboard-focusable', () => {
     render(CUSTOM);
@@ -110,10 +108,7 @@ describe('ViewportHandles', () => {
 
   it('ArrowLeft at min width clamps to 240', () => {
     const setViewport = vi.fn();
-    render(
-      { mode: 'custom', width: 240, height: 480, orientation: 'portrait' },
-      setViewport,
-    );
+    render({ mode: 'custom', width: 240, height: 480, orientation: 'portrait' }, setViewport);
     const right = container.querySelector('[aria-orientation="vertical"]') as HTMLDivElement;
     act(() => {
       right.dispatchEvent(

@@ -6,12 +6,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
-import {
-  DEFAULT_VIEWPORT,
-  VIEWPORT_PRESETS,
-  type ViewportState,
-} from '@/components/MockupViewer/viewport-presets';
-import { useViewport, type UseViewportReturn } from '@/components/MockupViewer/useViewport';
+import { type UseViewportReturn, useViewport } from '@/components/MockupViewer/useViewport';
+import { DEFAULT_VIEWPORT, VIEWPORT_PRESETS } from '@/components/MockupViewer/viewport-presets';
 
 let container: HTMLDivElement;
 let root: Root;
