@@ -9,27 +9,45 @@ const otherAgent: Viewer = { kind: 'agent', tokenId: 'tok-2' };
 
 // ── Project ──────────────────────────────────────────────────────────────────
 describe('canDelete — project', () => {
-  const memberOwned: DeletableEntity = { kind: 'project', createdBy: member.userId, createdByType: 'user' };
-  const agentOwned:  DeletableEntity = { kind: 'project', createdBy: agent.tokenId,  createdByType: 'agent' };
-  const legacy:      DeletableEntity = { kind: 'project', createdBy: null,           createdByType: null };
+  const memberOwned: DeletableEntity = {
+    kind: 'project',
+    createdBy: member.userId,
+    createdByType: 'user',
+  };
+  const agentOwned: DeletableEntity = {
+    kind: 'project',
+    createdBy: agent.tokenId,
+    createdByType: 'agent',
+  };
+  const legacy: DeletableEntity = { kind: 'project', createdBy: null, createdByType: null };
 
   it('admin can delete user-owned', () => expect(canDelete(admin, memberOwned)).toBe(true));
   it('admin can delete agent-owned', () => expect(canDelete(admin, agentOwned)).toBe(true));
   it('admin can delete legacy', () => expect(canDelete(admin, legacy)).toBe(true));
   it('member can delete own', () => expect(canDelete(member, memberOwned)).toBe(true));
-  it('member cannot delete other member', () => expect(canDelete(otherMember, memberOwned)).toBe(false));
+  it('member cannot delete other member', () =>
+    expect(canDelete(otherMember, memberOwned)).toBe(false));
   it('member cannot delete agent-owned', () => expect(canDelete(member, agentOwned)).toBe(false));
   it('member cannot delete legacy', () => expect(canDelete(member, legacy)).toBe(false));
   it('agent can delete own', () => expect(canDelete(agent, agentOwned)).toBe(true));
-  it('agent cannot delete other agent', () => expect(canDelete(otherAgent, agentOwned)).toBe(false));
+  it('agent cannot delete other agent', () =>
+    expect(canDelete(otherAgent, agentOwned)).toBe(false));
   it('agent cannot delete user-owned', () => expect(canDelete(agent, memberOwned)).toBe(false));
   it('agent cannot delete legacy', () => expect(canDelete(agent, legacy)).toBe(false));
 });
 
 // ── Folder ───────────────────────────────────────────────────────────────────
 describe('canDelete — folder', () => {
-  const memberOwned: DeletableEntity = { kind: 'folder', createdBy: member.userId, createdByType: 'user' };
-  const agentOwned:  DeletableEntity = { kind: 'folder', createdBy: agent.tokenId, createdByType: 'agent' };
+  const memberOwned: DeletableEntity = {
+    kind: 'folder',
+    createdBy: member.userId,
+    createdByType: 'user',
+  };
+  const agentOwned: DeletableEntity = {
+    kind: 'folder',
+    createdBy: agent.tokenId,
+    createdByType: 'agent',
+  };
 
   it('admin can delete user-owned', () => expect(canDelete(admin, memberOwned)).toBe(true));
   it('member can delete own', () => expect(canDelete(member, memberOwned)).toBe(true));
@@ -40,9 +58,17 @@ describe('canDelete — folder', () => {
 
 // ── Mockup ───────────────────────────────────────────────────────────────────
 describe('canDelete — mockup', () => {
-  const memberOwned: DeletableEntity = { kind: 'mockup', createdBy: member.userId, createdByType: 'user' };
-  const agentOwned:  DeletableEntity = { kind: 'mockup', createdBy: agent.tokenId, createdByType: 'agent' };
-  const legacy:      DeletableEntity = { kind: 'mockup', createdBy: null,           createdByType: null };
+  const memberOwned: DeletableEntity = {
+    kind: 'mockup',
+    createdBy: member.userId,
+    createdByType: 'user',
+  };
+  const agentOwned: DeletableEntity = {
+    kind: 'mockup',
+    createdBy: agent.tokenId,
+    createdByType: 'agent',
+  };
+  const legacy: DeletableEntity = { kind: 'mockup', createdBy: null, createdByType: null };
 
   it('admin can delete user-owned', () => expect(canDelete(admin, memberOwned)).toBe(true));
   it('admin can delete agent-owned', () => expect(canDelete(admin, agentOwned)).toBe(true));
@@ -56,8 +82,16 @@ describe('canDelete — mockup', () => {
 
 // ── MockupVersion ────────────────────────────────────────────────────────────
 describe('canDelete — mockupVersion', () => {
-  const userOwned:  DeletableEntity = { kind: 'mockupVersion', createdBy: member.userId, createdByType: 'user' };
-  const agentOwned: DeletableEntity = { kind: 'mockupVersion', createdBy: agent.tokenId, createdByType: 'agent' };
+  const userOwned: DeletableEntity = {
+    kind: 'mockupVersion',
+    createdBy: member.userId,
+    createdByType: 'user',
+  };
+  const agentOwned: DeletableEntity = {
+    kind: 'mockupVersion',
+    createdBy: agent.tokenId,
+    createdByType: 'agent',
+  };
 
   it('admin can delete', () => expect(canDelete(admin, userOwned)).toBe(true));
   it('admin can delete agent-version', () => expect(canDelete(admin, agentOwned)).toBe(true));
@@ -69,20 +103,33 @@ describe('canDelete — mockupVersion', () => {
 
 // ── Annotation ───────────────────────────────────────────────────────────────
 describe('canDelete — annotation', () => {
-  const userOwned:  DeletableEntity = { kind: 'annotation', createdBy: member.userId, createdByType: 'user' };
-  const agentOwned: DeletableEntity = { kind: 'annotation', createdBy: agent.tokenId, createdByType: 'agent' };
+  const userOwned: DeletableEntity = {
+    kind: 'annotation',
+    createdBy: member.userId,
+    createdByType: 'user',
+  };
+  const agentOwned: DeletableEntity = {
+    kind: 'annotation',
+    createdBy: agent.tokenId,
+    createdByType: 'agent',
+  };
 
   it('admin can delete', () => expect(canDelete(admin, userOwned)).toBe(true));
   it('member can delete own', () => expect(canDelete(member, userOwned)).toBe(true));
   it('agent can delete own (new behavior)', () => expect(canDelete(agent, agentOwned)).toBe(true));
-  it('member cannot delete agent-annotation', () => expect(canDelete(member, agentOwned)).toBe(false));
+  it('member cannot delete agent-annotation', () =>
+    expect(canDelete(member, agentOwned)).toBe(false));
   it('agent cannot delete user-annotation', () => expect(canDelete(agent, userOwned)).toBe(false));
 });
 
 // ── Message ──────────────────────────────────────────────────────────────────
 describe('canDelete — message', () => {
-  const userMsg:  DeletableEntity = { kind: 'message', authorId: member.userId, authorType: 'user' };
-  const agentMsg: DeletableEntity = { kind: 'message', authorId: agent.tokenId, authorType: 'agent' };
+  const userMsg: DeletableEntity = { kind: 'message', authorId: member.userId, authorType: 'user' };
+  const agentMsg: DeletableEntity = {
+    kind: 'message',
+    authorId: agent.tokenId,
+    authorType: 'agent',
+  };
 
   it('admin can delete', () => expect(canDelete(admin, userMsg)).toBe(true));
   it('member can delete own', () => expect(canDelete(member, userMsg)).toBe(true));

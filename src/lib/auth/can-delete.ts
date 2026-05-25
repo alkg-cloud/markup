@@ -9,12 +9,12 @@
  */
 
 export type DeletableEntity =
-  | { kind: 'project';       createdBy: string | null; createdByType: 'user' | 'agent' | null }
-  | { kind: 'folder';        createdBy: string | null; createdByType: 'user' | 'agent' | null }
-  | { kind: 'mockup';        createdBy: string | null; createdByType: 'user' | 'agent' | null }
-  | { kind: 'mockupVersion'; createdBy: string;        createdByType: 'user' | 'agent' }
-  | { kind: 'annotation';    createdBy: string;        createdByType: 'user' | 'agent' }
-  | { kind: 'message';       authorId: string;         authorType: 'user' | 'agent' };
+  | { kind: 'project'; createdBy: string | null; createdByType: 'user' | 'agent' | null }
+  | { kind: 'folder'; createdBy: string | null; createdByType: 'user' | 'agent' | null }
+  | { kind: 'mockup'; createdBy: string | null; createdByType: 'user' | 'agent' | null }
+  | { kind: 'mockupVersion'; createdBy: string; createdByType: 'user' | 'agent' }
+  | { kind: 'annotation'; createdBy: string; createdByType: 'user' | 'agent' }
+  | { kind: 'message'; authorId: string; authorType: 'user' | 'agent' };
 
 export type Viewer =
   | { kind: 'user'; userId: string; role: 'admin' | 'member' }

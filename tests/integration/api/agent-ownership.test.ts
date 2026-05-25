@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { DELETE as deleteAgentToken } from '@/app/api/agent-tokens/[id]/route';
 import { POST as createAgentToken } from '@/app/api/agent-tokens/route';
 import { POST as setup } from '@/app/api/auth/setup/route';
-import { DELETE as deleteProject, PATCH as patchProject } from '@/app/api/projects/[id]/route';
 import { POST as createFolder } from '@/app/api/projects/[id]/folders/route';
+import { DELETE as deleteProject, PATCH as patchProject } from '@/app/api/projects/[id]/route';
 import { POST as createProject } from '@/app/api/projects/route';
 import { prisma } from '@/lib/prisma';
 
