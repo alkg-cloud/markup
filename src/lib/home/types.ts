@@ -29,8 +29,12 @@ export interface RecentEntry {
   href: string;
   /** Human-readable breadcrumb: `"Project · Folder · Subfolder"` or `"Ungrouped"`. */
   breadcrumb: string;
-  /** cuid of the user who created this mockup, or null for legacy / agent-created rows. */
-  createdById: string | null;
+  /** cuid of the identity (User or AgentToken) that created this row; null for legacy. */
+  createdBy: string | null;
+  /** 'user' | 'agent' | null. */
+  createdByType: 'user' | 'agent' | null;
+  /** Human-readable name resolved server-side, or null for legacy/anonymous. */
+  createdByName: string | null;
 }
 
 export interface OrphanEntry {
@@ -41,8 +45,12 @@ export interface OrphanEntry {
   updatedAt: string;
   /** `/projects/unsorted/<mockup-slug>`. */
   href: string;
-  /** cuid of the user who created this mockup, or null for legacy / agent-created rows. */
-  createdById: string | null;
+  /** cuid of the identity (User or AgentToken) that created this row; null for legacy. */
+  createdBy: string | null;
+  /** 'user' | 'agent' | null. */
+  createdByType: 'user' | 'agent' | null;
+  /** Human-readable name resolved server-side, or null for legacy/anonymous. */
+  createdByName: string | null;
 }
 
 export interface ProjectListEntry {
@@ -57,8 +65,12 @@ export interface ProjectListEntry {
   updatedAt: string;
   mockupCount: number;
   folderCount: number;
-  /** cuid of the user who created this project, or null for legacy rows. */
-  createdById: string | null;
+  /** cuid of the identity (User or AgentToken) that created this row; null for legacy. */
+  createdBy: string | null;
+  /** 'user' | 'agent' | null. */
+  createdByType: 'user' | 'agent' | null;
+  /** Human-readable name resolved server-side, or null for legacy/anonymous. */
+  createdByName: string | null;
 }
 
 export interface HomeData {

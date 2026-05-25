@@ -36,7 +36,8 @@ describe('orphan group label', () => {
         slug: 'draft-sketch',
         status: 'active',
         position: 1,
-        createdById: null,
+        createdBy: null,
+        createdByType: null,
       },
     ];
 
@@ -63,7 +64,8 @@ describe('orphan group label', () => {
         slug: 'my-app',
         icon: null,
         position: 1,
-        createdById: null,
+        createdBy: null,
+        createdByType: null,
         folders: [],
         mockups: [],
       },
@@ -75,7 +77,8 @@ describe('orphan group label', () => {
         slug: 'draft-sketch',
         status: 'active',
         position: 1,
-        createdById: null,
+        createdBy: null,
+        createdByType: null,
       },
     ];
 

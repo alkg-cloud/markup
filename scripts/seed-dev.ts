@@ -233,6 +233,8 @@ async function uploadMockup(opts: {
     folderId: opts.folderId,
     createdBy: opts.authorId,
     createdByType: 'user',
+    versionCreatedBy: opts.authorId,
+    versionCreatedByType: 'user',
   });
   return r;
 }

@@ -20,10 +20,19 @@ const project = {
   slug: 'alpha',
   icon: 'emoji:🎨',
   position: 1,
-  createdById: null,
+  createdBy: null,
+  createdByType: null,
   folders: [],
   mockups: [
-    { id: 'm1', name: 'Mockup1', slug: 'm1', status: 'active', position: 1, createdById: null },
+    {
+      id: 'm1',
+      name: 'Mockup1',
+      slug: 'm1',
+      status: 'active',
+      position: 1,
+      createdBy: null,
+      createdByType: null,
+    },
   ],
 };
 

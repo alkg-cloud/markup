@@ -269,7 +269,8 @@ export function TreeNode({
           <TreeNodeKebab
             node={node}
             displayLabel={displayLabel}
-            createdById={node.createdById}
+            createdBy={node.createdBy}
+            createdByType={node.createdByType}
             onOpen={() => {
               if (node.href) onNavigate(node.href);
             }}

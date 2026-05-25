@@ -9,8 +9,11 @@ import type { FlatNode } from './treeTypes';
 interface TreeNodeKebabProps {
   node: FlatNode;
   displayLabel: string;
-  /** `createdById` from the server payload — used to compute delete permission. */
-  createdById: string | null;
+  /** Polymorphic creator id from the server payload — used together with
+   *  `createdByType` to compute delete permission. */
+  createdBy: string | null;
+  /** `'user' | 'agent' | null` — discriminates which table `createdBy` references. */
+  createdByType: 'user' | 'agent' | null;
   onOpen: () => void;
   onEditProject?: (projectId: string) => void;
   onRename?: () => void;
@@ -35,7 +38,8 @@ interface TreeNodeKebabProps {
 export function TreeNodeKebab({
   node,
   displayLabel,
-  createdById,
+  createdBy,
+  createdByType,
   onOpen,
   onEditProject,
   onRename,
@@ -52,7 +56,7 @@ export function TreeNodeKebab({
 
   // Compute delete permission from the shared predicate — same logic the
   // server applies, so the button and the API can never drift.
-  const canDelete = useCanDelete({ kind: nodeType, createdById });
+  const canDelete = useCanDelete({ kind: nodeType, createdBy, createdByType });
 
   return (
     <>
