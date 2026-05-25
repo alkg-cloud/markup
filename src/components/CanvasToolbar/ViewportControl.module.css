@@ -30,7 +30,7 @@
   border-color: var(--accent-overlay-strong);
 }
 
-.trigger[data-state='open'] {
+.trigger[data-state="open"] {
   background: var(--accent-overlay-mid);
   border-color: var(--accent-bright);
 }
@@ -42,6 +42,12 @@
 
 .popover {
   position: relative;
+  /* Radix Popover.Content portals to <body> without an implicit z-index.
+     The viewer iframe + its wrapper share the same root stacking context
+     and end up painting on top by DOM order. Lift the popover above the
+     iframe and above the pin overlays (--z-pin-layer 15 / --z-viewport-
+     handles 16). */
+  z-index: 50;
   width: 280px;
   padding: 12px;
   background: var(--bg-elevated-strong);
@@ -89,7 +95,7 @@
   box-shadow: var(--focus-ring);
 }
 
-.chip[aria-checked='true'] {
+.chip[aria-checked="true"] {
   background: var(--accent-overlay-soft);
   border-color: var(--accent-overlay-mid);
   color: var(--accent-bright);
