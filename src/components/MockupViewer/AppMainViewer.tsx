@@ -298,11 +298,12 @@ export function AppMainViewer({
     setActiveId(null);
   }, []);
 
+  // Gate for the iframe click-capture path AND the marking-cursor /
+  // draft-card / rail-pin signals further down. One source of truth.
+  const draftActive = draft !== null;
+
   const { iframeRef, canvasRootRef, iframeGen } = useViewerCanvas({
-    // Gate the anchor-capture path on draft state. Outside drafting the
-    // mockup iframe stays interactive (links, buttons, embedded UI).
-    // Matches the existing `if (!draft) return` guard in `handlePin`.
-    draftActive: draft !== null,
+    draftActive,
     onPin: handlePin,
     onPinClick: handlePinClick,
     onMiss: handleMiss,
@@ -390,8 +391,6 @@ export function AppMainViewer({
     },
     [deleteAnnotation],
   );
-
-  const draftActive = draft !== null;
 
   return (
     <AppMain variant="viewer" ariaLabel="Mockup viewer">
