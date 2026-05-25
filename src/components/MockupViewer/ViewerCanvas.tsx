@@ -73,17 +73,16 @@ function ViewerCanvasInner({
     return () => ro.disconnect();
   }, []);
 
+  // Canvas-fit limit in DOM coords — the iframe DOM width/height at which
+  // the visual exactly fills the canvas content area (minus margin). Past
+  // this, auto-fit caps the visual and dragging would change the scale
+  // without moving the handle. Drag clamp uses these to prevent that.
+  const maxFitW = canvasSize.w > 0 ? Math.max(0, canvasSize.w - FIT_MARGIN * 2) : 0;
+  const maxFitH = canvasSize.h > 0 ? Math.max(0, canvasSize.h - FIT_MARGIN * 2) : 0;
+
   const fitScale =
-    !isFit &&
-    viewport.width !== null &&
-    viewport.height !== null &&
-    canvasSize.w > 0 &&
-    canvasSize.h > 0
-      ? Math.min(
-          (canvasSize.w - FIT_MARGIN * 2) / viewport.width,
-          (canvasSize.h - FIT_MARGIN * 2) / viewport.height,
-          1,
-        )
+    !isFit && viewport.width !== null && viewport.height !== null && maxFitW > 0 && maxFitH > 0
+      ? Math.min(maxFitW / viewport.width, maxFitH / viewport.height, 1)
       : 1;
   const effectiveScale = fitScale * zoom;
 
@@ -153,6 +152,8 @@ function ViewerCanvasInner({
                 setViewport={setViewport}
                 canvasRef={wrapperRef}
                 dragScale={effectiveScale}
+                maxFitW={maxFitW}
+                maxFitH={maxFitH}
               />
             </div>
           </div>

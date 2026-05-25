@@ -13,11 +13,17 @@ export interface ViewportHandlesProps {
    *  deltas come in screen px; we divide by this so the iframe DOM grows
    *  by the equivalent number of DOM px under the cursor. Defaults to 1. */
   dragScale?: number;
+  /** Iframe DOM width at which the visual fills the canvas — drag can
+   *  grow up to this OR up to the current width, whichever is larger.
+   *  Past this point the iframe is in auto-fit cap and growing further
+   *  via drag wouldn't move the handle visually. Numeric input still
+   *  unbounded above (visual stays capped, mockup sees the larger
+   *  viewport). Optional — defaults to a 4K sanity cap. */
+  maxFitW?: number;
+  maxFitH?: number;
 }
 
-/** Absolute upper bound on iframe DOM dimensions during drag. Auto-fit
- *  rescales the visual, so the iframe can be arbitrarily large in DOM
- *  space; this just keeps the value sane (≈ 4K width). */
+/** Absolute sanity cap (≈4K) used when no canvas-fit bound is provided. */
 const DRAG_MAX = 4096;
 
 type Axis = 'x' | 'y' | 'xy';
@@ -47,6 +53,8 @@ export function ViewportHandles({
   setViewport,
   canvasRef,
   dragScale = 1,
+  maxFitW,
+  maxFitH,
 }: ViewportHandlesProps) {
   const dragRef = useRef<DragState | null>(null);
   const grids = useRef<{
@@ -67,16 +75,21 @@ export function ViewportHandles({
         /* same-origin iframe edge cases */
       }
       handle.dataset.dragging = 'true';
+      // Clamp drag-grow to the canvas-fit limit OR the current size,
+      // whichever is larger. Once past fit-limit the iframe visual is
+      // capped; growing the DOM further wouldn't move the handle, so
+      // we lock it. Drag-shrink stays available down to MIN. Numeric
+      // input is the only way to push past these caps.
+      const fitCapW = maxFitW && maxFitW > 0 ? maxFitW : DRAG_MAX;
+      const fitCapH = maxFitH && maxFitH > 0 ? maxFitH : DRAG_MAX;
       dragRef.current = {
         axis,
         startClientX: e.clientX,
         startClientY: e.clientY,
         startW: viewport.width,
         startH: viewport.height,
-        // Auto-fit re-scales the visual to canvas regardless of DOM size,
-        // so the drag is unbounded above (DRAG_MAX is the sanity cap).
-        boundsW: DRAG_MAX,
-        boundsH: DRAG_MAX,
+        boundsW: Math.max(viewport.width, fitCapW),
+        boundsH: Math.max(viewport.height, fitCapH),
       };
       // Capture the scale at drag-start so a fitScale change mid-drag
       // (we resize the iframe DOM, which can shrink the auto-fit factor)
@@ -108,16 +121,17 @@ export function ViewportHandles({
       document.addEventListener('pointerup', onEnd);
       document.addEventListener('pointercancel', onEnd);
     },
-    [canvasRef, viewport, setViewport, dragScale],
+    [canvasRef, viewport, setViewport, dragScale, maxFitW, maxFitH],
   );
 
   const onKeyDown = useCallback(
     (axis: Axis) => (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (viewport.width === null || viewport.height === null) return;
-      // Keyboard nudge bounds: same DRAG_MAX as pointer drag (auto-fit
-      // re-scales the visual, so we don't clamp to canvas).
-      const boundsW = DRAG_MAX;
-      const boundsH = DRAG_MAX;
+      // Keyboard nudge uses the same canvas-fit clamp as pointer drag.
+      const fitCapW = maxFitW && maxFitW > 0 ? maxFitW : DRAG_MAX;
+      const fitCapH = maxFitH && maxFitH > 0 ? maxFitH : DRAG_MAX;
+      const boundsW = Math.max(viewport.width, fitCapW);
+      const boundsH = Math.max(viewport.height, fitCapH);
       const step = e.shiftKey ? NUDGE_STEP_BIG : NUDGE_STEP;
       let w = viewport.width;
       let h = viewport.height;
@@ -151,7 +165,7 @@ export function ViewportHandles({
         height: clampH(h, boundsH),
       });
     },
-    [viewport, setViewport],
+    [viewport, setViewport, maxFitW, maxFitH],
   );
 
   if (viewport.mode !== 'custom') return null;
