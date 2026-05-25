@@ -14,6 +14,9 @@ UPDATE "Folder"  SET "createdBy" = "createdById",
 UPDATE "Mockup"  SET "createdBy" = "createdById",
   "createdByType" = CASE WHEN "createdById" IS NULL THEN NULL ELSE 'user' END;
 
+PRAGMA defer_foreign_keys=ON;
+PRAGMA foreign_keys=OFF;
+
 -- 3) Drop the old FK column on each table.
 --    SQLite requires a copy-rename dance.
 
@@ -85,3 +88,6 @@ CREATE INDEX        "Mockup_status_idx"    ON "Mockup"("status");
 CREATE INDEX        "Mockup_projectId_idx" ON "Mockup"("projectId");
 CREATE INDEX        "Mockup_folderId_idx"  ON "Mockup"("folderId");
 CREATE INDEX        "Mockup_createdBy_idx" ON "Mockup"("createdBy");
+
+PRAGMA foreign_keys=ON;
+PRAGMA defer_foreign_keys=OFF;
