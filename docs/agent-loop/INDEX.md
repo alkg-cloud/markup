@@ -2,7 +2,7 @@
 
 The agent loop is the **first-class product surface** of Markup. A user creates an annotation; an automation client reads the annotation, applies a fix, and replies. The endpoints under this folder are the contract that consumers depend on — AI dev assistants (Claude Code, Cursor, Aider), agent frameworks (LangGraph, CrewAI, AutoGen), and in-house orchestrators alike.
 
-Agents now own the projects, folders, mockups, versions, annotations, and messages they create — see [`docs/api/authz.md`](../api/authz.md) for the predicate. The agent loop's add-version, add-annotation, and reply contracts are unchanged: any authenticated identity can extend any mockup or thread.
+Agents own the projects, folders, mockups, versions, annotations, and messages they create — see [`docs/api/authz.md`](../api/authz.md) for the predicate. The agent loop's add-version, add-annotation, and reply contracts remain open to any authenticated identity.
 
 Silent drift in any of these endpoints breaks consumers. See the [agent-loop rule](../../CLAUDE.md#agent-loop-rule-strict--non-negotiable) for the strict-update policy.
 

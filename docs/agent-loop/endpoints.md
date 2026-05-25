@@ -132,7 +132,7 @@ Mutate mockup-level metadata: status, placement, or name. The optional "close-ou
 
 All fields optional; at least one MUST be present. The schema is strict — unknown fields return `invalid_body`.
 
-All metadata fields (`name`, `status`, `projectId`, `folderId`, `position`) require the caller to be the recorded creator of the mockup OR an admin. Agents can now rename/move/status-change mockups they created; they receive 403 `forbidden_owner` on mockups created by others.
+All metadata fields (`name`, `status`, `projectId`, `folderId`, `position`) require the caller to be the recorded creator of the mockup OR an admin. Agents can rename/move/status-change mockups they created; they receive 403 `forbidden_owner` on mockups created by others.
 
 **Response 200:** the full mockup row.
 

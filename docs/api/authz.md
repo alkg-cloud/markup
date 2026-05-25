@@ -93,7 +93,7 @@ Co-evolutionary writes stay open to any authenticated identity:
 - `POST /api/threads/[id]/reply`
 - `POST /api/projects/reorder`
 
-Agent uploads now record `(createdBy = tokenId, createdByType = 'agent')` on the mockup row (previously dropped to `null`).
+Agent uploads record `(createdBy = tokenId, createdByType = 'agent')` on the mockup row.
 
 ## Cascade-delete rule for projects and folders
 
@@ -114,7 +114,7 @@ The check is atomic: the count query and the delete run inside a single Prisma `
 | `forbidden_role` | 403 | The user's role is insufficient (admin-only route) |
 | `cascade_blocked_by_other_owner` | 409 | The project or folder contains content created by other identities; only an admin can delete the container |
 
-Note: `forbidden_kind` is now emitted exclusively by `requireAdmin` on admin-only-by-design routes (`/api/agent-tokens/*`, `/api/invites/*`). `requireOwnerOrAdmin` returns `forbidden_owner` for any predicate failure.
+Note: `forbidden_kind` is emitted exclusively by `requireAdmin` on admin-only-by-design routes (`/api/agent-tokens/*`, `/api/invites/*`). `requireOwnerOrAdmin` returns `forbidden_owner` for any predicate failure.
 
 ## Two-layer enforcement
 
