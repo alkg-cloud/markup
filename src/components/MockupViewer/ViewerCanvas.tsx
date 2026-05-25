@@ -51,9 +51,6 @@ function ViewerCanvasInner({
 }: ViewerCanvasProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const isFit = viewport.mode === 'fit';
-  const sizeStyle: React.CSSProperties = isFit
-    ? { width: '100%', height: '100%' }
-    : { width: `${viewport.width}px`, height: `${viewport.height}px` };
 
   return (
     <>
@@ -69,20 +66,48 @@ function ViewerCanvasInner({
           cursor: marking ? 'crosshair' : 'default',
         }}
       >
-        <iframe
-          ref={iframeRef}
-          src={mockupSrc}
-          title="Mockup"
-          style={{
-            ...sizeStyle,
-            border: 0,
-            transform: `scale(${zoom})`,
-            transformOrigin: 'top left',
-            boxShadow: isFit ? undefined : 'var(--shadow-md)',
-            flexShrink: 0,
-          }}
-        />
-        <ViewportHandles viewport={viewport} setViewport={setViewport} canvasRef={wrapperRef} />
+        {isFit ? (
+          <iframe
+            ref={iframeRef}
+            src={mockupSrc}
+            title="Mockup"
+            style={{
+              width: '100%',
+              height: '100%',
+              border: 0,
+              transform: `scale(${zoom})`,
+              transformOrigin: 'top left',
+            }}
+          />
+        ) : (
+          // Sized box wraps iframe + handles so the handles pin to the
+          // iframe edges (not to the scrollable canvas wrapper, which
+          // is much larger when the iframe overflows on big presets).
+          <div
+            style={{
+              position: 'relative',
+              width: `${viewport.width}px`,
+              height: `${viewport.height}px`,
+              flexShrink: 0,
+              transform: `scale(${zoom})`,
+              transformOrigin: 'top left',
+              boxShadow: 'var(--shadow-md)',
+            }}
+          >
+            <iframe
+              ref={iframeRef}
+              src={mockupSrc}
+              title="Mockup"
+              style={{
+                width: '100%',
+                height: '100%',
+                border: 0,
+                display: 'block',
+              }}
+            />
+            <ViewportHandles viewport={viewport} setViewport={setViewport} canvasRef={wrapperRef} />
+          </div>
+        )}
       </div>
 
       <PinLayer
