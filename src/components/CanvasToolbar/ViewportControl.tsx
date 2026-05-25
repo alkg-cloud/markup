@@ -4,6 +4,8 @@ import * as Popover from '@radix-ui/react-popover';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   type Orientation,
+  VIEWPORT_MIN_HEIGHT,
+  VIEWPORT_MIN_WIDTH,
   VIEWPORT_PRESETS,
   type ViewportMode,
   type ViewportPreset,
@@ -207,9 +209,13 @@ function CustomInputs({
 
   useEffect(() => {
     const t = setTimeout(() => {
+      // Empty string → Number("") === 0, which is finite. Reject explicitly
+      // so a cleared field doesn't collapse the iframe to 0×0.
+      if (draftW === '' || draftH === '') return;
       const w = Number(draftW);
       const h = Number(draftH);
       if (!Number.isFinite(w) || !Number.isFinite(h)) return;
+      if (w < VIEWPORT_MIN_WIDTH || h < VIEWPORT_MIN_HEIGHT) return;
       if (w === viewport.width && h === viewport.height) return;
       setViewport({ ...viewport, mode: 'custom', width: Math.round(w), height: Math.round(h) });
     }, INPUT_DEBOUNCE_MS);

@@ -96,6 +96,16 @@ function ViewerCanvasInner({
 
   const effectiveScale = lockedScale * zoom;
 
+  // The iframe stays at the same React position regardless of mode —
+  // toggling Fit ↔ preset would otherwise remount the iframe (the load
+  // listener in useViewerCanvas is `[]`-dep and binds at mount), leaving
+  // canvasRootRef bound to a detached document.
+  const transform = isFit ? `scale(${zoom})` : `scale(${effectiveScale})`;
+  const outerW = isFit ? '100%' : `${(viewport.width ?? 0) * effectiveScale}px`;
+  const outerH = isFit ? '100%' : `${(viewport.height ?? 0) * effectiveScale}px`;
+  const innerW = isFit ? '100%' : `${viewport.width ?? 0}px`;
+  const innerH = isFit ? '100%' : `${viewport.height ?? 0}px`;
+
   return (
     <>
       <div
@@ -110,60 +120,42 @@ function ViewerCanvasInner({
           cursor: marking ? 'crosshair' : 'default',
         }}
       >
-        {isFit ? (
-          <iframe
-            ref={iframeRef}
-            src={mockupSrc}
-            title="Mockup"
-            style={{
-              width: '100%',
-              height: '100%',
-              border: 0,
-              transform: `scale(${zoom})`,
-              transformOrigin: 'top left',
-            }}
-          />
-        ) : (
-          // Double-wrap: outer takes the scaled layout box so flex sizes
-          // the iframe by its visual footprint; inner holds native-pixel
-          // coordinates the handles live in, scaled visually.
+        <div
+          style={{
+            width: outerW,
+            height: outerH,
+            flexShrink: 0,
+            boxShadow: isFit ? 'none' : 'var(--shadow-md)',
+            margin: isFit ? 0 : `${FIT_MARGIN}px`,
+          }}
+        >
           <div
             style={{
-              width: `${(viewport.width ?? 0) * effectiveScale}px`,
-              height: `${(viewport.height ?? 0) * effectiveScale}px`,
-              flexShrink: 0,
-              boxShadow: 'var(--shadow-md)',
-              margin: `${FIT_MARGIN}px`,
+              position: 'relative',
+              width: innerW,
+              height: innerH,
+              transform,
+              transformOrigin: 'top left',
             }}
           >
-            <div
+            <iframe
+              ref={iframeRef}
+              src={mockupSrc}
+              title="Mockup"
               style={{
-                position: 'relative',
-                width: `${viewport.width ?? 0}px`,
-                height: `${viewport.height ?? 0}px`,
-                transform: `scale(${effectiveScale})`,
-                transformOrigin: 'top left',
+                width: '100%',
+                height: '100%',
+                border: 0,
+                display: 'block',
               }}
-            >
-              <iframe
-                ref={iframeRef}
-                src={mockupSrc}
-                title="Mockup"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  border: 0,
-                  display: 'block',
-                }}
-              />
-              <ViewportHandles
-                viewport={viewport}
-                setViewport={setViewport}
-                dragScale={effectiveScale}
-              />
-            </div>
+            />
+            <ViewportHandles
+              viewport={viewport}
+              setViewport={setViewport}
+              dragScale={effectiveScale}
+            />
           </div>
-        )}
+        </div>
       </div>
 
       <PinLayer
