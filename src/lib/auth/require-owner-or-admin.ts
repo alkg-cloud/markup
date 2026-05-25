@@ -16,18 +16,14 @@ function http(status: number, message: string): never {
 }
 
 /**
- * Server companion to `canDelete`. Fetches the caller's role, builds a
- * `Viewer`, and throws a typed HTTP error when the caller is not
- * permitted to delete the given entity.
+ * Resolves the caller's `Viewer` (loading `role` for users) and calls
+ * `canDelete`. On failure throws `403 forbidden_owner`.
  *
- * - 401 `unauthorized` — unauthenticated request.
- * - 403 `forbidden_kind` — agent tried to delete a non-message entity.
- * - 403 `forbidden_owner` — member tried to delete someone else's content.
+ * Note: this helper no longer auto-throws `forbidden_kind` for agents —
+ * agents pass on entities they created. `forbidden_kind` is now emitted
+ * exclusively by `requireAdmin` on admin-only-by-design routes.
  *
- * Returns the resolved `Viewer` (with role) on success so cascade-check
- * callers don't need to re-query the user's role.
- *
- * See `docs/api/authz.md` for the full permission matrix.
+ * See `docs/api/authz.md` for the full model.
  */
 export async function requireOwnerOrAdmin(
   ident: Identity | null,
@@ -47,12 +43,6 @@ export async function requireOwnerOrAdmin(
     viewer = { kind: 'user', userId: ident.userId, role };
   }
 
-  if (!canDelete(viewer, entity)) {
-    if (viewer.kind === 'agent') {
-      http(403, 'forbidden_kind');
-    }
-    http(403, 'forbidden_owner');
-  }
-
+  if (!canDelete(viewer, entity)) http(403, 'forbidden_owner');
   return viewer;
 }
