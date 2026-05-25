@@ -161,15 +161,31 @@ export function AppMainViewer({
   const [removingPinIndex, setRemovingPinIndex] = useState<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [zoom, setZoom] = useState(1);
-  const { viewport, setViewport } = useViewport(mockupId);
+  const { viewport, setViewport, presets } = useViewport(mockupId);
   const handleViewportChange = useCallback(
     (next: ViewportState) => {
-      setViewport(next);
-      if (next.mode !== 'fit') {
+      // Reset zoom ONLY on chip selection — heuristic: mode changed AND
+      // the new dimensions land on a canonical preset size (Desktop /
+      // Tablet / Mobile, either orientation, OR Desktop-size used to
+      // seed Custom from a chip click). Drag-induced changes (preset →
+      // custom on first drag, then custom → custom on subsequent moves)
+      // keep their pixel-precise W/H and so don't match a canonical
+      // preset, leaving zoom intact.
+      const isCanonicalPresetSize =
+        next.width !== null &&
+        next.height !== null &&
+        Object.values(presets).some(
+          (p) =>
+            (next.width === p.width && next.height === p.height) ||
+            (next.width === p.height && next.height === p.width),
+        );
+      const modeChanged = next.mode !== viewport.mode;
+      if (modeChanged && next.mode !== 'fit' && isCanonicalPresetSize) {
         setZoom(1);
       }
+      setViewport(next);
     },
-    [setViewport],
+    [viewport.mode, setViewport, presets],
   );
   // Bumped each time the user clicks a canvas pin so the rail pins
   // itself open. Decoupling the trigger from `activeId` lets the rail
