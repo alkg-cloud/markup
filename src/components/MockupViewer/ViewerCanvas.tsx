@@ -1,10 +1,15 @@
 'use client';
 
-import { memo, useRef } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { type PinDescriptor, PinLayer } from '@/components/PinLayer';
 import type { Anchor } from '@/lib/anchoring';
 import { ViewportHandles } from './ViewportHandles';
 import type { ViewportState } from './viewport-presets';
+
+/** Padding around the auto-fit-scaled iframe in non-fit modes — gives the
+ *  drag handles a breathing margin so they're never hugging the wrapper
+ *  edges. Matches Chrome DevTools' responsive-mode visual layout. */
+const FIT_MARGIN = 24;
 
 interface ViewerCanvasProps {
   mockupSrc: string;
@@ -50,7 +55,37 @@ function ViewerCanvasInner({
   repositionKey,
 }: ViewerCanvasProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [canvasSize, setCanvasSize] = useState({ w: 0, h: 0 });
   const isFit = viewport.mode === 'fit';
+
+  // Track wrapper inner size so we can auto-fit-scale the iframe in
+  // non-fit modes. The iframe DOM stays at the requested viewport
+  // dimensions (so the mockup's media queries see the right viewport),
+  // but the visual is scaled down to fit the canvas with a small margin.
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    setCanvasSize({ w: el.clientWidth, h: el.clientHeight });
+    const ro = new ResizeObserver(([entry]) => {
+      setCanvasSize({ w: entry.contentRect.width, h: entry.contentRect.height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const fitScale =
+    !isFit &&
+    viewport.width !== null &&
+    viewport.height !== null &&
+    canvasSize.w > 0 &&
+    canvasSize.h > 0
+      ? Math.min(
+          (canvasSize.w - FIT_MARGIN * 2) / viewport.width,
+          (canvasSize.h - FIT_MARGIN * 2) / viewport.height,
+          1,
+        )
+      : 1;
+  const effectiveScale = fitScale * zoom;
 
   return (
     <>
@@ -63,6 +98,7 @@ function ViewerCanvasInner({
           display: isFit ? 'block' : 'flex',
           alignItems: 'flex-start',
           justifyContent: 'flex-start',
+          padding: isFit ? 0 : `${FIT_MARGIN}px`,
           cursor: marking ? 'crosshair' : 'default',
         }}
       >
@@ -80,32 +116,45 @@ function ViewerCanvasInner({
             }}
           />
         ) : (
-          // Sized box wraps iframe + handles so the handles pin to the
-          // iframe edges (not to the scrollable canvas wrapper, which
-          // is much larger when the iframe overflows on big presets).
+          // Double-wrap: outer takes the SCALED layout box (so flex sizes
+          // it correctly and no scrollbars appear when the iframe fits);
+          // inner holds the iframe + handles at the requested viewport
+          // dimensions and applies the visual scale.
           <div
             style={{
-              position: 'relative',
-              width: `${viewport.width}px`,
-              height: `${viewport.height}px`,
+              width: `${(viewport.width ?? 0) * effectiveScale}px`,
+              height: `${(viewport.height ?? 0) * effectiveScale}px`,
               flexShrink: 0,
-              transform: `scale(${zoom})`,
-              transformOrigin: 'top left',
               boxShadow: 'var(--shadow-md)',
             }}
           >
-            <iframe
-              ref={iframeRef}
-              src={mockupSrc}
-              title="Mockup"
+            <div
               style={{
-                width: '100%',
-                height: '100%',
-                border: 0,
-                display: 'block',
+                position: 'relative',
+                width: `${viewport.width ?? 0}px`,
+                height: `${viewport.height ?? 0}px`,
+                transform: `scale(${effectiveScale})`,
+                transformOrigin: 'top left',
               }}
-            />
-            <ViewportHandles viewport={viewport} setViewport={setViewport} canvasRef={wrapperRef} />
+            >
+              <iframe
+                ref={iframeRef}
+                src={mockupSrc}
+                title="Mockup"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 0,
+                  display: 'block',
+                }}
+              />
+              <ViewportHandles
+                viewport={viewport}
+                setViewport={setViewport}
+                canvasRef={wrapperRef}
+                dragScale={effectiveScale}
+              />
+            </div>
           </div>
         )}
       </div>

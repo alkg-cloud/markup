@@ -9,7 +9,16 @@ export interface ViewportHandlesProps {
   setViewport: (next: ViewportState) => void;
   /** The canvas wrapper around the iframe — used to compute drag bounds. */
   canvasRef: RefObject<HTMLDivElement | null>;
+  /** Visual scale applied to the iframe (auto-fit × zoom). Pointer-move
+   *  deltas come in screen px; we divide by this so the iframe DOM grows
+   *  by the equivalent number of DOM px under the cursor. Defaults to 1. */
+  dragScale?: number;
 }
+
+/** Absolute upper bound on iframe DOM dimensions during drag. Auto-fit
+ *  rescales the visual, so the iframe can be arbitrarily large in DOM
+ *  space; this just keeps the value sane (≈ 4K width). */
+const DRAG_MAX = 4096;
 
 type Axis = 'x' | 'y' | 'xy';
 
@@ -33,7 +42,12 @@ function clampH(h: number, bounds: number): number {
   return Math.max(VIEWPORT_MIN_HEIGHT, Math.min(bounds, Math.round(h)));
 }
 
-export function ViewportHandles({ viewport, setViewport, canvasRef }: ViewportHandlesProps) {
+export function ViewportHandles({
+  viewport,
+  setViewport,
+  canvasRef,
+  dragScale = 1,
+}: ViewportHandlesProps) {
   const dragRef = useRef<DragState | null>(null);
   const grids = useRef<{
     right?: HTMLDivElement;
@@ -53,24 +67,29 @@ export function ViewportHandles({ viewport, setViewport, canvasRef }: ViewportHa
         /* same-origin iframe edge cases */
       }
       handle.dataset.dragging = 'true';
-      const canvasRect = canvas.getBoundingClientRect();
       dragRef.current = {
         axis,
         startClientX: e.clientX,
         startClientY: e.clientY,
         startW: viewport.width,
         startH: viewport.height,
-        boundsW: canvasRect.width,
-        boundsH: canvasRect.height,
+        // Auto-fit re-scales the visual to canvas regardless of DOM size,
+        // so the drag is unbounded above (DRAG_MAX is the sanity cap).
+        boundsW: DRAG_MAX,
+        boundsH: DRAG_MAX,
       };
+      // Capture the scale at drag-start so a fitScale change mid-drag
+      // (we resize the iframe DOM, which can shrink the auto-fit factor)
+      // doesn't make the pointer ratio jitter.
+      const scaleAtDragStart = dragScale || 1;
 
       const onMove = (ev: PointerEvent) => {
         const d = dragRef.current;
         if (!d) return;
-        const nextW =
-          d.axis === 'y' ? d.startW : clampW(d.startW + (ev.clientX - d.startClientX), d.boundsW);
-        const nextH =
-          d.axis === 'x' ? d.startH : clampH(d.startH + (ev.clientY - d.startClientY), d.boundsH);
+        const dx = (ev.clientX - d.startClientX) / scaleAtDragStart;
+        const dy = (ev.clientY - d.startClientY) / scaleAtDragStart;
+        const nextW = d.axis === 'y' ? d.startW : clampW(d.startW + dx, d.boundsW);
+        const nextH = d.axis === 'x' ? d.startH : clampH(d.startH + dy, d.boundsH);
         setViewport({ ...viewport, mode: 'custom', width: nextW, height: nextH });
       };
       const onEnd = () => {
@@ -89,16 +108,16 @@ export function ViewportHandles({ viewport, setViewport, canvasRef }: ViewportHa
       document.addEventListener('pointerup', onEnd);
       document.addEventListener('pointercancel', onEnd);
     },
-    [canvasRef, viewport, setViewport],
+    [canvasRef, viewport, setViewport, dragScale],
   );
 
   const onKeyDown = useCallback(
     (axis: Axis) => (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (viewport.width === null || viewport.height === null) return;
-      const canvas = canvasRef.current;
-      const rect = canvas ? canvas.getBoundingClientRect() : null;
-      const boundsW = rect && rect.width > 0 ? rect.width : Number.POSITIVE_INFINITY;
-      const boundsH = rect && rect.height > 0 ? rect.height : Number.POSITIVE_INFINITY;
+      // Keyboard nudge bounds: same DRAG_MAX as pointer drag (auto-fit
+      // re-scales the visual, so we don't clamp to canvas).
+      const boundsW = DRAG_MAX;
+      const boundsH = DRAG_MAX;
       const step = e.shiftKey ? NUDGE_STEP_BIG : NUDGE_STEP;
       let w = viewport.width;
       let h = viewport.height;
@@ -132,7 +151,7 @@ export function ViewportHandles({ viewport, setViewport, canvasRef }: ViewportHa
         height: clampH(h, boundsH),
       });
     },
-    [canvasRef, viewport, setViewport],
+    [viewport, setViewport],
   );
 
   if (viewport.mode !== 'custom') return null;
