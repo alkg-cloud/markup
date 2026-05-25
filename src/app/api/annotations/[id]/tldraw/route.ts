@@ -1,14 +1,32 @@
 import { NextResponse } from 'next/server';
 import { updateAnnotationTldraw } from '@/lib/annotation/service';
-import { identify } from '@/lib/auth/identify';
-
+import { handleAuthError, identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
+import { requireOwnerOrAdmin } from '@/lib/auth/require-owner-or-admin';
+import { prisma } from '@/lib/prisma';
+
 export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
   const ident = await identify(req);
-  if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id } = await ctx.params;
+
+  const annotation = await prisma.annotation.findUnique({
+    where: { id },
+    select: { id: true, createdBy: true, createdByType: true },
+  });
+  if (!annotation) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+
+  try {
+    await requireOwnerOrAdmin(ident, {
+      kind: 'annotation',
+      createdBy: annotation.createdBy,
+      createdByType: annotation.createdByType as 'user' | 'agent',
+    });
+  } catch (e) {
+    return handleAuthError(e);
+  }
+
   let body: unknown;
   try {
     body = await req.json();

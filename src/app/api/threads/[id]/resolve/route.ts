@@ -1,16 +1,38 @@
 import { NextResponse } from 'next/server';
-import { identify } from '@/lib/auth/identify';
+import { handleAuthError, identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
+import { requireOwnerOrAdmin } from '@/lib/auth/require-owner-or-admin';
+import { prisma } from '@/lib/prisma';
 import { setThreadStatus } from '@/lib/thread/service';
+
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
   const ident = await identify(req);
-  if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id: threadId } = await ctx.params;
+
+  // Gate on the parent annotation (one annotation per thread by schema).
+  const thread = await prisma.thread.findUnique({
+    where: { id: threadId },
+    select: {
+      annotation: { select: { createdBy: true, createdByType: true } },
+    },
+  });
+  if (!thread) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+
+  try {
+    await requireOwnerOrAdmin(ident, {
+      kind: 'annotation',
+      createdBy: thread.annotation.createdBy,
+      createdByType: thread.annotation.createdByType as 'user' | 'agent',
+    });
+  } catch (e) {
+    return handleAuthError(e);
+  }
+
   await setThreadStatus(threadId, 'resolved', {
-    id: ident.kind === 'user' ? ident.userId : ident.tokenId,
-    kind: ident.kind,
+    id: ident!.kind === 'user' ? ident!.userId : ident!.tokenId,
+    kind: ident!.kind,
   });
   return NextResponse.json({ ok: true, status: 'resolved' });
 }
