@@ -267,6 +267,10 @@
   --content-max: 1200px;
   --hero-max: 1280px;
 
+  /* ─── Z-index — viewport-control + pin-layer stacking ──────────── */
+  --z-pin-layer: 15;
+  --z-viewport-handles: 16;
+
   /* ─── AppMain rail (floating annotations panel) ──────────────────── */
   --rail-width-collapsed: 60px;
   --rail-width-expanded: 300px;

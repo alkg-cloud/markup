@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>33 — Viewport control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);
+  --bg-tinted:oklch(9% 0.02 165);
+  --bg-elevated-strong:oklch(7% 0.02 165 / 0.95);
+  --bg-iframe:oklch(10% 0.02 165 / 0.5);
+  --surface-input:rgba(255,255,255,0.03);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--surface-soft:rgba(255,255,255,0.02);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165 / 0.18);--accent-overlay-mid:oklch(74.4% 0.193 165 / 0.35);--accent-overlay-strong:oklch(74.4% 0.193 165 / 0.4);
+  --text-on-accent:oklch(15% 0.005 165);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-pill:9999px;
+  --shadow-md:0 6px 16px oklch(0% 0 0/0.5),0 2px 4px oklch(0% 0 0/0.4);
+  --shadow-popover:0 14px 32px oklch(0% 0 0/0.6),0 6px 12px oklch(0% 0 0/0.45),inset 0 1px 0 oklch(100% 0 0/0.06);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+input,textarea,select{font-family:inherit;color:inherit}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent-bright);text-decoration:underline}
+
+.page{padding:48px 32px 96px;max-width:960px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:720px}
+.lede a{color:var(--accent)}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  padding:32px;
+}
+.stage + .stage{margin-top:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
+.state{display:flex;flex-direction:column;gap:6px;align-items:center}
+.state .state-label{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim)}
+
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
+
+/* ─── viewport-control — single compound covering trigger + popover + handles + iframe sizing ─── */
+
+.vp-trigger{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;
+  border-radius:var(--radius-sm);
+  background:var(--accent-overlay-soft);
+  border:1px solid var(--accent-overlay-mid);
+  color:var(--accent-bright);
+  transition:background var(--motion-fast) var(--ease-standard),
+             border-color var(--motion-fast) var(--ease-standard),
+             color var(--motion-fast) var(--ease-standard);
+}
+.vp-trigger svg{width:14px;height:14px;display:block}
+.vp-trigger:hover{background:var(--accent-overlay-mid);border-color:var(--accent-overlay-strong)}
+.vp-trigger[data-state="open"]{background:var(--accent-overlay-mid);border-color:var(--accent-bright)}
+.vp-trigger:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+
+.vp-toolbar{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 8px;
+  background:var(--surface-glass-bg);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  border-radius:var(--radius-pill);
+  box-shadow:var(--shadow-md);
+  font-family:var(--font-mono);font-size:12px;color:var(--text);
+}
+.vp-toolbar .divider{width:1px;height:16px;background:var(--border);margin:0 4px}
+.vp-toolbar .ghost-btn{
+  width:28px;height:28px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-sm);
+  color:var(--text-dim);
+}
+.vp-toolbar .ghost-btn svg{width:14px;height:14px}
+.vp-toolbar .zoom-label{font-variant-numeric:tabular-nums;padding:0 8px;color:var(--text);font-size:12px}
+
+/* Locked density=compact: 12px padding (comfortable would be 16px). */
+.vp-popover{
+  position:relative;
+  width:280px;
+  padding:12px;
+  background:var(--bg-elevated-strong);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-popover);
+}
+.vp-popover__chips{display:flex;align-items:center;gap:6px}
+.vp-popover__chip{
+  width:28px;height:28px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-sm);
+  background:transparent;border:1px solid transparent;
+  color:var(--text-dim);
+  transition:background var(--motion-fast) var(--ease-standard),
+             border-color var(--motion-fast) var(--ease-standard),
+             color var(--motion-fast) var(--ease-standard);
+}
+.vp-popover__chip svg{width:14px;height:14px}
+.vp-popover__chip:hover{background:var(--surface-hover);color:var(--text-bright)}
+.vp-popover__chip:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+/* Locked chip-style=tinted-active. */
+.vp-popover__chip[aria-checked="true"]{
+  background:var(--accent-overlay-soft);
+  border-color:var(--accent-overlay-mid);
+  color:var(--accent-bright);
+}
+.vp-popover__rotate{
+  margin-left:auto;
+  width:24px;height:24px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-xs);
+  background:var(--surface-soft);
+  border:1px solid var(--border-subtle);
+  color:var(--text-dim);
+}
+.vp-popover__rotate svg{width:12px;height:12px}
+.vp-popover__rotate:hover{background:var(--surface-hover);color:var(--text-bright)}
+.vp-popover__inputs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+.vp-popover__input-row{display:flex;align-items:center;gap:4px;min-width:0}
+.vp-popover__input-label{
+  font-family:var(--font-mono);font-size:10px;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:0.12em;font-weight:600;
+  flex-shrink:0;
+}
+.vp-popover__input{
+  flex:1;min-width:0;width:100%;
+  padding:3px 6px;
+  background:var(--surface-input);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-xs);
+  color:var(--text);font-family:var(--font-mono);font-size:11px;
+  font-variant-numeric:tabular-nums;
+  /* Strip the browser's number-input spinner UI — its intrinsic width
+     fights flex shrinking even with min-width: 0. */
+  appearance:textfield;
+  -moz-appearance:textfield;
+}
+.vp-popover__input::-webkit-outer-spin-button,
+.vp-popover__input::-webkit-inner-spin-button{
+  -webkit-appearance:none;margin:0;
+}
+.vp-popover__input:focus{outline:none;border-color:var(--accent)}
+.vp-popover__note{grid-column:1 / -1;font-size:11px;color:var(--text-muted);margin-top:4px}
+.vp-popover__footer{
+  margin-top:12px;padding-top:8px;
+  border-top:1px solid var(--border-subtle);
+  font-family:var(--font-mono);font-size:12px;
+  font-variant-numeric:tabular-nums;color:var(--text-dim);
+  display:flex;align-items:baseline;gap:6px;
+}
+/* Locked footer-format=mode-and-size: mode prefix always shown. */
+.vp-popover__footer-mode{color:var(--text-muted)}
+
+/* Locked backdrop=subtle-grid + center=top-left. */
+.vp-canvas{
+  position:relative;
+  height:220px;
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-md);
+  overflow:auto;
+  padding:8px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 23px, oklch(17% 0.02 165 / 0.5) 23px 24px),
+    repeating-linear-gradient(90deg, transparent 0 23px, oklch(17% 0.02 165 / 0.5) 23px 24px),
+    var(--bg-iframe);
+}
+.vp-iframe{
+  position:relative;
+  background:oklch(15% 0.02 165);
+  border:1px dashed var(--border);
+  border-radius:var(--radius-sm);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:11px;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:0.12em;
+  /* Locked shadow=on. */
+  box-shadow:var(--shadow-md);
+}
+.vp-iframe--fit{
+  width:100%;height:100%;
+  border-style:solid;border-color:var(--border-subtle);
+  box-shadow:none;
+}
+.vp-iframe--desktop{width:100%;height:60%}
+.vp-iframe--tablet{width:40%;height:90%}
+.vp-iframe--custom{width:60%;height:75%}
+
+/* Locked handle-thickness=6px (range allowed 4–16).
+   Locked handle-visibility=always-when-custom. */
+.vp-handle{
+  position:absolute;
+  background:var(--accent-overlay-mid);
+  border:1px solid var(--accent-overlay-strong);
+  transition:background var(--motion-fast) var(--ease-standard),
+             border-color var(--motion-fast) var(--ease-standard),
+             box-shadow var(--motion-fast) var(--ease-standard),
+             opacity var(--motion-fast) var(--ease-standard);
+  color:var(--text-on-accent);
+}
+.vp-handle:hover{background:var(--accent);border-color:var(--accent-bright)}
+.vp-handle:active,
+.vp-handle[data-dragging="true"]{
+  background:var(--accent-bright);border-color:var(--accent-bright);
+  box-shadow:0 0 0 3px var(--accent-overlay-soft);
+}
+.vp-handle:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.vp-handle--right{
+  top:0;right:-3px;bottom:0;width:6px;
+  border-radius:var(--radius-pill);
+  cursor:ew-resize;
+}
+.vp-handle--bottom{
+  left:0;right:0;bottom:-3px;height:6px;
+  border-radius:var(--radius-pill);
+  cursor:ns-resize;
+}
+.vp-handle--corner{
+  right:-6px;bottom:-6px;width:12px;height:12px;
+  background:var(--accent);border-color:var(--accent-bright);
+  border-radius:var(--radius-xs);
+  cursor:nwse-resize;
+  box-shadow:0 0 0 2px var(--bg-iframe);
+}
+.vp-handle--corner:hover{background:var(--accent-bright)}
+.vp-handle--corner:active,
+.vp-handle--corner[data-dragging="true"]{
+  box-shadow:0 0 0 2px var(--bg-iframe),0 0 0 5px var(--accent-overlay-soft);
+}
+.vp-handle__grip{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  fill:currentColor;stroke:currentColor;
+  opacity:0.55;
+  transition:opacity var(--motion-fast) var(--ease-standard);
+}
+.vp-handle--right .vp-handle__grip{width:4px;height:14px}
+.vp-handle--bottom .vp-handle__grip{width:14px;height:4px}
+.vp-handle--corner .vp-handle__grip{width:10px;height:10px;opacity:0.7;fill:none}
+.vp-handle:hover .vp-handle__grip,
+.vp-handle[data-dragging="true"] .vp-handle__grip{opacity:0.9}
+
+.vp-stage--iframe{padding:0}
+.vp-stage--iframe .vp-canvas{border:0;border-radius:var(--radius-md)}
+.vp-popover-stack{display:flex;flex-direction:column;gap:16px;align-items:center}
+.vp-popover-anchor{
+  position:relative;
+  display:inline-flex;justify-content:center;align-items:center;
+  height:32px;
+}
+.vp-popover-anchor::before{
+  content:'';position:absolute;top:-6px;left:50%;
+  transform:translateX(-50%) rotate(45deg);
+  width:8px;height:8px;
+  background:var(--bg-elevated-strong);
+  border-top:1px solid var(--border);border-left:1px solid var(--border);
+}
+.vp-size-badge{
+  position:absolute;top:8px;left:8px;
+  padding:2px 8px;
+  background:var(--bg-elevated-strong);
+  border:1px solid var(--border);
+  border-radius:var(--radius-xs);
+  color:var(--text-dim);
+  font-family:var(--font-mono);font-size:11px;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:normal;text-transform:none;
+  pointer-events:none;
+  z-index:2;
+}
+.handle-spec{
+  position:relative;
+  width:120px;height:80px;
+  background:oklch(15% 0.02 165);
+  border:1px dashed var(--border);
+  border-radius:var(--radius-sm);
+}
+.handle-spec--corner{width:60px;height:60px}
+</style>
+</head>
+<body>
+
+<div class="page" data-ds-component="viewport-control"
+     data-icon-set="vscode-default"
+     data-label-affix="icon-only"
+     data-chip-style="tinted-active"
+     data-footer-format="mode-and-size"
+     data-density="compact"
+     data-backdrop="subtle-grid"
+     data-shadow="on"
+     data-center="top-left"
+     data-handle-visibility="always-when-custom"
+     style="--handle-thickness: 6px;">
+
+  <h1 class="h1">Viewport control</h1>
+  <p class="lede">Lets a reviewer constrain the mockup iframe to a preset device size (Desktop 1440 × 900, Tablet 768 × 1024, Mobile 390 × 844) or a custom width × height. Composes a Radix Popover trigger that lives in the <a href="./19-toolbar.html">canvas-toolbar</a> dock, three resize handles overlaid on the iframe in Custom mode, and sizing rules applied to the iframe inside <a href="./11-mockup-view.html">mockup-view</a>. Sibling popover surface: <a href="./15-popover.html">15-popover</a>.</p>
+
+  <section class="section">
+    <div class="section-title">All states — trigger</div>
+    <div class="stage">
+      <div class="row-states">
+        <div class="state">
+          <div class="state-label">Fit (default)</div>
+          <button class="vp-trigger" aria-label="Viewport: Fit canvas">
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5V2h3M14 5V2h-3M2 11v3h3M14 11v3h-3"/></svg>
+          </button>
+        </div>
+        <div class="state">
+          <div class="state-label">Desktop · 1440</div>
+          <button class="vp-trigger" aria-label="Viewport: Desktop 1440 × 900">
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="13" height="9" rx="1.3"/><path d="M5.5 14h5M8 11.5V14"/></svg>
+          </button>
+        </div>
+        <div class="state">
+          <div class="state-label">Tablet · 768</div>
+          <button class="vp-trigger" aria-label="Viewport: Tablet 768 × 1024">
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="1.5" width="10" height="13" rx="1.3"/><path d="M7 12.7h2"/></svg>
+          </button>
+        </div>
+        <div class="state">
+          <div class="state-label">Mobile · 390</div>
+          <button class="vp-trigger" aria-label="Viewport: Mobile 390 × 844">
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="1.5" width="7" height="13" rx="1.2"/><path d="M7 13h2"/></svg>
+          </button>
+        </div>
+        <div class="state">
+          <div class="state-label">Custom · open</div>
+          <button class="vp-trigger" data-state="open" aria-label="Viewport: Custom 640 × 480" aria-expanded="true">
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h6M3 8h10M3 12h4"/><circle cx="11" cy="4" r="1.2"/><circle cx="5" cy="12" r="1.2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Icon reflects the active mode. The trigger shares one recipe; the only diff is the icon glyph and (when popover is open) the [data-state="open"] tinted background that matches the chip-style=tinted-active treatment in the popover below.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">In context — canvas-toolbar dock</div>
+    <div class="stage">
+      <div style="display:flex;justify-content:center">
+        <div class="vp-toolbar" role="toolbar" aria-label="Mockup actions">
+          <button class="vp-trigger" aria-label="Viewport: Desktop 1440 × 900">
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="13" height="9" rx="1.3"/><path d="M5.5 14h5M8 11.5V14"/></svg>
+          </button>
+          <span class="divider" aria-hidden="true"></span>
+          <button class="ghost-btn" aria-label="Zoom out"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10"/></svg></button>
+          <button class="zoom-label" aria-label="Current zoom 100% — click to reset">100%</button>
+          <button class="ghost-btn" aria-label="Zoom in"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg></button>
+          <button class="ghost-btn" aria-label="Toggle fullscreen"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5V2h3M14 5V2h-3M2 11v3h3M14 11v3h-3"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="caption">The trigger is the first item in the toolbar, separated from the existing zoom + fullscreen group by a divider. Position matches <a href="./19-toolbar.html">19-toolbar</a>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Popover — Desktop preset active</div>
+    <div class="stage">
+      <div class="vp-popover-stack">
+        <div class="vp-popover" role="dialog" aria-label="Viewport options">
+          <div class="vp-popover__chips" role="radiogroup" aria-label="Viewport presets">
+            <button class="vp-popover__chip" role="radio" aria-checked="false" aria-label="Fit viewport"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5V2h3M14 5V2h-3M2 11v3h3M14 11v3h-3"/></svg></button>
+            <button class="vp-popover__chip" role="radio" aria-checked="true" aria-label="Desktop 1440 × 900"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="13" height="9" rx="1.3"/><path d="M5.5 14h5M8 11.5V14"/></svg></button>
+            <button class="vp-popover__chip" role="radio" aria-checked="false" aria-label="Tablet 768 × 1024"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="1.5" width="10" height="13" rx="1.3"/><path d="M7 12.7h2"/></svg></button>
+            <button class="vp-popover__chip" role="radio" aria-checked="false" aria-label="Mobile 390 × 844"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="1.5" width="7" height="13" rx="1.2"/><path d="M7 13h2"/></svg></button>
+            <button class="vp-popover__chip" role="radio" aria-checked="false" aria-label="Custom viewport"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h6M3 8h10M3 12h4"/><circle cx="11" cy="4" r="1.2"/><circle cx="5" cy="12" r="1.2"/></svg></button>
+          </div>
+          <div class="vp-popover__footer"><span class="vp-popover__footer-mode">Desktop ·</span><span>1440 × 900</span></div>
+        </div>
+        <div class="vp-popover-anchor"><button class="vp-trigger" data-state="open" aria-label="Viewport: Desktop 1440 × 900" aria-expanded="true"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="13" height="9" rx="1.3"/><path d="M5.5 14h5M8 11.5V14"/></svg></button></div>
+      </div>
+    </div>
+    <div class="caption">Five chips in a single radiogroup. The active chip carries the tinted-active treatment (locked from the design iteration). Footer always shows mode · size.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Popover — Tablet active, rotate visible</div>
+    <div class="stage">
+      <div class="vp-popover-stack">
+        <div class="vp-popover" role="dialog" aria-label="Viewport options">
+          <div class="vp-popover__chips" role="radiogroup" aria-label="Viewport presets">
+            <button class="vp-popover__chip" role="radio" aria-checked="false" aria-label="Fit viewport"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5V2h3M14 5V2h-3M2 11v3h3M14 11v3h-3"/></svg></button>
+            <button class="vp-popover__chip" role="radio" aria-checked="false" aria-label="Desktop 1440 × 900"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="13" height="9" rx="1.3"/><path d="M5.5 14h5M8 11.5V14"/></svg></button>
+            <button class="vp-popover__chip" role="radio" aria-checked="true" aria-label="Tablet 768 × 1024"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="1.5" width="10" height="13" rx="1.3"/><path d="M7 12.7h2"/></svg></button>
+            <button class="vp-popover__chip" role="radio" aria-checked="false" aria-label="Mobile 390 × 844"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="1.5" width="7" height="13" rx="1.2"/><path d="M7 13h2"/></svg></button>
+            <button class="vp-popover__chip" role="radio" aria-checked="false" aria-label="Custom viewport"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h6M3 8h10M3 12h4"/><circle cx="11" cy="4" r="1.2"/><circle cx="5" cy="12" r="1.2"/></svg></button>
+            <button class="vp-popover__rotate" aria-label="Rotate orientation"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a5 5 0 0 1 9-3M13 8a5 5 0 0 1-9 3"/><path d="M11.5 2.5v3h-3M4.5 13.5v-3h3"/></svg></button>
+          </div>
+          <div class="vp-popover__footer"><span class="vp-popover__footer-mode">Tablet ·</span><span>768 × 1024</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Rotate button only appears when Tablet or Mobile is active — it flips the orientation (Tablet 768 × 1024 ↔ 1024 × 768). Hidden for Fit, Desktop, and Custom.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Popover — Custom mode, W × H inputs</div>
+    <div class="stage">
+      <div class="vp-popover-stack">
+        <div class="vp-popover" role="dialog" aria-label="Viewport options">
+          <div class="vp-popover__chips" role="radiogroup" aria-label="Viewport presets">
+            <button class="vp-popover__chip" role="radio" aria-checked="false" aria-label="Fit viewport"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5V2h3M14 5V2h-3M2 11v3h3M14 11v3h-3"/></svg></button>
+            <button class="vp-popover__chip" role="radio" aria-checked="false" aria-label="Desktop 1440 × 900"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="13" height="9" rx="1.3"/><path d="M5.5 14h5M8 11.5V14"/></svg></button>
+            <button class="vp-popover__chip" role="radio" aria-checked="false" aria-label="Tablet 768 × 1024"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="1.5" width="10" height="13" rx="1.3"/><path d="M7 12.7h2"/></svg></button>
+            <button class="vp-popover__chip" role="radio" aria-checked="false" aria-label="Mobile 390 × 844"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="1.5" width="7" height="13" rx="1.2"/><path d="M7 13h2"/></svg></button>
+            <button class="vp-popover__chip" role="radio" aria-checked="true" aria-label="Custom viewport"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h6M3 8h10M3 12h4"/><circle cx="11" cy="4" r="1.2"/><circle cx="5" cy="12" r="1.2"/></svg></button>
+          </div>
+          <div class="vp-popover__inputs">
+            <div class="vp-popover__input-row"><label for="ds-w" class="vp-popover__input-label">W</label><input id="ds-w" class="vp-popover__input" type="number" inputmode="numeric" value="640" min="240"></div>
+            <div class="vp-popover__input-row"><label for="ds-h" class="vp-popover__input-label">H</label><input id="ds-h" class="vp-popover__input" type="number" inputmode="numeric" value="480" min="320"></div>
+            <span class="vp-popover__note">Min 240 × 320. Excess scrolls.</span>
+          </div>
+          <div class="vp-popover__footer"><span class="vp-popover__footer-mode">Custom ·</span><span>640 × 480</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Inputs only appear when Custom is active. W min 240, H min 320; inputs accept above-canvas values which produce a scrollable backdrop. Inputs are debounced 100 ms before pushing to the viewport state.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Drag handles — base · hover · active · focus</div>
+    <div class="stage">
+      <div class="row-states">
+        <div class="state">
+          <div class="state-label">Right · base</div>
+          <div class="handle-spec">
+            <div class="vp-handle vp-handle--right" role="separator" aria-orientation="vertical" aria-label="Resize width">
+              <svg class="vp-handle__grip" viewBox="0 0 4 14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="2" cy="7" r="1"/><circle cx="2" cy="12" r="1"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">Bottom · base</div>
+          <div class="handle-spec">
+            <div class="vp-handle vp-handle--bottom" role="separator" aria-orientation="horizontal" aria-label="Resize height">
+              <svg class="vp-handle__grip" viewBox="0 0 14 4" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="7" cy="2" r="1"/><circle cx="12" cy="2" r="1"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">Corner · base</div>
+          <div class="handle-spec handle-spec--corner">
+            <div class="vp-handle vp-handle--corner" role="separator" aria-label="Resize width and height">
+              <svg class="vp-handle__grip" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 9 L9 2 M4.5 9 L9 4.5 M7 9 L9 7" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">Corner · dragging</div>
+          <div class="handle-spec handle-spec--corner">
+            <div class="vp-handle vp-handle--corner" data-dragging="true" role="separator" aria-label="Resize width and height">
+              <svg class="vp-handle__grip" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 9 L9 2 M4.5 9 L9 4.5 M7 9 L9 7" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Hover handles via the cursor; the [data-dragging="true"] flag is set on pointerdown by the React component and cleared on pointerup, so the active visual persists across the drag gesture even when the pointer leaves the handle's hit area.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">In context — iframe canvas (4 modes)</div>
+    <div class="stage vp-stage--iframe">
+      <div class="vp-canvas">
+        <div class="vp-iframe vp-iframe--fit"><span>Fit · 100% × 100%</span></div>
+      </div>
+    </div>
+    <div class="caption">A. Fit (default). Iframe fills the canvas; backdrop has no visible contribution.</div>
+
+    <div class="stage vp-stage--iframe">
+      <div class="vp-canvas">
+        <span class="vp-size-badge">1440 × 900</span>
+        <div class="vp-iframe vp-iframe--desktop"><span>Desktop preset</span></div>
+      </div>
+    </div>
+    <div class="caption">B. Desktop 1440 × 900 — iframe top-left aligned (locked center=top-left), shadow lifts it off the subtle-grid backdrop. Excess area scrolls.</div>
+
+    <div class="stage vp-stage--iframe">
+      <div class="vp-canvas">
+        <span class="vp-size-badge">768 × 1024 — portrait</span>
+        <div class="vp-iframe vp-iframe--tablet"><span>Tablet preset</span></div>
+      </div>
+    </div>
+    <div class="caption">C. Tablet 768 × 1024 portrait. Rotate button in the popover swaps to 1024 × 768.</div>
+
+    <div class="stage vp-stage--iframe">
+      <div class="vp-canvas">
+        <span class="vp-size-badge">640 × 480 — custom</span>
+        <div class="vp-iframe vp-iframe--custom">
+          <span>Custom — drag the handles</span>
+          <div class="vp-handle vp-handle--right" role="separator" aria-orientation="vertical" aria-label="Resize width">
+            <svg class="vp-handle__grip" viewBox="0 0 4 14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="2" cy="7" r="1"/><circle cx="2" cy="12" r="1"/></svg>
+          </div>
+          <div class="vp-handle vp-handle--bottom" role="separator" aria-orientation="horizontal" aria-label="Resize height">
+            <svg class="vp-handle__grip" viewBox="0 0 14 4" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="7" cy="2" r="1"/><circle cx="12" cy="2" r="1"/></svg>
+          </div>
+          <div class="vp-handle vp-handle--corner" role="separator" aria-label="Resize width and height">
+            <svg class="vp-handle__grip" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 9 L9 2 M4.5 9 L9 4.5 M7 9 L9 7" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">D. Custom — three drag handles overlay the iframe (always visible: handle-visibility=always-when-custom). Cursors: ew-resize · ns-resize · nwse-resize. Min 240 × 320; drag clamps to canvas, numeric input accepts above with scrollable overflow.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">React API — @radix-ui/react-popover + useViewport hook</div>
+    <p>The trigger and popover compose <code>@radix-ui/react-popover</code> (Root/Trigger/Portal/Content). Popover is installed in <code>package.json</code> and already powers <code>FolderPicker</code>. Viewport state and per-mockup persistence live in a custom <code>useViewport(mockupId)</code> hook that owns <code>{ mode, width, height, orientation }</code> + a localStorage round-trip. Drag handles are a separate <code>ViewportHandles</code> subcomponent that reads the viewport state and emits resize events via the same <code>setViewport</code> setter.</p>
+<pre class="api"><span class="c">// ViewportControl.tsx — composes Radix Popover + useViewport hook</span>
+<span class="k">import</span> * <span class="k">as</span> Popover <span class="k">from</span> <span class="s">'@radix-ui/react-popover'</span>;
+<span class="k">import</span> { useViewport } <span class="k">from</span> <span class="s">'./useViewport'</span>;
+
+&lt;<span class="t">Popover.Root</span>&gt;
+  &lt;<span class="t">Popover.Trigger</span> asChild&gt;
+    &lt;<span class="k">button</span> className=<span class="s">"vp-trigger"</span> aria-label={<span class="s">`Viewport: ${label(viewport)}`</span>}&gt;
+      &lt;<span class="t">ViewportIcon</span> mode={viewport.mode} /&gt;
+    &lt;/<span class="k">button</span>&gt;
+  &lt;/<span class="t">Popover.Trigger</span>&gt;
+  &lt;<span class="t">Popover.Portal</span>&gt;
+    &lt;<span class="t">Popover.Content</span> side=<span class="s">"top"</span> className=<span class="s">"vp-popover"</span>&gt;
+      &lt;<span class="t">ViewportPresetChips</span> active={viewport.mode} onPick={setViewport} /&gt;
+      {viewport.mode === <span class="s">'custom'</span> &amp;&amp; (
+        &lt;<span class="t">ViewportSizeInputs</span> width={viewport.width} height={viewport.height} onChange={setViewport} /&gt;
+      )}
+      &lt;<span class="t">ViewportFooter</span> mode={viewport.mode} width={viewport.width} height={viewport.height} /&gt;
+    &lt;/<span class="t">Popover.Content</span>&gt;
+  &lt;/<span class="t">Popover.Portal</span>&gt;
+&lt;/<span class="t">Popover.Root</span>&gt;
+</pre>
+    <ul>
+      <li><strong>Radix posture.</strong> <code>@radix-ui/react-popover</code> (Root/Trigger/Portal/Content) handles open-state, focus return on close, ESC/click-outside dismissal, and ARIA wiring (<code>aria-haspopup</code>, <code>aria-expanded</code>, <code>aria-controls</code>). <code>side="top"</code> opens upward because the toolbar lives at the canvas bottom.</li>
+      <li><strong>Custom: preset chip radiogroup.</strong> The 5 chips are a custom <code>role="radiogroup"</code> with arrow-key navigation per WAI-ARIA — Radix does not ship a radiogroup primitive. Each chip is a <code>&lt;button role="radio" aria-checked&gt;</code>; the active chip carries <code>[aria-checked="true"]</code> which the CSS branches on for the tinted-active treatment.</li>
+      <li><strong>Custom: <code>useViewport(mockupId)</code>.</strong> Owns <code>{ mode, width, height, orientation }</code>; persists to <code>localStorage</code> under <code>viewport:${mockupId}</code> (schema <code>{ v: 1, mode, width, height, orientation }</code>). The hook also exposes the canonical preset table so callers don't hard-code sizes.</li>
+      <li><strong>Custom: <code>ViewportHandles</code>.</strong> Only rendered when <code>viewport.mode === 'custom'</code>. Uses pointer events with <code>setPointerCapture</code> on pointerdown (same pattern as <code>CanvasToolbar</code>'s drag-grab). Sets <code>data-dragging="true"</code> on the active handle for the visual state; Arrow keys nudge 8 px (Shift+Arrow 32 px) for keyboard accessibility.</li>
+      <li><strong>Zoom coupling.</strong> Selecting a preset or Custom calls the parent's <code>resetZoom()</code> in the same tick. Implementation: the parent passes a <code>handleViewportChange</code> callback that wraps <code>setViewport</code> + <code>resetZoom</code>.</li>
+      <li><strong>Pin reflow.</strong> Viewport width/height enters the existing <code>repositionKey</code> in <code>AppMainViewer</code> alongside <code>zoom</code> and <code>layoutKey</code>. PinLayer re-measures DOM anchors on key change, so pins ride along with the layout the mockup chooses for the new width.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">State decision matrix — viewport modes</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Mode</th><th>How it triggers</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>fit</code></td>
+          <td>Default; user has not picked a preset/custom OR picked Fit explicitly</td>
+          <td>Iframe <code>width: 100%; height: 100%</code> — backdrop has no visible contribution</td>
+          <td>Trigger <code>aria-label="Viewport: Fit canvas"</code></td>
+        </tr>
+        <tr>
+          <td><code>desktop</code></td>
+          <td>Preset chip click in popover</td>
+          <td>Iframe 1440 × 900, top-left aligned in canvas with shadow lift on subtle-grid backdrop</td>
+          <td>Trigger <code>aria-label="Viewport: Desktop 1440 × 900"</code></td>
+        </tr>
+        <tr>
+          <td><code>tablet</code></td>
+          <td>Preset chip click (portrait by default; rotate flips to landscape)</td>
+          <td>Iframe 768 × 1024 (or 1024 × 768 rotated); rotate button visible in popover</td>
+          <td>Trigger <code>aria-label="Viewport: Tablet 768 × 1024"</code></td>
+        </tr>
+        <tr>
+          <td><code>mobile</code></td>
+          <td>Preset chip click (portrait by default; rotate flips to landscape)</td>
+          <td>Iframe 390 × 844 (or 844 × 390 rotated); rotate button visible in popover</td>
+          <td>Trigger <code>aria-label="Viewport: Mobile 390 × 844"</code></td>
+        </tr>
+        <tr>
+          <td><code>custom</code></td>
+          <td>Preset chip click OR drag a handle (auto-switches into custom mode preserving current size)</td>
+          <td>Iframe at user-specified W × H; three drag handles visible (right · bottom · corner); inputs visible in popover</td>
+          <td>Trigger <code>aria-label="Viewport: Custom W × H"</code></td>
+        </tr>
+        <tr>
+          <td><code>open</code> <em>(trigger sub-state)</em></td>
+          <td>Popover opens (Radix-managed via <code>aria-expanded</code>)</td>
+          <td>Trigger background brightens to <code>--accent-overlay-mid</code> + border-color shifts to <code>--accent-bright</code> via <code>[data-state="open"]</code></td>
+          <td>Trigger <code>aria-expanded="true"</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <div class="section-title">When to use this vs canvas-toolbar zoom</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Use <code>viewport-control</code> when…</th><th>Use the zoom group when…</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>The reviewer wants to see how the mockup behaves at a specific device width (responsive validation, breakpoint review)</td>
+          <td>The reviewer wants to inspect pixels at higher density — zoom is a CSS scale on the rendered output, not a layout change</td>
+        </tr>
+        <tr>
+          <td>The mockup's layout would differ at that width (media queries, container queries, JS-driven layout)</td>
+          <td>Layout is fixed; only the rendering size needs to scale up or down for legibility</td>
+        </tr>
+        <tr>
+          <td>Pins need to be placed at locations that exist only at that breakpoint (e.g. a mobile-only CTA)</td>
+          <td>Pin placement should not move based on viewport — preserve consistent anchors across reviewers</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>trigger-size<dd>28 × 28 (matches every other CanvasToolbar button)
+      <dt>trigger-radius<dd>--radius-sm (8 px)
+      <dt>trigger-bg<dd>--accent-overlay-soft (idle) → --accent-overlay-mid (hover / open)
+      <dt>trigger-border<dd>1px solid --accent-overlay-mid → --accent-bright when open
+      <dt>trigger-icon<dd>14 × 14 inline SVG, currentColor (--accent-bright)
+      <dt>trigger-transition<dd>background + border-color + color, --motion-fast / --ease-standard
+      <dt>popover-width<dd>280 px
+      <dt>popover-padding<dd>12 px (locked density=compact)
+      <dt>popover-bg<dd>--bg-elevated-strong + backdrop-filter blur(16px) saturate(140%)
+      <dt>popover-border<dd>1px solid --border
+      <dt>popover-radius<dd>--radius-lg (16 px)
+      <dt>popover-shadow<dd>--shadow-popover (drop + inset highlight)
+      <dt>chip-size<dd>28 × 28
+      <dt>chip-radius<dd>--radius-sm (8 px)
+      <dt>chip-gap<dd>6 px (chip row)
+      <dt>chip-active-bg<dd>--accent-overlay-soft (locked chip-style=tinted-active)
+      <dt>chip-active-border<dd>1px solid --accent-overlay-mid
+      <dt>chip-active-color<dd>--accent-bright
+      <dt>rotate-size<dd>24 × 24 (smaller than presets to read as secondary control)
+      <dt>input-pad<dd>4 × 8 padding, font-mono 12 px, tabular-nums
+      <dt>input-min-w<dd>240 px (W)
+      <dt>input-min-h<dd>320 px (H)
+      <dt>input-debounce<dd>100 ms before pushing to viewport state
+      <dt>footer-format<dd>"mode · W × H" (locked footer-format=mode-and-size)
+      <dt>iframe-fit<dd>width 100% × height 100%
+      <dt>iframe-shadow<dd>--shadow-md (locked shadow=on; not applied in fit mode)
+      <dt>iframe-align<dd>flex-start × flex-start (locked center=top-left)
+      <dt>canvas-backdrop<dd>24 × 24 grid lined in oklch(17% 0.02 165 / 0.5) over --bg-iframe (locked backdrop=subtle-grid)
+      <dt>handle-thickness<dd>6 px (locked from range 4–16)
+      <dt>handle-bg<dd>--accent-overlay-mid (base) → --accent (hover) → --accent-bright (active / dragging)
+      <dt>handle-border<dd>1px solid --accent-overlay-strong → --accent-bright
+      <dt>handle-active-ring<dd>0 0 0 3px --accent-overlay-soft (edges) / + bg-iframe ring on corner
+      <dt>handle-cursor<dd>ew-resize (right) · ns-resize (bottom) · nwse-resize (corner)
+      <dt>handle-grip<dd>3-dot SVG (edges) or 3 diagonal strokes (corner), currentColor at 0.55 → 0.9 opacity
+      <dt>handle-visibility<dd>always while mode=custom (locked)
+      <dt>size-badge<dd>position absolute, top-left of canvas, --bg-elevated-strong bg + --border border
+      <dt>persist-key<dd>localStorage viewport:${mockupId} · schema { v: 1, mode, width, height, orientation }
+      <dt>focus-ring<dd>--focus-ring (2 px bg gap + 2 px accent ring)
+    </dl>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Behavior</h2>
+    <ul>
+      <li>Trigger click opens the popover (Radix-managed). ESC and outside-click dismiss. Focus returns to the trigger on close.</li>
+      <li>Preset / Custom selection resets zoom to 100% in the same tick — viewport and zoom are orthogonal in the spec but coupled in the parent dispatcher so the user never lands in a confusing "Mobile at 200% zoom" state.</li>
+      <li>Selecting Custom from a preset seeds W × H with the preset's current dimensions; the user adjusts from there.</li>
+      <li>Selecting Fit clears width/height to <code>null</code> and removes the iframe explicit sizing.</li>
+      <li>Rotate is only shown when Tablet or Mobile is active. Clicking it swaps width ↔ height (Tablet 768 × 1024 ↔ 1024 × 768).</li>
+      <li>Custom mode renders the drag handles overlaid on the iframe. Pointer events use <code>setPointerCapture</code> so a fast drag can leave the handle without losing the gesture. <code>[data-dragging="true"]</code> on the active handle persists the visual state until pointerup / pointercancel.</li>
+      <li>Custom min: 240 × 320. Drag clamps to canvas bounds; numeric input accepts above (excess becomes scrollable backdrop).</li>
+      <li>Drag handles are keyboard-accessible: focusable via Tab; Arrow keys nudge the dimension by 8 px; Shift+Arrow by 32 px. The right handle nudges horizontally; the bottom handle nudges vertically; the corner nudges both.</li>
+      <li>Per-mockup persistence via <code>localStorage</code> under <code>viewport:${mockupId}</code>. New mockups start in Fit; revisits restore the last chosen viewport. Storage failure (private mode / quota) falls back to in-memory for the session — no visible error.</li>
+      <li>Pin behaviour: viewport width/height enters the existing <code>repositionKey</code>; pins re-anchor when the mockup re-layouts. If a pin's anchor element is hidden at the new width, the existing pin-orphaned-anchor handling in <code>useAppMainAnnotations</code> kicks in.</li>
+      <li>Fullscreen: the chosen viewport persists into fullscreen. The toolbar remains visible; the backdrop fills around the constrained iframe.</li>
+      <li>Reduced motion: handle hover / active transitions and trigger transitions all use <code>--motion-fast</code> which the global media query zeros under <code>prefers-reduced-motion: reduce</code>.</li>
+    </ul>
+  </section>
+
+</div>
+
+</body>
+</html>

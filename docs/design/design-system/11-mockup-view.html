@@ -395,6 +395,10 @@ pre.api .t{color:oklch(86% 0.12 60)}
 
 /* Demo label corner */
 .demo-label{position:fixed;bottom:16px;right:16px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;z-index:999}
+/* All states grid */
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
+.state{display:flex;flex-direction:column;gap:6px;align-items:center}
+.state .state-label{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim)}
 </style>
 </head>
 <body>
@@ -403,6 +407,8 @@ pre.api .t{color:oklch(86% 0.12 60)}
   <h1 class="h1">11 — Mockup View</h1>
   <p class="lede">
     The full mockup viewer surface: the floating-cockpit composition that wraps the iframe with a topbar, slim sidebar, <a href="./18-annotations-rail.html" style="color:var(--accent-bright);text-decoration:underline">AnnotationsRail</a> on the left, <a href="./19-toolbar.html" style="color:var(--accent-bright);text-decoration:underline">CanvasToolbar</a> on the bottom, and <a href="./20-pins.html" style="color:var(--accent-bright);text-decoration:underline">Pins</a> + PinLayer over the canvas. The iframe is full-bleed under the topbar — every chrome overlay is glass (<code>--surface-glass-bg</code> with <code>blur(16px) saturate(140%)</code>) and floats above the mockup. Implemented by <code>src/components/MockupViewer/AppMainViewer.tsx</code> + <code>AppMainViewerWired.tsx</code>; state lives in three focused hooks (<code>useAppMainAnnotations</code>, <code>useViewerCanvas</code>, <code>useViewerFullscreen</code>) and the iframe + PinLayer are extracted to a memoized <a href="#" style="color:var(--accent-bright);text-decoration:underline"><code>ViewerCanvas</code></a> so composer / rail churn doesn't reload the mockup.
+    See also <a href="./33-viewport-control.html" style="color:var(--accent-bright);text-decoration:underline">33-viewport-control</a> for the viewport-selector
+    surface that constrains the iframe to a preset device size or a custom width × height.
   </p>
 
   <!-- ─── A — Default state ────────────────────────────────────── -->
@@ -771,6 +777,12 @@ pre.api .t{color:oklch(86% 0.12 60)}
   <section class="section">
     <div class="section-title">D — Pin states (idle · hover · active · pending)</div>
     <div class="section-lede">Pins are <code>position: absolute</code> inside the PinLayer; 30 × 30 teardrop, <code>rotate(-45deg)</code>, glass tag (<code>rgb(7 12 15 / 70%)</code> + <code>blur(6px) saturate(140%)</code>). 16-color palette propagates via <code>data-color</code>.</div>
+    <div class="row-states">
+      <div class="state"><div class="state-label">idle (55% opacity)</div></div>
+      <div class="state"><div class="state-label">hover (100% opacity)</div></div>
+      <div class="state"><div class="state-label">active (accent ring)</div></div>
+      <div class="state"><div class="state-label">pending (dashed + pulse)</div></div>
+    </div>
     <div class="variants">
       <div class="variant-stage" style="height:180px">
         <span class="stage-label">Idle (55% opacity)</span>
@@ -940,7 +952,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
 
   <!-- ─── Behavior ────────────────────────────────────────────────────── -->
   <section class="section">
-    <div class="section-title">Behavior</div>
+    <h2 class="section-title">Behavior</h2>
     <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:700px">
       <li><strong>Same-origin iframe.</strong> Mockups serve from <code>/m/[mockupId]/[...path]/route.ts</code> on the same origin so the parent can reach into the iframe document for click capture and pin coordinate resolution. Cross-origin would break the anchoring runtime; the route handler is the gatekeeper.</li>
       <li><strong>Pin anchoring.</strong> Pins are stored as DOM-relative <code>Anchor</code> records (CSS selector + offset) — see <code>src/lib/anchoring</code> and the strategy doc <code>docs/superpowers/specs/2026-05-18-pin-anchoring-strategy.md</code>. On iframe load <code>useViewerCanvas</code> attaches the canvas root + resolves all anchors to absolute coords for PinLayer to render.</li>

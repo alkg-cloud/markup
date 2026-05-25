@@ -1,0 +1,109 @@
+/* Drag handles for Custom-mode iframe resize. Visual recipe ported from
+   docs/design/design-system/33-viewport-control.html (locked tweaker
+   choices: handle-thickness=6px, handle-visibility=always-when-custom).
+   State map: base · :hover · :active or [data-dragging="true"] · :focus-visible. */
+
+.handle {
+  position: absolute;
+  background: var(--accent-overlay-mid);
+  border: 1px solid var(--accent-overlay-strong);
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    opacity var(--motion-fast) var(--ease-standard);
+  color: var(--text-on-accent);
+  z-index: var(--z-viewport-handles);
+}
+
+.handle:hover {
+  background: var(--accent);
+  border-color: var(--accent-bright);
+}
+
+.handle:active,
+.handle[data-dragging="true"] {
+  background: var(--accent-bright);
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 0 3px var(--accent-overlay-soft);
+}
+
+.handle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.handleRight {
+  top: 0;
+  right: -3px;
+  bottom: 0;
+  width: 6px;
+  border-radius: var(--radius-pill);
+  cursor: ew-resize;
+}
+
+.handleBottom {
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  cursor: ns-resize;
+}
+
+.handleCorner {
+  right: -6px;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border-color: var(--accent-bright);
+  border-radius: var(--radius-xs);
+  cursor: nwse-resize;
+  box-shadow: 0 0 0 2px var(--bg-iframe);
+}
+
+.handleCorner:hover {
+  background: var(--accent-bright);
+}
+
+.handleCorner:active,
+.handleCorner[data-dragging="true"] {
+  box-shadow:
+    0 0 0 2px var(--bg-iframe),
+    0 0 0 5px var(--accent-overlay-soft);
+}
+
+.grip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  fill: currentColor;
+  stroke: currentColor;
+  opacity: 0.55;
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+
+.handleRight .grip {
+  width: 4px;
+  height: 14px;
+}
+
+.handleBottom .grip {
+  width: 14px;
+  height: 4px;
+}
+
+.handleCorner .grip {
+  width: 10px;
+  height: 10px;
+  opacity: 0.7;
+  fill: none;
+}
+
+.handle:hover .grip,
+.handle[data-dragging="true"] .grip {
+  opacity: 0.9;
+}

@@ -2,7 +2,9 @@
 import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { GoGrabber } from 'react-icons/go';
 import { VscAdd, VscRemove, VscScreenFull } from 'react-icons/vsc';
+import type { ViewportState } from '@/components/MockupViewer/viewport-presets';
 import styles from './CanvasToolbar.module.css';
+import { ViewportControl } from './ViewportControl';
 import { nextZoomIndex, ZOOM_DEFAULT_INDEX, ZOOM_STEPS, zoomLabel } from './zoom';
 
 export interface CanvasToolbarProps {
@@ -21,6 +23,10 @@ export interface CanvasToolbarProps {
    *  returns to the spec-default centered-bottom coordinates. See
    *  AnnotationsRail's identical prop. */
   resetPositionKey?: string | number;
+  /** Viewport selector state — when present, renders the ViewportControl
+   *  at the start of the dock followed by a divider. */
+  viewport?: ViewportState;
+  setViewport?: (next: ViewportState) => void;
 }
 
 /**
@@ -41,6 +47,8 @@ export function CanvasToolbar({
   isFullscreen,
   versionChip,
   resetPositionKey,
+  viewport,
+  setViewport,
 }: CanvasToolbarProps) {
   const toolbarRef = useRef<HTMLDivElement | null>(null);
   const [zoomIndex, setZoomIndex] = useState(ZOOM_DEFAULT_INDEX);
@@ -145,6 +153,14 @@ export function CanvasToolbar({
       role="toolbar"
       aria-label="Mockup actions"
     >
+      {viewport && setViewport ? (
+        <>
+          <div className={styles.group}>
+            <ViewportControl viewport={viewport} setViewport={setViewport} />
+          </div>
+          <div className={styles.divider} aria-hidden="true" />
+        </>
+      ) : null}
       <div className={styles.group}>
         <button
           type="button"
