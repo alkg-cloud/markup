@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { handleAuthError, identify, requireAdmin } from '@/lib/auth/identify';
+import { handleAuthError, identify, requireIdentity } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { createProject, listProjects } from '@/lib/project/service';
 import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
@@ -20,9 +20,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
-  let ident: Awaited<ReturnType<typeof identify>>;
+  const ident = await identify(req);
   try {
-    ident = await requireAdmin(await identify(req));
+    requireIdentity(ident);
   } catch (e) {
     return handleAuthError(e);
   }
@@ -34,7 +34,8 @@ export async function POST(req: Request) {
   const project = await createProject({
     name: parsed.data.name,
     icon: parsed.data.icon,
-    createdById: ident.userId,
+    createdBy: ident.kind === 'user' ? ident.userId : ident.tokenId,
+    createdByType: ident.kind,
   });
   return NextResponse.json(project, { status: 201 });
 }
