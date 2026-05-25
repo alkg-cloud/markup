@@ -1,8 +1,10 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 import { type PinDescriptor, PinLayer } from '@/components/PinLayer';
 import type { Anchor } from '@/lib/anchoring';
+import { ViewportHandles } from './ViewportHandles';
+import type { ViewportState } from './viewport-presets';
 
 interface ViewerCanvasProps {
   mockupSrc: string;
@@ -13,6 +15,8 @@ interface ViewerCanvasProps {
    *  so the user reads the canvas as "click to drop a pin." */
   marking: boolean;
   zoom: number;
+  viewport: ViewportState;
+  setViewport: (next: ViewportState) => void;
   pins: PinDescriptor[];
   draftPins?: Anchor[];
   draftColorIndex?: number;
@@ -23,9 +27,10 @@ interface ViewerCanvasProps {
 }
 
 /**
- * Iframe + PinLayer pair. Memoized so re-renders driven by draft/rail
- * state in the parent don't re-mount the iframe (which would blow away
- * the loaded mockup) or churn the PinLayer when pins haven't changed.
+ * Iframe + PinLayer + ViewportHandles. Memoized so re-renders driven
+ * by draft/rail state in the parent don't re-mount the iframe (which
+ * would blow away the loaded mockup) or churn the PinLayer when pins
+ * haven't changed.
  */
 function ViewerCanvasInner({
   mockupSrc,
@@ -34,6 +39,8 @@ function ViewerCanvasInner({
   iframeGen,
   marking,
   zoom,
+  viewport,
+  setViewport,
   pins,
   draftPins,
   draftColorIndex,
@@ -42,13 +49,23 @@ function ViewerCanvasInner({
   onDraftPinClick,
   repositionKey,
 }: ViewerCanvasProps) {
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const isFit = viewport.mode === 'fit';
+  const sizeStyle: React.CSSProperties = isFit
+    ? { width: '100%', height: '100%' }
+    : { width: `${viewport.width}px`, height: `${viewport.height}px` };
+
   return (
     <>
       <div
+        ref={wrapperRef}
         style={{
           position: 'absolute',
           inset: 0,
           overflow: 'auto',
+          display: isFit ? 'block' : 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'flex-start',
           cursor: marking ? 'crosshair' : 'default',
         }}
       >
@@ -57,13 +74,15 @@ function ViewerCanvasInner({
           src={mockupSrc}
           title="Mockup"
           style={{
-            width: '100%',
-            height: '100%',
+            ...sizeStyle,
             border: 0,
             transform: `scale(${zoom})`,
             transformOrigin: 'top left',
+            boxShadow: isFit ? undefined : 'var(--shadow-md)',
+            flexShrink: 0,
           }}
         />
+        <ViewportHandles viewport={viewport} setViewport={setViewport} canvasRef={wrapperRef} />
       </div>
 
       <PinLayer
