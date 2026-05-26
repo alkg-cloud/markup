@@ -22,6 +22,10 @@ docs/superpowers/
 .superpowers/
 .worktrees/
 .claude/
+# Project-local Claude skills live in .claude/skills/ (covered by .claude/
+# above). Block /skills/ at the repo root too so any tooling that resurrects
+# the legacy location does not accidentally commit them.
+/skills/
 dev-data/
 test-data/
 
