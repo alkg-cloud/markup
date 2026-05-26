@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { updateAnnotationTldraw } from '@/lib/annotation/service';
-import { handleAuthError, identify } from '@/lib/auth/identify';
+import { identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
-import { requireOwnerOrAdmin } from '@/lib/auth/require-owner-or-admin';
-import { prisma } from '@/lib/prisma';
+import { requireOwnerOrAdminFor } from '@/lib/auth/require-owner-or-admin';
 
 export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
@@ -11,21 +10,8 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
   const ident = await identify(req);
   const { id } = await ctx.params;
 
-  const annotation = await prisma.annotation.findUnique({
-    where: { id },
-    select: { id: true, createdBy: true, createdByType: true },
-  });
-  if (!annotation) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-
-  try {
-    await requireOwnerOrAdmin(ident, {
-      kind: 'annotation',
-      createdBy: annotation.createdBy,
-      createdByType: annotation.createdByType as 'user' | 'agent',
-    });
-  } catch (e) {
-    return handleAuthError(e);
-  }
+  const gate = await requireOwnerOrAdminFor(ident, 'annotation', id);
+  if (gate instanceof NextResponse) return gate;
 
   let body: unknown;
   try {

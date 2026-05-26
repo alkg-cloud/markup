@@ -11,6 +11,11 @@ export type Identity =
   | { kind: 'user'; userId: string; sessionId: string }
   | { kind: 'agent'; tokenId: string; name: string };
 
+/** Extract the cuid from an Identity, regardless of kind. */
+export function identityId(id: Identity): string {
+  return id.kind === 'user' ? id.userId : id.tokenId;
+}
+
 interface ErrorWithStatus extends Error {
   status: number;
 }

@@ -20,8 +20,17 @@ export type Viewer =
   | { kind: 'user'; userId: string; role: 'admin' | 'member' }
   | { kind: 'agent'; tokenId: string };
 
-function viewerId(v: Viewer): string {
+export function viewerId(v: Viewer): string {
   return v.kind === 'user' ? v.userId : v.tokenId;
+}
+
+export function isAdmin(viewer: Viewer): boolean {
+  return viewer.kind === 'user' && viewer.role === 'admin';
+}
+
+/** Narrow a Prisma `String?` createdByType column safely. */
+export function narrowCreatedByType(s: string | null): 'user' | 'agent' | null {
+  return s === 'user' || s === 'agent' ? s : null;
 }
 
 export function canDelete(viewer: Viewer, entity: DeletableEntity): boolean {

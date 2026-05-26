@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { handleAuthError, identify } from '@/lib/auth/identify';
+import { identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
-import { requireOwnerOrAdmin } from '@/lib/auth/require-owner-or-admin';
+import { requireOwnerOrAdminFor } from '@/lib/auth/require-owner-or-admin';
 import { logger } from '@/lib/logger';
 import { deleteMockup, getMockup, renameMockup, setMockupStatus } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
@@ -58,25 +58,13 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   }
 
   // Gate the whole request by owner-or-admin against the mockup's ownership pair.
-  const existingRow = await prisma.mockup.findUnique({
-    where: { id: mockupId },
-    select: { id: true, createdBy: true, createdByType: true },
-  });
-  if (!existingRow) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  const gate = await requireOwnerOrAdminFor(ident, 'mockup', mockupId);
+  if (gate instanceof NextResponse) return gate;
 
-  try {
-    await requireOwnerOrAdmin(ident, {
-      kind: 'mockup',
-      createdBy: existingRow.createdBy,
-      createdByType: existingRow.createdByType as 'user' | 'agent' | null,
-    });
-  } catch (e) {
-    return handleAuthError(e);
-  }
-
-  // Existing mockup + FK targets run in parallel — none depend on each other.
+  // Slim follow-up SELECT for the FK-validation projectId (no versions JOIN).
+  // FK targets run in parallel — none depend on each other.
   const [existing, project, folder] = await Promise.all([
-    getMockup(mockupId),
+    prisma.mockup.findUnique({ where: { id: mockupId }, select: { projectId: true } }),
     typeof fields.projectId === 'string'
       ? prisma.project.findUnique({ where: { id: fields.projectId } })
       : Promise.resolve(null),
@@ -150,21 +138,8 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   const ident = await identify(req);
   const { id: mockupId } = await ctx.params;
 
-  const mockup = await prisma.mockup.findUnique({
-    where: { id: mockupId },
-    select: { id: true, createdBy: true, createdByType: true },
-  });
-  if (!mockup) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-
-  try {
-    await requireOwnerOrAdmin(ident, {
-      kind: 'mockup',
-      createdBy: mockup.createdBy,
-      createdByType: mockup.createdByType as 'user' | 'agent' | null,
-    });
-  } catch (e) {
-    return handleAuthError(e);
-  }
+  const gate = await requireOwnerOrAdminFor(ident, 'mockup', mockupId);
+  if (gate instanceof NextResponse) return gate;
 
   const deleted = await deleteMockup(mockupId);
   if (!deleted) return NextResponse.json({ error: 'not_found' }, { status: 404 });

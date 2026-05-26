@@ -3,6 +3,7 @@ import 'server-only';
 import type { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/prisma';
+import { type Viewer, viewerId } from './can-delete';
 
 type Db = Prisma.TransactionClient | typeof prisma;
 
@@ -19,6 +20,10 @@ function http(status: number, message: string): never {
 export interface CascadeViewer {
   id: string;
   type: 'user' | 'agent';
+}
+
+export function toCascadeViewer(viewer: Viewer): CascadeViewer {
+  return { id: viewerId(viewer), type: viewer.kind };
 }
 
 function notOwned(viewer: CascadeViewer) {

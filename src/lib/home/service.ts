@@ -94,21 +94,7 @@ export async function getHomeData(identity: HomeIdentity): Promise<HomeData> {
 
   // Batch-resolve display names across the union of mockup + project creators
   // so each row can surface a `createdByName` without N+1 lookups.
-  const nameInputs = [
-    ...mockups
-      .filter((m) => m.createdBy && m.createdByType)
-      .map((m) => ({
-        createdBy: m.createdBy as string,
-        createdByType: m.createdByType as string,
-      })),
-    ...projects
-      .filter((p) => p.createdBy && p.createdByType)
-      .map((p) => ({
-        createdBy: p.createdBy as string,
-        createdByType: p.createdByType as string,
-      })),
-  ];
-  const nameMap = await resolveDisplayNames(nameInputs);
+  const nameMap = await resolveDisplayNames([...mockups, ...projects]);
 
   function nameFor(createdBy: string | null): string | null {
     if (!createdBy) return null;
