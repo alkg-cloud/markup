@@ -1,4 +1,5 @@
 'use client';
+import { usePathname, useRouter } from 'next/navigation';
 /**
  * AppMainViewerWired — client wrapper that connects the AppMainViewer
  * scaffold to the live API surface (annotations, replies, reactions,
@@ -6,7 +7,6 @@
  * `initialAnnotations` and passes everything through.
  */
 import { useCallback } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
 import type { AnnotationStatus, ThreadComment } from '@/components/AnnotationCard';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { useToast } from '@/components/Toast/useToast';
@@ -223,10 +223,9 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
 
   const onVersionPromote = useCallback(
     async (versionId: string) => {
-      const res = await fetch(
-        `/api/mockups/${props.mockupId}/versions/${versionId}/promote`,
-        { method: 'PATCH' },
-      );
+      const res = await fetch(`/api/mockups/${props.mockupId}/versions/${versionId}/promote`, {
+        method: 'PATCH',
+      });
       if (res.ok && versionId === props.viewingVid) {
         router.replace(pathname, { scroll: false });
       }

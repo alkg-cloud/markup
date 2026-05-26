@@ -217,7 +217,9 @@ describe('AnnotationCard', () => {
         author="A"
         date="—"
         primary={PRIMARY}
-        replies={[{ id: 'cmt-2', author: 'B', authorColorIndex: 1, timestamp: '—', body: 'reply 1' }]}
+        replies={[
+          { id: 'cmt-2', author: 'B', authorColorIndex: 1, timestamp: '—', body: 'reply 1' },
+        ]}
         currentUser="A"
         readOnly
       />,

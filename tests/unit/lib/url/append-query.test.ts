@@ -17,9 +17,7 @@ describe('appendQuery', () => {
   });
 
   it('handles trailing hash by inserting before it', () => {
-    expect(appendQuery('/m/abc/index.html#top', 'v', 'vid1')).toBe(
-      '/m/abc/index.html?v=vid1#top',
-    );
+    expect(appendQuery('/m/abc/index.html#top', 'v', 'vid1')).toBe('/m/abc/index.html?v=vid1#top');
   });
 
   it('handles URL with existing query AND hash (query+hash combination)', () => {

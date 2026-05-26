@@ -139,72 +139,73 @@ export function Comment({
             <span className={styles.time}>{timestamp}</span>
           </div>
           <div className={styles.actions}>
-            {!readOnly && (isOwn || viewerIsAdmin ? (
-              <>
-                <button
-                  ref={kebabPopover.triggerRef}
-                  type="button"
-                  className={styles.kebab}
-                  data-tooltip="More actions"
-                  aria-label="More actions"
-                  aria-haspopup="menu"
-                  {...kebabPopover.triggerProps}
-                >
-                  <VscKebabVertical aria-hidden="true" />
-                </button>
-                <div {...kebabPopover.popoverProps} className={styles.menu} role="menu">
+            {!readOnly &&
+              (isOwn || viewerIsAdmin ? (
+                <>
                   <button
+                    ref={kebabPopover.triggerRef}
                     type="button"
-                    className={styles.menuItem}
-                    role="menuitem"
-                    onClick={() => {
-                      kebabPopover.close();
-                      onReply?.();
-                    }}
+                    className={styles.kebab}
+                    data-tooltip="More actions"
+                    aria-label="More actions"
+                    aria-haspopup="menu"
+                    {...kebabPopover.triggerProps}
                   >
-                    <VscReply aria-hidden="true" />
-                    Reply
+                    <VscKebabVertical aria-hidden="true" />
                   </button>
-                  {/* Edit is own-only — admins can delete but not edit others' comments. */}
-                  {isOwn && (
+                  <div {...kebabPopover.popoverProps} className={styles.menu} role="menu">
                     <button
                       type="button"
                       className={styles.menuItem}
                       role="menuitem"
                       onClick={() => {
                         kebabPopover.close();
-                        onEdit?.();
+                        onReply?.();
                       }}
                     >
-                      <VscEdit aria-hidden="true" />
-                      Edit
+                      <VscReply aria-hidden="true" />
+                      Reply
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    className={[styles.menuItem, styles.danger].join(' ')}
-                    role="menuitem"
-                    onClick={() => {
-                      kebabPopover.close();
-                      onDelete?.();
-                    }}
-                  >
-                    <VscTrash aria-hidden="true" />
-                    Delete
-                  </button>
-                </div>
-              </>
-            ) : (
-              <button
-                type="button"
-                className={styles.action}
-                data-tooltip={`Reply to ${author}`}
-                aria-label={`Reply to ${author}`}
-                onClick={onReply}
-              >
-                <VscReply aria-hidden="true" />
-              </button>
-            ))}
+                    {/* Edit is own-only — admins can delete but not edit others' comments. */}
+                    {isOwn && (
+                      <button
+                        type="button"
+                        className={styles.menuItem}
+                        role="menuitem"
+                        onClick={() => {
+                          kebabPopover.close();
+                          onEdit?.();
+                        }}
+                      >
+                        <VscEdit aria-hidden="true" />
+                        Edit
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className={[styles.menuItem, styles.danger].join(' ')}
+                      role="menuitem"
+                      onClick={() => {
+                        kebabPopover.close();
+                        onDelete?.();
+                      }}
+                    >
+                      <VscTrash aria-hidden="true" />
+                      Delete
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.action}
+                  data-tooltip={`Reply to ${author}`}
+                  aria-label={`Reply to ${author}`}
+                  onClick={onReply}
+                >
+                  <VscReply aria-hidden="true" />
+                </button>
+              ))}
           </div>
         </header>
       ) : null}
@@ -258,10 +259,14 @@ export function Comment({
             emoji={r.emoji}
             reactedBy={r.reactedBy}
             isCurrentUser={r.reactedBy.includes(currentUser)}
-            onClick={readOnly ? undefined : (e) => {
-              e.stopPropagation();
-              onReactionToggle?.(r.emoji);
-            }}
+            onClick={
+              readOnly
+                ? undefined
+                : (e) => {
+                    e.stopPropagation();
+                    onReactionToggle?.(r.emoji);
+                  }
+            }
           />
         ))}
         {!readOnly && <EmojiPicker onPick={(emoji) => onReactionToggle?.(emoji)} />}

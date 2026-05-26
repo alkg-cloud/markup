@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { act } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { createRoot, type Root } from 'react-dom/client';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AppMainViewer, type AppMainAnnotation } from '@/components/MockupViewer/AppMainViewer';
+import { type AppMainAnnotation, AppMainViewer } from '@/components/MockupViewer/AppMainViewer';
 import type { VersionRow } from '@/components/VersionChip';
 
 // Required for React 19 act() usage in vitest's jsdom environment.

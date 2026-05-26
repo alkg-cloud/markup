@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import type { ThreadComment } from '@/components/AnnotationCard';
+import { useEffect, useState } from 'react';
 import { AppMainViewerWired } from '@/components/MockupViewer/AppMainViewerWired';
 import { ProjectSkeleton } from '@/components/Skeleton';
 import type { VersionRow } from '@/components/VersionChip';
-import type { Anchor } from '@/lib/anchoring';
 import type { AppMainAnnotation } from './AppMainViewer';
 
 interface ViewerPayload {

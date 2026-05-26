@@ -52,8 +52,7 @@ vi.mock('@/components/Toast/useToast', () => ({
 
 vi.mock('@/components/CanvasToolbar', () => ({
   // Render the versionChip slot so the VersionChip <li> rows appear in the DOM.
-  CanvasToolbar: ({ versionChip }: { versionChip?: React.ReactNode }) =>
-    versionChip ? <>{versionChip}</> : null,
+  CanvasToolbar: ({ versionChip }: { versionChip?: React.ReactNode }) => versionChip ?? null,
 }));
 
 // ── Shared fixtures ───────────────────────────────────────────────────────
@@ -115,10 +114,7 @@ describe('AppMainViewerWired — version select routing', () => {
     });
 
     expect(replaceMock).toHaveBeenCalledTimes(1);
-    expect(replaceMock).toHaveBeenCalledWith(
-      `${pathnameMock}?v=v2`,
-      { scroll: false },
-    );
+    expect(replaceMock).toHaveBeenCalledWith(`${pathnameMock}?v=v2`, { scroll: false });
   });
 
   it('selecting the current version triggers router.replace(pathname) — no ?v', () => {

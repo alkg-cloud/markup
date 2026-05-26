@@ -36,14 +36,14 @@ import { AnnotationsRail, type AnnotationsRailBadge } from '@/components/Annotat
 import { AppMain } from '@/components/AppMain/AppMain';
 import { CanvasToolbar } from '@/components/CanvasToolbar';
 import { DraftCard } from '@/components/DraftCard';
+import { HistoricBanner } from '@/components/HistoricBanner';
 import type { PinDescriptor } from '@/components/PinLayer';
 import { useToast } from '@/components/Toast/useToast';
 import { VersionChip, type VersionRow } from '@/components/VersionChip';
-import { HistoricBanner } from '@/components/HistoricBanner';
-import { appendQuery } from '@/lib/url/append-query';
 import { useDraftKeyboard } from '@/hooks/useDraftKeyboard';
 import { useDraftPersistence } from '@/hooks/useDraftPersistence';
 import type { Anchor } from '@/lib/anchoring';
+import { appendQuery } from '@/lib/url/append-query';
 import styles from './AppMainViewer.module.css';
 import { type DraftState, type DraftStatus, MAX_PINS, type StoredDraft } from './draft-types';
 import { useAppMainAnnotations } from './useAppMainAnnotations';
@@ -459,13 +459,9 @@ export function AppMainViewer({
   }, [viewingVid, isViewingKnown, onInvalidViewingVid]);
 
   const effectiveMockupSrc =
-    isHistoric && viewingVid != null
-      ? appendQuery(mockupSrc, 'v', viewingVid)
-      : mockupSrc;
+    isHistoric && viewingVid != null ? appendQuery(mockupSrc, 'v', viewingVid) : mockupSrc;
 
-  const viewingLabel = isHistoric
-    ? (versions.find((v) => v.id === viewingVid)?.label ?? '')
-    : '';
+  const viewingLabel = isHistoric ? (versions.find((v) => v.id === viewingVid)?.label ?? '') : '';
   const currentLabel = versions.find((v) => v.id === currentVid)?.label ?? '';
 
   return (
@@ -479,7 +475,6 @@ export function AppMainViewer({
         }}
       >
         <ViewerCanvas
-          key={viewingVid ?? 'current'}
           mockupSrc={effectiveMockupSrc}
           iframeRef={iframeRef}
           canvasRootRef={canvasRootRef}

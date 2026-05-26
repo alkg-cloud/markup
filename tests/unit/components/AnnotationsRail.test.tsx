@@ -67,10 +67,7 @@ describe('AnnotationsRail', () => {
 
   it('readOnly still renders the badge list and pinned-open header', () => {
     const html = renderToStaticMarkup(
-      <AnnotationsRail
-        badges={[{ annotationId: 'a1', colorIndex: 0, label: 1 }]}
-        readOnly
-      />,
+      <AnnotationsRail badges={[{ annotationId: 'a1', colorIndex: 0, label: 1 }]} readOnly />,
     );
     expect(html).toContain('data-color="0"');
     expect(html).toContain('aria-label="Annotations"');
