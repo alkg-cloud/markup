@@ -3,7 +3,7 @@
 import type { TLEditorSnapshot } from '@tldraw/tldraw';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { ThreadTimeline } from '@/components/ThreadTimeline/ThreadTimeline';
@@ -39,6 +39,12 @@ export default function AnnotationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [data, setData] = useState<DetailPayload | null>(null);
   const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
+  // Bumping this re-runs the fetch effect; child mutation surfaces
+  // (ThreadTimeline reply/resolve) call `refresh()` after a successful
+  // POST so messages + status re-seed from the aggregator without a
+  // full page reload.
+  const [refreshTick, setRefreshTick] = useState(0);
+  const refresh = useCallback(() => setRefreshTick((t) => t + 1), []);
 
   useEffect(() => {
     if (!id) return;
@@ -69,7 +75,7 @@ export default function AnnotationDetailPage() {
         setStatus('error');
       });
     return () => controller.abort();
-  }, [id]);
+  }, [id, refreshTick]);
 
   if (status === 'not_found') {
     return <ErrorState error="Annotation not found." />;
@@ -213,6 +219,7 @@ export default function AnnotationDetailPage() {
               status={thread.status as 'open' | 'resolved'}
               messages={thread.messages}
               authorNamesById={authorNamesById}
+              onMutated={refresh}
             />
           </div>
         </div>
