@@ -5,7 +5,6 @@
  * versions). The server component (`page.tsx`) maps Prisma data into
  * `initialAnnotations` and passes everything through.
  */
-import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 import type { AnnotationStatus, ThreadComment } from '@/components/AnnotationCard';
 import { useConfirm } from '@/components/ConfirmDialog';
@@ -26,7 +25,6 @@ export interface AppMainViewerWiredProps {
 }
 
 export function AppMainViewerWired(props: AppMainViewerWiredProps) {
-  const router = useRouter();
   // Replaces every `window.confirm`/`window.alert`/`window.prompt`
   // call in this surface. See `docs/code-style.md` "Never use native
   // browser dialogs".
@@ -55,9 +53,6 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
         colorIndex: number;
         status: AnnotationStatus;
       };
-      // Refresh the server component on next navigation so all derived
-      // data (counts, breadcrumbs, etc.) stays consistent.
-      router.refresh();
       return {
         id: json.id,
         threadId: json.threadId,
@@ -87,7 +82,6 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
       props.currentUser,
       props.currentUserColorIndex,
       props.initialAnnotations.length,
-      router,
     ],
   );
 
@@ -139,10 +133,9 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
         body: JSON.stringify({ body: newBody }),
       });
       if (!res.ok) return false;
-      router.refresh();
       return true;
     },
-    [router],
+    [],
   );
 
   const onCommentDelete = useCallback(
@@ -168,10 +161,9 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
         });
         return false;
       }
-      router.refresh();
       return true;
     },
-    [router, confirm],
+    [confirm],
   );
 
   const onAnnotationStatusChange = useCallback(
@@ -182,10 +174,9 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
         body: JSON.stringify({ status }),
       });
       if (!res.ok) return false;
-      router.refresh();
       return true;
     },
-    [router],
+    [],
   );
 
   const onAnnotationDelete = useCallback(
@@ -200,10 +191,9 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
       if (!ok) return false;
       const res = await fetch(`/api/annotations/${annotationId}`, { method: 'DELETE' });
       if (!res.ok) return false;
-      router.refresh();
       return true;
     },
-    [router, confirm],
+    [confirm],
   );
 
   const onVersionSelect = useCallback((versionId: string) => {
@@ -216,9 +206,8 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
       await fetch(`/api/mockups/${props.mockupId}/versions/${versionId}/promote`, {
         method: 'PATCH',
       });
-      router.refresh();
     },
-    [props.mockupId, router],
+    [props.mockupId],
   );
 
   const onVersionDelete = useCallback(
@@ -236,9 +225,8 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
       await fetch(`/api/mockups/${props.mockupId}/versions/${versionId}`, {
         method: 'DELETE',
       });
-      router.refresh();
     },
-    [props.mockupId, props.versions, router, confirm],
+    [props.mockupId, props.versions, confirm],
   );
 
   return (
