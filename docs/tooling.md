@@ -126,7 +126,8 @@ Optional:
 ## Dev server
 
 ```bash
-pnpm dev    # http://localhost:3000
+pnpm dev               # http://localhost:3000 (default)
+PORT=3001 pnpm dev     # override port (Next reads $PORT when no -p flag is set)
 ```
 
 The first hit triggers Next 16's first-visit compile (~300 ms with Turbopack on a small surface). Setup wizard at `/setup` if no admin user exists; `/login` otherwise.
