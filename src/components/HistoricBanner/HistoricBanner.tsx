@@ -21,15 +21,15 @@ export function HistoricBanner({ viewingLabel, currentLabel, onExit }: HistoricB
   return (
     <div className={styles.banner} role="status" aria-live="polite">
       <VscHistory className={styles.icon} aria-hidden="true" />
-      <span className={styles.label}>Visualizando {viewingLabel}</span>
+      <span className={styles.label}>Viewing {viewingLabel}</span>
       <button
         type="button"
         className={styles.exit}
         onClick={onExit}
-        data-tooltip="Voltar para a versão atual"
-        aria-label="Voltar para a versão atual"
+        data-tooltip="Back to current version"
+        aria-label="Back to current version"
       >
-        Voltar pra {currentLabel} (current)
+        Back to {currentLabel} (current)
       </button>
     </div>
   );
