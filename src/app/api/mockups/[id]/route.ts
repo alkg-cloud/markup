@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { handleAuthError, identify, requireAdmin } from '@/lib/auth/identify';
+import { identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
-import { requireOwnerOrAdmin } from '@/lib/auth/require-owner-or-admin';
+import { requireOwnerOrAdminFor } from '@/lib/auth/require-owner-or-admin';
 import { logger } from '@/lib/logger';
 import { deleteMockup, getMockup, renameMockup, setMockupStatus } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
@@ -15,8 +15,8 @@ import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
  * PATCH /api/mockups/[id] — mutate mockup metadata.
  *
  * Agent-loop surface. Auth: cookie OR Bearer.
- * Field-level gating: `name` is admin-only (agents get 403 `forbidden_field`).
- * Status, projectId, folderId, position are writable by any authenticated identity.
+ * Whole request is gated by owner-or-admin against the mockup's
+ * `(createdBy, createdByType)` ownership pair.
  */
 const patchSchema = z
   .object({
@@ -57,23 +57,14 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: 'no_fields' }, { status: 400 });
   }
 
-  // Field-level gating: `name` is admin-only.
-  // Agents get 403 forbidden_field before any role lookup.
-  if (fields.name !== undefined) {
-    if (ident.kind === 'agent') {
-      return NextResponse.json({ error: 'forbidden_field', field: 'name' }, { status: 403 });
-    }
-    // Cookie users still need admin role for name changes.
-    try {
-      await requireAdmin(ident);
-    } catch (e) {
-      return handleAuthError(e);
-    }
-  }
+  // Gate the whole request by owner-or-admin against the mockup's ownership pair.
+  const gate = await requireOwnerOrAdminFor(ident, 'mockup', mockupId);
+  if (gate instanceof NextResponse) return gate;
 
-  // Existing mockup + FK targets run in parallel — none depend on each other.
+  // Slim follow-up SELECT for the FK-validation projectId (no versions JOIN).
+  // FK targets run in parallel — none depend on each other.
   const [existing, project, folder] = await Promise.all([
-    getMockup(mockupId),
+    prisma.mockup.findUnique({ where: { id: mockupId }, select: { projectId: true } }),
     typeof fields.projectId === 'string'
       ? prisma.project.findUnique({ where: { id: fields.projectId } })
       : Promise.resolve(null),
@@ -136,9 +127,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
  * Deletes a mockup and all its version build directories from disk. Cascade
  * rules in Prisma handle annotations, threads, messages, and reactions.
  *
- * Auth: admin OR the user who created the mockup (`Mockup.createdById`).
- *       Agents are rejected with 403 `forbidden_kind` (docs/api/authz.md §4).
- *       Legacy rows (createdById = NULL) are admin-only-deletable.
+ * Auth: admin OR the identity that created the mockup
+ *       (`Mockup.createdBy` + `Mockup.createdByType`). Agents own the
+ *       mockups they created; users own theirs.
+ *       Legacy rows (createdBy = NULL) are admin-only-deletable.
  */
 export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
@@ -146,17 +138,8 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   const ident = await identify(req);
   const { id: mockupId } = await ctx.params;
 
-  const mockup = await prisma.mockup.findUnique({
-    where: { id: mockupId },
-    select: { id: true, createdById: true },
-  });
-  if (!mockup) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-
-  try {
-    await requireOwnerOrAdmin(ident, { kind: 'mockup', createdById: mockup.createdById });
-  } catch (e) {
-    return handleAuthError(e);
-  }
+  const gate = await requireOwnerOrAdminFor(ident, 'mockup', mockupId);
+  if (gate instanceof NextResponse) return gate;
 
   const deleted = await deleteMockup(mockupId);
   if (!deleted) return NextResponse.json({ error: 'not_found' }, { status: 404 });

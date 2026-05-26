@@ -103,9 +103,12 @@ export async function POST(req: Request) {
       name,
       slug: typeof slug === 'string' ? slug : undefined,
       zipPath: tmp,
+      // Mockup ownership (polymorphic pair):
       createdBy: id.kind === 'user' ? id.userId : id.tokenId,
       createdByType: id.kind,
-      createdById: id.kind === 'user' ? id.userId : null,
+      // First-version attribution (unchanged semantics, renamed params):
+      versionCreatedBy: id.kind === 'user' ? id.userId : id.tokenId,
+      versionCreatedByType: id.kind,
       projectId: typeof projectId === 'string' ? projectId : undefined,
       folderId: typeof folderId === 'string' ? folderId : undefined,
     });

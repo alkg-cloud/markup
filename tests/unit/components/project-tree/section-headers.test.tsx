@@ -17,7 +17,8 @@ const fixtureProjects = [
     slug: 'project-alpha',
     icon: null,
     position: 1,
-    createdById: null,
+    createdBy: null,
+    createdByType: null,
     folders: [],
     mockups: [],
   },
@@ -30,7 +31,8 @@ const fixtureOrphans = [
     slug: 'draft-sketch',
     status: 'active',
     position: 1,
-    createdById: null,
+    createdBy: null,
+    createdByType: null,
   },
 ];
 

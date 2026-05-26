@@ -42,6 +42,8 @@ async function makeAnnotation(opts?: { projectId?: string; folderId?: string }) 
     zipPath: fixture('valid-simple.zip'),
     createdBy: 'u',
     createdByType: 'user',
+    versionCreatedBy: 'u',
+    versionCreatedByType: 'user',
     projectId: opts?.projectId,
     folderId: opts?.folderId,
   });

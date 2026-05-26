@@ -58,7 +58,9 @@ try {
 
 `/api/invites` (the first feature to gate by `role`) drives this; `/api/agent-tokens` is gated the same way.
 
-Owner-or-admin routes call `requireOwnerOrAdmin(ident, entity)`. The helper fetches `user.role`; if `admin`, passes; otherwise checks the entity's `createdById`/`createdBy` field against `ident.userId` (and `createdByType === 'user'`). Returns 403 `forbidden_owner` on failure; 403 `forbidden_kind` for `kind: 'agent'` (agents never delete via the matrix routes, per [`docs/api/authz.md`](authz.md)). See [authz.md](authz.md) for the full DELETE permissions matrix and cascade rules.
+Owner-or-admin routes call `requireOwnerOrAdmin(ident, entity)`. The helper fetches `user.role`; if `admin`, passes; otherwise checks the entity's `(createdBy, createdByType)` pair against `(ident.userId | ident.tokenId, ident.kind)`. Returns 403 `forbidden_owner` on failure for both user and agent callers. See [authz.md](authz.md) for the full DELETE permissions matrix and cascade rules.
+
+Beyond the matrix DELETE routes, `requireOwnerOrAdmin` also gates PATCH and move/tldraw/thread-resolve mutations on Project, Folder, Mockup, and Annotation — see [authz.md § Modify gate](authz.md#modify-gate-patch--move--status-routes).
 
 ## Author attribution
 
@@ -70,6 +72,8 @@ authorType: ident.kind,
 ```
 
 `authorType` is `'user' | 'agent'` and is stored on `Annotation.createdByType`, `Message.authorType`, and `MockupVersion.createdByType`. The display layer resolves the cuid to a name via `resolveDisplayName` in `src/lib/auth/resolve-display-name.ts` — never render a raw cuid in the UI.
+
+The same `(authorId, authorType)` shape is used across `Project`, `Folder`, `Mockup`, `MockupVersion`, `Annotation`, and `Message` — the column pair is named `(createdBy, createdByType)` on the first five and `(authorId, authorType)` on `Message`.
 
 ## Session lifetime
 

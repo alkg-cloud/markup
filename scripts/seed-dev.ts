@@ -24,6 +24,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { stdin, stdout } from 'node:process';
 import readline from 'node:readline/promises';
+import { generateAgentToken } from '../src/lib/auth/agent-token';
 import { hashPassword } from '../src/lib/auth/password';
 import { env } from '../src/lib/env';
 import { addVersion, createMockupFromZip } from '../src/lib/mockup/service';
@@ -233,6 +234,8 @@ async function uploadMockup(opts: {
     folderId: opts.folderId,
     createdBy: opts.authorId,
     createdByType: 'user',
+    versionCreatedBy: opts.authorId,
+    versionCreatedByType: 'user',
   });
   return r;
 }
@@ -628,16 +631,10 @@ async function main() {
   });
 
   console.log('  Creating agent token …');
-  const tokenSecret = `dev-agent-${Math.random().toString(36).slice(2, 18)}`;
-  const tokenHash = await hashPassword(tokenSecret);
-  await prisma.agentToken.create({
-    data: {
-      name: 'qa-agent',
-      tokenHash,
-      prefix: 'devqa',
-      lastFour: tokenSecret.slice(-4),
-    },
-  });
+  // Use the same generator the real `POST /api/agent-tokens` route uses
+  // so the printed plaintext authenticates via `verifyAgentToken`
+  // (SHA-256 hash, `mk_test_<hex>` shape under NODE_ENV=development).
+  const { plaintext: tokenSecret } = await generateAgentToken('qa-agent');
 
   console.log('');
   console.log('  Seed complete.');

@@ -33,6 +33,8 @@ describe('GET /m/[mockupId]/[...path]', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const res = await serveMockup(authedRequest('http://l/m/x/index.html', headers), {
       params: Promise.resolve({ mockupId: created.mockup.id, path: ['index.html'] }),
@@ -52,6 +54,8 @@ describe('GET /m/[mockupId]/[...path]', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const res = await serveMockup(authedRequest('http://l/m/x/../etc/passwd', headers), {
       params: Promise.resolve({ mockupId: created.mockup.id, path: ['..', 'etc', 'passwd'] }),
@@ -74,6 +78,8 @@ describe('GET /m/[mockupId]/[...path]', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     // Add v2; v2 becomes current, v1 is now historical
     await addVersion({
@@ -97,6 +103,8 @@ describe('GET /m/[mockupId]/[...path]', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const url = `http://l/m/${mockup.id}/index.html?v=does-not-exist`;
     const res = await serveMockup(authedRequest(url, headers), {
@@ -111,6 +119,8 @@ describe('GET /m/[mockupId]/[...path]', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const res = await serveMockup(new Request('http://l/m/x/index.html'), {
       params: Promise.resolve({ mockupId: created.mockup.id, path: ['index.html'] }),
@@ -124,6 +134,8 @@ describe('GET /m/[mockupId]/[...path]', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const res = await serveMockup(
       new Request('http://l/m/x/index.html', {

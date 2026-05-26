@@ -39,6 +39,8 @@ async function createMockup(_cookie: string) {
     zipPath: fixture('lumen-coffee.zip'),
     createdBy: 'u1',
     createdByType: 'user',
+    versionCreatedBy: 'u1',
+    versionCreatedByType: 'user',
   });
   return r.mockup;
 }

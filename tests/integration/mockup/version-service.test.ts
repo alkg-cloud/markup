@@ -24,6 +24,8 @@ describe('version-service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const v2 = await addVersion({
       mockupId: m.mockup.id,
@@ -44,6 +46,8 @@ describe('version-service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const v2 = await addVersion({
       mockupId: m.mockup.id,
@@ -66,6 +70,8 @@ describe('version-service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     await expect(deleteVersion(m.mockup.id, m.version.id)).rejects.toThrow(/current/i);
   });
@@ -76,6 +82,8 @@ describe('version-service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     await expect(deleteVersion(m.mockup.id, 'unknown')).rejects.toThrow(/not.?found/i);
   });
@@ -86,6 +94,8 @@ describe('version-service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     await addVersion({
       mockupId: m.mockup.id,

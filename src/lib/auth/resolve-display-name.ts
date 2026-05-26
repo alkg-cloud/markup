@@ -31,16 +31,18 @@ export async function resolveDisplayName(
 }
 
 /**
- * Batch variant — single round-trip per kind.
+ * Batch variant — single round-trip per kind. Rows with `null` createdBy or
+ * unknown createdByType are skipped (legacy / anonymous rows).
  */
 export async function resolveDisplayNames(
-  rows: Array<{ createdBy: string; createdByType: string }>,
+  rows: Array<{ createdBy: string | null; createdByType: string | null }>,
 ): Promise<Map<string, DisplayName>> {
   const userIds = new Set<string>();
   const agentIds = new Set<string>();
   for (const r of rows) {
+    if (!r.createdBy || !r.createdByType) continue;
     if (r.createdByType === 'user') userIds.add(r.createdBy);
-    else agentIds.add(r.createdBy);
+    else if (r.createdByType === 'agent') agentIds.add(r.createdBy);
   }
   const [users, agents] = await Promise.all([
     userIds.size
@@ -54,9 +56,11 @@ export async function resolveDisplayNames(
   for (const u of users) map.set(u.id, { kind: 'user', id: u.id, name: u.name });
   for (const a of agents) map.set(a.id, { kind: 'agent', id: a.id, name: a.name });
   for (const r of rows) {
+    if (!r.createdBy || !r.createdByType) continue;
+    if (r.createdByType !== 'user' && r.createdByType !== 'agent') continue;
     if (map.has(r.createdBy)) continue;
     map.set(r.createdBy, {
-      kind: r.createdByType === 'user' ? 'user' : 'agent',
+      kind: r.createdByType,
       id: r.createdBy,
       name: `${r.createdByType} ${r.createdBy.slice(-6)}`,
     });

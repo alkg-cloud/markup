@@ -3,6 +3,7 @@ import 'server-only';
 import type { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/prisma';
+import { type Viewer, viewerId } from './can-delete';
 
 type Db = Prisma.TransactionClient | typeof prisma;
 
@@ -16,35 +17,43 @@ function http(status: number, message: string): never {
   throw err;
 }
 
+export interface CascadeViewer {
+  id: string;
+  type: 'user' | 'agent';
+}
+
+export function toCascadeViewer(viewer: Viewer): CascadeViewer {
+  return { id: viewerId(viewer), type: viewer.kind };
+}
+
+function notOwned(viewer: CascadeViewer) {
+  // A row is "foreign" if its (createdBy, createdByType) pair does not
+  // match the viewer's identity — OR if createdBy is null (legacy).
+  return {
+    OR: [
+      { createdBy: null },
+      { createdByType: null },
+      { NOT: { AND: [{ createdBy: viewer.id }, { createdByType: viewer.type }] } },
+    ],
+  };
+}
+
 /**
- * Verifies that a member-owned project contains only content they also
- * own. Throws `409 cascade_blocked_by_other_owner` if any mockup or
- * folder inside the project belongs to someone else (or has no recorded
- * owner — NULL rows are admin-only-deletable by convention).
+ * Throws `409 cascade_blocked_by_other_owner` when the project contains
+ * any folder or mockup owned by another identity (cross-kind ownership
+ * blocks the same way as cross-user). Admins skip this check entirely.
  *
- * Admins skip this check — only called on the member branch.
- *
- * See `docs/api/authz.md` §4.3 and `docs/api/authz.md` §"Cascade
- * semantics" for the full rationale.
+ * See `docs/api/authz.md` for the full cascade rule.
  */
 export async function assertCascadeOwnershipForProject(
-  viewerId: string,
+  viewer: CascadeViewer,
   projectId: string,
   db: Db = prisma,
 ): Promise<void> {
+  const foreign = notOwned(viewer);
   const [foreignMockupCount, foreignFolderCount] = await Promise.all([
-    db.mockup.count({
-      where: {
-        projectId,
-        OR: [{ createdById: { not: viewerId } }, { createdById: null }],
-      },
-    }),
-    db.folder.count({
-      where: {
-        projectId,
-        OR: [{ createdById: { not: viewerId } }, { createdById: null }],
-      },
-    }),
+    db.mockup.count({ where: { projectId, ...foreign } }),
+    db.folder.count({ where: { projectId, ...foreign } }),
   ]);
   if (foreignMockupCount > 0 || foreignFolderCount > 0) {
     http(409, 'cascade_blocked_by_other_owner');
@@ -52,22 +61,14 @@ export async function assertCascadeOwnershipForProject(
 }
 
 /**
- * Verifies that a member-owned folder contains only content they also
- * own (recursively). Throws `409 cascade_blocked_by_other_owner` when
- * any mockup or sub-folder in the subtree belongs to someone else.
- *
- * Uses a transitive closure over `parentId` via repeated DB queries
- * (the tree is typically shallow; depth ≤ 5 per the `MAX_FOLDER_DEPTH`
- * constant). For very wide trees the count query is a single indexed
- * scan; the traversal overhead is folder-count-bounded not row-count-
- * bounded.
+ * Throws `409 cascade_blocked_by_other_owner` when the folder subtree
+ * contains any mockup or sub-folder owned by another identity.
  */
 export async function assertCascadeOwnershipForFolder(
-  viewerId: string,
+  viewer: CascadeViewer,
   folderId: string,
   db: Db = prisma,
 ): Promise<void> {
-  // Collect all folder IDs in the subtree (BFS).
   const subtreeIds = new Set<string>();
   const queue: string[] = [folderId];
   while (queue.length > 0) {
@@ -77,29 +78,16 @@ export async function assertCascadeOwnershipForFolder(
       where: { parentId: { in: batch } },
       select: { id: true },
     });
-    for (const c of children) {
-      if (!subtreeIds.has(c.id)) queue.push(c.id);
-    }
+    for (const c of children) if (!subtreeIds.has(c.id)) queue.push(c.id);
   }
 
   const subtreeIdList = Array.from(subtreeIds);
   const subFolderIds = subtreeIdList.filter((id) => id !== folderId);
+  const foreign = notOwned(viewer);
 
   const [foreignMockupCount, foreignFolderCount] = await Promise.all([
-    // Mockups inside any folder in the subtree.
-    db.mockup.count({
-      where: {
-        folderId: { in: subtreeIdList },
-        OR: [{ createdById: { not: viewerId } }, { createdById: null }],
-      },
-    }),
-    // Sub-folders that belong to someone else (exclude the root).
-    db.folder.count({
-      where: {
-        id: { in: subFolderIds },
-        OR: [{ createdById: { not: viewerId } }, { createdById: null }],
-      },
-    }),
+    db.mockup.count({ where: { folderId: { in: subtreeIdList }, ...foreign } }),
+    db.folder.count({ where: { id: { in: subFolderIds }, ...foreign } }),
   ]);
   if (foreignMockupCount > 0 || foreignFolderCount > 0) {
     http(409, 'cascade_blocked_by_other_owner');

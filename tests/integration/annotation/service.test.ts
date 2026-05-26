@@ -21,6 +21,8 @@ describe('annotation service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const result = await createAnnotation({
       mockupId: m.mockup.id,
@@ -41,6 +43,8 @@ describe('annotation service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     await createAnnotation({
       mockupId: m.mockup.id,
@@ -62,6 +66,8 @@ describe('annotation service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     await createAnnotation({
       mockupId: m.mockup.id,
@@ -83,6 +89,8 @@ describe('annotation service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const r = await createAnnotation({
       mockupId: m.mockup.id,
@@ -103,6 +111,8 @@ describe('annotation service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const r = await createAnnotation({
       mockupId: m.mockup.id,
@@ -122,6 +132,8 @@ describe('annotation service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const r = await createAnnotation({
       mockupId: m.mockup.id,
@@ -140,6 +152,8 @@ describe('annotation service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const realisticSnapshot = {
       schema: { schemaVersion: 2 },

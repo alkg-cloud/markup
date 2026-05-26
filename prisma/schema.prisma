@@ -16,9 +16,6 @@ model User {
   sessions        Session[]
   invitesCreated  Invite[]  @relation("InvitesCreated")
   invitesUsed     Invite[]  @relation("InvitesUsed")
-  projectsCreated Project[] @relation("ProjectsCreated")
-  foldersCreated  Folder[]  @relation("FoldersCreated")
-  mockupsCreated  Mockup[]  @relation("MockupsCreated")
 }
 
 model Session {
@@ -73,10 +70,10 @@ model Project {
   updatedAt   DateTime @updatedAt
   folders     Folder[]
   mockups     Mockup[]
-  createdById String?
-  createdBy   User?    @relation("ProjectsCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  createdBy     String?
+  createdByType String?
 
-  @@index([createdById])
+  @@index([createdBy])
 }
 
 model Folder {
@@ -91,13 +88,13 @@ model Folder {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   mockups     Mockup[]
-  createdById String?
-  createdBy   User?    @relation("FoldersCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  createdBy     String?
+  createdByType String?
 
   @@unique([projectId, parentId, name])
   @@index([projectId])
   @@index([parentId])
-  @@index([createdById])
+  @@index([createdBy])
 }
 
 model Mockup {
@@ -115,13 +112,13 @@ model Mockup {
   updatedAt        DateTime        @updatedAt
   versions         MockupVersion[]
   annotations      Annotation[]
-  createdById      String?
-  createdBy        User?           @relation("MockupsCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  createdBy        String?
+  createdByType    String?
 
   @@index([status])
   @@index([projectId])
   @@index([folderId])
-  @@index([createdById])
+  @@index([createdBy])
 }
 
 model MockupVersion {

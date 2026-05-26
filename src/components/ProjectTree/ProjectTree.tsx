@@ -341,7 +341,8 @@ export function ProjectTree({
                 projectSlug: 'unsorted',
                 projectId: '',
                 mockupId: m.id,
-                createdById: m.createdById,
+                createdBy: m.createdBy,
+                createdByType: m.createdByType,
               };
               return (
                 <li key={m.id} role="none" className={styles.item}>
@@ -368,7 +369,8 @@ export function ProjectTree({
                     <TreeNodeKebab
                       node={orphanNode}
                       displayLabel={m.name}
-                      createdById={m.createdById}
+                      createdBy={m.createdBy}
+                      createdByType={m.createdByType}
                       onOpen={() => router.push(href)}
                       onRename={() => {
                         setRenaming({ id: m.id, type: 'mockup' });

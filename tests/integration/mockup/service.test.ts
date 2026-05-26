@@ -27,6 +27,8 @@ describe('mockup service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u1',
       createdByType: 'user',
+      versionCreatedBy: 'u1',
+      versionCreatedByType: 'user',
     });
     expect(result.mockup.name).toBe('Landing');
     expect(result.mockup.currentVersionId).toBe(result.version.id);
@@ -47,6 +49,8 @@ describe('mockup service', () => {
       zipPath: fixture('with-thumbnail.zip'),
       createdBy: 'u1',
       createdByType: 'user',
+      versionCreatedBy: 'u1',
+      versionCreatedByType: 'user',
     });
     const tp = path.join(process.env.DATA_DIR ?? '', 'mockups', result.mockup.id, 'thumbnail.png');
     expect(fs.existsSync(tp)).toBe(true);
@@ -58,6 +62,8 @@ describe('mockup service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u1',
       createdByType: 'user',
+      versionCreatedBy: 'u1',
+      versionCreatedByType: 'user',
     });
     const tp = path.join(process.env.DATA_DIR ?? '', 'mockups', result.mockup.id, 'thumbnail.png');
     expect(fs.existsSync(tp)).toBe(true);
@@ -69,6 +75,8 @@ describe('mockup service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const tp = path.join(process.env.DATA_DIR ?? '', 'mockups', r1.mockup.id, 'thumbnail.png');
     fs.rmSync(tp, { force: true });
@@ -87,6 +95,8 @@ describe('mockup service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const r2 = await addVersion({
       mockupId: r1.mockup.id,
@@ -105,12 +115,16 @@ describe('mockup service', () => {
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     const m = await createMockupFromZip({
       name: 'b',
       zipPath: fixture('valid-simple.zip'),
       createdBy: 'u',
       createdByType: 'user',
+      versionCreatedBy: 'u',
+      versionCreatedByType: 'user',
     });
     await prisma.mockup.update({ where: { id: m.mockup.id }, data: { status: 'archived' } });
     const open = await listMockups({ status: ['open', 'resolved'] });
