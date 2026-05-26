@@ -18,7 +18,7 @@ The flow has three pieces:
 pnpm dev
 ```
 
-- Boots Next 16 on `http://localhost:3000` (Turbopack).
+- Boots Next 16 on `http://localhost:3000` (Turbopack). Override with `PORT=3001 pnpm dev` when 3000 is busy — the tunnel command in step 3 must then point at the same port.
 - Reads `.env` + `.env.local`. Required keys: `AUTH_SECRET`, `DATA_DIR`, `DATABASE_URL`.
 - Leave it running in a background terminal. File saves under `src/` reload instantly.
 
