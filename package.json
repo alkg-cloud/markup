@@ -2,6 +2,7 @@
   "name": "markup",
   "version": "0.2.0",
   "private": true,
+  "license": "Elastic-2.0",
   "type": "module",
   "scripts": {
     "dev": "next dev",
