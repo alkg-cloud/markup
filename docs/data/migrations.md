@@ -130,6 +130,6 @@ Both files are gitignored — never commit them.
 Application code uses the Prisma client, never raw SQL via `$queryRaw`. The exceptions:
 
 - Migration files (this is where raw SQL belongs)
-- One-shot scripts under `scripts/` that need a migration-adjacent operation (e.g. `strip-existing-annotation-base64.ts` reads files but doesn't touch the DB; a future script that backfills a derived column can use `$executeRaw` if a Prisma upsert isn't expressive enough)
+- One-shot scripts under `scripts/` that need a migration-adjacent operation — a file-only cleanup that doesn't touch the DB, or a backfill that uses `$executeRaw` when a Prisma upsert isn't expressive enough. These scripts are deleted once they have run in every environment; the migration history in `prisma/migrations/` is what persists.
 
 If you find yourself reaching for `$queryRaw` in a service or route, the right move is usually to express the query through Prisma's relational operators or to add a small index to make the natural query fast.
