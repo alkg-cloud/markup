@@ -1305,6 +1305,42 @@
     .vchip .clock { width: 13px; height: 13px; color: var(--accent); opacity: 0.85; }
     .vchip .chev { width: 11px; height: 11px; color: var(--accent); }
 
+    /* ─── HISTORIC BANNER (see DS file 34-historic-banner) ─────── */
+    /* Mounts when the viewer is in historic-version-viewing mode
+       (URL ?v=<vid>). Glass pill anchored top-center over the
+       canvas, beneath the topbar. */
+    .historic-banner {
+      position: absolute; top: 24px; left: 50%; transform: translateX(-50%);
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 8px 12px; border-radius: var(--radius-pill);
+      color: var(--text-bright); font-size: 13px; white-space: nowrap;
+      background: var(--surface-glass-bg);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      border: 1px solid var(--border); box-shadow: var(--shadow-md);
+      z-index: 35;
+      animation: histBannerIn var(--motion-fast) var(--ease-standard);
+    }
+    @keyframes histBannerIn {
+      from { opacity: 0; transform: translate(-50%, -8px); }
+      to   { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .historic-banner .icon { width: 14px; height: 14px; flex-shrink: 0; color: var(--accent); display: inline-flex; align-items: center; justify-content: center; }
+    .historic-banner .icon svg { width: 14px; height: 14px; display: block; }
+    .historic-banner .label { font-variant-numeric: tabular-nums; color: var(--text-bright); }
+    .historic-banner .exit {
+      appearance: none; background: transparent; border: 0; color: var(--text-bright);
+      font: inherit; cursor: pointer; padding: 4px 8px; border-radius: var(--radius-pill);
+      text-decoration: underline; text-underline-offset: 2px;
+      transition: background var(--motion-fast) var(--ease-standard);
+    }
+    .historic-banner .exit:hover { background: var(--surface-hover); text-decoration: none; }
+    .historic-banner .exit:focus-visible { outline: none; box-shadow: var(--focus-ring); background: var(--surface-hover); text-decoration: none; }
+
+    /* Read-only signals while viewing historic — write affordances retract */
+    .mockup-view.historic .rail-foot { display: none; }
+    .mockup-view.historic .rail-item .kebab { display: none; }
+
     /* ─── TOAST ─────────────────────────────────────────────────── */
     #toast-container {
       position: fixed;
@@ -1903,6 +1939,7 @@ const VIEWS = [
   { id: 'project', label: 'Project view — Alpha' },
   { id: 'folder', label: 'Folder view — Landing' },
   { id: 'mockup', label: 'Mockup view — Hero v3' },
+  { id: 'mockup-historic', label: 'Mockup view — Historic (viewing v2)' },
   { id: 'empty-project', label: 'Empty project' },
   { id: 'empty-folder', label: 'Empty folder' },
   { id: 'invites', label: 'Invites (admin)' },
@@ -1921,6 +1958,7 @@ function navigateTo(view, id, projectName, mockupName) {
     case 'project': renderProjectView(main, id || 'alpha'); break;
     case 'folder': renderFolderView(main, id || 'landing'); break;
     case 'mockup': renderMockupView(main, id || 'hero-v3', projectName, mockupName); break;
+    case 'mockup-historic': renderMockupView(main, id || 'hero-v3', projectName || 'Project Alpha', mockupName || 'Hero v3', { historic: true }); break;
     case 'empty-project': renderEmptyProject(main); break;
     case 'empty-folder': renderEmptyFolder(main); break;
     case 'invites': renderInvites(main); break;
@@ -1943,7 +1981,7 @@ function updateBreadcrumb(view, projectName, mockupName) {
     bc.innerHTML = `<a href="#" onclick="navigateTo('project','alpha','Project Alpha');return false">Project Alpha</a>
       <span class="bc-sep"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span>
       <span class="bc-current">Landing</span>`;
-  } else if (view === 'mockup') {
+  } else if (view === 'mockup' || view === 'mockup-historic') {
     bc.innerHTML = `<a href="#" onclick="navigateTo('project','alpha','${projectName || 'Project Alpha'}');return false">${projectName || 'Project Alpha'}</a>
       <span class="bc-sep"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z"/></svg></span>
       <span class="bc-current">${truncName(mockupName || 'Hero v3', 28)}</span>`;
@@ -2127,11 +2165,15 @@ function findFolder(folders, id) {
 }
 
 // ── MOCKUP VIEW ──
-function renderMockupView(el, mockupId, projectName, mockupName) {
+// `historic` flag mirrors `?v=<vid>` on the real viewer — mounts the
+// HistoricBanner and applies read-only styling on the rail (no add button,
+// no per-card kebab). See DS file 34-historic-banner.html.
+function renderMockupView(el, mockupId, projectName, mockupName, opts) {
+  const historic = !!(opts && opts.historic);
   el.style.overflow = 'hidden';
   el.style.padding = '0';
   el.innerHTML = `
-    <div class="mockup-view">
+    <div class="mockup-view${historic ? ' historic' : ''}">
       <!-- Full-bleed mockup canvas (iframe replacement) -->
       <div class="mockup-canvas-mock">
         <div class="iframe-top">
@@ -2228,6 +2270,18 @@ function renderMockupView(el, mockupId, projectName, mockupName) {
         </div>
       </aside>
 
+      ${historic ? `
+      <!-- HistoricBanner — mounts when ?v=<vid> is on the URL.
+           See DS file 34-historic-banner.html for the standalone component. -->
+      <div class="historic-banner" role="status" aria-live="polite">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 5.74 11h-1.32A5.75 5.75 0 1 1 8 2.25c1.61 0 3.07.66 4.12 1.71L10.5 5.58h4.25V1.33L13.06 3.03A6.97 6.97 0 0 0 8 1zm-.5 3v4.21l3.36 1.96.5-.86L8.5 7.7V4h-1z"/></svg>
+        </span>
+        <span class="label">Viewing v2</span>
+        <button type="button" class="exit" aria-label="Back to current version" data-tooltip="Back to current version" onclick="navigateTo('mockup','${mockupId}','${projectName || ''}','${mockupName || ''}')">Back to v3 (current)</button>
+      </div>
+      ` : ''}
+
       <!-- CanvasToolbar — zoom + version chip + drag -->
       <div class="canvas-toolbar" role="toolbar" aria-label="Mockup actions">
         <div class="tb-group">
@@ -2239,7 +2293,7 @@ function renderMockupView(el, mockupId, projectName, mockupName) {
         <div class="tb-group">
           <button class="vchip" title="Versions">
             <svg class="clock" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 7 7 7 7 0 0 0-7-7zm0 13a6 6 0 1 1 6-6 6 6 0 0 1-6 6zm3-6H8V5h1v2h2z"/></svg>
-            <span>${mockupName ? 'v3' : 'v1'}</span>
+            <span>${historic ? 'v2' : (mockupName ? 'v3' : 'v1')}</span>
             <svg class="chev" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4z"/></svg>
           </button>
         </div>
