@@ -57,10 +57,14 @@ export async function GET(req: Request) {
       slug: true,
       status: true,
       position: true,
-      createdById: true,
+      createdBy: true,
+      createdByType: true,
     },
   });
-  const orphanMockups = orphanRows;
+  const orphanMockups = orphanRows.map((m) => ({
+    ...m,
+    createdByType: m.createdByType as 'user' | 'agent' | null,
+  }));
 
   const allMockups = await prisma.mockup.findMany({
     where: { status: { not: 'archived' } },

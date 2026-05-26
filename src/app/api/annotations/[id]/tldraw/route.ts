@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
 import { updateAnnotationTldraw } from '@/lib/annotation/service';
 import { identify } from '@/lib/auth/identify';
-
 import { assertSameOrigin } from '@/lib/auth/origin';
+import { requireOwnerOrAdminFor } from '@/lib/auth/require-owner-or-admin';
+
 export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
   const ident = await identify(req);
-  if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id } = await ctx.params;
+
+  const gate = await requireOwnerOrAdminFor(ident, 'annotation', id);
+  if (gate instanceof NextResponse) return gate;
+
   let body: unknown;
   try {
     body = await req.json();
@@ -20,6 +24,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
   }
   const updated = await updateAnnotationTldraw(id, body);
   if (!updated) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  if ('error' in updated) return NextResponse.json({ error: updated.error }, { status: 400 });
   return NextResponse.json({ id: updated.id }, { status: 200 });
 }
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { handleAuthError, identify, requireAdmin } from '@/lib/auth/identify';
+import { handleAuthError, identify, requireIdentity } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { createFolder } from '@/lib/project/service';
 import { urlSafeNameSchema } from '@/lib/validation/url-safe-name';
@@ -13,9 +13,9 @@ const createSchema = z.object({
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
-  let ident: Awaited<ReturnType<typeof identify>>;
+  const ident = await identify(req);
   try {
-    ident = await requireAdmin(await identify(req));
+    requireIdentity(ident);
   } catch (e) {
     return handleAuthError(e);
   }
@@ -30,7 +30,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     projectId,
     name: parsed.data.name,
     parentId: parsed.data.parentId ?? null,
-    createdById: ident.userId,
+    createdBy: ident.kind === 'user' ? ident.userId : ident.tokenId,
+    createdByType: ident.kind,
   });
 
   if ('error' in result) {

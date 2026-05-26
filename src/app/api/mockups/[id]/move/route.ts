@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { handleAuthError, identify, requireAdmin } from '@/lib/auth/identify';
+import { identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
+import { requireOwnerOrAdminFor } from '@/lib/auth/require-owner-or-admin';
 import { moveMockup } from '@/lib/project/service';
 
 const moveSchema = z.object({
@@ -13,12 +14,12 @@ const moveSchema = z.object({
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const csrf = assertSameOrigin(req);
   if (csrf) return csrf;
-  try {
-    await requireAdmin(await identify(req));
-  } catch (e) {
-    return handleAuthError(e);
-  }
+  const ident = await identify(req);
   const { id } = await ctx.params;
+
+  const gate = await requireOwnerOrAdminFor(ident, 'mockup', id);
+  if (gate instanceof NextResponse) return gate;
+
   const parsed = moveSchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
 

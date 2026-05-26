@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { resolveDisplayNames } from '@/lib/auth/resolve-display-name';
 import { prisma } from '@/lib/prisma';
 import { mockupSlugHref, projectDisplayName } from '@/lib/project/routes';
 import { listProjects } from '@/lib/project/service';
@@ -77,7 +78,8 @@ export async function getHomeData(identity: HomeIdentity): Promise<HomeData> {
         updatedAt: true,
         projectId: true,
         folderId: true,
-        createdById: true,
+        createdBy: true,
+        createdByType: true,
       },
     }),
     listProjects(),
@@ -89,6 +91,15 @@ export async function getHomeData(identity: HomeIdentity): Promise<HomeData> {
 
   const projectById = new Map(projects.map((p) => [p.id, p]));
   const folderById = new Map<string, FolderRow>(folders.map((f) => [f.id, f]));
+
+  // Batch-resolve display names across the union of mockup + project creators
+  // so each row can surface a `createdByName` without N+1 lookups.
+  const nameMap = await resolveDisplayNames([...mockups, ...projects]);
+
+  function nameFor(createdBy: string | null): string | null {
+    if (!createdBy) return null;
+    return nameMap.get(createdBy)?.name ?? null;
+  }
 
   function buildBreadcrumb(projectId: string | null, folderId: string | null): string {
     if (!projectId) return 'Ungrouped';
@@ -113,7 +124,9 @@ export async function getHomeData(identity: HomeIdentity): Promise<HomeData> {
       updatedAt: m.updatedAt.toISOString(),
       href: mockupSlugHref(projectSlug, folderChain, m.slug),
       breadcrumb: buildBreadcrumb(m.projectId, m.folderId),
-      createdById: m.createdById,
+      createdBy: m.createdBy,
+      createdByType: m.createdByType as 'user' | 'agent' | null,
+      createdByName: nameFor(m.createdBy),
     };
   });
 
@@ -126,7 +139,9 @@ export async function getHomeData(identity: HomeIdentity): Promise<HomeData> {
       status: m.status as StatusLiteral,
       updatedAt: m.updatedAt.toISOString(),
       href: mockupSlugHref('unsorted', [], m.slug),
-      createdById: m.createdById,
+      createdBy: m.createdBy,
+      createdByType: m.createdByType as 'user' | 'agent' | null,
+      createdByName: nameFor(m.createdBy),
     }));
 
   const projectsOut: ProjectListEntry[] = projects.map((p) => ({
@@ -139,7 +154,9 @@ export async function getHomeData(identity: HomeIdentity): Promise<HomeData> {
     updatedAt: p.updatedAt.toISOString(),
     mockupCount: p.mockupCount,
     folderCount: p.folderCount,
-    createdById: p.createdById,
+    createdBy: p.createdBy,
+    createdByType: p.createdByType as 'user' | 'agent' | null,
+    createdByName: nameFor(p.createdBy),
   }));
 
   return {

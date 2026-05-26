@@ -126,13 +126,13 @@ Mutate mockup-level metadata: status, placement, or name. The optional "close-ou
   "projectId": "cmox…" | null,   // optional — null to orphan the mockup
   "folderId":  "cmox…" | null,   // optional — null to move to project root
   "position":  3,                 // optional int >= 0; only honoured when projectId/folderId present
-  "name":      "lumen-final"     // optional — admin-only (URL-safe ^[A-Za-z0-9_-]+$, max 64 chars)
+  "name":      "lumen-final"     // optional — owner-or-admin (URL-safe ^[A-Za-z0-9_-]+$, max 64 chars)
 }
 ```
 
 All fields optional; at least one MUST be present. The schema is strict — unknown fields return `invalid_body`.
 
-Field-level gating: `name` is admin-only. Agents (Bearer) writing `name` receive 403 `forbidden_field`. Cookie callers still require `user.role === 'admin'` for `name`. All other fields are writable by any authenticated identity.
+All metadata fields (`name`, `status`, `projectId`, `folderId`, `position`) require the caller to be the recorded creator of the mockup OR an admin. Agents can rename/move/status-change mockups they created; they receive 403 `forbidden_owner` on mockups created by others.
 
 **Response 200:** the full mockup row.
 
@@ -165,7 +165,7 @@ Field-level gating: `name` is admin-only. Agents (Bearer) writing `name` receive
 | 400 | `folder_project_mismatch` | `folderId` belongs to a different project than `projectId` (when both present) |
 | 401 | `unauthorized` | No identity |
 | 403 | `forbidden_origin` | CSRF guard fired |
-| 403 | `forbidden_field` | Agent tried to mutate an admin-only field (`name`). Carries `field: "name"`. |
+| 403 | `forbidden_owner` | Caller is not the recorded creator of the mockup and is not an admin |
 | 404 | `not_found` | Mockup row missing |
 
 **Concurrency:** last-write-wins; no optimistic concurrency (`If-Match` / ETag) yet. Patching `status: "resolved"` twice is a no-op at the DB level.
@@ -183,7 +183,7 @@ Field-level gating: `name` is admin-only. Agents (Bearer) writing `name` receive
 
 Step 4 is orchestrator-decided. Most fix cycles do not close the mockup (more annotations may arrive). Only call this when the orchestrator's policy says the annotation is fully addressed.
 
-**Rename caveat:** `name` changes the slug (the canonical URL). Agents cannot rename — that's why the field is admin-only. If the slug changes, existing orchestrator bookmarks to `/projects/<slug>/…` break.
+**Rename caveat:** `name` changes the slug (the canonical URL). The owner-or-admin gate means agents can only rename mockups they themselves uploaded. If the slug changes, existing orchestrator bookmarks to `/projects/<slug>/…` break.
 
 ## `GET /api/annotations/[id]/region`
 

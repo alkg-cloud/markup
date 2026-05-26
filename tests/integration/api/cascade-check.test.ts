@@ -41,13 +41,18 @@ function deleteReq(cookie: string) {
 
 async function createProject(name: string, createdById: string) {
   return prisma.project.create({
-    data: { name, slug: name.toLowerCase().replace(/[^a-z0-9-]+/g, '-'), createdById },
+    data: {
+      name,
+      slug: name.toLowerCase().replace(/[^a-z0-9-]+/g, '-'),
+      createdBy: createdById,
+      createdByType: 'user',
+    },
   });
 }
 
 async function createFolder(name: string, projectId: string, createdById: string) {
   return prisma.folder.create({
-    data: { name, projectId, createdById, position: 1 },
+    data: { name, projectId, createdBy: createdById, createdByType: 'user', position: 1 },
   });
 }
 
@@ -64,7 +69,8 @@ async function createMockup(opts: {
       slug,
       projectId: opts.projectId ?? null,
       folderId: opts.folderId ?? null,
-      createdById: opts.createdById,
+      createdBy: opts.createdById,
+      createdByType: opts.createdById ? 'user' : null,
       position: 1,
     },
   });
@@ -182,7 +188,8 @@ describe('cascade-check (regression for the txn-wrapped DELETE contract)', () =>
           name: 'Bobs',
           projectId: project.id,
           parentId: parent.id,
-          createdById: bob.user.id,
+          createdBy: bob.user.id,
+          createdByType: 'user',
           position: 1,
         },
       });

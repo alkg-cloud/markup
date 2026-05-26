@@ -16,6 +16,8 @@ interface MockupRow {
   updatedAt: Date;
   projectId: string | null;
   folderId: string | null;
+  createdBy: string | null;
+  createdByType: 'user' | 'agent' | null;
 }
 
 interface ProjectRow {
@@ -28,6 +30,8 @@ interface ProjectRow {
   updatedAt: Date;
   mockupCount: number;
   folderCount: number;
+  createdBy: string | null;
+  createdByType: 'user' | 'agent' | null;
 }
 
 interface FolderRow {
@@ -103,6 +107,8 @@ function addProject(input: Partial<ProjectRow> & { id: string; name: string; slu
     updatedAt: new Date('2026-01-01T00:00:00Z'),
     mockupCount: 0,
     folderCount: 0,
+    createdBy: null,
+    createdByType: null,
     ...input,
   });
 }
@@ -118,6 +124,8 @@ function addMockup(
     status: 'open',
     projectId: null,
     folderId: null,
+    createdBy: null,
+    createdByType: null,
     ...input,
   });
 }
@@ -304,6 +312,9 @@ describe('getHomeData', () => {
       updatedAt: '2026-05-01T00:00:00.000Z',
       mockupCount: 3,
       folderCount: 2,
+      createdBy: null,
+      createdByType: null,
+      createdByName: null,
     });
   });
 });

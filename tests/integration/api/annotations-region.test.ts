@@ -31,6 +31,8 @@ async function makeAnnotation(opts: { withPinCoords: boolean }) {
     zipPath: fixture('valid-simple.zip'),
     createdBy: 'u',
     createdByType: 'user',
+    versionCreatedBy: 'u',
+    versionCreatedByType: 'user',
   });
   const png = await sharp({
     create: {
