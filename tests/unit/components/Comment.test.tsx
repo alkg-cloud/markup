@@ -122,7 +122,7 @@ describe('Comment — readOnly prop', () => {
     expect(html).not.toContain('Add reaction');
   });
 
-  it('readOnly still renders existing reaction pills', () => {
+  it('readOnly still renders existing reaction pills and keeps kebab hidden', () => {
     const html = renderToStaticMarkup(
       <Comment
         author="A"
@@ -135,6 +135,23 @@ describe('Comment — readOnly prop', () => {
         readOnly
       />,
     );
-    expect(html).toContain('👍');
+    expect(html).toContain('data-emoji="👍"');
+    expect(html).not.toContain('aria-haspopup="menu"');
+  });
+
+  it('readOnly suppresses the inline edit textarea even when isEditing is true', () => {
+    const html = renderToStaticMarkup(
+      <Comment
+        author="A"
+        colorIndex={0}
+        timestamp="—"
+        body="hi"
+        isOwn={true}
+        currentUser="A"
+        isEditing
+        readOnly
+      />,
+    );
+    expect(html).not.toContain('aria-label="Edit comment"');
   });
 });

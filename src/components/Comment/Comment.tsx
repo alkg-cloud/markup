@@ -209,7 +209,7 @@ export function Comment({
         </header>
       ) : null}
 
-      {isEditing ? (
+      {isEditing && !readOnly ? (
         <div className={styles.editBody}>
           <textarea
             ref={editTextareaRef}
