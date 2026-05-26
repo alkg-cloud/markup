@@ -14,7 +14,8 @@
       "!!**/docs/design",
       "!!**/design",
       "!!**/.worktrees",
-      "!!**/.claude/worktrees"
+      "!!**/.claude/worktrees",
+      "!!**/.claude/skills"
     ]
   },
   "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
