@@ -1,5 +1,4 @@
 'use client';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import styles from './ThreadTimeline.module.css';
 
@@ -18,6 +17,11 @@ interface Props {
   messages: Message[];
   /** Resolved display names by authorId, pre-fetched server-side. */
   authorNamesById?: Record<string, string>;
+  /** Invoked after a successful reply or resolve/reopen mutation so the
+   *  parent can refetch the detail payload and re-seed `messages` /
+   *  `status`. The component itself holds no message state — the parent
+   *  owns it via the `/api/annotations/[id]/detail` aggregator. */
+  onMutated?: () => void;
 }
 
 const cx = (...classes: (string | false | undefined | null)[]) => classes.filter(Boolean).join(' ');
@@ -28,8 +32,8 @@ export function ThreadTimeline({
   status,
   messages,
   authorNamesById = {},
+  onMutated,
 }: Props) {
-  const router = useRouter();
   const [body, setBody] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -42,13 +46,13 @@ export function ThreadTimeline({
     if (!threadId || !body.trim() || busy) return;
     setBusy(true);
     try {
-      await fetch(`/api/threads/${threadId}/reply`, {
+      const res = await fetch(`/api/threads/${threadId}/reply`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ body }),
       });
       setBody('');
-      router.refresh();
+      if (res.ok) onMutated?.();
     } finally {
       setBusy(false);
     }
@@ -58,10 +62,11 @@ export function ThreadTimeline({
     if (!threadId || busy) return;
     setBusy(true);
     try {
-      await fetch(`/api/threads/${threadId}/${status === 'resolved' ? 'reopen' : 'resolve'}`, {
-        method: 'POST',
-      });
-      router.refresh();
+      const res = await fetch(
+        `/api/threads/${threadId}/${status === 'resolved' ? 'reopen' : 'resolve'}`,
+        { method: 'POST' },
+      );
+      if (res.ok) onMutated?.();
     } finally {
       setBusy(false);
     }
