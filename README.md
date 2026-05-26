@@ -19,7 +19,7 @@
   <p>
     <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
     <a href="https://nextjs.org/"><img alt="Built with Next.js 16" src="https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs&logoColor=white"></a>
-    <a href="https://github.com/AlexandreCamillo/markup/releases"><img alt="Release" src="https://img.shields.io/github/v/release/AlexandreCamillo/markup"></a>
+    <a href="https://github.com/AlexandreCamillo/markup/pkgs/container/markup"><img alt="Release" src="https://img.shields.io/github/package-json/v/AlexandreCamillo/markup?label=release"></a>
     <a href="https://github.com/AlexandreCamillo/markup/actions/workflows/test.yml"><img alt="Tests" src="https://img.shields.io/badge/tests-736%2F736-success"></a>
   </p>
 </div>
