@@ -195,65 +195,6 @@ docker exec -it --user 1000:1000 markup pnpm reset:tokens
 docker exec -it --user 1000:1000 markup pnpm reset:all
 ```
 
-## Architecture
-
-A single Node process hosts both the web UI and the API. Persistence is split between SQLite (rows) and the filesystem (blobs).
-
-```text
-┌───────────────────────────────────────────────────────────┐
-│  Reverse proxy (Caddy / nginx)  —  TLS termination        │
-└──────────────────────────────┬────────────────────────────┘
-                               │ HTTP
-┌──────────────────────────────▼────────────────────────────┐
-│  Markup container (single Node process)                   │
-│                                                           │
-│   Next.js 16 App Router (standalone build)                │
-│      ├── /m/[id]/...                serve mockup files    │
-│      ├── /api/mockups, /api/annotations, /api/threads     │
-│      ├── /api/agent/context, /version-patch               │
-│      └── /projects, /annotations, /settings, /login       │
-│                                                           │
-│   Headless Chromium (puppeteer)                           │
-│      ↳ on demand for region screenshots                   │
-│                                                           │
-│   Prisma 7 + better-sqlite3 (WAL mode)                    │
-└──────────────────────────────┬────────────────────────────┘
-                               │
-                               ▼
-                    ${DATA_DIR}/                (single mount)
-                      ├── prisma/dev.db
-                      └── mockups/<id>/
-                          ├── thumbnail.png
-                          ├── versions/<vid>/build/...
-                          └── annotations/<aid>/
-                              └── region.png    (sidecar cache)
-```
-
-### Tech stack
-
-- **Next.js 16** App Router, served as a standalone build (client-side rendering only)
-- **React 18** for the UI; every page is a `'use client'` component
-- **Radix Primitives** — `react-form`, `react-alert-dialog`, `react-dialog`, `react-popover`, `react-toast`
-- **Prisma 7** + `better-sqlite3` adapter (WAL mode)
-- **puppeteer** for server-side region cropping at the bbox a user drew
-- **sharp** for screenshot processing
-- **Vitest** + **Biome** for testing and linting
-- **Pino** for structured logs
-
-The full stack and folder layout are documented in [`docs/stack.md`](docs/stack.md).
-
-## Documentation
-
-Browse the full [documentation index](docs/INDEX.md) or jump to a specific area:
-
-- [**Agent loop**](docs/agent-loop/INDEX.md) — the agent API contract (`/context` aggregator, patch format, version-patch flow)
-- [**API conventions**](docs/api/INDEX.md) — REST conventions, auth, storage layout
-- [**Data schema**](docs/data/schema.md) — Prisma models and relationships
-- [**Frontend**](docs/frontend/INDEX.md) — components, styling tokens, design system
-- [**Design system**](docs/design/design-system/AUTHORING.md) — DS authoring guide (mandatory before touching any DS file)
-- [**Task rules**](docs/task-rules.md) — what every change must do before opening a PR
-- [**CI**](docs/ci.md) — pre-push checklist (`pnpm biome check . && pnpm tsc --noEmit && pnpm test && pnpm build`)
-
 ## Releases
 
 Every semver tag (`v*`) pushed to `main` triggers the image workflow and publishes to `ghcr.io/alexandrecamillo/markup`:
