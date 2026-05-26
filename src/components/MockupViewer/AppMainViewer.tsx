@@ -43,7 +43,7 @@ import { VersionChip, type VersionRow } from '@/components/VersionChip';
 import { useDraftKeyboard } from '@/hooks/useDraftKeyboard';
 import { useDraftPersistence } from '@/hooks/useDraftPersistence';
 import type { Anchor } from '@/lib/anchoring';
-import { appendQuery } from '@/lib/url/append-query';
+import { setQuery } from '@/lib/url/append-query';
 import styles from './AppMainViewer.module.css';
 import { type DraftState, type DraftStatus, MAX_PINS, type StoredDraft } from './draft-types';
 import { useAppMainAnnotations } from './useAppMainAnnotations';
@@ -355,8 +355,15 @@ export function AppMainViewer({
   );
   const isHistoric = isViewingKnown && viewingVid !== currentVid;
 
+  // Historic mode suppresses every draft interaction: the iframe cursor stays
+  // default (no crosshair) and click capture is bypassed so the user can't
+  // accumulate invisible pins into a hidden DraftCard. The underlying `draft`
+  // state survives — returning to current restores the DraftCard with the
+  // user's in-flight body and pins intact.
+  const effectiveDraftActive = !isHistoric && draftActive;
+
   const { iframeRef, canvasRootRef, iframeGen } = useViewerCanvas({
-    draftActive,
+    draftActive: effectiveDraftActive,
     onPin: handlePin,
     onPinClick: handlePinClick,
     onMiss: handleMiss,
@@ -458,13 +465,16 @@ export function AppMainViewer({
     onInvalidViewingVid?.();
   }, [viewingVid, isViewingKnown, onInvalidViewingVid]);
 
+  // `mockupSrc` from the viewer payload already carries `?v=<currentVid>` as a
+  // cache-buster. Use `setQuery` (not `appendQuery`) so historic mode REPLACES
+  // the existing `v` param instead of producing a duplicate that the serve
+  // route's `searchParams.get('v')` would silently resolve to the first
+  // occurrence (i.e. the current vid).
   const effectiveMockupSrc =
-    isHistoric && viewingVid != null ? appendQuery(mockupSrc, 'v', viewingVid) : mockupSrc;
+    isHistoric && viewingVid != null ? setQuery(mockupSrc, 'v', viewingVid) : mockupSrc;
 
   const viewingLabel = isHistoric ? (versions.find((v) => v.id === viewingVid)?.label ?? '') : '';
-  const currentLabel = isHistoric
-    ? (versions.find((v) => v.id === currentVid)?.label ?? '')
-    : '';
+  const currentLabel = isHistoric ? (versions.find((v) => v.id === currentVid)?.label ?? '') : '';
 
   return (
     <AppMain variant="viewer" ariaLabel="Mockup viewer">
@@ -481,7 +491,7 @@ export function AppMainViewer({
           iframeRef={iframeRef}
           canvasRootRef={canvasRootRef}
           iframeGen={iframeGen}
-          marking={draftActive}
+          marking={effectiveDraftActive}
           zoom={zoom}
           viewport={viewport}
           setViewport={handleViewportChange}
