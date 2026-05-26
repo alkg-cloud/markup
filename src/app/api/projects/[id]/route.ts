@@ -52,6 +52,9 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   if (gate instanceof NextResponse) return gate;
   const { viewer } = gate;
 
+  // Atomic with the delete: closes the TOCTOU window where a concurrent
+  // POST /api/mockups could insert a foreign-owned row between the
+  // cascade-check and the delete. See docs/api/authz.md § Cascade.
   try {
     const deleted = await prisma.$transaction(async (tx) => {
       // Skip cascade-check for admins (admin override).
