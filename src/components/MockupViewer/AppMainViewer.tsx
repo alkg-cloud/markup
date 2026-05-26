@@ -462,7 +462,9 @@ export function AppMainViewer({
     isHistoric && viewingVid != null ? appendQuery(mockupSrc, 'v', viewingVid) : mockupSrc;
 
   const viewingLabel = isHistoric ? (versions.find((v) => v.id === viewingVid)?.label ?? '') : '';
-  const currentLabel = versions.find((v) => v.id === currentVid)?.label ?? '';
+  const currentLabel = isHistoric
+    ? (versions.find((v) => v.id === currentVid)?.label ?? '')
+    : '';
 
   return (
     <AppMain variant="viewer" ariaLabel="Mockup viewer">

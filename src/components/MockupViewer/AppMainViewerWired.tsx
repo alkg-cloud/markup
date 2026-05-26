@@ -12,6 +12,7 @@ import { useConfirm } from '@/components/ConfirmDialog';
 import { useToast } from '@/components/Toast/useToast';
 import type { VersionRow } from '@/components/VersionChip';
 import type { Anchor } from '@/lib/anchoring';
+import { appendQuery } from '@/lib/url/append-query';
 import { type AppMainAnnotation, AppMainViewer } from './AppMainViewer';
 
 export interface AppMainViewerWiredProps {
@@ -215,7 +216,7 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
       if (versionId === props.currentVid) {
         router.replace(pathname, { scroll: false });
       } else {
-        router.replace(`${pathname}?v=${encodeURIComponent(versionId)}`, { scroll: false });
+        router.replace(appendQuery(pathname, 'v', versionId), { scroll: false });
       }
     },
     [router, pathname, props.currentVid],
