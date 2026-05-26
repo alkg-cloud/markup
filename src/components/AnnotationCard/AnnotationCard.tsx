@@ -51,6 +51,7 @@ export interface AnnotationCardProps {
   /** Fired when the user toggles this card's thread (chevron click). */
   onThreadToggle?: () => void;
 
+  /** Still fires when readOnly — navigation is not a mutation. */
   onActivate?: () => void;
   onPostReply?: (body: string) => void;
   onCommentReply?: (commentId: string) => void;
@@ -127,6 +128,7 @@ export function AnnotationCard({
   const startEdit = (commentId: string) => setEditingId(commentId);
   const cancelEdit = () => setEditingId(null);
   const saveEdit = async (commentId: string, newBody: string) => {
+    if (readOnly) return;
     await onCommentEditSave?.(commentId, newBody);
     setEditingId(null);
   };

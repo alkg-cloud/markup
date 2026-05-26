@@ -207,6 +207,29 @@ describe('AnnotationCard', () => {
     expect(html).not.toContain('Add reaction');
   });
 
+  it('readOnly cascades to reply Comments (no Add reaction on replies)', () => {
+    const html = renderToStaticMarkup(
+      <AnnotationCard
+        annotationId="a1"
+        label={1}
+        colorIndex={0}
+        status="open"
+        author="A"
+        date="—"
+        primary={PRIMARY}
+        replies={[{ id: 'cmt-2', author: 'B', authorColorIndex: 1, timestamp: '—', body: 'reply 1' }]}
+        currentUser="A"
+        readOnly
+      />,
+    );
+    // Replies should render
+    expect(html).toContain('reply 1');
+    // No Add reaction trigger should appear anywhere in the card (primary OR reply)
+    expect(html).not.toContain('Add reaction');
+    // No kebab on reply ("More actions" is the Comment.tsx kebab tooltip)
+    expect(html).not.toContain('aria-label="More actions"');
+  });
+
   it('readOnly still renders the thread accordion toggle', () => {
     const html = renderToStaticMarkup(
       <AnnotationCard
