@@ -95,9 +95,9 @@ export function ProjectSidebar({
         const body = await res.json();
         throw new Error(body.error ?? 'Erro ao criar pasta');
       }
-      router.refresh();
+      refreshShell();
     },
-    [router],
+    [refreshShell],
   );
 
   const handleMove = useCallback(
