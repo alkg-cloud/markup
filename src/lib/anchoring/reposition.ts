@@ -22,7 +22,7 @@
 import { resolveAnchor } from './path';
 import { type CharPosition, findCharPositionInElement } from './text';
 
-export const PIN_SIZE = 30;
+const PIN_SIZE = 30;
 export const PIN_HALF = PIN_SIZE / 2;
 /** sqrt(2) * PIN_SIZE / 2, rounded. Distance from element center to
  *  visual tip after -45° rotation of a square. */
@@ -36,7 +36,7 @@ export interface TextAnchor {
   subY?: number; // 0..1, defaults to 0.5
 }
 
-export interface ElementAnchor {
+interface ElementAnchor {
   path: string;
   offsetX: number; // 0..1
   offsetY: number; // 0..1

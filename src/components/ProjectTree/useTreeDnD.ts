@@ -13,7 +13,7 @@ export interface DnDNode {
 
 export type DropPosition = 'before' | 'after' | 'inside';
 
-export interface DropTarget {
+interface DropTarget {
   nodeId: string;
   position: DropPosition;
 }

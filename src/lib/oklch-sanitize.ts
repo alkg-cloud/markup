@@ -56,36 +56,3 @@ function oklchToFallback(match: string): string {
 export function stripOklch(value: string): string {
   return value.replace(OKLCH_RE, oklchToFallback);
 }
-
-export function sanitizeOklchInDocument(doc: Document): void {
-  for (const style of doc.querySelectorAll('style')) {
-    if (style.textContent?.includes('oklch')) {
-      style.textContent = stripOklch(style.textContent);
-    }
-  }
-  for (const el of doc.querySelectorAll('[style]')) {
-    const raw = el.getAttribute('style');
-    if (raw?.includes('oklch')) {
-      el.setAttribute('style', stripOklch(raw));
-    }
-  }
-  for (const link of doc.querySelectorAll('link[rel="stylesheet"]')) {
-    try {
-      const href = link.getAttribute('href');
-      if (!href) continue;
-      for (const sheet of doc.styleSheets) {
-        if (!sheet.href?.includes(href)) continue;
-        const rules = Array.from(sheet.cssRules)
-          .map((r) => r.cssText)
-          .join('\n');
-        if (!rules.includes('oklch')) break;
-        const inlined = doc.createElement('style');
-        inlined.textContent = stripOklch(rules);
-        link.replaceWith(inlined);
-        break;
-      }
-    } catch {
-      // CORS or security error reading cssRules — skip
-    }
-  }
-}

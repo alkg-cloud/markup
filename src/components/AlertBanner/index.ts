@@ -1,1 +1,1 @@
-export { AlertBanner, type AlertBannerStatus } from './AlertBanner';
+export { AlertBanner } from './AlertBanner';

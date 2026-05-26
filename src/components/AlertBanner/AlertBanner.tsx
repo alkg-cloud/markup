@@ -42,7 +42,7 @@ import { type ComponentPropsWithoutRef, createContext, forwardRef, useContext } 
 import { cn } from '@/lib/cn';
 import styles from './AlertBanner.module.css';
 
-export type AlertBannerStatus = 'error' | 'warning' | 'success' | 'info';
+type AlertBannerStatus = 'error' | 'warning' | 'success' | 'info';
 
 const DEFAULT_ICONS: Record<AlertBannerStatus, string> = {
   error: '!',

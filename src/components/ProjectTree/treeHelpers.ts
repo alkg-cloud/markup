@@ -9,7 +9,7 @@ import type { ReadonlyURLSearchParamsLike, TreeFolder, TreeProject } from './tre
  * still honoured for leftover links.
  */
 
-export function findFolderAncestorIds(project: TreeProject, folderId: string): string[] {
+function findFolderAncestorIds(project: TreeProject, folderId: string): string[] {
   function walk(folders: TreeFolder[], acc: string[]): string[] | null {
     for (const f of folders) {
       if (f.id === folderId) return acc;

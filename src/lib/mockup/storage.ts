@@ -2,7 +2,7 @@ import 'server-only';
 
 import path from 'node:path';
 
-export const MOCKUPS_REL = 'mockups';
+const MOCKUPS_REL = 'mockups';
 
 export const mockupDir = (root: string, id: string) => path.posix.join(root, MOCKUPS_REL, id);
 

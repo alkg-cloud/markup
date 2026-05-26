@@ -114,13 +114,13 @@ export async function updateAnnotationTldraw(id: string, snapshot: unknown) {
 
 /** Anchor record persisted in `Annotation.anchors` (JSON array).
  *  Matches the pin anchoring strategy spec — text-anchor OR element-anchor. */
-export interface TextAnchorRecord {
+interface TextAnchorRecord {
   path: string;
   textOffset: number;
   subX?: number;
   subY?: number;
 }
-export interface ElementAnchorRecord {
+interface ElementAnchorRecord {
   path: string;
   offsetX: number;
   offsetY: number;

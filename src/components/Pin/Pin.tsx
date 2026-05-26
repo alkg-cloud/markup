@@ -2,8 +2,8 @@
 import { forwardRef, type MouseEvent, type Ref } from 'react';
 import styles from './Pin.module.css';
 
-export type PinStatus = 'idle' | 'active' | 'pending';
-export type PinKind = 'published' | 'draft';
+type PinStatus = 'idle' | 'active' | 'pending';
+type PinKind = 'published' | 'draft';
 
 export interface PinProps {
   /** Stable identifier — exposed as `data-annotation-id` so click delegation

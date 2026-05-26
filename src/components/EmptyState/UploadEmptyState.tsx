@@ -32,7 +32,7 @@ import { rejectionMessage } from '@/lib/upload/rejection-message';
 import { validateFile } from '@/lib/upload/validate-file';
 import styles from './UploadEmptyState.module.css';
 
-export type EmptyContext = 'all-projects' | 'project' | 'folder';
+type EmptyContext = 'all-projects' | 'project' | 'folder';
 
 export type UploadEmptyStateProps = {
   context: EmptyContext;

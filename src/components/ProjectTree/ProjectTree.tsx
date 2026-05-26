@@ -20,7 +20,7 @@ const cx = (...classes: (string | false | undefined | null)[]) => classes.filter
 
 // Re-export tree types for callers that imported them from this module
 // historically (AppShell, ProjectSidebar, CommandPalette/flatten, etc.).
-export type { FlatNode, TreeFolder, TreeMockup, TreeProject } from './treeTypes';
+export type { FlatNode, TreeMockup, TreeProject } from './treeTypes';
 
 interface ProjectTreeProps {
   projects: TreeProject[];

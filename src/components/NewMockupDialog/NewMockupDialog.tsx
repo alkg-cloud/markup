@@ -564,5 +564,3 @@ export function NewMockupDialog(props: NewMockupDialogProps): JSX.Element {
     </RadixDialog.Root>
   );
 }
-
-export type { UploadState };

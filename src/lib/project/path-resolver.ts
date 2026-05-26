@@ -2,7 +2,7 @@ import 'server-only';
 
 import { prisma } from '@/lib/prisma';
 
-export interface FolderResolution {
+interface FolderResolution {
   kind: 'folder';
   folderId: string;
   folderName: string;
@@ -10,7 +10,7 @@ export interface FolderResolution {
   pathNames: string[];
 }
 
-export interface MockupResolution {
+interface MockupResolution {
   kind: 'mockup';
   mockupId: string;
   mockupSlug: string;

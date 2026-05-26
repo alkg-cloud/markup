@@ -39,7 +39,7 @@ function colorForUser(id: string): number {
   return Math.abs(h) % COLOR_PALETTE_SIZE;
 }
 
-export interface ViewerPayload {
+interface ViewerPayload {
   mockupId: string;
   mockupName: string;
   mockupSrc: string;

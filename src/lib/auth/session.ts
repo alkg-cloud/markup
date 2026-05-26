@@ -29,9 +29,5 @@ export async function invalidateSession(sessionId: string) {
   await prisma.session.deleteMany({ where: { id: sessionId } });
 }
 
-export async function invalidateAllSessions() {
-  await prisma.session.deleteMany();
-}
-
 export const SESSION_COOKIE = 'mk_session';
 export const SESSION_TTL_SECONDS = TTL_SECONDS;

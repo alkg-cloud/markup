@@ -18,7 +18,7 @@ function readStoredRecents(key: string): string[] {
   }
 }
 
-export function useRecents(projectSlug: string): [string[], (mockupId: string) => void] {
+function useRecents(projectSlug: string): [string[], (mockupId: string) => void] {
   const key = `${STORAGE_PREFIX}${projectSlug}`;
   // Lazy initializer reads from localStorage during render of the FIRST
   // mount only — avoids the "set state in useEffect to mirror storage"

@@ -362,5 +362,3 @@ export function TreeNode({
     </li>
   );
 }
-
-export { INDENT_PX };

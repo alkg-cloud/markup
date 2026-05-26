@@ -13,7 +13,7 @@ import styles from './AppMain.module.css';
  * - `scroll`   — overflow-y auto, gap-spaced padding (folder/project workspace).
  * - `centered` — fixed max-width column with side padding (settings pages).
  */
-export type AppMainVariant = 'viewer' | 'scroll' | 'centered';
+type AppMainVariant = 'viewer' | 'scroll' | 'centered';
 
 interface AppMainProps {
   variant: AppMainVariant;

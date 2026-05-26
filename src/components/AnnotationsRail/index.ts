@@ -1,5 +1,1 @@
-export {
-  AnnotationsRail,
-  type AnnotationsRailBadge,
-  type AnnotationsRailProps,
-} from './AnnotationsRail';
+export { AnnotationsRail, type AnnotationsRailBadge } from './AnnotationsRail';

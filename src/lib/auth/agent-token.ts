@@ -26,14 +26,6 @@ export async function generateAgentToken(name: string) {
   return { plaintext, prefix, lastFour, id: row.id, name: row.name };
 }
 
-export async function importAgentToken(name: string, plaintextSecret: string) {
-  const prefix = getPrefix();
-  const plaintext = `${prefix}${plaintextSecret}`;
-  const lastFour = plaintextSecret.slice(-4);
-  const tokenHash = hashAgentSecret(plaintext);
-  return prisma.agentToken.create({ data: { name, tokenHash, prefix, lastFour } });
-}
-
 export async function verifyAgentToken(presented: string) {
   if (!TOKEN_RE.test(presented)) return null;
   const presentedHash = hashAgentSecret(presented);
