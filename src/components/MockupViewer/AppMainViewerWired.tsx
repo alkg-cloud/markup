@@ -6,8 +6,10 @@
  * `initialAnnotations` and passes everything through.
  */
 import { useCallback } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import type { AnnotationStatus, ThreadComment } from '@/components/AnnotationCard';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { useToast } from '@/components/Toast/useToast';
 import type { VersionRow } from '@/components/VersionChip';
 import type { Anchor } from '@/lib/anchoring';
 import { type AppMainAnnotation, AppMainViewer } from './AppMainViewer';
@@ -22,6 +24,10 @@ export interface AppMainViewerWiredProps {
   initialAnnotations: AppMainAnnotation[];
   /** Whether the current viewer is an admin — widens delete access on annotations/comments. */
   viewerIsAdmin?: boolean;
+  /** Latest / promoted version id. Used to compute historic mode. */
+  currentVid: string;
+  /** Viewed version id from URL `?v=<vid>`. null = current. */
+  viewingVid: string | null;
 }
 
 export function AppMainViewerWired(props: AppMainViewerWiredProps) {
@@ -29,6 +35,14 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
   // call in this surface. See `docs/code-style.md` "Never use native
   // browser dialogs".
   const { confirm, dialog: confirmDialog } = useConfirm();
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const toast = useToast();
+
+  const exitHistoric = useCallback(() => {
+    router.replace(pathname, { scroll: false });
+  }, [router, pathname]);
 
   const onCreateAnnotation = useCallback(
     async (input: {
@@ -196,18 +210,28 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
     [confirm],
   );
 
-  const onVersionSelect = useCallback((versionId: string) => {
-    // Future: navigate to a permalink for the version. For now no-op.
-    void versionId;
-  }, []);
+  const onVersionSelect = useCallback(
+    (versionId: string) => {
+      if (versionId === props.currentVid) {
+        router.replace(pathname, { scroll: false });
+      } else {
+        router.replace(`${pathname}?v=${encodeURIComponent(versionId)}`, { scroll: false });
+      }
+    },
+    [router, pathname, props.currentVid],
+  );
 
   const onVersionPromote = useCallback(
     async (versionId: string) => {
-      await fetch(`/api/mockups/${props.mockupId}/versions/${versionId}/promote`, {
-        method: 'PATCH',
-      });
+      const res = await fetch(
+        `/api/mockups/${props.mockupId}/versions/${versionId}/promote`,
+        { method: 'PATCH' },
+      );
+      if (res.ok && versionId === props.viewingVid) {
+        router.replace(pathname, { scroll: false });
+      }
     },
-    [props.mockupId],
+    [props.mockupId, props.viewingVid, router, pathname],
   );
 
   const onVersionDelete = useCallback(
@@ -222,12 +246,20 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
         danger: true,
       });
       if (!ok) return;
-      await fetch(`/api/mockups/${props.mockupId}/versions/${versionId}`, {
+      const res = await fetch(`/api/mockups/${props.mockupId}/versions/${versionId}`, {
         method: 'DELETE',
       });
+      if (res.ok && versionId === props.viewingVid) {
+        router.replace(pathname, { scroll: false });
+      }
     },
-    [props.mockupId, props.versions, confirm],
+    [props.mockupId, props.versions, props.viewingVid, confirm, router, pathname],
   );
+
+  const onInvalidViewingVid = useCallback(() => {
+    toast.show('Version not found — returning to current');
+    router.replace(pathname, { scroll: false });
+  }, [router, pathname, toast]);
 
   return (
     <>
@@ -248,6 +280,10 @@ export function AppMainViewerWired(props: AppMainViewerWiredProps) {
         onVersionPromote={onVersionPromote}
         onVersionDelete={onVersionDelete}
         viewerIsAdmin={props.viewerIsAdmin}
+        currentVid={props.currentVid}
+        viewingVid={props.viewingVid}
+        onExitHistoric={exitHistoric}
+        onInvalidViewingVid={onInvalidViewingVid}
       />
       {confirmDialog}
     </>
