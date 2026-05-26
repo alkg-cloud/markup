@@ -47,7 +47,6 @@ interface TreeNodeProps {
   onSetRenameError: (error: string | null) => void;
   onSetCreatingIn: (target: CreatingTarget | null) => void;
   onNavigate: (href: string) => void;
-  onRefresh: () => void;
   onCreateFolder?: (projectId: string, parentId: string | null, name: string) => Promise<void>;
   onRename?: (nodeId: string, nodeType: 'folder' | 'mockup', name: string) => Promise<void>;
   onEditProject?: (projectId: string) => void;
@@ -84,7 +83,6 @@ export function TreeNode({
   onSetRenameError,
   onSetCreatingIn,
   onNavigate,
-  onRefresh,
   onCreateFolder,
   onRename,
   onEditProject,
@@ -341,7 +339,6 @@ export function TreeNode({
               if (proj) await onCreateFolder(proj.id, node.id, name);
             }
             onSetCreatingIn(null);
-            onRefresh();
           }}
           onCancel={() => onSetCreatingIn(null)}
         />
@@ -358,7 +355,6 @@ export function TreeNode({
                 await onCreateFolder(node.projectId, null, name);
               }
               onSetCreatingIn(null);
-              onRefresh();
             }}
             onCancel={() => onSetCreatingIn(null)}
           />
