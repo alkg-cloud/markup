@@ -124,10 +124,9 @@ export function ProjectTree({
     ) => {
       if (onMove) {
         await onMove(dragId, dragType, targetParentId, targetProjectId, position);
-        router.refresh();
       }
     },
-    [onMove, router],
+    [onMove],
   );
 
   const dnd = useTreeDnD({
@@ -259,7 +258,6 @@ export function ProjectTree({
   );
 
   const onNavigate = useCallback((href: string) => router.push(href), [router]);
-  const onRefresh = useCallback(() => router.refresh(), [router]);
 
   return (
     <>
@@ -307,7 +305,6 @@ export function ProjectTree({
               onSetRenameError={setRenameError}
               onSetCreatingIn={setCreatingIn}
               onNavigate={onNavigate}
-              onRefresh={onRefresh}
               onCreateFolder={onCreateFolder}
               onRename={onRename}
               onEditProject={onEditProject}
