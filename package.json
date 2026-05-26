@@ -63,13 +63,11 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@types/yauzl": "latest",
-    "@types/yazl": "^3.3.1",
     "@vitest/coverage-v8": "latest",
     "jsdom": "^29.1.1",
     "tsx": "latest",
     "typescript": "latest",
-    "vitest": "latest",
-    "yazl": "^3.3.1"
+    "vitest": "latest"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
