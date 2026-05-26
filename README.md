@@ -17,10 +17,10 @@
   </p>
 
   <p>
-    <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+    <a href="LICENSE"><img alt="License: Elastic License 2.0" src="https://img.shields.io/badge/license-ELv2-blue.svg"></a>
     <a href="https://nextjs.org/"><img alt="Built with Next.js 16" src="https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs&logoColor=white"></a>
-    <a href="https://github.com/AlexandreCamillo/markup/releases"><img alt="Release" src="https://img.shields.io/github/v/release/AlexandreCamillo/markup"></a>
-    <a href="https://github.com/AlexandreCamillo/markup/actions/workflows/test.yml"><img alt="Tests" src="https://img.shields.io/badge/tests-736%2F736-success"></a>
+    <a href="https://github.com/AlexandreCamillo/markup/pkgs/container/markup"><img alt="Release" src="https://img.shields.io/github/package-json/v/AlexandreCamillo/markup?label=release"></a>
+    <a href="https://github.com/AlexandreCamillo/markup/actions/workflows/test.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/AlexandreCamillo/markup/test.yml?branch=main&label=tests"></a>
   </p>
 </div>
 
@@ -273,7 +273,7 @@ Open an [issue](https://github.com/AlexandreCamillo/markup/issues/new) for bug r
 
 ## Contributing
 
-Contributions of any size are welcome.
+Contributions of any size are welcome. The full flow — including the one-comment Contributor License Agreement — lives in [`CONTRIBUTING.md`](CONTRIBUTING.md). The short version:
 
 1. Read [`docs/INDEX.md`](docs/INDEX.md) — every change starts there.
 2. Run the pre-push checklist from [`docs/ci.md`](docs/ci.md):
@@ -283,8 +283,8 @@ Contributions of any size are welcome.
    ```
 
 3. Follow the commit conventions in [`docs/git/conventions.md`](docs/git/conventions.md): conventional-commits subject only, no body, no `Co-Authored-By` trailer.
-4. Open a PR with a short description of what changed and why. For non-trivial changes, please open an issue first to discuss the design.
+4. Open a PR; on your first PR, the CLA Assistant bot will ask you to sign [`CLA.md`](CLA.md). For non-trivial changes, please open an issue first to discuss the design.
 
 ## License
 
-[MIT](LICENSE) © Markup contributors
+[Elastic License 2.0](LICENSE) © Alexandre Camillo. Free for any use — including internal use within an organization — **except** offering Markup to third parties as a hosted or managed service. See [`LICENSE`](LICENSE) for full terms. Contributors agree to the [Contributor License Agreement](CLA.md); the flow is described in [`CONTRIBUTING.md`](CONTRIBUTING.md).

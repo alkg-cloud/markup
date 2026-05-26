@@ -1,1 +1,1 @@
-export { VersionChip, type VersionChipProps, type VersionRow } from './VersionChip';
+export { VersionChip, type VersionRow } from './VersionChip';

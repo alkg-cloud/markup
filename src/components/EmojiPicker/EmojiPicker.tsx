@@ -3,7 +3,7 @@ import { VscAdd } from 'react-icons/vsc';
 import { usePopover } from '@/lib/popover/usePopover';
 import styles from './EmojiPicker.module.css';
 
-export const REACTION_EMOJIS: ReadonlyArray<string> = [
+const REACTION_EMOJIS: ReadonlyArray<string> = [
   '👍',
   '👎',
   '❤️',

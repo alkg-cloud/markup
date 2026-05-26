@@ -15,7 +15,7 @@ import { MAX_UPLOAD_BYTES } from '@/lib/upload/constants';
  * caller resolves project/folder slugs from its own context).
  */
 
-export type UploadParams =
+type UploadParams =
   | {
       mode: 'add';
       file: File;

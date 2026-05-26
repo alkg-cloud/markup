@@ -3,7 +3,7 @@ import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import { type ReactNode, useCallback, useRef, useState } from 'react';
 import styles from './ConfirmDialog.module.css';
 
-export interface ConfirmOptions {
+interface ConfirmOptions {
   title: string;
   /** Optional body copy. Markdown is NOT rendered; pass plain text. */
   description?: ReactNode;

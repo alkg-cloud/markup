@@ -1,3 +1,3 @@
 'use client';
 
-export { ToastProvider, useToast } from './useToast';
+export { ToastProvider } from './useToast';

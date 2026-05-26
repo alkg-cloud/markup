@@ -18,10 +18,6 @@ interface ViewerPayload {
   annotations: AppMainAnnotation[];
 }
 
-// Re-export keeps the few existing consumers that import the type
-// stable while we move responsibility to the API aggregator.
-export type { Anchor, ThreadComment };
-
 export interface MockupViewerPageProps {
   /** Database id of the mockup. Resolved upstream from the URL path. */
   mockupId: string;

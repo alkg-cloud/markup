@@ -90,16 +90,14 @@ The format and lint phases run together. Auto-fixable warnings (`useTemplate`, `
 pnpm exec tsx scripts/<name>.ts
 ```
 
-Existing scripts:
-
-- `strip-existing-annotation-base64.ts` — iterate every annotation's `tldraw.json` on disk and remove duplicated base64 screenshots. One-shot data migration tied to the v1.3 base64-strip rollout.
+Reset and seed scripts (the actively-used ones) are wired through `pnpm` aliases in `package.json` (`reset:auth`, `reset:tokens`, `reset:all`, `seed:dev`). One-shot data migrations live here until they have run in every environment, then they are deleted — the migration history in `prisma/migrations/` is the durable record of what shipped.
 
 When writing a new script:
 
 - Read `env()` for `DATA_DIR` (don't hardcode `/tmp/markup-dev-data`)
 - Print one summary line per affected file plus a totals line at the end
 - Do not import the Prisma client unless the script writes to the DB — file-only scripts run without a Prisma session
-- Document the script in this file when it lands
+- Document the script in this file while it lives here; delete the doc entry along with the script once the migration is permanently applied
 
 ## Environment files
 
@@ -126,7 +124,8 @@ Optional:
 ## Dev server
 
 ```bash
-pnpm dev    # http://localhost:3000
+pnpm dev               # http://localhost:3000 (default)
+PORT=3001 pnpm dev     # override port (Next reads $PORT when no -p flag is set)
 ```
 
 The first hit triggers Next 16's first-visit compile (~300 ms with Turbopack on a small surface). Setup wizard at `/setup` if no admin user exists; `/login` otherwise.

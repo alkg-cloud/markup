@@ -1,1 +1,1 @@
-export { type PinDescriptor, PinLayer, type PinLayerProps } from './PinLayer';
+export { type PinDescriptor, PinLayer } from './PinLayer';

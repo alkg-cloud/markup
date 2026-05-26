@@ -11,7 +11,7 @@ export interface HomeIdentity {
   role: 'admin' | 'member';
 }
 
-export interface HomeGreeting {
+interface HomeGreeting {
   /** Computed server-side from the current `Date.getHours()`. */
   timeOfDay: 'morning' | 'afternoon' | 'evening';
   /** Mockups with `updatedAt > now - 24h`. Hidden client-side when zero. */

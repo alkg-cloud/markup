@@ -658,7 +658,8 @@ async function main() {
   console.log(`  Annotations on helio-pricing:    1`);
   console.log(`  Versions on lumen-coffee-hero:   3  (v3 is current)`);
   console.log('');
-  console.log('  Open: http://localhost:3000/  (or your tunnel URL)');
+  const port = process.env.PORT ?? '3000';
+  console.log(`  Open: http://localhost:${port}/  (or your tunnel URL)`);
 
   void v2;
   void drone;

@@ -2,7 +2,7 @@
 import { type KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { VscEdit, VscKebabVertical, VscReply, VscTrash } from 'react-icons/vsc';
 import { EmojiPicker } from '@/components/EmojiPicker/EmojiPicker';
-import { formatReactorList, ReactionPill } from '@/components/ReactionPill/ReactionPill';
+import { ReactionPill } from '@/components/ReactionPill/ReactionPill';
 import { initialsForName } from '@/lib/avatar';
 import { usePopover } from '@/lib/popover/usePopover';
 import { isMod } from '@/lib/shortcuts/platform';
@@ -264,6 +264,3 @@ export function Comment({
     </article>
   );
 }
-
-// Re-export the format helper so consumers can build matching tooltips.
-export { formatReactorList };
