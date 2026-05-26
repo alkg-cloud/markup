@@ -216,16 +216,6 @@ Open an [issue](https://github.com/AlexandreCamillo/markup/issues/new) for bug r
 
 Contributions of any size are welcome. The full flow — including the one-comment Contributor License Agreement — lives in [`CONTRIBUTING.md`](CONTRIBUTING.md). The short version:
 
-1. Read [`docs/INDEX.md`](docs/INDEX.md) — every change starts there.
-2. Run the pre-push checklist from [`docs/ci.md`](docs/ci.md):
-
-   ```bash
-   pnpm biome check . && pnpm tsc --noEmit && pnpm test && pnpm build
-   ```
-
-3. Follow the commit conventions in [`docs/git/conventions.md`](docs/git/conventions.md): conventional-commits subject only, no body, no `Co-Authored-By` trailer.
-4. Open a PR; on your first PR, the CLA Assistant bot will ask you to sign [`CLA.md`](CLA.md). For non-trivial changes, please open an issue first to discuss the design.
-
 ## License
 
 [Elastic License 2.0](LICENSE) © Alexandre Camillo. Free for any use — including internal use within an organization — **except** offering Markup to third parties as a hosted or managed service. See [`LICENSE`](LICENSE) for full terms. Contributors agree to the [Contributor License Agreement](CLA.md); the flow is described in [`CONTRIBUTING.md`](CONTRIBUTING.md).
