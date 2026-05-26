@@ -346,6 +346,15 @@ export function AppMainViewer({
   // draft-card / rail-pin signals further down. One source of truth.
   const draftActive = draft !== null;
 
+  // ── Historic mode derivations ────────────────────────────────────
+  // Computed early so `useDraftKeyboard` can receive `disabled: isHistoric`
+  // before the hook is called (const TDZ requires declaration before use).
+  const isViewingKnown = useMemo(
+    () => !!viewingVid && versions.some((v) => v.id === viewingVid),
+    [viewingVid, versions],
+  );
+  const isHistoric = isViewingKnown && viewingVid !== currentVid;
+
   const { iframeRef, canvasRootRef, iframeGen } = useViewerCanvas({
     draftActive,
     onPin: handlePin,
@@ -361,6 +370,7 @@ export function AppMainViewer({
     onSave: saveDraft,
     textareaRef,
     iframeRef,
+    disabled: isHistoric,
   });
 
   const { isFullscreen, toggle: onFullscreenToggle } = useViewerFullscreen(appMainRef);
@@ -437,20 +447,21 @@ export function AppMainViewer({
     [deleteAnnotation],
   );
 
-  // ── Historic mode derivations ────────────────────────────────────
-  const isViewingKnown = useMemo(
-    () => !!viewingVid && versions.some((v) => v.id === viewingVid),
-    [viewingVid, versions],
-  );
-  const isHistoric = isViewingKnown && viewingVid !== currentVid;
-
+  const hasCalledInvalidRef = useRef(false);
   useEffect(() => {
-    if (viewingVid && !isViewingKnown) onInvalidViewingVid?.();
+    if (!viewingVid || isViewingKnown) {
+      hasCalledInvalidRef.current = false;
+      return;
+    }
+    if (hasCalledInvalidRef.current) return;
+    hasCalledInvalidRef.current = true;
+    onInvalidViewingVid?.();
   }, [viewingVid, isViewingKnown, onInvalidViewingVid]);
 
-  const effectiveMockupSrc = isHistoric
-    ? appendQuery(mockupSrc, 'v', viewingVid as string)
-    : mockupSrc;
+  const effectiveMockupSrc =
+    isHistoric && viewingVid != null
+      ? appendQuery(mockupSrc, 'v', viewingVid)
+      : mockupSrc;
 
   const viewingLabel = isHistoric
     ? (versions.find((v) => v.id === viewingVid)?.label ?? '')
