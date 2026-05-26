@@ -1,5 +1,5 @@
 .banner {
-  composes: floatingSurface from '@/styles/glass.module.css';
+  composes: floatingSurface from "@/styles/glass.module.css";
   position: absolute;
   top: calc(var(--space-6, 24px) + 64px);
   left: 50%;
@@ -13,7 +13,8 @@
   color: var(--text-strong, #fff);
   font-size: var(--text-sm, 13px);
   white-space: nowrap;
-  animation: slideDown var(--motion-fast, 160ms) var(--ease-standard, cubic-bezier(0.32, 0.72, 0, 1));
+  animation: slideDown var(--motion-fast, 160ms)
+    var(--ease-standard, cubic-bezier(0.32, 0.72, 0, 1));
 }
 
 .icon {
@@ -46,10 +47,18 @@
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translate(-50%, -8px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .banner { animation-duration: 0ms; }
+  .banner {
+    animation-duration: 0ms;
+  }
 }
