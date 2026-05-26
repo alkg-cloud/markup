@@ -19,9 +19,9 @@ function http(status: number, message: string): never {
  * Resolves the caller's `Viewer` (loading `role` for users) and calls
  * `canDelete`. On failure throws `403 forbidden_owner`.
  *
- * Note: this helper no longer auto-throws `forbidden_kind` for agents —
- * agents pass on entities they created. `forbidden_kind` is now emitted
- * exclusively by `requireAdmin` on admin-only-by-design routes.
+ * Throws `forbidden_owner` only. `forbidden_kind` is emitted exclusively
+ * by `requireAdmin` on admin-only-by-design routes; this helper passes
+ * agents through `canDelete` for entities they created.
  *
  * See `docs/api/authz.md` for the full model.
  */

@@ -19,7 +19,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   // the token row. `MockupVersion.createdBy` and `Annotation.createdBy`
   // are non-nullable — the orphan cuid stays there after revoke (matches
   // the User-deletion path for `Message.authorId`). `canDelete` returns
-  // false because the cuid no longer matches any live token; admin
+  // false because the cuid doesn't match any live token; admin
   // override still works; `resolveDisplayName` falls back to a short cuid.
   // When a public DELETE /api/users/[id] route is added, it must run the
   // same updateMany block with createdByType = 'user'. See docs/api/authz.md.
@@ -36,7 +36,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
       where: { createdBy: tokenId, createdByType: 'agent' },
       data: { createdBy: null, createdByType: null },
     }),
-    prisma.agentToken.delete({ where: { id: tokenId } }),
+    prisma.agentToken.deleteMany({ where: { id: tokenId } }),
   ]);
 
   return NextResponse.json({ ok: true });
