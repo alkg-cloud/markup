@@ -24,6 +24,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
   }
   const updated = await updateAnnotationTldraw(id, body);
   if (!updated) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  if ('error' in updated) return NextResponse.json({ error: updated.error }, { status: 400 });
   return NextResponse.json({ id: updated.id }, { status: 200 });
 }
 

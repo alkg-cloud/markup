@@ -103,6 +103,9 @@ export async function getAnnotation(id: string) {
 export async function updateAnnotationTldraw(id: string, snapshot: unknown) {
   const annotation = await prisma.annotation.findUnique({ where: { id } });
   if (!annotation) return null;
+  // Comment-only annotations (AppMain redesign) reference an empty
+  // tldrawPath placeholder — no drawing to update.
+  if (!annotation.tldrawPath) return { error: 'no_drawing' as const };
   const abs = path.join(env().DATA_DIR, annotation.tldrawPath);
   const stripped = stripScreenshotBase64(snapshot);
   fs.writeFileSync(abs, JSON.stringify(stripped));
