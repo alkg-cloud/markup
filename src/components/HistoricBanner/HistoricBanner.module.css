@@ -1,0 +1,64 @@
+.banner {
+  composes: floatingSurface from "@/styles/glass.module.css";
+  position: absolute;
+  top: calc(var(--space-xl, 24px) + 64px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm, 12px);
+  padding: var(--space-xs, 8px) var(--space-sm, 12px);
+  border-radius: var(--radius-pill, 9999px);
+  color: var(--text-bright, #fff);
+  font-size: var(--type-sm, 13px);
+  white-space: nowrap;
+  animation: slideDown var(--motion-fast, 160ms)
+    var(--ease-standard, cubic-bezier(0.32, 0.72, 0, 1));
+}
+
+.icon {
+  width: 14px;
+  height: 14px;
+  color: var(--accent, #fff);
+  flex-shrink: 0;
+}
+
+.label {
+  font-variant-numeric: tabular-nums;
+}
+
+.exit {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text-bright, #fff);
+  font: inherit;
+  cursor: pointer;
+  padding: var(--space-2xs, 4px) var(--space-xs, 8px);
+  border-radius: var(--radius-pill, 9999px);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.exit:hover {
+  background: var(--surface-hover, rgba(255, 255, 255, 0.08));
+  text-decoration: none;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner {
+    animation-duration: 0ms;
+  }
+}

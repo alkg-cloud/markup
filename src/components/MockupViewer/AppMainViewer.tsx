@@ -23,6 +23,8 @@
  *   - `useViewerFullscreen`    — fullscreen toggle + state mirror
  *   - `useDraftPersistence`    — localStorage restore + debounced write
  *   - `useDraftKeyboard`       — N / Esc / Cmd+Enter / Cmd+S shortcuts
+ *   - `useInvalidViewingVidNotifier` — single-fire notification when URL
+ *                                      `?v=<vid>` doesn't match any row
  * and a memoized `ViewerCanvas` sub-component holds the iframe + PinLayer
  * so draft/rail churn doesn't reload the mockup.
  */
@@ -36,15 +38,18 @@ import { AnnotationsRail, type AnnotationsRailBadge } from '@/components/Annotat
 import { AppMain } from '@/components/AppMain/AppMain';
 import { CanvasToolbar } from '@/components/CanvasToolbar';
 import { DraftCard } from '@/components/DraftCard';
+import { HistoricBanner } from '@/components/HistoricBanner';
 import type { PinDescriptor } from '@/components/PinLayer';
 import { useToast } from '@/components/Toast/useToast';
 import { VersionChip, type VersionRow } from '@/components/VersionChip';
 import { useDraftKeyboard } from '@/hooks/useDraftKeyboard';
 import { useDraftPersistence } from '@/hooks/useDraftPersistence';
 import type { Anchor } from '@/lib/anchoring';
+import { setQuery } from '@/lib/url/append-query';
 import styles from './AppMainViewer.module.css';
 import { type DraftState, type DraftStatus, MAX_PINS, type StoredDraft } from './draft-types';
 import { useAppMainAnnotations } from './useAppMainAnnotations';
+import { useInvalidViewingVidNotifier } from './useInvalidViewingVidNotifier';
 import { type PinClick, useViewerCanvas } from './useViewerCanvas';
 import { useViewerFullscreen } from './useViewerFullscreen';
 import { useViewport } from './useViewport';
@@ -98,6 +103,20 @@ export interface AppMainViewerProps {
   onVersionDelete?: (versionId: string) => void;
   /** Whether the current viewer is an admin — widens delete access on annotations/comments. */
   viewerIsAdmin?: boolean;
+  /** Current (latest / promoted) version id — used to compute `isHistoric`. */
+  currentVid?: string;
+  /** Viewed version id from the URL (`?v=<vid>`). When set AND different
+   *  from `currentVid` AND present in `versions[]`, the viewer enters
+   *  historic mode: iframe loads `?v=<vid>`, rail + cards go read-only,
+   *  draft disabled, `HistoricBanner` mounted. */
+  viewingVid?: string | null;
+  /** Called when the user clicks "Back to current" in the banner. Parent
+   *  owns `router.replace` so the page can decide on canonicalization rules. */
+  onExitHistoric?: () => void;
+  /** Called when `viewingVid` is non-null but does not match any row in
+   *  `versions[]`. Parent should `router.replace(pathname)` + toast a
+   *  "version not found" message. */
+  onInvalidViewingVid?: () => void;
 }
 
 export function AppMainViewer({
@@ -117,6 +136,10 @@ export function AppMainViewer({
   onVersionPromote,
   onVersionDelete,
   viewerIsAdmin = false,
+  currentVid,
+  viewingVid,
+  onExitHistoric,
+  onInvalidViewingVid,
 }: AppMainViewerProps) {
   const appMainRef = useRef<HTMLDivElement | null>(null);
   const toast = useToast();
@@ -326,8 +349,24 @@ export function AppMainViewer({
   // draft-card / rail-pin signals further down. One source of truth.
   const draftActive = draft !== null;
 
+  // ── Historic mode derivations ────────────────────────────────────
+  // Computed early so `useDraftKeyboard` can receive `disabled: isHistoric`
+  // before the hook is called (const TDZ requires declaration before use).
+  const isViewingKnown = useMemo(
+    () => !!viewingVid && versions.some((v) => v.id === viewingVid),
+    [viewingVid, versions],
+  );
+  const isHistoric = isViewingKnown && viewingVid !== currentVid;
+
+  // Historic mode suppresses every draft interaction: the iframe cursor stays
+  // default (no crosshair) and click capture is bypassed so the user can't
+  // accumulate invisible pins into a hidden DraftCard. The underlying `draft`
+  // state survives — returning to current restores the DraftCard with the
+  // user's in-flight body and pins intact.
+  const effectiveDraftActive = !isHistoric && draftActive;
+
   const { iframeRef, canvasRootRef, iframeGen } = useViewerCanvas({
-    draftActive,
+    draftActive: effectiveDraftActive,
     onPin: handlePin,
     onPinClick: handlePinClick,
     onMiss: handleMiss,
@@ -341,6 +380,7 @@ export function AppMainViewer({
     onSave: saveDraft,
     textareaRef,
     iframeRef,
+    disabled: isHistoric,
   });
 
   const { isFullscreen, toggle: onFullscreenToggle } = useViewerFullscreen(appMainRef);
@@ -417,6 +457,19 @@ export function AppMainViewer({
     [deleteAnnotation],
   );
 
+  useInvalidViewingVidNotifier({ viewingVid, isViewingKnown, onInvalidViewingVid });
+
+  // `mockupSrc` from the viewer payload already carries `?v=<currentVid>` as a
+  // cache-buster. Use `setQuery` (not `appendQuery`) so historic mode REPLACES
+  // the existing `v` param instead of producing a duplicate that the serve
+  // route's `searchParams.get('v')` would silently resolve to the first
+  // occurrence (i.e. the current vid).
+  const effectiveMockupSrc =
+    isHistoric && viewingVid != null ? setQuery(mockupSrc, 'v', viewingVid) : mockupSrc;
+
+  const viewingLabel = isHistoric ? (versions.find((v) => v.id === viewingVid)?.label ?? '') : '';
+  const currentLabel = isHistoric ? (versions.find((v) => v.id === currentVid)?.label ?? '') : '';
+
   return (
     <AppMain variant="viewer" ariaLabel="Mockup viewer">
       <div
@@ -428,11 +481,11 @@ export function AppMainViewer({
         }}
       >
         <ViewerCanvas
-          mockupSrc={mockupSrc}
+          mockupSrc={effectiveMockupSrc}
           iframeRef={iframeRef}
           canvasRootRef={canvasRootRef}
           iframeGen={iframeGen}
-          marking={draftActive}
+          marking={effectiveDraftActive}
           zoom={zoom}
           viewport={viewport}
           setViewport={handleViewportChange}
@@ -456,8 +509,9 @@ export function AppMainViewer({
           expandSignal={railExpandSignal}
           draft={draftActive ? { active: true } : null}
           forceExpand={draftActive}
+          readOnly={isHistoric}
           renderDraft={
-            draft
+            !isHistoric && draft
               ? () => (
                   <DraftCard
                     ref={textareaRef}
@@ -497,6 +551,7 @@ export function AppMainViewer({
               }}
               onAnnotationDelete={() => onAnnotationDeleteRow(a.id)}
               viewerIsAdmin={viewerIsAdmin}
+              readOnly={isHistoric}
             />
           ))}
         </AnnotationsRail>
@@ -519,11 +574,19 @@ export function AppMainViewer({
           }
         />
 
-        {draftActive && (
+        {!isHistoric && draftActive && (
           <div className={styles.canvasHint} data-hint-position="top">
             <CanvasHintIcon />
             <span>Click anywhere to add a pin · click a draft pin to remove</span>
           </div>
+        )}
+
+        {isHistoric && (
+          <HistoricBanner
+            viewingLabel={viewingLabel}
+            currentLabel={currentLabel}
+            onExit={() => onExitHistoric?.()}
+          />
         )}
       </div>
     </AppMain>

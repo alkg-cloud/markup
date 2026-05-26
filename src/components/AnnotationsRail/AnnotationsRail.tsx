@@ -54,6 +54,11 @@ export interface AnnotationsRailProps {
    *  parent own the draft state machine without leaking DraftCard's
    *  props into this component's signature. */
   renderDraft?: () => ReactNode;
+  /** When true, suppresses the only mutation surface (the "+ New annotation"
+   *  button in the foot). Badge list, expanded card list, lock toggle, and
+   *  drag handle remain active — read-only navigation is preserved. Used
+   *  by historic version viewing. */
+  readOnly?: boolean;
 }
 
 /**
@@ -80,6 +85,7 @@ export function AnnotationsRail({
   draft,
   forceExpand,
   renderDraft,
+  readOnly = false,
 }: AnnotationsRailProps) {
   const railRef = useRef<HTMLElement | null>(null);
   const [hover, setHover] = useState(false);
@@ -294,7 +300,7 @@ export function AnnotationsRail({
         )}
       </div>
 
-      {!draftActive && (
+      {!draftActive && !readOnly && (
         /* biome-ignore lint/a11y/noStaticElementInteractions: see comment above. */
         <div className={styles.foot} onMouseEnter={enter}>
           <button

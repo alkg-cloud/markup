@@ -399,6 +399,32 @@ pre.api .t{color:oklch(86% 0.12 60)}
 .row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
 .state{display:flex;flex-direction:column;gap:6px;align-items:center}
 .state .state-label{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim)}
+
+/* ─── Historic banner overlay (see 34-historic-banner) ─────────────── */
+.historic-banner{
+  position:absolute;top:calc(var(--topbar-height) + 24px);left:50%;transform:translateX(-50%);
+  display:inline-flex;align-items:center;gap:12px;
+  padding:8px 12px;border-radius:var(--radius-pill);
+  color:var(--text-bright);font-size:13px;white-space:nowrap;
+  background:var(--surface-glass-bg);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);box-shadow:var(--shadow-md);
+  z-index:35;
+}
+.historic-banner .icon{width:14px;height:14px;flex-shrink:0;color:var(--accent);display:inline-flex;align-items:center;justify-content:center}
+.historic-banner .icon svg{width:14px;height:14px;display:block}
+.historic-banner .label{font-variant-numeric:tabular-nums;color:var(--text-bright)}
+.historic-banner .exit{
+  appearance:none;background:transparent;border:0;color:var(--text-bright);
+  font:inherit;cursor:pointer;padding:4px 8px;border-radius:var(--radius-pill);
+  text-decoration:underline;text-underline-offset:2px;
+}
+.historic-banner .exit:hover{background:var(--surface-hover);text-decoration:none}
+
+/* Read-only signals — used when the viewer is in historic mode */
+.rail.read-only .add{display:none}
+.item.read-only .kebab{display:none}
 </style>
 </head>
 <body>
@@ -819,6 +845,123 @@ pre.api .t{color:oklch(86% 0.12 60)}
     </div>
   </section>
 
+  <!-- ─── E — Historic version viewing (read-only) ────────────────────── -->
+  <section class="section">
+    <div class="section-title">E — Historic version viewing (read-only)</div>
+    <div class="section-lede">When the user selects a non-current row in the <a href="#" style="color:var(--accent-bright);text-decoration:underline"><code>VersionChip</code></a> popover, the viewer enters <em>historic-version-viewing</em> mode (URL <code>?v=&lt;vid&gt;</code> drives <code>isHistoric</code> on <code>AppMainViewer</code>). The iframe swaps to the historic build; a glass <a href="./34-historic-banner.html" style="color:var(--accent-bright);text-decoration:underline"><code>HistoricBanner</code></a> mounts top-center as a persistent mode indicator with a one-click return to current. While historic is active, write affordances retract: the rail's <strong>+ New annotation</strong> button is hidden and every annotation card hides its primary kebab. Annotation cards stay readable so the user can still inspect existing threads against the past mockup.</div>
+    <div class="stage tall">
+      <span class="stage-label">E — Historic · viewing v2 · read-only rail (no add, no kebab)</span>
+
+      <aside class="sidebar">
+        <div class="sidebar-logo">M</div>
+        <button class="sidebar-icon active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h7l2 2h9v11H3z"/></svg></button>
+        <button class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16" y2="16"/></svg></button>
+        <button class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></button>
+      </aside>
+
+      <header class="topbar">
+        <nav class="crumb">
+          <a>Markup dev</a><span class="sep">/</span><a>Lumen Coffee</a><span class="sep">/</span><a>Hero</a><span class="sep">/</span><span class="here">lumen-coffee-hero</span>
+        </nav>
+        <button class="search-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16" y2="16"/></svg>
+          <span style="flex:1">Search mockups, projects, folders…</span>
+          <span class="kbd">⌘K</span>
+        </button>
+        <div class="topbar-right"><div class="avatar">AC</div></div>
+      </header>
+
+      <div class="canvas">
+        <div class="iframe-mock">
+          <div class="top"><span class="brand">Lumen Coffee</span><div class="nav"><span>Story</span><span>Beans</span><span>Café</span></div><div class="cta"><span class="solid">Visit Café</span></div></div>
+          <div class="hero">
+            <div>
+              <div class="eyebrow">Single-origin · Slow-batch · Brooklyn</div>
+              <h1 class="h1">A morning that tastes like <em>somewhere</em>.</h1>
+              <p class="sub">Lumen sources micro-lots from small farms across Ethiopia and Colombia, roasts in tiny batches, and ships every Tuesday — never a day older than ten.</p>
+              <div class="btn-row"><button class="btn-primary">Shop subscriptions</button></div>
+            </div>
+            <div class="hero-card"></div>
+          </div>
+        </div>
+
+        <div class="pinlayer">
+          <div class="pin" data-color="0" style="top:128px;left:152px"><span>1</span></div>
+          <div class="pin" data-color="1" style="top:226px;left:362px"><span>2</span></div>
+          <div class="pin" data-color="2" style="top:188px;left:608px"><span>3</span></div>
+        </div>
+
+        <!-- HistoricBanner — anchored top-center, below the topbar -->
+        <div class="historic-banner" role="status" aria-live="polite">
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 5.74 11h-1.32A5.75 5.75 0 1 1 8 2.25c1.61 0 3.07.66 4.12 1.71L10.5 5.58h4.25V1.33L13.06 3.03A6.97 6.97 0 0 0 8 1zm-.5 3v4.21l3.36 1.96.5-.86L8.5 7.7V4h-1z"/></svg>
+          </span>
+          <span class="label">Viewing v2</span>
+          <button type="button" class="exit" aria-label="Back to current version" data-tooltip="Back to current version">Back to v3 (current)</button>
+        </div>
+
+        <!-- Read-only rail: pinned, with cards but no add-button and no kebab -->
+        <aside class="rail pinned read-only">
+          <div class="grab"><svg class="grab-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+          <div class="expanded-body">
+            <header class="head">
+              <div class="head-title"><span>Annotations</span><span class="count">3</span></div>
+              <button class="lock pressed" aria-pressed="true" title="Unlock"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L8 7v3H6v10h12V10h-2V7l-4-5zm0 2.7L14.5 8H9.5L12 4.7zM8 12h8v6H8v-6z"/></svg></button>
+            </header>
+            <ul class="list">
+              <li class="item read-only">
+                <div class="meta">
+                  <span class="dot-badge" data-color="0">1</span>
+                  <span class="author">Alex Camillo</span>
+                  <span class="pill open">Open</span>
+                </div>
+                <div class="body-text"><span class="intent">fix</span>Hero heading misaligned by ~6&nbsp;px on desktop — drops below the eyebrow's baseline at viewport ≥1280 px.</div>
+                <div class="foot-row"><span>3d ago</span></div>
+              </li>
+              <li class="item read-only">
+                <div class="meta">
+                  <span class="dot-badge" data-color="1">2</span>
+                  <span class="author">Jordan Lee</span>
+                  <span class="pill review">Review</span>
+                </div>
+                <div class="body-text"><span class="intent">change</span>CTA copy should match the spec — "Shop subscriptions" reads transactional. Spec says "Start a subscription".</div>
+                <div class="foot-row"><span>3d ago</span></div>
+              </li>
+              <li class="item read-only">
+                <div class="meta">
+                  <span class="dot-badge" data-color="2">3</span>
+                  <span class="author">Sam Park</span>
+                  <span class="pill resolved">Done</span>
+                </div>
+                <div class="body-text"><span class="intent">add</span>Add a secondary action link below the CTA. Text: "Read the journal" — light style.</div>
+                <div class="foot-row"><span>3d ago</span></div>
+              </li>
+            </ul>
+            <!-- No foot-area: + New annotation button is hidden in historic mode -->
+          </div>
+        </aside>
+
+        <div class="toolbar" role="toolbar">
+          <div class="tb-group">
+            <button class="tb-btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 7h8v2H4z"/></svg></button>
+            <button class="zoom-label">100%</button>
+            <button class="tb-btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M9 4H7v3H4v2h3v3h2V9h3V7H9z"/></svg></button>
+            <button class="tb-btn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 12h2v1H2v-3h1v2zm10-2h-2v1h1v1h-1v1h2v-3zm-3-7v1h2v2h1V3h-3zm-7 3V4h2V3H2v3h1z"/></svg></button>
+          </div>
+          <div class="tb-group">
+            <button class="vchip">
+              <svg class="clock" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 7 7 7 7 0 0 0-7-7zm0 13a6 6 0 1 1 6-6 6 6 0 0 1-6 6zm3-6H8V5h1v2h2z"/></svg>
+              <span>v2</span>
+              <svg class="chev" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4z"/></svg>
+            </button>
+          </div>
+          <button class="tb-grab"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="caption">URL pattern: <code>/projects/&lt;slug&gt;/&lt;path&gt;?v=&lt;vid&gt;</code>. Selecting any non-current row in the version popover calls <code>router.replace</code> with the appended query — the parent's <code>isHistoric</code> guard flips to <code>true</code>, the iframe src swaps to the historic build, the banner mounts, and the rail picks up <code>read-only</code> styling. Clicking <strong>Back to v3 (current)</strong> strips <code>?v=</code> and the banner unmounts; write affordances reappear without an additional reload.</div>
+  </section>
+
   <!-- ─── React API ───────────────────────────────────────────────────── -->
   <section class="section">
     <div class="section-title">React API — page composition (no Radix primitive for the surface)</div>
@@ -898,6 +1041,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
         <tr><td><code>marking</code> (custom)</td><td>User opens composer.</td><td>Canvas cursor → crosshair; <code>MarkingBar</code> mounts at the top with live pin count; each canvas click drops a <code>.pin.pending</code> (dashed border + soft pulse).</td><td>Marking bar has <code>role="status"</code>; announces "Marking mode" and pin count.</td></tr>
         <tr><td><code>composer.open</code></td><td><code>composerOpen === true</code></td><td>Bottom-right glass dock with textarea + "Post" CTA + ⌘↵ hint.</td><td>Textarea is <code>aria-label</code>ed.</td></tr>
         <tr><td><code>version.popover.open</code></td><td>Click the version chip.</td><td>Popover above the toolbar with version list; current row highlighted with accent halo dot.</td><td>Chip <code>aria-expanded="true"</code>; popover has <code>role="menu"</code>.</td></tr>
+        <tr><td><code>historic</code> (custom)</td><td>User selects a non-current row in the version popover — URL gains <code>?v=&lt;vid&gt;</code>, parent's <code>isHistoric</code> flips to <code>true</code>.</td><td>Iframe src swaps to the historic build; <a href="./34-historic-banner.html"><code>HistoricBanner</code></a> mounts top-center; rail's <strong>+ New annotation</strong> button and per-card kebab menus retract — annotation bodies stay readable.</td><td>Banner has <code>role="status"</code> + <code>aria-live="polite"</code>; exit button has <code>aria-label="Back to current version"</code>.</td></tr>
         <tr><td><code>fullscreen</code></td><td>User hits the F key or clicks the toolbar fullscreen button.</td><td>App enters native fullscreen (Fullscreen API); button glyph flips.</td><td>Native fullscreen announcement.</td></tr>
         <tr><td><code>iframe.loading</code></td><td>Iframe src changes (new mockup / new version).</td><td>Iframe shows mockup-bg color while loading; canvas root is null; pins suspended.</td><td>Iframe <code>title</code> attribute is set.</td></tr>
         <tr><td><code>destructive.confirm</code></td><td>Delete annotation or thread comment.</td><td>Radix AlertDialog overlay; cards remain visible underneath.</td><td>Radix AlertDialog ARIA.</td></tr>
@@ -960,7 +1104,7 @@ pre.api .t{color:oklch(86% 0.12 60)}
       <li><strong>Active annotation.</strong> Clicking a canvas pin OR a rail card sets <code>activeId</code> — both render the matching pin glowing + the matching card with its <code>.active</code> treatment + (if rail was collapsed) the rail expands and stays pinned. Esc clears <code>activeId</code>.</li>
       <li><strong>Rail collapse / expand / pin.</strong> Hover → expand (300 px, motion-base spring). Pointer leave → collapse, UNLESS pinned. The lock pill toggles a persisted preference (per-user); pinned state survives mockup switches.</li>
       <li><strong>Replies / edit / delete.</strong> Each card's kebab opens an action menu. Delete goes through <code>useConfirm</code> (Radix AlertDialog) — destructive confirmation is non-skippable per <a href="./14-dialog.html" style="color:var(--accent)"><code>14-dialog</code></a>. Reply opens an inline composer; Edit replaces the card body with a textarea.</li>
-      <li><strong>Versions.</strong> The <code>vchip</code> opens the version popover (project's <code>usePopover</code>, not Radix). Selecting a version triggers an iframe src swap; <code>useViewerCanvas</code> re-runs anchor resolution against the new DOM. The agent loop's <code>PATCH /api/mockups/[id]/version-patch</code> creates new versions; the popover lists them with mono-typed names + author + time.</li>
+      <li><strong>Versions.</strong> The <code>vchip</code> opens the version popover (project's <code>usePopover</code>, not Radix). The popover lists every version with mono-typed names + author + time; the current row carries an accent halo dot. Selecting the current row is a no-op. Selecting any non-current row enters <em>historic-version-viewing</em> mode: <code>router.replace</code> appends <code>?v=&lt;vid&gt;</code>, the iframe src swaps to the historic build, <code>useViewerCanvas</code> re-runs anchor resolution against the new DOM, and a glass <a href="./34-historic-banner.html"><code>HistoricBanner</code></a> mounts top-center as a persistent mode indicator. While historic, write affordances retract — rail's <strong>+ New annotation</strong> button and card kebabs are hidden. Clicking <strong>Back to v&lt;current&gt;</strong> on the banner (or removing <code>?v=</code> by any other means) exits historic mode and re-mounts the write surfaces. The agent loop's <code>PATCH /api/mockups/[id]/version-patch</code> creates new versions.</li>
       <li><strong>Fullscreen.</strong> The toolbar's fullscreen button + the <code>F</code> key both delegate to <code>useViewerFullscreen</code> which wraps the Fullscreen API on the <code>AppMain</code> container. Esc exits per browser default.</li>
       <li><strong>Drag affordances.</strong> Both the rail and the toolbar carry a grab handle (<code>react-icons/go GoGrabber</code>, 25 px). Rail rotates the glyph 90° to read horizontally; toolbar keeps vertical orientation. See <a href="./19-toolbar.html" style="color:var(--accent)"><code>19-toolbar</code></a>.</li>
       <li><strong>Color palette.</strong> 16 hues at curated chroma — propagates from <code>data-color="0..15"</code> on every pin / badge / dot-badge. Color is assigned by annotation order and survives across reloads (stored on the annotation row server-side). See <a href="./20-pins.html" style="color:var(--accent)"><code>20-pins</code></a>.</li>

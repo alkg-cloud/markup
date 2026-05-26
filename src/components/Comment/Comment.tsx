@@ -49,6 +49,10 @@ export interface CommentProps {
   onReactionToggle?: (emoji: string) => void;
   /** Whether the current viewer is an admin — they can delete others' comments (not edit). */
   viewerIsAdmin?: boolean;
+  /** When true, suppresses every mutation surface: the kebab menu trigger
+   *  and the Add-reaction trigger do not render; existing reaction pills
+   *  remain visible but are non-toggleable. Used by historic version viewing. */
+  readOnly?: boolean;
 }
 
 /**
@@ -76,6 +80,7 @@ export function Comment({
   onDelete,
   onReactionToggle,
   viewerIsAdmin = false,
+  readOnly = false,
 }: CommentProps) {
   // Kebab popover is browser-managed (HTML popover="auto" — top-layer
   // paint + light dismiss + ESC). `close()` is called on menu-item
@@ -134,77 +139,78 @@ export function Comment({
             <span className={styles.time}>{timestamp}</span>
           </div>
           <div className={styles.actions}>
-            {isOwn || viewerIsAdmin ? (
-              <>
-                <button
-                  ref={kebabPopover.triggerRef}
-                  type="button"
-                  className={styles.kebab}
-                  data-tooltip="More actions"
-                  aria-label="More actions"
-                  aria-haspopup="menu"
-                  {...kebabPopover.triggerProps}
-                >
-                  <VscKebabVertical aria-hidden="true" />
-                </button>
-                <div {...kebabPopover.popoverProps} className={styles.menu} role="menu">
+            {!readOnly &&
+              (isOwn || viewerIsAdmin ? (
+                <>
                   <button
+                    ref={kebabPopover.triggerRef}
                     type="button"
-                    className={styles.menuItem}
-                    role="menuitem"
-                    onClick={() => {
-                      kebabPopover.close();
-                      onReply?.();
-                    }}
+                    className={styles.kebab}
+                    data-tooltip="More actions"
+                    aria-label="More actions"
+                    aria-haspopup="menu"
+                    {...kebabPopover.triggerProps}
                   >
-                    <VscReply aria-hidden="true" />
-                    Reply
+                    <VscKebabVertical aria-hidden="true" />
                   </button>
-                  {/* Edit is own-only — admins can delete but not edit others' comments. */}
-                  {isOwn && (
+                  <div {...kebabPopover.popoverProps} className={styles.menu} role="menu">
                     <button
                       type="button"
                       className={styles.menuItem}
                       role="menuitem"
                       onClick={() => {
                         kebabPopover.close();
-                        onEdit?.();
+                        onReply?.();
                       }}
                     >
-                      <VscEdit aria-hidden="true" />
-                      Edit
+                      <VscReply aria-hidden="true" />
+                      Reply
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    className={[styles.menuItem, styles.danger].join(' ')}
-                    role="menuitem"
-                    onClick={() => {
-                      kebabPopover.close();
-                      onDelete?.();
-                    }}
-                  >
-                    <VscTrash aria-hidden="true" />
-                    Delete
-                  </button>
-                </div>
-              </>
-            ) : (
-              <button
-                type="button"
-                className={styles.action}
-                data-tooltip={`Reply to ${author}`}
-                aria-label={`Reply to ${author}`}
-                onClick={onReply}
-              >
-                <VscReply aria-hidden="true" />
-              </button>
-            )}
+                    {/* Edit is own-only — admins can delete but not edit others' comments. */}
+                    {isOwn && (
+                      <button
+                        type="button"
+                        className={styles.menuItem}
+                        role="menuitem"
+                        onClick={() => {
+                          kebabPopover.close();
+                          onEdit?.();
+                        }}
+                      >
+                        <VscEdit aria-hidden="true" />
+                        Edit
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className={[styles.menuItem, styles.danger].join(' ')}
+                      role="menuitem"
+                      onClick={() => {
+                        kebabPopover.close();
+                        onDelete?.();
+                      }}
+                    >
+                      <VscTrash aria-hidden="true" />
+                      Delete
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.action}
+                  data-tooltip={`Reply to ${author}`}
+                  aria-label={`Reply to ${author}`}
+                  onClick={onReply}
+                >
+                  <VscReply aria-hidden="true" />
+                </button>
+              ))}
           </div>
         </header>
       ) : null}
 
-      {isEditing ? (
+      {isEditing && !readOnly ? (
         <div className={styles.editBody}>
           <textarea
             ref={editTextareaRef}
@@ -253,13 +259,17 @@ export function Comment({
             emoji={r.emoji}
             reactedBy={r.reactedBy}
             isCurrentUser={r.reactedBy.includes(currentUser)}
-            onClick={(e) => {
-              e.stopPropagation();
-              onReactionToggle?.(r.emoji);
-            }}
+            onClick={
+              readOnly
+                ? undefined
+                : (e) => {
+                    e.stopPropagation();
+                    onReactionToggle?.(r.emoji);
+                  }
+            }
           />
         ))}
-        <EmojiPicker onPick={(emoji) => onReactionToggle?.(emoji)} />
+        {!readOnly && <EmojiPicker onPick={(emoji) => onReactionToggle?.(emoji)} />}
       </footer>
     </article>
   );

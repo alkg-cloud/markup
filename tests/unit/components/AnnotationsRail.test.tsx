@@ -59,4 +59,17 @@ describe('AnnotationsRail', () => {
     );
     expect(html).toContain('card 1');
   });
+
+  it('readOnly hides the "+ New annotation" button', () => {
+    const html = renderToStaticMarkup(<AnnotationsRail badges={[]} readOnly />);
+    expect(html).not.toContain('New annotation');
+  });
+
+  it('readOnly still renders the badge list and pinned-open header', () => {
+    const html = renderToStaticMarkup(
+      <AnnotationsRail badges={[{ annotationId: 'a1', colorIndex: 0, label: 1 }]} readOnly />,
+    );
+    expect(html).toContain('data-color="0"');
+    expect(html).toContain('aria-label="Annotations"');
+  });
 });

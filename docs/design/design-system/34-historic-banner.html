@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>34 — Historic banner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:oklch(11% 0.03 165);--bg-elevated:oklch(7% 0.02 165);--bg-card:oklch(12% 0.02 165);
+  --bg-tinted:oklch(9% 0.02 165);
+  --bg-iframe:oklch(10% 0.02 165 / 0.5);
+  --surface-input:rgba(255,255,255,0.03);--surface-hover:rgba(255,255,255,0.04);--surface-active:rgba(255,255,255,0.07);--surface-soft:rgba(255,255,255,0.02);
+  --border-subtle:oklch(17% 0.02 165);--border:oklch(21% 0.025 165);--border-strong:oklch(28% 0.025 165);
+  --text-bright:oklch(97% 0.01 165);--text:oklch(82% 0.04 165);--text-dim:oklch(60% 0.02 165);--text-muted:oklch(47% 0.02 165);
+  --accent:oklch(74.4% 0.193 165);--accent-bright:oklch(82% 0.18 165);
+  --accent-overlay-soft:oklch(74.4% 0.193 165 / 0.18);
+  --surface-glass-bg:rgb(7 12 15 / 80%);
+  --font-body:"Manrope",system-ui,sans-serif;--font-mono:"JetBrains Mono",monospace;
+  --ease-standard:cubic-bezier(0.32,0.72,0,1);--ease-spring:cubic-bezier(0.5,1.4,0.6,1);
+  --motion-fast:160ms;--motion-base:220ms;
+  --radius-xs:4px;--radius-sm:8px;--radius-md:12px;--radius-pill:9999px;
+  --shadow-md:0 6px 16px oklch(0% 0 0/0.5),0 2px 4px oklch(0% 0 0/0.4);
+  --focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--accent);
+  --space-2xs:4px;--space-xs:8px;--space-sm:12px;--space-md:16px;--space-lg:20px;--space-xl:24px;
+  --topbar-height:52px;
+}
+@media(prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms;--motion-slow:0ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 70% 20%, oklch(20% 0.1 165 / 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 30% 80%, oklch(15% 0.08 200 / 0.1), transparent 50%);
+  background-attachment:fixed;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent-bright);text-decoration:underline}
+
+/* Page chrome */
+.page{padding:48px 32px 96px;max-width:920px;margin:0 auto}
+.h1{font-size:24px;font-weight:700;color:var(--text-bright);letter-spacing:-0.015em;margin-bottom:4px}
+.lede{font-size:13px;color:var(--text-dim);margin-bottom:32px;max-width:680px}
+.lede a{color:var(--accent)}
+.section{margin-bottom:48px}
+.section-title{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:16px}
+.stage{
+  position:relative;
+  background:repeating-linear-gradient(45deg,oklch(13% 0.025 165) 0 12px,oklch(11% 0.02 165) 12px 24px);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  padding:32px;
+}
+.stage + .stage{margin-top:16px}
+.caption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);margin-top:8px;letter-spacing:0.04em;line-height:1.55}
+
+/* Demo helpers — same across every DS file */
+.row-states{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;align-items:start}
+.state{display:flex;flex-direction:column;gap:10px;align-items:center;min-height:80px;justify-content:flex-start}
+.state .state-label{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim)}
+
+dl.tokens{display:grid;grid-template-columns:200px 1fr;gap:6px 16px;font-size:12.5px}
+dl.tokens dt{font-family:var(--font-mono);color:var(--accent);font-size:11.5px}
+dl.tokens dd{color:var(--text-dim)}
+
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th,table.matrix td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border-subtle);vertical-align:top}
+table.matrix th{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+table.matrix code{font-family:var(--font-mono);font-size:11.5px;color:var(--accent)}
+
+pre.api{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  padding:14px 16px;background:oklch(8% 0.02 165);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-sm);
+  color:var(--text-dim);overflow-x:auto;white-space:pre;
+}
+pre.api .k{color:oklch(80% 0.15 280)}
+pre.api .s{color:oklch(78% 0.14 165)}
+pre.api .c{color:var(--text-muted);font-style:italic}
+pre.api .t{color:oklch(86% 0.12 60)}
+
+/* ─── historic-banner — overlay pill, single recipe, state variants on the wrapper ─── */
+.historic-banner{
+  display:inline-flex;
+  align-items:center;
+  gap:var(--space-sm);
+  padding:var(--space-xs) var(--space-sm);
+  border-radius:var(--radius-pill);
+  color:var(--text-bright);
+  font-size:13px;
+  white-space:nowrap;
+  background:var(--surface-glass-bg);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-md);
+  animation:histBannerIn var(--motion-fast) var(--ease-standard);
+}
+@keyframes histBannerIn{
+  from{opacity:0;transform:translateY(-8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.historic-banner .icon{
+  width:14px;height:14px;
+  flex-shrink:0;
+  color:var(--accent);
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.historic-banner .icon svg{width:14px;height:14px;display:block}
+.historic-banner .label{
+  font-variant-numeric:tabular-nums;
+  color:var(--text-bright);
+}
+.historic-banner .exit{
+  appearance:none;
+  background:transparent;
+  border:0;
+  color:var(--text-bright);
+  font:inherit;
+  cursor:pointer;
+  padding:var(--space-2xs) var(--space-xs);
+  border-radius:var(--radius-pill);
+  text-decoration:underline;
+  text-underline-offset:2px;
+  transition:background var(--motion-fast) var(--ease-standard),
+             text-decoration-color var(--motion-fast) var(--ease-standard);
+}
+.historic-banner .exit:hover,
+.historic-banner .exit[data-state="hover"]{
+  background:var(--surface-hover);
+  text-decoration:none;
+}
+.historic-banner .exit:focus-visible,
+.historic-banner .exit[data-state="focus-visible"]{
+  outline:none;
+  box-shadow:var(--focus-ring);
+  text-decoration:none;
+  background:var(--surface-hover);
+}
+
+/* In-context preview — a faux viewer canvas */
+.viewer-canvas{
+  position:relative;
+  width:100%;
+  height:320px;
+  background:var(--bg-iframe);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-md);
+  overflow:hidden;
+}
+.viewer-canvas .faux-toolbar{
+  position:absolute;
+  top:0;left:0;right:0;
+  height:var(--topbar-height);
+  background:var(--surface-glass-bg);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  backdrop-filter:blur(16px) saturate(140%);
+  border-bottom:1px solid var(--border-subtle);
+  display:flex;align-items:center;gap:var(--space-sm);
+  padding:0 var(--space-md);
+  color:var(--text-muted);
+  font-family:var(--font-mono);font-size:11px;
+  letter-spacing:0.06em;text-transform:uppercase;
+}
+.viewer-canvas .faux-toolbar .dot{
+  width:8px;height:8px;border-radius:50%;background:var(--accent);opacity:0.6;
+}
+.viewer-canvas .faux-iframe{
+  position:absolute;
+  top:var(--topbar-height);left:0;right:0;bottom:0;
+  background:
+    repeating-linear-gradient(0deg, oklch(14% 0.02 165) 0 1px, transparent 1px 40px),
+    repeating-linear-gradient(90deg, oklch(14% 0.02 165) 0 1px, transparent 1px 40px),
+    var(--bg-iframe);
+}
+/* The banner inside the faux canvas — anchored top-center, below the toolbar */
+.viewer-canvas .historic-banner{
+  position:absolute;
+  top:calc(var(--space-xl) + 64px);
+  left:50%;
+  transform:translateX(-50%);
+  /* override the keyframe's final transform so position holds */
+  animation:histBannerInCentered var(--motion-fast) var(--ease-standard);
+}
+@keyframes histBannerInCentered{
+  from{opacity:0;transform:translate(-50%,-8px)}
+  to{opacity:1;transform:translate(-50%,0)}
+}
+</style>
+</head>
+<body>
+
+<div class="page" data-ds-component="historic-banner">
+
+  <h1 class="h1">Historic banner</h1>
+  <p class="lede">
+    Overlay pill anchored top-center of the viewer canvas (below the toolbar). Signals the viewer is rendering a <strong>past version</strong> of the mockup and offers a one-click return to current. Mounts when the user enters historic-version-viewing mode (URL <code>?v=&lt;vid&gt;</code> drives the <code>isHistoric</code> flag on <code>AppMainViewer</code>). Carries no semantic status — it is a mode indicator, not an alert. For inline non-field notices use <a href="./27-alert-banner.html"><code>alert-banner</code></a>; for transient confirmations use <a href="./17-toast.html"><code>toast</code></a>. No Radix primitive backs this component — custom at <code>src/components/HistoricBanner/</code>.
+  </p>
+
+  <!-- A — All states grid -->
+  <section class="section">
+    <div class="section-title">All states</div>
+    <div class="stage">
+      <div class="row-states">
+        <div class="state">
+          <div class="state-label">Hidden</div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted)">(not in DOM)</span>
+        </div>
+        <div class="state">
+          <div class="state-label">Visible — default</div>
+          <div class="historic-banner" role="status" aria-live="polite">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 5.74 11h-1.32A5.75 5.75 0 1 1 8 2.25c1.61 0 3.07.66 4.12 1.71L10.5 5.58h4.25V1.33L13.06 3.03A6.97 6.97 0 0 0 8 1zm-.5 3v4.21l3.36 1.96.5-.86L8.5 7.7V4h-1z"/></svg>
+            </span>
+            <span class="label">Viewing v2</span>
+            <button type="button" class="exit" aria-label="Back to current version" data-tooltip="Back to current version">Back to v5 (current)</button>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">Exit — hover</div>
+          <div class="historic-banner" role="status" aria-live="polite">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 5.74 11h-1.32A5.75 5.75 0 1 1 8 2.25c1.61 0 3.07.66 4.12 1.71L10.5 5.58h4.25V1.33L13.06 3.03A6.97 6.97 0 0 0 8 1zm-.5 3v4.21l3.36 1.96.5-.86L8.5 7.7V4h-1z"/></svg>
+            </span>
+            <span class="label">Viewing v2</span>
+            <button type="button" class="exit" data-state="hover" aria-label="Back to current version" data-tooltip="Back to current version">Back to v5 (current)</button>
+          </div>
+        </div>
+        <div class="state">
+          <div class="state-label">Exit — focus-visible</div>
+          <div class="historic-banner" role="status" aria-live="polite">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 5.74 11h-1.32A5.75 5.75 0 1 1 8 2.25c1.61 0 3.07.66 4.12 1.71L10.5 5.58h4.25V1.33L13.06 3.03A6.97 6.97 0 0 0 8 1zm-.5 3v4.21l3.36 1.96.5-.86L8.5 7.7V4h-1z"/></svg>
+            </span>
+            <span class="label">Viewing v2</span>
+            <button type="button" class="exit" data-state="focus-visible" aria-label="Back to current version" data-tooltip="Back to current version">Back to v5 (current)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Four states, one recipe. The wrapper paints the glass pill; only the trailing exit button reacts to pointer or keyboard. Hover and focus-visible are forced here with <code>[data-state]</code> for the still preview — runtime uses native <code>:hover</code> and <code>:focus-visible</code>.</div>
+  </section>
+
+  <!-- B — Per-state deep dive: Visible -->
+  <section class="section">
+    <div class="section-title">Visible — enter animation</div>
+    <div class="stage">
+      <div class="historic-banner" role="status" aria-live="polite" style="margin:0 auto;display:flex;width:fit-content">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 5.74 11h-1.32A5.75 5.75 0 1 1 8 2.25c1.61 0 3.07.66 4.12 1.71L10.5 5.58h4.25V1.33L13.06 3.03A6.97 6.97 0 0 0 8 1zm-.5 3v4.21l3.36 1.96.5-.86L8.5 7.7V4h-1z"/></svg>
+        </span>
+        <span class="label">Viewing v2</span>
+        <button type="button" class="exit" aria-label="Back to current version" data-tooltip="Back to current version">Back to v5 (current)</button>
+      </div>
+    </div>
+    <div class="caption">Enter: opacity 0 → 1 + translateY(-8px → 0) over <code>--motion-fast</code> (160ms) <code>--ease-standard</code>. The fade-in is short and unobtrusive because the canvas underneath is the focus. <code>@media (prefers-reduced-motion: reduce)</code> collapses the duration to 0ms.</div>
+  </section>
+
+  <!-- C — Per-state deep dive: Exit hover -->
+  <section class="section">
+    <div class="section-title">Exit button — hover</div>
+    <div class="stage">
+      <div class="historic-banner" role="status" aria-live="polite" style="margin:0 auto;display:flex;width:fit-content">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 5.74 11h-1.32A5.75 5.75 0 1 1 8 2.25c1.61 0 3.07.66 4.12 1.71L10.5 5.58h4.25V1.33L13.06 3.03A6.97 6.97 0 0 0 8 1zm-.5 3v4.21l3.36 1.96.5-.86L8.5 7.7V4h-1z"/></svg>
+        </span>
+        <span class="label">Viewing v2</span>
+        <button type="button" class="exit" data-state="hover" aria-label="Back to current version" data-tooltip="Back to current version">Back to v5 (current)</button>
+      </div>
+    </div>
+    <div class="caption">Hover removes the underline and paints <code>--surface-hover</code> behind the label, turning the run-in text into a pill affordance. Transitions over <code>--motion-fast</code> <code>--ease-standard</code>.</div>
+  </section>
+
+  <!-- D — Per-state deep dive: Exit focus-visible -->
+  <section class="section">
+    <div class="section-title">Exit button — focus-visible (keyboard)</div>
+    <div class="stage">
+      <div class="historic-banner" role="status" aria-live="polite" style="margin:0 auto;display:flex;width:fit-content">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 5.74 11h-1.32A5.75 5.75 0 1 1 8 2.25c1.61 0 3.07.66 4.12 1.71L10.5 5.58h4.25V1.33L13.06 3.03A6.97 6.97 0 0 0 8 1zm-.5 3v4.21l3.36 1.96.5-.86L8.5 7.7V4h-1z"/></svg>
+        </span>
+        <span class="label">Viewing v2</span>
+        <button type="button" class="exit" data-state="focus-visible" aria-label="Back to current version" data-tooltip="Back to current version">Back to v5 (current)</button>
+      </div>
+    </div>
+    <div class="caption">Keyboard focus uses the project <code>--focus-ring</code> token (2px gap + 2px accent ring). Pointer clicks never paint the ring (<code>:focus-visible</code>, not <code>:focus</code>).</div>
+  </section>
+
+  <!-- E — In-context preview -->
+  <section class="section">
+    <div class="section-title">In context — anchored below the viewer toolbar</div>
+    <div class="stage">
+      <div class="viewer-canvas">
+        <div class="faux-toolbar">
+          <span class="dot"></span>
+          <span>v2 · pricing-v3</span>
+        </div>
+        <div class="faux-iframe"></div>
+        <div class="historic-banner" role="status" aria-live="polite">
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 5.74 11h-1.32A5.75 5.75 0 1 1 8 2.25c1.61 0 3.07.66 4.12 1.71L10.5 5.58h4.25V1.33L13.06 3.03A6.97 6.97 0 0 0 8 1zm-.5 3v4.21l3.36 1.96.5-.86L8.5 7.7V4h-1z"/></svg>
+          </span>
+          <span class="label">Viewing v2</span>
+          <button type="button" class="exit" aria-label="Back to current version" data-tooltip="Back to current version">Back to v5 (current)</button>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Anchored <code>position:absolute</code>, <code>top: calc(var(--space-xl) + 64px)</code>, <code>left:50%</code> with <code>translateX(-50%)</code>. Sits over the iframe content so the viewer canvas stays visible. The faux grid stands in for the rendered mockup HTML.</div>
+  </section>
+
+  <!-- F — React API section -->
+  <section class="section">
+    <div class="section-title">React API</div>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:12px;max-width:680px">
+      No Radix primitive backs this component — Radix Primitives ships no inline-mode-indicator primitive (Toast is the closest cousin but is transient and floats top-right, see <a href="./17-toast.html"><code>toast</code></a>). Custom React component at <code>src/components/HistoricBanner/HistoricBanner.tsx</code>. The wrapper composes <code>floatingSurface</code> from <code>src/styles/glass.module.css</code> for the canonical blur+border treatment.
+    </p>
+<pre class="api"><span class="c">// HistoricBanner.tsx — overlay pill, mode indicator</span>
+<span class="k">import</span> { <span class="t">HistoricBanner</span> } <span class="k">from</span> <span class="s">'@/components/HistoricBanner/HistoricBanner'</span>;
+
+<span class="c">// Mounted by AppMainViewer when ?v=&lt;vid&gt; is present</span>
+{isHistoric &amp;&amp; (
+  &lt;<span class="t">HistoricBanner</span>
+    viewingLabel={<span class="s">`v${historicVersion}`</span>}      <span class="c">// e.g. "v2"</span>
+    currentLabel={<span class="s">`v${currentVersion}`</span>}        <span class="c">// e.g. "v5"</span>
+    onExit={() =&gt; router.replace(pathnameWithoutV)}
+  /&gt;
+)}
+</pre>
+    <p style="color:var(--text-dim);font-size:12.5px;margin-top:12px;max-width:680px">Notes:</p>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px;max-width:680px">
+      <li><code>viewingLabel</code> + <code>currentLabel</code> — strings the caller formats. The component never derives version numbers itself; the parent owns the version model.</li>
+      <li><code>onExit</code> — fires when the user clicks the trailing button. Caller typically strips <code>?v=</code> from the URL via <code>router.replace</code>. The banner does not unmount itself — the parent's <code>isHistoric</code> guard re-evaluates on URL change and unmounts.</li>
+      <li>Outer wrapper is <code>role="status"</code> + <code>aria-live="polite"</code> (CUSTOM — no Radix equivalent). The mode change is non-blocking news, so polite SR announcement on mount is preferred over <code>role="alert"</code>.</li>
+      <li>Exit button uses native <code>:focus-visible</code> for keyboard rings and <code>data-tooltip</code> for the tooltip text (consumed by the project's tooltip layer, see <a href="./16-tooltip.html"><code>tooltip</code></a>). No Radix Tooltip — that primitive is not installed.</li>
+      <li>No <code>asChild</code> slot pattern. The icon, label, and exit are fixed — the component is a single-purpose mode indicator, not a compound.</li>
+    </ul>
+  </section>
+
+  <!-- G — State decision matrix -->
+  <section class="section">
+    <div class="section-title">State decision matrix</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>State</th><th>How it triggers</th><th>Visual</th><th>Aria</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>hidden</code></td>
+          <td>Parent's <code>isHistoric</code> is <code>false</code> — component not in DOM</td>
+          <td>Nothing painted; canvas occupies the full area</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>visible</code></td>
+          <td>Parent mounts the component when <code>isHistoric</code> flips to <code>true</code> (URL has <code>?v=&lt;vid&gt;</code>)</td>
+          <td>Glass pill anchored top-center; icon · label · exit button. Enter animation plays on mount</td>
+          <td><code>role="status"</code>, <code>aria-live="polite"</code> on the wrapper — SR announces the mode switch once</td>
+        </tr>
+        <tr>
+          <td><code>exit-hover</code></td>
+          <td>Pointer over the exit button (native <code>:hover</code>)</td>
+          <td>Exit drops its underline and paints a <code>--surface-hover</code> pill background</td>
+          <td>Tooltip text from <code>data-tooltip</code> (Our project's tooltip layer — no Radix Tooltip primitive)</td>
+        </tr>
+        <tr>
+          <td><code>exit-focus-visible</code></td>
+          <td>Keyboard focus lands on the exit button (native <code>:focus-visible</code>)</td>
+          <td><code>--focus-ring</code> token (2px gap + 2px accent ring); hover background also applied</td>
+          <td>Button's <code>aria-label</code> ("Back to current version") read on focus</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- H — When-to-use vs sibling components -->
+  <section class="section">
+    <div class="section-title">When to use which — historic-banner vs alert-banner vs toast</div>
+    <table class="matrix">
+      <thead>
+        <tr><th>Use <code>historic-banner</code> when…</th><th>Use the sibling when…</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>The user is in a <strong>persistent mode</strong> that diverges from the default view (here: viewing a past version)</td>
+          <td>The user needs feedback about a <strong>transient action</strong> result — use <a href="./17-toast.html"><code>toast</code></a> (auto-dismiss, top-right, no anchor)</td>
+        </tr>
+        <tr>
+          <td>The signal should stay on screen the whole time the mode is active, anchored to the surface the mode affects</td>
+          <td>The signal is a <strong>non-field message</strong> inside a form, dialog, or section — use <a href="./27-alert-banner.html"><code>alert-banner</code></a> (inline, status hue, scoped to a surface)</td>
+        </tr>
+        <tr>
+          <td>The exit affordance is a one-click return to the default mode</td>
+          <td>The message carries error / warning / success / info semantics — use <a href="./27-alert-banner.html"><code>alert-banner</code></a> with the matching <code>[data-status]</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- I — Anatomy -->
+  <section class="section">
+    <div class="section-title">Anatomy</div>
+    <dl class="tokens">
+      <dt>wrapper</dt><dd><code>&lt;div role="status" aria-live="polite"&gt;</code> — composes <code>floatingSurface</code> glass utility</dd>
+      <dt>position</dt><dd><code>absolute</code>, <code>top: calc(var(--space-xl) + 64px)</code>, <code>left:50%</code>, <code>transform: translateX(-50%)</code>, <code>z-index: 5</code></dd>
+      <dt>bg</dt><dd><code>--surface-glass-bg</code> (rgb 7 12 15 / 80%) + <code>backdrop-filter: blur(16px) saturate(140%)</code></dd>
+      <dt>border</dt><dd>1px solid <code>--border</code></dd>
+      <dt>shadow</dt><dd><code>--shadow-md</code></dd>
+      <dt>radius</dt><dd><code>--radius-pill</code> (999px)</dd>
+      <dt>padding</dt><dd><code>--space-xs</code> <code>--space-sm</code> (8px 12px)</dd>
+      <dt>gap</dt><dd><code>--space-sm</code> (12px) — icon · label · exit</dd>
+      <dt>icon</dt><dd>14×14, color <code>--accent</code>, <code>aria-hidden="true"</code>; <code>VscHistory</code> from <code>react-icons/vsc</code></dd>
+      <dt>label</dt><dd><code>--text-sm</code> (13px), color <code>--text-bright</code>, <code>font-variant-numeric: tabular-nums</code></dd>
+      <dt>exit btn</dt><dd>transparent bg, color <code>--text-bright</code>, padding <code>--space-2xs</code> <code>--space-xs</code>, radius pill, underline + 2px underline-offset</dd>
+      <dt>exit hover</dt><dd>bg <code>--surface-hover</code>, underline removed; transitions over <code>--motion-fast</code> <code>--ease-standard</code></dd>
+      <dt>exit focus-visible</dt><dd><code>--focus-ring</code> token (2px gap + 2px accent ring); same bg as hover</dd>
+      <dt>enter</dt><dd>opacity 0 → 1 + translateY(-8px → 0) over <code>--motion-fast</code> <code>--ease-standard</code></dd>
+      <dt>reduced motion</dt><dd><code>@media (prefers-reduced-motion: reduce)</code> sets <code>animation-duration: 0ms</code> on the wrapper</dd>
+    </dl>
+  </section>
+
+  <!-- J — Behavior -->
+  <section class="section">
+    <div class="section-title">Behavior</div>
+    <ul style="color:var(--text-dim);font-size:12.5px;line-height:1.7;list-style:disc;padding-left:20px">
+      <li>Mounts when the parent's <code>isHistoric</code> guard is <code>true</code> (driven by URL <code>?v=&lt;vid&gt;</code> on the mockup viewer). Unmounts when the guard flips back to <code>false</code>.</li>
+      <li>SR announces the mode switch on mount via <code>role="status"</code> + <code>aria-live="polite"</code> — a single polite phrase, not an alert.</li>
+      <li>Enter animation plays once on mount (opacity + 8px slide-down). Respects <code>prefers-reduced-motion</code> — duration collapses to 0ms with no JS guard.</li>
+      <li>Pointer click on the exit button fires <code>onExit</code> — caller typically strips <code>?v=</code> from the URL. The banner does not self-unmount.</li>
+      <li>Keyboard <code>Tab</code> reaches the exit button (single focusable child). <code>Enter</code> / <code>Space</code> activate it. Native <code>:focus-visible</code> paints the accent ring; pointer clicks do not.</li>
+      <li>Tooltip on the exit button via <code>data-tooltip="Back to current version"</code> — consumed by the project's tooltip layer (see <a href="./16-tooltip.html"><code>tooltip</code></a>). Tooltip text mirrors the <code>aria-label</code> so SR and sighted users get the same affordance.</li>
+      <li>Anchored to the viewer canvas, not the viewport — scrolls with the canvas wrapper. Never floats over the topbar or sidebar.</li>
+      <li>Not dismissable on its own. The only way to remove it is to exit historic mode (via the exit button or by navigating away). This is deliberate — the banner is the source of truth that "you are seeing the past".</li>
+    </ul>
+  </section>
+
+</div>
+
+</body>
+</html>

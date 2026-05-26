@@ -18,6 +18,12 @@ export interface UseDraftKeyboardArgs {
    * bridge them explicitly.
    */
   iframeRef?: React.RefObject<HTMLIFrameElement | null>;
+  /**
+   * When true, the hook does not attach any keydown listener — used by
+   * read-only modes (e.g. historic version viewing) to disable the N /
+   * Esc / ⌘Enter / ⌘S shortcuts.
+   */
+  disabled?: boolean;
 }
 
 function isInputFocused(): boolean {
@@ -30,10 +36,11 @@ function isInputFocused(): boolean {
 }
 
 export function useDraftKeyboard(args: UseDraftKeyboardArgs): void {
-  const { draft, onOpen, onCancel, onSend, onSave, textareaRef, iframeRef } = args;
+  const { draft, onOpen, onCancel, onSend, onSave, textareaRef, iframeRef, disabled } = args;
   const isMac = useIsMac();
 
   useEffect(() => {
+    if (disabled) return;
     function onKey(e: KeyboardEvent) {
       const mod = isMac ? e.metaKey : e.ctrlKey;
 
@@ -125,5 +132,5 @@ export function useDraftKeyboard(args: UseDraftKeyboardArgs): void {
       cleanupIframe?.();
       iframe?.removeEventListener('load', attachIframeListener);
     };
-  }, [draft, isMac, onOpen, onCancel, onSend, onSave, textareaRef, iframeRef]);
+  }, [draft, isMac, onOpen, onCancel, onSend, onSave, textareaRef, iframeRef, disabled]);
 }
