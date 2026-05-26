@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import type { ThreadComment } from '@/components/AnnotationCard';
 import { AppMainViewerWired } from '@/components/MockupViewer/AppMainViewerWired';
 import { ProjectSkeleton } from '@/components/Skeleton';
@@ -34,6 +35,8 @@ export interface MockupViewerPageProps {
  * inlined in this file as a server component.
  */
 export function MockupViewerPage({ mockupId, userRole }: MockupViewerPageProps) {
+  const searchParams = useSearchParams();
+  const viewingVid = searchParams.get('v');
   const [data, setData] = useState<ViewerPayload | null>(null);
   const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'error'>('loading');
   // In-render mockupId reset — drop the stale viewer payload
@@ -90,6 +93,8 @@ export function MockupViewerPage({ mockupId, userRole }: MockupViewerPageProps) 
     return <ProjectSkeleton />;
   }
 
+  const currentVid = data.versions.find((v) => v.current)?.id ?? data.versions[0]?.id ?? '';
+
   return (
     <AppMainViewerWired
       mockupId={data.mockupId}
@@ -100,6 +105,8 @@ export function MockupViewerPage({ mockupId, userRole }: MockupViewerPageProps) 
       versions={data.versions}
       initialAnnotations={data.annotations}
       viewerIsAdmin={userRole === 'admin'}
+      currentVid={currentVid}
+      viewingVid={viewingVid}
     />
   );
 }
