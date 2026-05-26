@@ -36,10 +36,15 @@ export function useAppMainAnnotations({
 }: UseAnnotationsOptions) {
   const [annotations, setAnnotations] = useState<AppMainAnnotation[]>(initialAnnotations);
 
-  // Sync local state when the parent reseeds `initialAnnotations` — this
-  // fires after `router.refresh()` in the wired wrapper, so newly
-  // created/promoted/deleted annotations from the server reach the UI
-  // without a full page reload.
+  // Sync local state when the parent reseeds `initialAnnotations` — fires
+  // on mount, on mockup switch (the parent refetches the viewer aggregator
+  // when the route id changes), and any time the parent hands us a new
+  // array reference. Every mutation in the helpers below also updates
+  // local state optimistically, so this effect is the fallback path
+  // (initial hydration, mockup switch) rather than the per-mutation
+  // refresh — the per-mutation path is the optimistic `setAnnotations`
+  // inside `postReply` / `editComment` / `deleteComment` / `toggleReaction`
+  // / `changeStatus` / `deleteAnnotation` / `prependCreated` below.
   useEffect(() => {
     setAnnotations(initialAnnotations);
   }, [initialAnnotations]);
