@@ -57,7 +57,6 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 - [Full prototype](design/full-prototype.html) — the authoritative full-fidelity prototype (synced from Markup online)
 - [Design system spec](design/design-system/UX_SPEC.md) — UX spec with design tokens, patterns, and component inventory
 - `design/design-system/*.html` — DS component mockups synced from "Markup dev" project (sidebar, breadcrumb, finder-pill, finder-overlay, project-card, icon-picker, new-project-dialog, dropdown-chevron, avatar-menu, agent-tokens, mockup-view, project-folder-view, buttons, dialog, popover, tooltip, toast, annotations-rail, canvas-toolbar, pins, invites, new-invite-dialog, invite-signup, drop-overlay, new-mockup-dialog, empty-state)
-- `design/ideias/` — navigation variant explorations and sidebar ideas (synced from Markup online + local variants)
 
 ### Active design specs (forward-looking)
 
@@ -71,4 +70,6 @@ These directories are gitignored — they hold dated, run-scoped artefacts that 
 - `docs/superpowers/specs/` — design specs from brainstorming runs
 - `docs/superpowers/plans/` — implementation plans
 - `docs/qa/` — visual-QA reports
+- `docs/design/ideias/` — exploratory navigation/UI variants (`design-feature` workflow drops them here)
+- `docs/design/mockups/` — dated single-mockup explorations
 - [`docs/future-features.md`](future-features.md) — parked scope, declarative present tense (this one IS tracked)

@@ -15,7 +15,10 @@
       "!!**/design",
       "!!**/.worktrees",
       "!!**/.claude/worktrees",
-      "!!**/.claude/skills"
+      "!!**/.claude/skills",
+      "!!**/.claire",
+      "!!**/.markup-design",
+      "!!**/.superpowers"
     ]
   },
   "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },

@@ -46,6 +46,8 @@ Point-in-time artefacts (audit reports, brainstorm notes, plan documents) live i
 - `docs/qa/<date>-…` — visual-QA passes (gitignored)
 - `docs/superpowers/specs/<date>-…` — design specs from brainstorming (gitignored)
 - `docs/superpowers/plans/<date>-…` — implementation plans (gitignored)
+- `docs/design/ideias/<date>-…` — exploratory ideia mockups (gitignored)
+- `docs/design/mockups/<date>-…` — dated single-mockup explorations (gitignored)
 - `docs/future-features.md` — backlog of unbuilt scope, written in declarative form (no dates) — this one IS tracked
 
 The gitignored directories hold per-run artefacts that don't belong in shared history; what each run produces of lasting value rolls up into the tracked snapshot docs (`docs/api/`, `docs/agent-loop/`, etc.) or into `docs/future-features.md` for parked scope. The snapshot docs do not link to specific dated artefacts since those references rot every time the local working copy is cleaned.
