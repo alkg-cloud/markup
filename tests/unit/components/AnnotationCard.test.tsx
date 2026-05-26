@@ -155,4 +155,72 @@ describe('AnnotationCard', () => {
     );
     expect(html).toMatch(/class="[^"]*active[^"]*"/);
   });
+
+  it('readOnly hides the primary kebab', () => {
+    const html = renderToStaticMarkup(
+      <AnnotationCard
+        annotationId="a1"
+        label={1}
+        colorIndex={0}
+        status="open"
+        author="A"
+        date="—"
+        primary={PRIMARY}
+        currentUser="A"
+        readOnly
+      />,
+    );
+    expect(html).not.toContain('aria-label="Annotation actions"');
+  });
+
+  it('readOnly hides the reply form textarea', () => {
+    const html = renderToStaticMarkup(
+      <AnnotationCard
+        annotationId="a1"
+        label={1}
+        colorIndex={0}
+        status="open"
+        author="A"
+        date="—"
+        primary={PRIMARY}
+        currentUser="A"
+        readOnly
+      />,
+    );
+    expect(html).not.toContain('Reply to this annotation…');
+  });
+
+  it('readOnly cascades to inner Comment (no Add reaction)', () => {
+    const html = renderToStaticMarkup(
+      <AnnotationCard
+        annotationId="a1"
+        label={1}
+        colorIndex={0}
+        status="open"
+        author="A"
+        date="—"
+        primary={PRIMARY}
+        currentUser="A"
+        readOnly
+      />,
+    );
+    expect(html).not.toContain('Add reaction');
+  });
+
+  it('readOnly still renders the thread accordion toggle', () => {
+    const html = renderToStaticMarkup(
+      <AnnotationCard
+        annotationId="a1"
+        label={1}
+        colorIndex={0}
+        status="open"
+        author="A"
+        date="—"
+        primary={PRIMARY}
+        currentUser="A"
+        readOnly
+      />,
+    );
+    expect(html).toContain('aria-expanded=');
+  });
 });

@@ -65,6 +65,11 @@ export interface AnnotationCardProps {
   onAnnotationDelete?: () => void | Promise<void>;
   /** Whether the current viewer is an admin — widens delete access beyond `primary.isOwn`. */
   viewerIsAdmin?: boolean;
+  /** When true, suppresses every mutation surface on this card: primary
+   *  kebab (status / edit / delete), reply form, and reactions add. Cascades
+   *  to inner Comments. Thread accordion remains operable. Used by historic
+   *  version viewing. */
+  readOnly?: boolean;
 }
 
 /**
@@ -100,6 +105,7 @@ export function AnnotationCard({
   onAnnotationStatusChange,
   onAnnotationDelete,
   viewerIsAdmin = false,
+  readOnly = false,
 }: AnnotationCardProps) {
   // Primary-comment kebab popover — surfaces status toggle + Edit +
   // Delete for annotations the current user authored. Browser-managed
@@ -161,7 +167,7 @@ export function AnnotationCard({
           <span className={styles.author}>{author}</span>
         </span>
         <span className={[styles.pill, pillClass].join(' ')}>{status}</span>
-        {primary.isOwn || viewerIsAdmin ? (
+        {!readOnly && (primary.isOwn || viewerIsAdmin) ? (
           <div className={styles.primaryActions}>
             <button
               ref={primaryKebab.triggerRef}
@@ -257,6 +263,7 @@ export function AnnotationCard({
         onEditSave={(body) => saveEdit(primary.id, body)}
         onEditCancel={cancelEdit}
         onReactionToggle={(emoji) => onCommentReact?.(primary.id, emoji)}
+        readOnly={readOnly}
       />
 
       <div className={styles.foot}>
@@ -285,26 +292,28 @@ export function AnnotationCard({
         id={`thread-${annotationId}`}
         className={[styles.thread, threadOpen && styles.open].filter(Boolean).join(' ')}
       >
-        <form className={styles.reply} onSubmit={onSubmit}>
-          <textarea
-            className={styles.replyInput}
-            rows={2}
-            placeholder="Reply to this annotation…"
-            value={replyDraft}
-            onChange={(e) => setReplyDraft(e.target.value)}
-            onClick={(e) => e.stopPropagation()}
-          />
-          <div className={styles.replyFoot}>
-            <button
-              type="submit"
-              className={styles.replyBtn}
-              disabled={replyDraft.trim().length === 0}
-            >
-              <VscReply aria-hidden="true" />
-              Reply
-            </button>
-          </div>
-        </form>
+        {!readOnly && (
+          <form className={styles.reply} onSubmit={onSubmit}>
+            <textarea
+              className={styles.replyInput}
+              rows={2}
+              placeholder="Reply to this annotation…"
+              value={replyDraft}
+              onChange={(e) => setReplyDraft(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div className={styles.replyFoot}>
+              <button
+                type="submit"
+                className={styles.replyBtn}
+                disabled={replyDraft.trim().length === 0}
+              >
+                <VscReply aria-hidden="true" />
+                Reply
+              </button>
+            </div>
+          </form>
+        )}
 
         {replies.map((r) => (
           <Comment
@@ -324,6 +333,7 @@ export function AnnotationCard({
             onDelete={() => onCommentDelete?.(r.id)}
             onReactionToggle={(emoji) => onCommentReact?.(r.id, emoji)}
             viewerIsAdmin={viewerIsAdmin}
+            readOnly={readOnly}
           />
         ))}
       </section>
