@@ -50,6 +50,12 @@ test('view historic version → URL ?v, banner, read-only, exit, deep-link', asy
   await page.goto(`/projects/unsorted/${m.slug}`);
   await page.waitForSelector('iframe');
 
+  // Capture the iframe src when viewing the current version. The viewer
+  // payload bakes `?v=<currentVid>` in for cache-busting — record the full
+  // src so we can compare it after switching to historic mode.
+  const currentSrc = await page.locator('iframe').first().getAttribute('src');
+  expect(currentSrc).toMatch(/\?v=/);
+
   // Open version popover — data-tooltip attribute value is "Versions & history"
   // (the &amp; in the JSX is the HTML encoding of the literal ampersand).
   // Playwright attribute selectors match the decoded value.
@@ -71,6 +77,19 @@ test('view historic version → URL ?v, banner, read-only, exit, deep-link', asy
   // Banner visible: "Viewing v1" text and "Back to current version" button
   await expect(page.getByText(/Viewing v1/i)).toBeVisible();
   await expect(page.getByRole('button', { name: /Back to current version/i })).toBeVisible();
+
+  // Iframe `src` must REPLACE the existing `v` param (single `?v=<historicVid>`),
+  // not append a second one. The previous implementation used `appendQuery`,
+  // which produced `?v=<currentVid>&v=<historicVid>` — and per the URL spec
+  // `searchParams.get('v')` returns the FIRST value, so the iframe silently
+  // served the current version while the banner said "Viewing v1". This
+  // assertion catches that regression: there must be NO `&v=` in the src
+  // (which would mean a duplicate `v` param), and the src must have changed
+  // from the current-version src captured above.
+  const historicSrc = await page.locator('iframe').first().getAttribute('src');
+  expect(historicSrc).toMatch(/\?v=/);
+  expect(historicSrc).not.toMatch(/&v=/);
+  expect(historicSrc).not.toBe(currentSrc);
 
   // "+ New annotation" button must be gone in historic mode
   await expect(page.getByRole('button', { name: /New annotation/i })).toHaveCount(0);

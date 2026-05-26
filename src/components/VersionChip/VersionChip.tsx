@@ -24,7 +24,10 @@ export interface VersionRow {
 export interface VersionChipProps {
   /** Versions newest-first. */
   versions: VersionRow[];
-  /** Called when a non-current row is clicked → switches to that version. */
+  /** Fires for every row click (current AND non-current). Callers decide
+   *  what to do: a non-current row typically enters historic viewing mode,
+   *  while clicking the current row is the documented gesture to EXIT
+   *  historic mode. */
   onSelect?: (id: string) => void;
   /** Called when a row's Promote action is invoked. */
   onPromote?: (id: string) => void;

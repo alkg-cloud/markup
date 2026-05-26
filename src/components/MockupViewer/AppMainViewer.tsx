@@ -23,10 +23,12 @@
  *   - `useViewerFullscreen`    — fullscreen toggle + state mirror
  *   - `useDraftPersistence`    — localStorage restore + debounced write
  *   - `useDraftKeyboard`       — N / Esc / Cmd+Enter / Cmd+S shortcuts
+ *   - `useInvalidViewingVidNotifier` — single-fire notification when URL
+ *                                      `?v=<vid>` doesn't match any row
  * and a memoized `ViewerCanvas` sub-component holds the iframe + PinLayer
  * so draft/rail churn doesn't reload the mockup.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   AnnotationCard,
   type AnnotationStatus,
@@ -47,6 +49,7 @@ import { setQuery } from '@/lib/url/append-query';
 import styles from './AppMainViewer.module.css';
 import { type DraftState, type DraftStatus, MAX_PINS, type StoredDraft } from './draft-types';
 import { useAppMainAnnotations } from './useAppMainAnnotations';
+import { useInvalidViewingVidNotifier } from './useInvalidViewingVidNotifier';
 import { type PinClick, useViewerCanvas } from './useViewerCanvas';
 import { useViewerFullscreen } from './useViewerFullscreen';
 import { useViewport } from './useViewport';
@@ -454,16 +457,7 @@ export function AppMainViewer({
     [deleteAnnotation],
   );
 
-  const hasCalledInvalidRef = useRef(false);
-  useEffect(() => {
-    if (!viewingVid || isViewingKnown) {
-      hasCalledInvalidRef.current = false;
-      return;
-    }
-    if (hasCalledInvalidRef.current) return;
-    hasCalledInvalidRef.current = true;
-    onInvalidViewingVid?.();
-  }, [viewingVid, isViewingKnown, onInvalidViewingVid]);
+  useInvalidViewingVidNotifier({ viewingVid, isViewingKnown, onInvalidViewingVid });
 
   // `mockupSrc` from the viewer payload already carries `?v=<currentVid>` as a
   // cache-buster. Use `setQuery` (not `appendQuery`) so historic mode REPLACES
