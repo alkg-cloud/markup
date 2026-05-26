@@ -90,3 +90,51 @@ describe('Comment — primary variant', () => {
     expect(headlessRegex.test(html)).toBe(false);
   });
 });
+
+describe('Comment — readOnly prop', () => {
+  it('readOnly hides the kebab menu trigger', () => {
+    const html = renderToStaticMarkup(
+      <Comment
+        author="A"
+        colorIndex={0}
+        timestamp="—"
+        body="hi"
+        isOwn={true}
+        currentUser="A"
+        readOnly
+      />,
+    );
+    expect(html).not.toContain('aria-haspopup="menu"');
+  });
+
+  it('readOnly hides the Add reaction trigger', () => {
+    const html = renderToStaticMarkup(
+      <Comment
+        author="A"
+        colorIndex={0}
+        timestamp="—"
+        body="hi"
+        isOwn={true}
+        currentUser="A"
+        readOnly
+      />,
+    );
+    expect(html).not.toContain('Add reaction');
+  });
+
+  it('readOnly still renders existing reaction pills', () => {
+    const html = renderToStaticMarkup(
+      <Comment
+        author="A"
+        colorIndex={0}
+        timestamp="—"
+        body="hi"
+        isOwn={true}
+        currentUser="A"
+        reactions={[{ emoji: '👍', reactedBy: ['Bob'] }]}
+        readOnly
+      />,
+    );
+    expect(html).toContain('👍');
+  });
+});

@@ -49,6 +49,10 @@ export interface CommentProps {
   onReactionToggle?: (emoji: string) => void;
   /** Whether the current viewer is an admin — they can delete others' comments (not edit). */
   viewerIsAdmin?: boolean;
+  /** When true, suppresses every mutation surface: the kebab menu trigger
+   *  and the Add-reaction trigger do not render; existing reaction pills
+   *  remain visible but are non-toggleable. Used by historic version viewing. */
+  readOnly?: boolean;
 }
 
 /**
@@ -76,6 +80,7 @@ export function Comment({
   onDelete,
   onReactionToggle,
   viewerIsAdmin = false,
+  readOnly = false,
 }: CommentProps) {
   // Kebab popover is browser-managed (HTML popover="auto" — top-layer
   // paint + light dismiss + ESC). `close()` is called on menu-item
@@ -134,7 +139,7 @@ export function Comment({
             <span className={styles.time}>{timestamp}</span>
           </div>
           <div className={styles.actions}>
-            {isOwn || viewerIsAdmin ? (
+            {!readOnly && (isOwn || viewerIsAdmin ? (
               <>
                 <button
                   ref={kebabPopover.triggerRef}
@@ -199,7 +204,7 @@ export function Comment({
               >
                 <VscReply aria-hidden="true" />
               </button>
-            )}
+            ))}
           </div>
         </header>
       ) : null}
@@ -253,13 +258,13 @@ export function Comment({
             emoji={r.emoji}
             reactedBy={r.reactedBy}
             isCurrentUser={r.reactedBy.includes(currentUser)}
-            onClick={(e) => {
+            onClick={readOnly ? undefined : (e) => {
               e.stopPropagation();
               onReactionToggle?.(r.emoji);
             }}
           />
         ))}
-        <EmojiPicker onPick={(emoji) => onReactionToggle?.(emoji)} />
+        {!readOnly && <EmojiPicker onPick={(emoji) => onReactionToggle?.(emoji)} />}
       </footer>
     </article>
   );
