@@ -38,9 +38,9 @@ export function DemoMockup({ onCanvasClick, children, cursor = 'default' }: Prop
     <div
       className={styles.wrap}
       ref={wrap}
-      role="img"
-      aria-label="Sample mockup canvas"
-      tabIndex={onCanvasClick ? 0 : undefined}
+      role="application"
+      aria-label="Mockup canvas — click to place pins"
+      tabIndex={onCanvasClick ? 0 : -1}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       style={{ cursor }}
