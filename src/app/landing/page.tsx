@@ -1,9 +1,9 @@
 'use client';
 
-import { Section } from '@/components/landing/primitives/Section';
+import { Brand } from '@/components/landing/primitives/Brand';
 import { Eyebrow } from '@/components/landing/primitives/Eyebrow';
 import { PillButton } from '@/components/landing/primitives/PillButton';
-import { Brand } from '@/components/landing/primitives/Brand';
+import { Section } from '@/components/landing/primitives/Section';
 
 export default function LandingPage() {
   return (

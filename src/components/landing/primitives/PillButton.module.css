@@ -12,10 +12,10 @@
   cursor: pointer;
   text-decoration: none;
   transition:
-    background 160ms,
-    transform 160ms var(--ease-spring),
-    color 160ms,
-    border-color 160ms;
+    background var(--motion-fast),
+    transform var(--motion-fast) var(--ease-spring),
+    color var(--motion-fast),
+    border-color var(--motion-fast);
 }
 .primary {
   background: var(--btn-bg);
@@ -33,4 +33,14 @@
 .ghost:hover {
   background: var(--surface-hover);
   border-color: var(--border-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+  .primary:hover,
+  .ghost:hover {
+    transform: none;
+  }
 }
