@@ -1,0 +1,54 @@
+name: Landing — build & publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/app/landing/**'
+      - 'src/components/landing/**'
+      - 'src/styles/**'
+      - 'landing-export/**'
+      - '.github/workflows/landing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: landing-publish
+  cancel-in-progress: true
+
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Validate CNAME is set
+        run: |
+          cname=$(cat landing-export/public/CNAME)
+          if [ -z "$cname" ] || [ "$cname" = "example.com" ]; then
+            echo "::error::landing-export/public/CNAME is unset or still 'example.com'. Set the real domain before publishing."
+            exit 1
+          fi
+
+      - name: Build static export
+        run: pnpm --filter @markup/landing-export build
+
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./landing-export/out
+          publish_branch: gh-pages
