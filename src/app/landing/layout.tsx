@@ -1,7 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import styles from './landing.module.css';
 
 export default function LandingLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return <div className={styles.shell}>{children}</div>;
 }

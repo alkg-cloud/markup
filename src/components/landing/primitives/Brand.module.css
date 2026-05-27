@@ -1,0 +1,17 @@
+.brand {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-bright);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  align-self: flex-end;
+  margin-bottom: 2px;
+}
