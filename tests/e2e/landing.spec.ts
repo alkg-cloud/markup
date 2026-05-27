@@ -24,35 +24,19 @@ test.describe('Landing page', () => {
 
   test('reset demo restores seeded state after confirmation', async ({ page }) => {
     await page.goto('/landing#demo');
-    // Wait for hydration before clicking — useDemoStore renders rail items
-    // from localStorage on mount, which is the cheapest hydration signal here.
+    // window.prompt is mocked so the pin-drop flow doesn't block the test.
+    await page.evaluate(() => {
+      window.prompt = () => 'Extra annotation';
+    });
     await expect(page.locator('ul li[aria-label^="Annotation "]')).toHaveCount(3);
 
-    // Seed an extra annotation in localStorage so reset has something to clear.
-    // This avoids depending on the brittle intermediate "Click again to confirm"
-    // text flip (which reverts after 3s and races against CI scheduling).
-    await page.evaluate(() => {
-      const KEY = 'markup-demo:v1';
-      const s = JSON.parse(localStorage.getItem(KEY) ?? '{}');
-      const t = Date.now();
-      s.annotations.push({
-        id: `extra-${t}`,
-        threadId: `extra-t-${t}`,
-        pins: [{ id: `extra-p-${t}`, xPct: 50, yPct: 50 }],
-        colorIndex: 3,
-        createdAt: t,
-      });
-      s.threads.push({ id: `extra-t-${t}`, annotationId: `extra-${t}`, status: 'open' });
-      s.messages.push({
-        id: `extra-m-${t}`,
-        threadId: `extra-t-${t}`,
-        body: 'Extra',
-        author: 'you',
-        createdAt: t,
-      });
-      localStorage.setItem(KEY, JSON.stringify(s));
-    });
-    await page.reload();
+    // Drop a 4th pin via the UI so reset has something to clear. This avoids
+    // the previous approach of editing localStorage + reloading (which caused
+    // a React hydration mismatch because the server-rendered tree used
+    // seeded state while the client read the populated localStorage).
+    await page.getByRole('button', { name: /Drop pin/i }).click();
+    const canvas = page.locator('[role="application"][aria-label*="Mockup canvas"]');
+    await canvas.click({ position: { x: 150, y: 150 } });
     await expect(page.locator('ul li[aria-label^="Annotation "]')).toHaveCount(4);
 
     // Two-step confirm: first click arms the confirm, second click resets.
