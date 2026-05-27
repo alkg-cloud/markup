@@ -5,12 +5,13 @@ test('view historic version → URL ?v, banner, read-only, exit, deep-link', asy
   page,
   request,
 }) => {
-  // Tests share the dev-server DB. With workers:1 in playwright.config.ts,
-  // happy-path runs first and provisions the admin, so historic-viewing logs
-  // in instead of running setup (setup wizard isn't idempotent when an admin
-  // already exists). The creds match what happy-path created.
-  await page.goto('/login');
+  // Setup wizard — runs on a fresh DB. happy-path is `test.fixme`'d, so
+  // historic-viewing is the only spec that exercises setup against this
+  // dev-server instance and there's no admin-already-exists race.
+  await page.goto('/setup');
   await page.fill('input[type=email]', 'admin@example.com');
+  const nameInput = page.locator('input').nth(0);
+  await nameInput.fill('Admin');
   await page.fill('input[type=password]', 'longadminpassword42');
   await page.click('button[type=submit]');
   await page.waitForURL(/localhost:3000\/?$/);
