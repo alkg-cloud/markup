@@ -33,8 +33,10 @@ test('setup → upload → comment → resolve', async ({ page, request }) => {
   expect(upload.status()).toBe(201);
   const created = await upload.json();
 
-  // Open the viewer
-  await page.goto(`/mockups/${created.id}`);
+  // Open the viewer. Orphan mockups (no projectId) live at
+  // /projects/unsorted/<slug> — the 'unsorted' bucket for mockups created
+  // without an explicit project. This matches the historic-viewing spec.
+  await page.goto(`/projects/unsorted/${created.slug}`);
   await page.waitForSelector('iframe');
 
   // Comment flow
