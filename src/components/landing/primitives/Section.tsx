@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { cn } from '@/lib/cn';
 import styles from './Section.module.css';
 
 type Props = {
@@ -10,10 +11,7 @@ type Props = {
 
 export function Section({ children, id, width = 'default', className }: Props) {
   return (
-    <section
-      id={id}
-      className={[styles.section, styles[width], className].filter(Boolean).join(' ')}
-    >
+    <section id={id} className={cn(styles.section, styles[width], className)}>
       {children}
     </section>
   );

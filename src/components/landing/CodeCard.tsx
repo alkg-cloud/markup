@@ -1,29 +1,25 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import type { ReactNode } from 'react';
+import { useCopy } from '@/components/CopyButton/useCopy';
 import styles from './CodeCard.module.css';
 
 type Props = { filename: string; children: ReactNode; copyText: string };
 
 export function CodeCard({ filename, children, copyText }: Props) {
-  const [copied, setCopied] = useState(false);
-
-  async function onCopy() {
-    try {
-      await navigator.clipboard.writeText(copyText);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // clipboard blocked (private mode, no permissions) — fail silently
-    }
-  }
+  const { copied, copy } = useCopy({ feedback: 'inline', inlineDurationMs: 1500 });
 
   return (
     <div className={styles.card}>
       <div className={styles.head}>
         <span className={styles.dot} aria-hidden="true" />
         <span className={styles.name}>{filename}</span>
-        <button type="button" className={styles.copy} onClick={onCopy} aria-live="polite">
+        <button
+          type="button"
+          className={styles.copy}
+          onClick={() => void copy(copyText)}
+          aria-live="polite"
+        >
           {copied ? '✓ Copied' : 'Copy'}
         </button>
       </div>

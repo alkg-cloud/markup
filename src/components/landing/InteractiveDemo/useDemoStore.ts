@@ -1,12 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SEEDED_STATE, STORAGE_KEY } from './seeds';
 import type {
   DemoAnnotation,
   DemoDraft,
   DemoMessage,
-  DemoPin,
   DemoState,
   DemoThread,
   ThreadStatus,
@@ -54,11 +53,11 @@ export function useDemoStore() {
   }, [state]);
 
   const selectAnnotation = useCallback((id: string | null) => {
-    setState((s) => ({ ...s, selectedAnnotId: id }));
+    setState((s) => (s.selectedAnnotId === id ? s : { ...s, selectedAnnotId: id }));
   }, []);
 
   const setTool = useCallback((tool: ToolMode) => {
-    setState((s) => ({ ...s, tool }));
+    setState((s) => (s.tool === tool ? s : { ...s, tool }));
   }, []);
 
   const cycleStatus = useCallback((threadId: string) => {
@@ -115,16 +114,17 @@ export function useDemoStore() {
     });
   }, []);
 
-  const addAnnotation = useCallback((args: { pin: DemoPin; body: string }) => {
+  const addAnnotation = useCallback((args: { xPct: number; yPct: number; body: string }) => {
     setState((s) => {
       const now = Date.now();
       const annId = `a-${now}-${RID()}`;
       const threadId = `t-${now}-${RID()}`;
+      const pinId = `p-${now}-${RID()}`;
       const colorIndex = (s.annotations.length % 5) as 0 | 1 | 2 | 3 | 4;
       const annot: DemoAnnotation = {
         id: annId,
         threadId,
-        pins: [args.pin],
+        pins: [{ id: pinId, xPct: args.xPct, yPct: args.yPct }],
         colorIndex,
         createdAt: now,
       };
@@ -159,9 +159,8 @@ export function useDemoStore() {
     setState(structuredClone(SEEDED_STATE));
   }, []);
 
-  return {
-    state,
-    actions: {
+  const actions = useMemo(
+    () => ({
       selectAnnotation,
       setTool,
       cycleStatus,
@@ -170,6 +169,18 @@ export function useDemoStore() {
       addAnnotation,
       setDraft,
       reset,
-    },
-  };
+    }),
+    [
+      selectAnnotation,
+      setTool,
+      cycleStatus,
+      toggleReaction,
+      addReply,
+      addAnnotation,
+      setDraft,
+      reset,
+    ],
+  );
+
+  return { state, actions };
 }

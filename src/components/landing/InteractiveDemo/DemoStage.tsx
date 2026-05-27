@@ -8,6 +8,7 @@ import { DemoPinLayer } from './DemoPinLayer';
 import { DemoRail } from './DemoRail';
 import styles from './DemoStage.module.css';
 import { DemoToolbar } from './DemoToolbar';
+import { STORAGE_KEY } from './seeds';
 import { useDemoStore } from './useDemoStore';
 
 export function DemoStage() {
@@ -18,10 +19,7 @@ export function DemoStage() {
     if (state.tool !== 'pin') return;
     const body = window.prompt('Annotation body:');
     if (!body?.trim()) return;
-    actions.addAnnotation({
-      pin: { id: `p-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, xPct, yPct },
-      body,
-    });
+    actions.addAnnotation({ xPct, yPct, body });
     actions.setTool('select');
   }
 
@@ -35,7 +33,6 @@ export function DemoStage() {
     setResetConfirm(false);
   }
 
-  // Keyboard shortcuts: P pin / V select / R reset
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const target = e.target as HTMLElement | null;
@@ -98,7 +95,7 @@ export function DemoStage() {
         <div className={styles.foot}>
           <span>
             <strong>{state.annotations.length} annotations</strong> · {openCount} open ·{' '}
-            {resolvedCount} resolved · stored at <code>localStorage.markup-demo:v1</code>
+            {resolvedCount} resolved · stored at <code>localStorage.{STORAGE_KEY}</code>
           </span>
           <span className={styles.footRight}>
             Real <code>&lt;Toolbar&gt;</code>, <code>&lt;AnnotationCard&gt;</code>,{' '}

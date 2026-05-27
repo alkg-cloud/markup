@@ -42,7 +42,7 @@ export type DemoDraft = {
   body: string;
 };
 
-export type ToolMode = 'select' | 'pin' | 'draw';
+export type ToolMode = 'select' | 'pin';
 
 export type DemoState = {
   annotations: DemoAnnotation[];

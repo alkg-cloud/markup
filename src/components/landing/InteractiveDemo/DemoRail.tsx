@@ -45,16 +45,11 @@ export function DemoRail({
         const threadReactions = reactions.filter((r) => r.threadId === thread.id);
         const selected = a.id === selectedId;
         return (
+          // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard selection runs through the pin buttons in DemoPinLayer and the inner status/reaction/reply buttons; the <li> click is a mouse-only convenience and adding tabIndex here conflicts with noNoninteractiveTabindex.
           <li
             key={a.id}
             className={`${styles.annot} ${selected ? styles.selected : ''}`}
             onClick={() => onSelect(a.id)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onSelect(a.id);
-              }
-            }}
             aria-label={`Annotation ${idx + 1}`}
           >
             <div className={styles.header}>
