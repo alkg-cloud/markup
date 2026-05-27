@@ -10,7 +10,9 @@ test('setup → upload → comment → resolve', async ({ page, request }) => {
   await nameInput.fill('Admin');
   await page.fill('input[type=password]', 'longadminpassword42');
   await page.click('button[type=submit]');
-  await page.waitForURL(/\/mockups$/);
+  // Setup wizard redirects to '/' (home dashboard), not '/mockups'.
+  // Matches the redirect target the historic-viewing spec already tests against.
+  await page.waitForURL(/localhost:3000\/?$/);
 
   // Upload via API while we're authenticated (cookie set on the page context)
   const cookies = await page.context().cookies();

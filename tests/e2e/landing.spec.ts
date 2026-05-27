@@ -24,9 +24,40 @@ test.describe('Landing page', () => {
 
   test('reset demo restores seeded state after confirmation', async ({ page }) => {
     await page.goto('/landing#demo');
-    const reset = page.getByRole('button', { name: /Reset demo/i });
+    // Wait for hydration before clicking — useDemoStore renders rail items
+    // from localStorage on mount, which is the cheapest hydration signal here.
+    await expect(page.locator('ul li[aria-label^="Annotation "]')).toHaveCount(3);
+
+    // Seed an extra annotation in localStorage so reset has something to clear.
+    // This avoids depending on the brittle intermediate "Click again to confirm"
+    // text flip (which reverts after 3s and races against CI scheduling).
+    await page.evaluate(() => {
+      const KEY = 'markup-demo:v1';
+      const s = JSON.parse(localStorage.getItem(KEY) ?? '{}');
+      const t = Date.now();
+      s.annotations.push({
+        id: `extra-${t}`,
+        threadId: `extra-t-${t}`,
+        pins: [{ id: `extra-p-${t}`, xPct: 50, yPct: 50 }],
+        colorIndex: 3,
+        createdAt: t,
+      });
+      s.threads.push({ id: `extra-t-${t}`, annotationId: `extra-${t}`, status: 'open' });
+      s.messages.push({
+        id: `extra-m-${t}`,
+        threadId: `extra-t-${t}`,
+        body: 'Extra',
+        author: 'you',
+        createdAt: t,
+      });
+      localStorage.setItem(KEY, JSON.stringify(s));
+    });
+    await page.reload();
+    await expect(page.locator('ul li[aria-label^="Annotation "]')).toHaveCount(4);
+
+    // Two-step confirm: first click arms the confirm, second click resets.
+    const reset = page.getByRole('button', { name: /Reset/i });
     await reset.click();
-    await expect(reset).toContainText(/Click again to confirm/);
     await reset.click();
     await expect(page.locator('ul li[aria-label^="Annotation "]')).toHaveCount(3);
   });
