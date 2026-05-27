@@ -45,7 +45,8 @@ interface MockupRow {
 /** Build a simple in-memory folder tree so tests don't have to spell out every mock call. */
 function buildFolderMock(folders: FolderRow[], mockups: MockupRow[] = []) {
   // folder.findFirst({ where: { projectId, parentId, name } }) → match or null
-  folderFindFirst.mockImplementation(async (args: unknown) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  folderFindFirst.mockImplementation((async (args: unknown) => {
     const { where } = args as {
       where: { projectId: string; parentId: string | null; name: string };
     };
@@ -56,17 +57,19 @@ function buildFolderMock(folders: FolderRow[], mockups: MockupRow[] = []) {
         f.name === where.name,
     );
     return match ? { id: match.id, name: match.name } : null;
-  });
+  }) as unknown as Parameters<typeof folderFindFirst.mockImplementation>[0]);
 
   // folder.findUnique({ where: { id } }) → folder row or null
-  folderFindUnique.mockImplementation(async (args: unknown) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  folderFindUnique.mockImplementation((async (args: unknown) => {
     const { where } = args as { where: { id: string } };
     const match = folders.find((f) => f.id === where.id);
     return match ? { id: match.id, name: match.name, parentId: match.parentId } : null;
-  });
+  }) as unknown as Parameters<typeof folderFindUnique.mockImplementation>[0]);
 
   // mockup.findFirst({ where: { projectId, folderId, slug } }) → match or null
-  mockupFindFirst.mockImplementation(async (args: unknown) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mockupFindFirst.mockImplementation((async (args: unknown) => {
     const { where } = args as {
       where: { projectId: string; folderId: string | null; slug: string };
     };
@@ -79,7 +82,7 @@ function buildFolderMock(folders: FolderRow[], mockups: MockupRow[] = []) {
     return match
       ? { id: match.id, slug: match.slug, name: match.name, folderId: match.folderId }
       : null;
-  });
+  }) as unknown as Parameters<typeof mockupFindFirst.mockImplementation>[0]);
 }
 
 beforeEach(() => {
@@ -274,12 +277,12 @@ describe('buildFolderNamePath', () => {
 
   it('guards against cycles by stopping when a folder id is revisited', async () => {
     // Intentionally malformed tree: f1 → f2 → f1 (cycle).
-    folderFindUnique.mockImplementation(async (args: unknown) => {
+    folderFindUnique.mockImplementation((async (args: unknown) => {
       const { where } = args as { where: { id: string } };
       if (where.id === 'f1') return { id: 'f1', name: 'A', parentId: 'f2' };
       if (where.id === 'f2') return { id: 'f2', name: 'B', parentId: 'f1' };
       return null;
-    });
+    }) as unknown as Parameters<typeof folderFindUnique.mockImplementation>[0]);
 
     // Should terminate rather than loop forever.
     const path = await buildFolderNamePath('f1');

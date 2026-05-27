@@ -8,7 +8,11 @@ import { prisma } from '@/lib/prisma';
 const fixture = (n: string) => path.resolve('tests/fixtures/mockups', n);
 
 // Identity helpers
-const userIdentity = (userId: string) => ({ kind: 'user' as const, userId });
+const userIdentity = (userId: string) => ({
+  kind: 'user' as const,
+  userId,
+  sessionId: 'test-session',
+});
 
 async function seedMockup(name: string) {
   return createMockupFromZip({
