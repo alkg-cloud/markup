@@ -1,0 +1,61 @@
+.h2 {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3.4vw, 48px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  color: var(--text-bright);
+  margin-top: 18px;
+}
+.wrap {
+  margin-top: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th,
+.table td {
+  text-align: left;
+  padding: 14px 18px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-dim);
+  font-weight: 400;
+}
+.table thead {
+  background: var(--surface-soft);
+}
+.table thead th {
+  color: var(--text-bright);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.table thead th.us {
+  color: var(--accent);
+}
+.table td.us {
+  color: var(--text-bright);
+  background: var(--accent-overlay-soft);
+}
+.table tbody th[scope="row"] {
+  color: var(--text);
+  font-weight: 600;
+}
+.table tr:last-child td,
+.table tr:last-child th {
+  border-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .wrap {
+    overflow-x: auto;
+  }
+  .table {
+    min-width: 560px;
+  }
+}
