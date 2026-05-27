@@ -6,7 +6,7 @@ import styles from './Contributors.module.css';
 import { PillLink } from './primitives/PillButton';
 import { Section } from './primitives/Section';
 
-const REPO = 'AlexandreCamillo/markup';
+const REPO = 'alkg-cloud/markup';
 const MIN_REAL = 3;
 const MAX_VISIBLE = 4;
 const CACHE_KEY = 'markup-landing:contributors:v1';

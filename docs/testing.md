@@ -149,6 +149,6 @@ CI runs `pnpm test --coverage` and feeds the summary into `scripts/coverage-ratc
 
 The 0.10pp tolerance absorbs noise from denominator shifts when source files are added without proportional test additions. Real regressions surface quickly because the baseline tracks `main`.
 
-The lcov HTML report for the latest `main` is browsable at <https://github.com/AlexandreCamillo/markup/tree/coverage-data/report> (the README "coverage" badge links there). To browse it locally, run `pnpm test --coverage` and open `coverage/index.html`.
+The lcov HTML report for the latest `main` is browsable at <https://github.com/alkg-cloud/markup/tree/coverage-data/report> (the README "coverage" badge links there). To browse it locally, run `pnpm test --coverage` and open `coverage/index.html`.
 
 The orphan branch is force-pushed on every `main` run; it never accumulates history. If you need it locally: `git fetch origin coverage-data:coverage-data`.

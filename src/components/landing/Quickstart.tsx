@@ -8,7 +8,7 @@ docker run -d --name markup \\
   -p 3000:3000 \\
   -e AUTH_SECRET=$(openssl rand -hex 32) \\
   -v $(pwd)/markup-data:/app/data \\
-  ghcr.io/alexandrecamillo/markup:latest`;
+  ghcr.io/alkg-cloud/markup:latest`;
 
 const CURL_RAW = `# 2. Read context, apply patch, reply on thread.
 curl -H "Authorization: Bearer $TOKEN" \\
@@ -34,7 +34,7 @@ export function Quickstart() {
         <K>-e</K> <V>AUTH_SECRET</V>=<S>$(openssl rand -hex 32)</S> \{'\n'}
         {'  '}
         <K>-v</K> <V>$(pwd)/markup-data:/app/data</V> \{'\n'}
-        {'  '}ghcr.io/alexandrecamillo/markup:<S>latest</S>
+        {'  '}ghcr.io/alkg-cloud/markup:<S>latest</S>
       </CodeCard>
       <CodeCard filename="~/markup/agent-loop.sh" copyText={CURL_RAW}>
         <C># 2. Read context, apply patch, reply on thread.</C>

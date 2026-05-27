@@ -2,7 +2,7 @@ import { Brand } from './primitives/Brand';
 import { PillLink } from './primitives/PillButton';
 import styles from './Topbar.module.css';
 
-const GITHUB_URL = 'https://github.com/AlexandreCamillo/markup';
+const GITHUB_URL = 'https://github.com/alkg-cloud/markup';
 
 export function Topbar() {
   return (

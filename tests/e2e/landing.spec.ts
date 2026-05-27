@@ -40,23 +40,20 @@ test.describe('Landing page', () => {
   });
 
   test('contributors section is hidden when <3 real contributors', async ({ page }) => {
-    await page.route(
-      '**/api.github.com/repos/AlexandreCamillo/markup/contributors**',
-      async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify([
-            {
-              login: 'AlexandreCamillo',
-              type: 'User',
-              avatar_url: 'https://avatars.example/AC',
-              contributions: 1,
-            },
-          ]),
-        });
-      },
-    );
+    await page.route('**/api.github.com/repos/alkg-cloud/markup/contributors**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          {
+            login: 'AlexandreCamillo',
+            type: 'User',
+            avatar_url: 'https://avatars.example/AC',
+            contributions: 1,
+          },
+        ]),
+      });
+    });
     await page.goto('/landing');
     await expect(page.locator('.has-contributors')).toHaveCount(0);
   });

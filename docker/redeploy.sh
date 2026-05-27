@@ -5,11 +5,11 @@
 # image fails to come up healthy.
 #
 # Usage: redeploy.sh <IMAGE_REF>
-#   e.g.  redeploy.sh ghcr.io/alexandrecamillo/markup:abc1234
+#   e.g.  redeploy.sh ghcr.io/alkg-cloud/markup:abc1234
 
 set -euo pipefail
 
-IMAGE="${1:?image ref is required (e.g. ghcr.io/alexandrecamillo/markup:abc1234)}"
+IMAGE="${1:?image ref is required (e.g. ghcr.io/alkg-cloud/markup:abc1234)}"
 NAME=markup
 
 if ! docker inspect "$NAME" >/dev/null 2>&1; then

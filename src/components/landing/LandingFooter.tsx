@@ -1,7 +1,7 @@
 import styles from './LandingFooter.module.css';
 import { Brand } from './primitives/Brand';
 
-const GH = 'https://github.com/AlexandreCamillo/markup';
+const GH = 'https://github.com/alkg-cloud/markup';
 
 export function LandingFooter() {
   return (

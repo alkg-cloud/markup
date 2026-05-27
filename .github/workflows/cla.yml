@@ -43,6 +43,6 @@ jobs:
           PERSONAL_ACCESS_TOKEN: ${{ secrets.CLA_PAT }}
         with:
           path-to-signatures: 'signatures/v1/cla.json'
-          path-to-document: 'https://github.com/AlexandreCamillo/markup/blob/main/CLA.md'
+          path-to-document: 'https://github.com/alkg-cloud/markup/blob/main/CLA.md'
           branch: 'main'
           allowlist: AlexandreCamillo,dependabot[bot]
