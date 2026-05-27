@@ -82,7 +82,8 @@ describe('useDemoStore', () => {
     const beforeAnnots = result.current.state.annotations.length;
     act(() => {
       result.current.actions.addAnnotation({
-        pin: { id: 'pX', xPct: 50, yPct: 50 },
+        xPct: 50,
+        yPct: 50,
         body: 'New comment',
       });
     });

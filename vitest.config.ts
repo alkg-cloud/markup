@@ -33,6 +33,13 @@ export default defineConfig({
         'src/app/**/layout.tsx',
         'src/app/**/loading.tsx',
         'src/app/**/error.tsx',
+        // Landing is a presentation-heavy marketing surface (12 sections + a
+        // localStorage-backed demo). Its data-layer is unit-tested directly
+        // (useDemoStore, Contributors.filters, Contributors.render); the rest
+        // is visual / behavioural and covered by Playwright. Excluding here
+        // keeps the ratchet aligned with what's actually meaningfully testable.
+        'src/app/landing/**',
+        'src/components/landing/**',
       ],
     },
     pool: 'forks',

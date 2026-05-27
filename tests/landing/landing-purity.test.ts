@@ -1,3 +1,4 @@
+import type { Dirent } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -16,9 +17,12 @@ const ROOTS = ['src/app/landing', 'src/components/landing'];
 
 async function walk(dir: string): Promise<string[]> {
   const out: string[] = [];
-  let entries: Awaited<ReturnType<typeof readdir>>;
+  // Cast to Dirent<string>[]: passing `encoding: 'utf8'` guarantees string
+  // names at runtime, but @types/node 24's overload still infers the buffer
+  // variant. The cast keeps `e.name` typed as the string we know it is.
+  let entries: Dirent<string>[];
   try {
-    entries = await readdir(dir, { withFileTypes: true });
+    entries = (await readdir(dir, { withFileTypes: true, encoding: 'utf8' })) as Dirent<string>[];
   } catch {
     return out; // directory doesn't exist yet — fine on first run
   }
