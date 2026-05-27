@@ -17,16 +17,15 @@ export default defineConfig({
     ? undefined
     : {
         // mkdir up-front so the env validator's DATA_DIR `min(1)` check has a
-      // writable target before any request lands on the upload routes.
-      command: 'mkdir -p ./tmp/e2e-data && pnpm dev',
+        // writable target before any request lands on the upload routes.
+        command: 'mkdir -p ./tmp/e2e-data && pnpm dev',
         url: 'http://localhost:3000',
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,
         stdout: 'ignore',
         stderr: 'pipe',
         env: {
-          AUTH_SECRET:
-            process.env.AUTH_SECRET ?? 'e2e-only-stub-secret-not-for-prod-32chars',
+          AUTH_SECRET: process.env.AUTH_SECRET ?? 'e2e-only-stub-secret-not-for-prod-32chars',
           DATA_DIR: process.env.DATA_DIR ?? './tmp/e2e-data',
           DATABASE_URL: process.env.DATABASE_URL ?? 'file:./prisma/test.db',
         },
