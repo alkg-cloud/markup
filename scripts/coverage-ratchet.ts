@@ -40,7 +40,7 @@ function readCurrentMetrics(): CoverageMetrics {
 }
 
 function cloneCoverageBranch(): { exists: boolean } {
-  if (existsSync(SCRATCH_DIR)) rmSync(SCRATCH_DIR, { recursive: true, force: true });
+  rmSync(SCRATCH_DIR, { recursive: true, force: true });
   const out = sh(`git ls-remote --exit-code origin ${COVERAGE_BRANCH}`, { allowFail: true });
   if (!out.trim()) {
     mkdirSync(SCRATCH_DIR, { recursive: true });
@@ -71,7 +71,7 @@ function writeArtifacts(current: CoverageMetrics, color: string): void {
     ),
   );
   const reportDir = join(SCRATCH_DIR, 'report');
-  if (existsSync(reportDir)) rmSync(reportDir, { recursive: true, force: true });
+  rmSync(reportDir, { recursive: true, force: true });
   cpSync(COVERAGE_DIR, reportDir, { recursive: true });
   writeFileSync(
     join(SCRATCH_DIR, 'README.md'),
@@ -79,7 +79,7 @@ function writeArtifacts(current: CoverageMetrics, color: string): void {
   );
 }
 
-function pushArtifacts(branchExisted: boolean): void {
+function pushArtifacts(): void {
   const token = process.env.GITHUB_TOKEN;
   if (!token) throw new Error('GITHUB_TOKEN required to push coverage artifacts');
   const remote = `https://x-access-token:${token}@github.com/${process.env.GITHUB_REPOSITORY}.git`;
@@ -92,41 +92,44 @@ function pushArtifacts(branchExisted: boolean): void {
     `git -C ${SCRATCH_DIR} commit -m "chore(coverage): update baseline + badge for ${process.env.GITHUB_SHA?.slice(0, 7) ?? 'unknown'}"`,
     { allowFail: true },
   );
-  if (!branchExisted) {
-    sh(`git -C ${SCRATCH_DIR} branch -M ${COVERAGE_BRANCH}`);
-  }
   sh(`git -C ${SCRATCH_DIR} push --force "${remote}" ${COVERAGE_BRANCH}`);
 }
 
 async function main(): Promise<void> {
-  const current = readCurrentMetrics();
-  const { exists } = cloneCoverageBranch();
-  const baseline = exists ? readBaseline() : null;
-  const result = compareCoverage(current, baseline, DRIFT_TOLERANCE);
+  try {
+    const current = readCurrentMetrics();
+    const { exists } = cloneCoverageBranch();
+    const baseline = exists ? readBaseline() : null;
+    const result = compareCoverage(current, baseline, DRIFT_TOLERANCE);
 
-  console.log(result.markdown);
+    console.log(result.markdown);
 
-  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
-  if (summaryPath) writeFileSync(summaryPath, result.markdown, { flag: 'a' });
+    const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+    if (summaryPath) writeFileSync(summaryPath, result.markdown, { flag: 'a' });
 
-  const outputPath = process.env.GITHUB_OUTPUT;
-  if (outputPath) {
-    writeFileSync(outputPath, `markdown<<EOF\n${result.markdown}\nEOF\npass=${result.pass}\n`, {
-      flag: 'a',
-    });
+    const outputPath = process.env.GITHUB_OUTPUT;
+    if (outputPath) {
+      writeFileSync(outputPath, `markdown<<EOF\n${result.markdown}\nEOF\npass=${result.pass}\n`, {
+        flag: 'a',
+      });
+    }
+
+    const isPush =
+      process.env.GITHUB_EVENT_NAME === 'push' && process.env.GITHUB_REF_NAME === 'main';
+    if (!result.pass) {
+      console.error(`Coverage regressed in: ${result.failures.join(', ')}`);
+      process.exit(1);
+    }
+    if (isPush) {
+      writeArtifacts(current, result.color);
+      pushArtifacts();
+      console.log(`Coverage artifacts pushed to branch ${COVERAGE_BRANCH}.`);
+    }
+  } finally {
+    // The scratch clone may hold a token-embedded remote URL in .git/config;
+    // clean up even on failure paths so the secret never survives the process.
+    rmSync(SCRATCH_DIR, { recursive: true, force: true });
   }
-
-  const isPush = process.env.GITHUB_EVENT_NAME === 'push' && process.env.GITHUB_REF_NAME === 'main';
-  if (!result.pass) {
-    console.error(`Coverage regressed in: ${result.failures.join(', ')}`);
-    process.exit(1);
-  }
-  if (isPush) {
-    writeArtifacts(current, result.color);
-    pushArtifacts(exists);
-    console.log(`Coverage artifacts pushed to branch ${COVERAGE_BRANCH}.`);
-  }
-  if (existsSync(SCRATCH_DIR)) rmSync(SCRATCH_DIR, { recursive: true, force: true });
 }
 
 main().catch((e) => {

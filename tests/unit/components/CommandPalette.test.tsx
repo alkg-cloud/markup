@@ -1,11 +1,7 @@
-// NOTE: CommandPalette uses next/navigation's useRouter(), which requires
-// the Next.js App Router context. renderToStaticMarkup cannot mount it —
-// the router invariant fires before any JSX renders.  The component's
-// interactive behaviour (keyboard, filter, navigation) is already fully
-// covered by the sibling unit tests in
-//   tests/unit/components/command-palette/
-// This file therefore focuses on the two exported pure helpers that power
-// the result-list rendering: escapeHtml and highlightMatch.
+// CommandPalette uses next/navigation's useRouter(), which requires the
+// App Router context — renderToStaticMarkup can't mount it. Interactive
+// behaviour (keyboard, filter, navigation) lives in
+// tests/unit/components/command-palette/.
 import { describe, expect, it } from 'vitest';
 import { escapeHtml, highlightMatch } from '@/components/CommandPalette/CommandPalette';
 
