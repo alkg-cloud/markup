@@ -16,15 +16,32 @@ export default defineConfig({
       'tests/unit/**/*.test.tsx',
       'tests/integration/**/*.test.ts',
     ],
-    coverage: { reporter: ['text', 'lcov'] },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'json-summary', 'html'],
+      reportsDirectory: './coverage',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/*.d.ts',
+        'src/**/*.stories.tsx',
+        'src/styles/**',
+        'src/types/**',
+        'src/instrumentation.ts',
+        'src/proxy.ts',
+        'src/app/**/layout.tsx',
+        'src/app/**/loading.tsx',
+        'src/app/**/error.tsx',
+      ],
+    },
     pool: 'forks',
     fileParallelism: false,
     maxWorkers: 1,
     // CI runners have slower disks than dev workstations; integration
     // tests that upload + unzip mockup fixtures can brush past the
-    // default 5s. 10s covers the slowest CI runs without masking real
-    // hangs.
-    testTimeout: 10000,
+    // default 5s. 20s covers the slowest CI runs (including under v8
+    // coverage instrumentation, which adds measurable overhead to
+    // I/O-heavy upload paths) without masking real hangs.
+    testTimeout: 20000,
   },
   resolve: {
     alias: {

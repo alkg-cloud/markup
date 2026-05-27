@@ -352,3 +352,20 @@ The Tarefa 5 ultrareview ("Tarefa 5 aceitou outros mockups considerados alinhado
 **Fix:** rewrite each mockup's glass treatment to use the new `--surface-glass-bg` / `--surface-glass-blur` / `--surface-glass-border` tokens and the saturate-140% filter. Replace any token-divergent values with the up-to-date `tokens.css` definitions. Re-test visually against the live component, then upload new versions to prod (`POST /api/mockups/{id}/version`). The 7 new mockups (14-20) shipped in Tarefa 5 already use the new standard and are aligned.
 
 **Size:** ~3 hours per group; budget half a day for the 12 component mockups + half a day for `full-prototype.html` (~2500 lines). Lower priority: divergence is < 5% of pixel-perfect (saturation + tint), no functional regression.
+
+---
+
+## Coverage: large UI components without tests
+
+Seven large UI components (and one hook) lack test coverage:
+
+- `components/ProjectTree/ProjectTree.tsx` (387 LOC, drag-drop orchestrator)
+- `components/ProjectTree/TreeNode.tsx` (364 LOC, dense event handling)
+- `components/ProjectTree/TreeNodeKebab.tsx` (169 LOC, confirm-on-delete dialog)
+- `components/NewProjectDialog/NewProjectDialog.tsx` (179 LOC, form validation + icon picker)
+- `components/PinLayer/PinLayer.tsx` (176 LOC, `useAnchoredPins` integration)
+- `components/MockupViewer/ViewerCanvas.tsx` (176 LOC, iframe + pin-click bridge)
+- `components/ThreadTimeline/ThreadTimeline.tsx` (175 LOC, reply form + message list)
+- `lib/popover/usePopover.ts` (93 LOC, beforetoggle handler)
+
+Each lives above the typical "small component, simple test" threshold and contains non-trivial state machines or event flows. Adding their tests raises coverage by an estimated +4–6pp lines.

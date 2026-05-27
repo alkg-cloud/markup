@@ -1,17 +1,29 @@
 # CI and coding rules
 
-The single CI workflow runs `lint + typecheck + test + build` on every push. Read this before changing any file — the rules here keep `main` green.
+The single CI workflow runs five jobs on every push. Read this before changing any file — the rules here keep `main` green.
 
 ## The pipeline
 
-| Stage | Command | What fails CI |
+| Job | Command | What fails CI |
 |---|---|---|
-| Lint + format | `pnpm exec biome check .` | Any lint error or format diff. Warnings do not fail CI; errors do. |
-| Typecheck | `pnpm exec tsc --noEmit` | Any TS error. The pre-existing `baseUrl` deprecation warning is informational. |
-| Tests | `pnpm test` (Vitest) | Any failing assertion across unit + integration suites. |
-| Build | `pnpm build` (Next 16 + Turbopack) | TS errors that only surface at build time, missing imports, or build-config issues. |
+| `lint` | `pnpm exec biome check .` | Any lint error or format diff. Warnings do not fail CI; errors do. |
+| `typecheck` | `pnpm exec tsc --noEmit` | Any TS error. The pre-existing `baseUrl` deprecation warning is informational. |
+| `build` | `pnpm build` (Next 16 + Turbopack) | TS errors that only surface at build time, missing imports, or build-config issues. |
+| `test-coverage` | `pnpm test --coverage` + `scripts/coverage-ratchet.ts` | Any failing assertion across unit + integration suites, OR a coverage drop of more than 0.10pp on any of lines/statements/functions/branches vs the baseline on the `coverage-data` branch. |
+| `e2e` | `pnpm test:e2e` (Playwright) | Any failing e2e assertion. The job installs Chromium via `playwright install --with-deps`. |
 
-`pnpm test` runs sequentially (`fileParallelism: false, maxWorkers: 1`) because integration tests share `prisma/test.db`. See [Testing](testing.md) for why and what would replace it.
+All five jobs run in parallel from the same `actions/checkout` + `pnpm install` prelude.
+
+## Coverage
+
+`test-coverage` gates merges on a ratchet: each metric (lines, statements, functions, branches) must not drop more than 0.10pp below the baseline stored in the orphan branch `coverage-data`. On every `main` push, the job force-pushes the new baseline + a `shields.io`-shaped `badge.json` + the lcov HTML report to that branch.
+
+The README coverage badge reads `badge.json` via raw GitHub. Two implications:
+
+- The orphan branch never accumulates history (force-pushed). Fine for an artifact branch.
+- The badge 404s until the first `main` push writes the `coverage-data` branch.
+
+See [`docs/testing.md`](testing.md) for the engineer-facing details.
 
 ## Pre-push checklist
 
@@ -20,6 +32,8 @@ pnpm exec biome check .
 pnpm exec tsc --noEmit
 pnpm test
 pnpm build
+# Optional, but matches CI:
+pnpm test:e2e
 ```
 
 All must exit 0. If you touched the schema, also run:

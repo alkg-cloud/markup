@@ -7,7 +7,7 @@
 | Unit | Vitest | `tests/unit/lib/<surface>/<name>.test.ts` | Pure-function tests; no DB, no FS |
 | Integration | Vitest | `tests/integration/<surface>/<name>.test.ts` | Route handlers and services exercised against a real Prisma + filesystem |
 
-Run with `pnpm test` (single run) or `pnpm test:watch`. Coverage is not gated in CI.
+Run with `pnpm test` (single run), `pnpm test:watch`, or `pnpm test --coverage` to also produce `coverage/index.html` and `coverage/coverage-summary.json`.
 
 ## The shared `prisma/test.db` rule
 
@@ -137,3 +137,18 @@ const png = await sharp({
 The `/api/annotations/[id]/intent` route launches headless Chromium when the annotation has drawings. Tests that exercise the full puppeteer path are slow (3-5s cold start). The integration test for `/intent` (`tests/integration/api/annotations-intent.test.ts`) covers the **cache-hit** and **no-shapes** paths without invoking puppeteer; the full happy path is verified manually against the dev server.
 
 When a future test needs to exercise puppeteer, reuse the singleton from `src/lib/intent/puppeteer.ts` — don't launch a second browser.
+
+## Coverage and the ratchet
+
+CI runs `pnpm test --coverage` and feeds the summary into `scripts/coverage-ratchet.ts`. The script:
+
+1. Fetches `baseline.json` from the orphan branch `coverage-data`.
+2. Compares each metric (lines, statements, functions, branches) against the baseline.
+3. On PRs, fails the build if any metric drops more than 0.10pp below baseline.
+4. On `main` push, force-writes the new baseline + `badge.json` + `report/` (lcov-html) back to `coverage-data`.
+
+The 0.10pp tolerance absorbs noise from denominator shifts when source files are added without proportional test additions. Real regressions surface quickly because the baseline tracks `main`.
+
+The lcov HTML report for the latest `main` is browsable at <https://github.com/AlexandreCamillo/markup/tree/coverage-data/report> (the README "coverage" badge links there). To browse it locally, run `pnpm test --coverage` and open `coverage/index.html`.
+
+The orphan branch is force-pushed on every `main` run; it never accumulates history. If you need it locally: `git fetch origin coverage-data:coverage-data`.
