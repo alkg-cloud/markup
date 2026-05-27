@@ -3,6 +3,10 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
+  // The e2e suite shares a single dev-server DB across test files. Without
+  // `workers: 1` Playwright spawns one worker per CPU and runs files in
+  // parallel, which races on the setup-wizard admin creation. Force serial.
+  workers: 1,
   retries: 0,
   reporter: 'list',
   use: {

@@ -24,13 +24,17 @@ export function DemoStage() {
   }
 
   function onReset() {
-    if (!resetConfirm) {
-      setResetConfirm(true);
-      setTimeout(() => setResetConfirm(false), 3000);
-      return;
-    }
-    actions.reset();
-    setResetConfirm(false);
+    // Functional updater reads the LATEST state, not the closure-captured
+    // value — two rapid clicks (before React re-renders) would otherwise both
+    // see `resetConfirm === false` and just re-arm without ever firing reset.
+    setResetConfirm((prev) => {
+      if (!prev) {
+        setTimeout(() => setResetConfirm(false), 3000);
+        return true;
+      }
+      actions.reset();
+      return false;
+    });
   }
 
   useEffect(() => {
