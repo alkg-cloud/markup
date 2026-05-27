@@ -28,6 +28,7 @@ export function DemoMockup({ onCanvasClick, children, cursor = 'default' }: Prop
 
   function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
     if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
       if (!wrap.current) return;
       const rect = wrap.current.getBoundingClientRect();
       computeClick(rect.left + rect.width / 2, rect.top + rect.height / 2);
