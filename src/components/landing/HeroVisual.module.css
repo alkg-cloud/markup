@@ -13,9 +13,11 @@
   position: absolute;
   inset: -1px;
   border-radius: 18px;
+  /* Atmospheric card-glow: accent token at top-left, hue-322 counter-tone bottom-right.
+     The 322 stop is an intentional decorative one-off — no token by design. */
   background: linear-gradient(
     135deg,
-    oklch(74.4% 0.193 165 / 0.2),
+    var(--accent-overlay-soft),
     transparent 40%,
     oklch(74.4% 0.193 322 / 0.15)
   );
@@ -115,7 +117,7 @@
   height: 30px;
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
-  color: oklch(15% 0.005 165);
+  color: var(--text-on-accent);
   font-weight: 800;
   font-size: 12px;
   box-shadow: var(--shadow-pin);
@@ -168,7 +170,7 @@
   align-items: center;
   justify-content: center;
   background: var(--accent);
-  color: oklch(15% 0.005 165);
+  color: var(--text-on-accent);
   font-size: 10px;
   font-weight: 800;
 }
