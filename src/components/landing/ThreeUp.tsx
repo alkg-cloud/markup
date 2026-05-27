@@ -33,7 +33,9 @@ export function ThreeUp() {
       <div className={styles.grid}>
         {CARDS.map((c) => (
           <div key={c.title} className={styles.card}>
-            <div className={styles.icon}>{c.icon}</div>
+            <div className={styles.icon} aria-hidden="true">
+              {c.icon}
+            </div>
             <h3 className={styles.h3}>{c.title}</h3>
             <p>{c.body}</p>
           </div>
