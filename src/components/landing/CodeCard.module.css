@@ -1,0 +1,85 @@
+.card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-top: 24px;
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-soft);
+}
+.name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  margin-right: 4px;
+}
+.copy {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  transition:
+    color var(--motion-fast),
+    border-color var(--motion-fast);
+}
+.copy:hover {
+  color: var(--text-bright);
+  border-color: var(--border-strong);
+}
+.pre {
+  padding: 18px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-bright);
+  line-height: 1.65;
+  overflow-x: auto;
+  white-space: pre;
+}
+.pre :global(.c) {
+  color: var(--text-muted);
+}
+.pre :global(.k) {
+  color: var(--accent);
+}
+.pre :global(.s) {
+  color: oklch(80% 0.15 80);
+}
+.pre :global(.v) {
+  color: oklch(80% 0.12 200);
+}
+
+@media (max-width: 768px) {
+  .pre {
+    font-size: 11px;
+    padding: 14px;
+  }
+  .head {
+    padding: 8px 12px;
+  }
+  .name {
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy {
+    transition: none;
+  }
+}
