@@ -27,11 +27,11 @@ const SECTION_LABELS: Record<(typeof SECTION_ORDER)[number], string> = {
   mockups: 'MOCKUPS',
 };
 
-function escapeHtml(text: string): string {
+export function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function highlightMatch(text: string, query: string): string {
+export function highlightMatch(text: string, query: string): string {
   const escaped = escapeHtml(text);
   if (!query) return escaped;
   const idx = text.toLowerCase().indexOf(query.toLowerCase());
