@@ -59,7 +59,7 @@
   color: var(--accent);
 }
 .pre :global(.s) {
-  color: oklch(80% 0.15 80);
+  color: var(--warning);
 }
 .pre :global(.v) {
   color: oklch(80% 0.12 200);
