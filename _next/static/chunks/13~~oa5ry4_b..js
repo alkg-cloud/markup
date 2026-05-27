@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,33439,e=>{e.v({shell:"landing-module__jke6-a__shell"})},54108,e=>{"use strict";var l=e.i(45099),s=e.i(33439);e.s(["default",0,function({children:e}){return(0,l.jsx)("div",{className:s.default.shell,children:e})}])}]);
