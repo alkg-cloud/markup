@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { SEEDED_STATE, STORAGE_KEY } from './seeds';
 import type {
   DemoAnnotation,
   DemoDraft,
@@ -11,7 +12,8 @@ import type {
   ThreadStatus,
   ToolMode,
 } from './types';
-import { SEEDED_STATE, STORAGE_KEY } from './seeds';
+
+const RID = () => Math.random().toString(36).slice(2, 7);
 
 const STATUS_CYCLE: ThreadStatus[] = ['open', 'needs review', 'resolved'];
 
@@ -98,15 +100,16 @@ export function useDemoStore() {
   }, []);
 
   const addReply = useCallback((threadId: string, body: string) => {
-    if (!body.trim()) return;
+    const trimmed = body.trim();
+    if (!trimmed) return;
     setState((s) => {
-      const id = `m-${Date.now()}`;
+      const now = Date.now();
       const msg: DemoMessage = {
-        id,
+        id: `m-${now}-${RID()}`,
         threadId,
-        body: body.trim(),
+        body: trimmed,
         author: 'you',
-        createdAt: Date.now(),
+        createdAt: now,
       };
       return { ...s, messages: [...s.messages, msg] };
     });
@@ -114,23 +117,24 @@ export function useDemoStore() {
 
   const addAnnotation = useCallback((args: { pin: DemoPin; body: string }) => {
     setState((s) => {
-      const annId = `a-${Date.now()}`;
-      const threadId = `t-${Date.now()}`;
+      const now = Date.now();
+      const annId = `a-${now}-${RID()}`;
+      const threadId = `t-${now}-${RID()}`;
       const colorIndex = (s.annotations.length % 5) as 0 | 1 | 2 | 3 | 4;
       const annot: DemoAnnotation = {
         id: annId,
         threadId,
         pins: [args.pin],
         colorIndex,
-        createdAt: Date.now(),
+        createdAt: now,
       };
       const thread: DemoThread = { id: threadId, annotationId: annId, status: 'open' };
       const message: DemoMessage = {
-        id: `m-${Date.now()}-0`,
+        id: `m-${now}-${RID()}`,
         threadId,
         body: args.body.trim(),
         author: 'you',
-        createdAt: Date.now(),
+        createdAt: now,
       };
       return {
         ...s,

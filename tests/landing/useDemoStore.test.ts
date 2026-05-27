@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { useDemoStore } from '@/components/landing/InteractiveDemo/useDemoStore';
 import { SEEDED_STATE, STORAGE_KEY } from '@/components/landing/InteractiveDemo/seeds';
+import { useDemoStore } from '@/components/landing/InteractiveDemo/useDemoStore';
 
 describe('useDemoStore', () => {
   beforeEach(() => {
@@ -31,30 +31,48 @@ describe('useDemoStore', () => {
   it('cycleStatus rotates open → needs review → resolved → open', () => {
     const { result } = renderHook(() => useDemoStore());
     expect(result.current.state.threads.find((t) => t.id === 't1')?.status).toBe('open');
-    act(() => { result.current.actions.cycleStatus('t1'); });
+    act(() => {
+      result.current.actions.cycleStatus('t1');
+    });
     expect(result.current.state.threads.find((t) => t.id === 't1')?.status).toBe('needs review');
-    act(() => { result.current.actions.cycleStatus('t1'); });
+    act(() => {
+      result.current.actions.cycleStatus('t1');
+    });
     expect(result.current.state.threads.find((t) => t.id === 't1')?.status).toBe('resolved');
-    act(() => { result.current.actions.cycleStatus('t1'); });
+    act(() => {
+      result.current.actions.cycleStatus('t1');
+    });
     expect(result.current.state.threads.find((t) => t.id === 't1')?.status).toBe('open');
   });
 
   it('toggleReaction adds, increments mine, then removes on second click', () => {
     const { result } = renderHook(() => useDemoStore());
-    act(() => { result.current.actions.toggleReaction('t2', '👀'); });
-    const after = result.current.state.reactions.find((r) => r.threadId === 't2' && r.emoji === '👀');
+    act(() => {
+      result.current.actions.toggleReaction('t2', '👀');
+    });
+    const after = result.current.state.reactions.find(
+      (r) => r.threadId === 't2' && r.emoji === '👀',
+    );
     expect(after?.mine).toBe(true);
     expect(after?.count).toBe(1);
-    act(() => { result.current.actions.toggleReaction('t2', '👀'); });
-    const removed = result.current.state.reactions.find((r) => r.threadId === 't2' && r.emoji === '👀');
+    act(() => {
+      result.current.actions.toggleReaction('t2', '👀');
+    });
+    const removed = result.current.state.reactions.find(
+      (r) => r.threadId === 't2' && r.emoji === '👀',
+    );
     expect(removed).toBeUndefined();
   });
 
   it('reset restores seeds and clears localStorage', () => {
     const { result } = renderHook(() => useDemoStore());
-    act(() => { result.current.actions.selectAnnotation('a3'); });
+    act(() => {
+      result.current.actions.selectAnnotation('a3');
+    });
     expect(localStorage.getItem(STORAGE_KEY)).not.toBeNull();
-    act(() => { result.current.actions.reset(); });
+    act(() => {
+      result.current.actions.reset();
+    });
     expect(result.current.state.selectedAnnotId).toBe(SEEDED_STATE.selectedAnnotId);
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
@@ -74,5 +92,36 @@ describe('useDemoStore', () => {
     const newThread = result.current.state.threads.find((t) => t.annotationId === newAnnot?.id);
     expect(newThread?.status).toBe('open');
     expect(result.current.state.messages.some((m) => m.threadId === newThread?.id)).toBe(true);
+  });
+
+  it('toggleReaction increments count and sets mine on a not-mine reaction (branch 3)', () => {
+    const { result } = renderHook(() => useDemoStore());
+    // The seeded reaction { threadId: 't1', emoji: '🔥', count: 1, mine: false } is branch 3.
+    act(() => {
+      result.current.actions.toggleReaction('t1', '🔥');
+    });
+    const after = result.current.state.reactions.find(
+      (r) => r.threadId === 't1' && r.emoji === '🔥',
+    );
+    expect(after?.mine).toBe(true);
+    expect(after?.count).toBe(2);
+  });
+
+  it('addReply ignores empty bodies and appends a message on a real body', () => {
+    const { result } = renderHook(() => useDemoStore());
+    const before = result.current.state.messages.length;
+    act(() => {
+      result.current.actions.addReply('t2', '   ');
+    });
+    expect(result.current.state.messages.length).toBe(before);
+
+    act(() => {
+      result.current.actions.addReply('t2', 'Looks good to me.');
+    });
+    expect(result.current.state.messages.length).toBe(before + 1);
+    const last = result.current.state.messages.at(-1);
+    expect(last?.threadId).toBe('t2');
+    expect(last?.body).toBe('Looks good to me.');
+    expect(last?.author).toBe('you');
   });
 });
