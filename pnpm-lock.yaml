@@ -147,6 +147,31 @@ importers:
         specifier: ^3.3.1
         version: 3.3.1
 
+  landing-export:
+    dependencies:
+      next:
+        specifier: latest
+        version: 16.2.6(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      react:
+        specifier: latest
+        version: 19.2.6
+      react-dom:
+        specifier: latest
+        version: 19.2.6(react@19.2.6)
+    devDependencies:
+      '@types/node':
+        specifier: latest
+        version: 25.9.1
+      '@types/react':
+        specifier: latest
+        version: 19.2.15
+      '@types/react-dom':
+        specifier: latest
+        version: 19.2.3(@types/react@19.2.15)
+      typescript:
+        specifier: latest
+        version: 6.0.3
+
 packages:
 
   '@asamuzakjp/css-color@5.1.11':
@@ -1883,6 +1908,9 @@ packages:
 
   '@types/react@19.2.14':
     resolution: {integrity: sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==}
+
+  '@types/react@19.2.15':
+    resolution: {integrity: sha512-eRwcGNHve+E8qtEQSSRl6urh+rFop4v8gm6O8rGv25CodbvFdLjA1vVQ1KkiFE0w0UPOnb8tDiFKL5lp0rtY5Q==}
 
   '@types/use-sync-external-store@0.0.6':
     resolution: {integrity: sha512-zFDAD+tlpf2r4asuHEj0XH6pY6i0g5NeAHPn+15wk3BV6JA69eERFXC1gyGThDkVa1zCyKr5jox1+2LbV/AMLg==}
@@ -5154,7 +5182,15 @@ snapshots:
     dependencies:
       '@types/react': 19.2.14
 
+  '@types/react-dom@19.2.3(@types/react@19.2.15)':
+    dependencies:
+      '@types/react': 19.2.15
+
   '@types/react@19.2.14':
+    dependencies:
+      csstype: 3.2.3
+
+  '@types/react@19.2.15':
     dependencies:
       csstype: 3.2.3
 
