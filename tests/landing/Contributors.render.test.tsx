@@ -45,11 +45,12 @@ describe('<Contributors />', () => {
       user('paul'),
       user('claude-code'), // filtered out
     ]);
-    render(<Contributors />);
+    const { container } = render(<Contributors />);
     await waitFor(() => {
       expect(screen.getAllByRole('img').length).toBe(4);
     });
     expect(screen.getByText('+1')).toBeTruthy();
+    expect(container.querySelector('.has-contributors')).not.toBeNull();
   });
 
   it('stays hidden on fetch failure', async () => {
