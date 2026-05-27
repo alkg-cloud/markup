@@ -25,7 +25,8 @@ test('setup → upload → comment → resolve', async ({ page, request }) => {
   const upload = await request.post('/api/mockups', {
     headers: { cookie: `mk_session=${sessCookie!.value}` },
     multipart: {
-      name: 'My Mockup',
+      // Name regex is `^[A-Za-z0-9_-]+$` — no spaces.
+      name: 'MyMockup',
       build: { name: 'mockup.zip', mimeType: 'application/zip', buffer: zipBuf },
     },
   });

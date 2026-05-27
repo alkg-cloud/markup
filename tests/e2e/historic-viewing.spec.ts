@@ -5,15 +5,22 @@ test('view historic version → URL ?v, banner, read-only, exit, deep-link', asy
   page,
   request,
 }) => {
-  // Setup wizard
+  // Tests share the dev-server DB. If happy-path already provisioned the admin,
+  // /setup is no longer available — fall through to /login with the same creds.
   await page.goto('/setup');
-  await page.fill('input[type=email]', 'admin@example.com');
-  // First text input is "Name"
-  const nameInput = page.locator('input').nth(0);
-  await nameInput.fill('Admin');
-  await page.fill('input[type=password]', 'longadminpassword42');
-  await page.click('button[type=submit]');
-  // The setup form redirects to '/' (the home dashboard) on success.
+  const onSetup = await page.evaluate(() => window.location.pathname === '/setup');
+  if (onSetup) {
+    await page.fill('input[type=email]', 'admin@example.com');
+    const nameInput = page.locator('input').nth(0);
+    await nameInput.fill('Admin');
+    await page.fill('input[type=password]', 'longadminpassword42');
+    await page.click('button[type=submit]');
+  } else {
+    await page.goto('/login');
+    await page.fill('input[type=email]', 'admin@example.com');
+    await page.fill('input[type=password]', 'longadminpassword42');
+    await page.click('button[type=submit]');
+  }
   await page.waitForURL(/localhost:3000\/?$/);
   await page.waitForLoadState('networkidle');
 
