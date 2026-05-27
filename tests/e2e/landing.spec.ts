@@ -40,7 +40,10 @@ test.describe('Landing page', () => {
     await expect(page.locator('ul li[aria-label^="Annotation "]')).toHaveCount(4);
 
     // Two-step confirm: first click arms the confirm, second click resets.
-    const reset = page.getByRole('button', { name: /Reset/i });
+    // Match BOTH the rest-state ("Reset demo") and the armed-state
+    // ("Click again to confirm") so the second click doesn't wait for the
+    // 3s confirm window to expire before the locator resolves again.
+    const reset = page.getByRole('button', { name: /Reset|Click again/i });
     await reset.click();
     await reset.click();
     await expect(page.locator('ul li[aria-label^="Annotation "]')).toHaveCount(3);

@@ -5,22 +5,14 @@ test('view historic version → URL ?v, banner, read-only, exit, deep-link', asy
   page,
   request,
 }) => {
-  // Tests share the dev-server DB. If happy-path already provisioned the admin,
-  // /setup is no longer available — fall through to /login with the same creds.
-  await page.goto('/setup');
-  const onSetup = await page.evaluate(() => window.location.pathname === '/setup');
-  if (onSetup) {
-    await page.fill('input[type=email]', 'admin@example.com');
-    const nameInput = page.locator('input').nth(0);
-    await nameInput.fill('Admin');
-    await page.fill('input[type=password]', 'longadminpassword42');
-    await page.click('button[type=submit]');
-  } else {
-    await page.goto('/login');
-    await page.fill('input[type=email]', 'admin@example.com');
-    await page.fill('input[type=password]', 'longadminpassword42');
-    await page.click('button[type=submit]');
-  }
+  // Tests share the dev-server DB. With workers:1 in playwright.config.ts,
+  // happy-path runs first and provisions the admin, so historic-viewing logs
+  // in instead of running setup (setup wizard isn't idempotent when an admin
+  // already exists). The creds match what happy-path created.
+  await page.goto('/login');
+  await page.fill('input[type=email]', 'admin@example.com');
+  await page.fill('input[type=password]', 'longadminpassword42');
+  await page.click('button[type=submit]');
   await page.waitForURL(/localhost:3000\/?$/);
   await page.waitForLoadState('networkidle');
 
