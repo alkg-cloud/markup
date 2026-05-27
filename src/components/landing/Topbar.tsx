@@ -22,9 +22,9 @@ export function Topbar() {
             variant="ghost"
             href={GITHUB_URL}
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
             aria-label="GitHub repository"
-            className={styles.ghBtn}
+            className={`${styles.compactBtn} ${styles.ghBtn}`}
           >
             <svg
               className={styles.ghIcon}
@@ -36,7 +36,7 @@ export function Topbar() {
             </svg>
             <span className={styles.ghLabel}>GitHub</span>
           </PillLink>
-          <PillLink variant="primary" href="#quickstart">
+          <PillLink variant="primary" href="#quickstart" className={styles.compactBtn}>
             Spin it up <span className={styles.kbd}>docker</span>
           </PillLink>
         </div>
