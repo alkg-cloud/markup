@@ -8,7 +8,9 @@ import { prisma } from '@/lib/prisma';
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Unique email tag so parallel test runs don't collide on the shared DB. */
+// Test runs are sequential (maxWorkers: 1) but the user table is not wiped
+// between files; the per-suite TAG keeps this file's admin email distinct
+// from any other suite that may have created users on the shared test DB.
 const TAG = `search-${process.pid}-${Date.now()}`;
 
 async function adminCookie(): Promise<string> {

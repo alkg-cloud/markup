@@ -21,7 +21,7 @@ All five jobs run in parallel from the same `actions/checkout` + `pnpm install` 
 The README coverage badge reads `badge.json` via raw GitHub. Two implications:
 
 - The orphan branch never accumulates history (force-pushed). Fine for an artifact branch.
-- The badge briefly 404s between this PR merging and the first subsequent `main` push that creates the branch — typically minutes.
+- The badge 404s until the first `main` push writes the `coverage-data` branch.
 
 See [`docs/testing.md`](testing.md) for the engineer-facing details.
 

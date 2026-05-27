@@ -95,6 +95,13 @@ function pushArtifacts(): void {
   sh(`git -C ${SCRATCH_DIR} push --force "${remote}" ${COVERAGE_BRANCH}`);
 }
 
+class CoverageRegression extends Error {
+  constructor(failures: string[]) {
+    super(`Coverage regressed in: ${failures.join(', ')}`);
+    this.name = 'CoverageRegression';
+  }
+}
+
 async function main(): Promise<void> {
   try {
     const current = readCurrentMetrics();
@@ -116,23 +123,22 @@ async function main(): Promise<void> {
 
     const isPush =
       process.env.GITHUB_EVENT_NAME === 'push' && process.env.GITHUB_REF_NAME === 'main';
-    if (!result.pass) {
-      console.error(`Coverage regressed in: ${result.failures.join(', ')}`);
-      process.exit(1);
-    }
+    if (!result.pass) throw new CoverageRegression(result.failures);
     if (isPush) {
       writeArtifacts(current, result.color);
       pushArtifacts();
       console.log(`Coverage artifacts pushed to branch ${COVERAGE_BRANCH}.`);
     }
   } finally {
-    // The scratch clone may hold a token-embedded remote URL in .git/config;
-    // clean up even on failure paths so the secret never survives the process.
+    // Scratch clone holds a token-embedded remote URL in .git/config; clean
+    // up on every path so the secret never outlives the process. process.exit()
+    // would skip this — main() throws instead and we exit at the boundary.
     rmSync(SCRATCH_DIR, { recursive: true, force: true });
   }
 }
 
 main().catch((e) => {
-  console.error(e);
+  if (e instanceof CoverageRegression) console.error(e.message);
+  else console.error(e);
   process.exit(1);
 });

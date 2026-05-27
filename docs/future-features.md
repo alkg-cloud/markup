@@ -355,9 +355,9 @@ The Tarefa 5 ultrareview ("Tarefa 5 aceitou outros mockups considerados alinhado
 
 ---
 
-## Coverage: second-wave UI component tests
+## Coverage: large UI components without tests
 
-The first-wave coverage bootstrap covered `CommandPalette`. The remaining seven large untested or thinly-tested UI components are:
+Seven large UI components (and one hook) lack test coverage:
 
 - `components/ProjectTree/ProjectTree.tsx` (387 LOC, drag-drop orchestrator)
 - `components/ProjectTree/TreeNode.tsx` (364 LOC, dense event handling)
@@ -366,7 +366,6 @@ The first-wave coverage bootstrap covered `CommandPalette`. The remaining seven 
 - `components/PinLayer/PinLayer.tsx` (176 LOC, `useAnchoredPins` integration)
 - `components/MockupViewer/ViewerCanvas.tsx` (176 LOC, iframe + pin-click bridge)
 - `components/ThreadTimeline/ThreadTimeline.tsx` (175 LOC, reply form + message list)
+- `lib/popover/usePopover.ts` (93 LOC, beforetoggle handler)
 
-Plus the `popover/usePopover.ts` hook (93 LOC, beforetoggle handler) which has no tests.
-
-These all live above the typical "small component, simple test" threshold and contain non-trivial state machines or event flows. Adding their tests would raise coverage by an estimated +4–6pp lines.
+Each lives above the typical "small component, simple test" threshold and contains non-trivial state machines or event flows. Adding their tests raises coverage by an estimated +4–6pp lines.

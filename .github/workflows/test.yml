@@ -74,9 +74,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - if: github.event_name == 'pull_request' && always()
         uses: actions/github-script@v7
+        env:
+          # Route the step output through an env var so the markdown content
+          # (which can contain backticks, ${...}, or other JS syntax) is read
+          # via process.env rather than interpolated into the script source.
+          # See: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
+          RATCHET_MARKDOWN: ${{ steps.ratchet.outputs.markdown }}
         with:
           script: |
-            const body = `${{ steps.ratchet.outputs.markdown }}`;
+            const body = process.env.RATCHET_MARKDOWN ?? '';
             if (!body.trim()) return;
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
