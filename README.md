@@ -30,10 +30,6 @@
     <a href="https://github.com/alkg-cloud/markup/tree/coverage-data/report"><img alt="Coverage" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/alkg-cloud/markup/coverage-data/badge.json"></a>
   </p>
 
-  <br />
-
-  <img src="./docs/images/screenshots/02-mockup-viewer.png" alt="Markup mockup viewer with annotation pins" width="900" />
-
 </div>
 
 <br />
@@ -60,10 +56,6 @@ docker run -d --name markup \
 ```
 
 Open `http://localhost:3000` and follow the setup wizard. The first request redirects to `/setup`; create the admin account, then subsequent visits go to `/login`. To seed agent tokens at boot, set `AGENT_TOKENS=name1:secret1,name2:secret2`. The seeder is idempotent across restarts.
-
-<p align="center">
-  <img src="./docs/images/screenshots/01-projects-home.png" alt="Markup projects home with recent mockups and project tree" width="900" />
-</p>
 
 ## Install
 
@@ -107,10 +99,6 @@ Mockup ─< MockupVersion          each mockup is a versioned bundle of HTML / C
 - **Annotation**: a draft composed in the rail's `DraftCard` and persisted on send. Carries a body, an array of DOM anchors (text-anchor or element-anchor, resilient to reflow), a `colorIndex` shared by all of the annotation's pins, and a stamp of which version was current at creation time.
 - **Thread**: one per annotation, holding the conversation. `status` is one of `open`, `needs review`, or `resolved`.
 - **Message**: a reply on a thread. Authored by a `user` (cookie session) or an `agent` (Bearer token).
-
-<p align="center">
-  <img src="./docs/images/screenshots/03-annotation-rail.png" alt="Markup annotation rail with threaded review and statuses" width="900" />
-</p>
 
 ## Features
 
