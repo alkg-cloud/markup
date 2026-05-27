@@ -36,7 +36,7 @@ export function DemoRail({
   onAddReply,
 }: Props) {
   return (
-    <div role="listbox" className={styles.rail} aria-label="Annotations" aria-live="polite">
+    <ul className={styles.rail} aria-live="polite">
       {annotations.map((a, idx) => {
         const thread = threads.find((t) => t.id === a.threadId);
         if (!thread) return null;
@@ -45,10 +45,8 @@ export function DemoRail({
         const threadReactions = reactions.filter((r) => r.threadId === thread.id);
         const selected = a.id === selectedId;
         return (
-          <div
+          <li
             key={a.id}
-            role="option"
-            aria-selected={selected}
             className={`${styles.annot} ${selected ? styles.selected : ''}`}
             onClick={() => onSelect(a.id)}
             onKeyDown={(e) => {
@@ -57,7 +55,6 @@ export function DemoRail({
                 onSelect(a.id);
               }
             }}
-            tabIndex={0}
             aria-label={`Annotation ${idx + 1}`}
           >
             <div className={styles.header}>
@@ -99,10 +96,10 @@ export function DemoRail({
             {selected && (
               <ReplyInput threadId={thread.id} onSubmit={(body) => onAddReply(thread.id, body)} />
             )}
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }
 
@@ -128,18 +125,14 @@ function ReactionAdder({
         +
       </button>
       {open && (
-        <div
-          role="menu"
-          className={styles.adderMenu}
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-        >
+        <div className={styles.adderMenu}>
           {COMMON_EMOJIS.map((e) => (
             <button
               key={e}
               type="button"
               className={styles.adderEmoji}
-              onClick={() => {
+              onClick={(ev) => {
+                ev.stopPropagation();
                 onPick(threadId, e);
                 setOpen(false);
               }}

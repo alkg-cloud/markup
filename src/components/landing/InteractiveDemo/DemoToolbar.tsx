@@ -27,7 +27,7 @@ const TOOLS: Tool[] = [
   },
   {
     id: 'draw',
-    label: 'Draw (D)',
+    label: 'Draw',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
         <path d="M3 17l6-6 4 4 8-8" />
