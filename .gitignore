@@ -36,3 +36,7 @@ test-data/
 # Local-only mobile QA wrapper (iframe + same-origin viewport=390 helper).
 # Spec: docs/superpowers/specs/2026-05-23-mobile-shell-refinement-spec.md §7
 public/_qa-mobile.html
+
+# landing-export build artifacts
+landing-export/.next/
+landing-export/out/

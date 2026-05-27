@@ -21,6 +21,7 @@ const PUBLIC_PATH_PREFIXES = [
   '/login',
   '/setup',
   '/invite/', // public signup landing — auth-gates itself client-side
+  '/landing', // public marketing surface
   '/api/', // API routes do their own auth
   '/m/', // mockup serve route auth-checks per request via identify()
   '/_next/',

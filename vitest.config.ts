@@ -15,6 +15,8 @@ export default defineConfig({
       'tests/unit/**/*.test.ts',
       'tests/unit/**/*.test.tsx',
       'tests/integration/**/*.test.ts',
+      'tests/landing/**/*.test.ts',
+      'tests/landing/**/*.test.tsx',
     ],
     coverage: {
       provider: 'v8',
