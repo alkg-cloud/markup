@@ -7,7 +7,7 @@
 ```
 push to main
   └─ image workflow (.github/workflows/image.yml)
-     - builds + pushes ghcr.io/alexandrecamillo/markup:<short-sha> and :latest
+     - builds + pushes ghcr.io/alkg-cloud/markup:<short-sha> and :latest
      - runs trivy, attestations, smoke test
      └─ on success → deploy workflow (.github/workflows/deploy.yml)
         - runs-on: [self-hosted, markup-vps]
@@ -76,5 +76,5 @@ The first-ever deploy of the `markup` container to a host has to be done manuall
 | Inspect runner logs | `sudo docker logs -f gh-runner` |
 | Restart runner | `sudo docker compose -f docker-compose.runner.yml restart` |
 | Upgrade runner image | `sudo docker pull myoung34/github-runner:ubuntu-noble`, bump digest in compose, `up -d --force-recreate` |
-| Remove runner entirely | `sudo docker compose -f docker-compose.runner.yml down --volumes`, then on GitHub: `gh api -X DELETE /repos/AlexandreCamillo/markup/actions/runners/<id>` |
+| Remove runner entirely | `sudo docker compose -f docker-compose.runner.yml down --volumes`, then on GitHub: `gh api -X DELETE /repos/alkg-cloud/markup/actions/runners/<id>` |
 | Rotate PAT | Update `ACCESS_TOKEN` in `.env.runner`, `up -d --force-recreate` |

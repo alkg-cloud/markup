@@ -30,4 +30,4 @@ Before opening a PR:
 
 ## Reporting bugs / requesting features
 
-For anything substantial, open an [issue](https://github.com/AlexandreCamillo/markup/issues/new) before going to a PR — that way we can align on approach before you invest in code.
+For anything substantial, open an [issue](https://github.com/alkg-cloud/markup/issues/new) before going to a PR — that way we can align on approach before you invest in code.

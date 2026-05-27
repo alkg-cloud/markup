@@ -5,15 +5,15 @@ test('view historic version → URL ?v, banner, read-only, exit, deep-link', asy
   page,
   request,
 }) => {
-  // Setup wizard
+  // Setup wizard — runs on a fresh DB. happy-path is `test.fixme`'d, so
+  // historic-viewing is the only spec that exercises setup against this
+  // dev-server instance and there's no admin-already-exists race.
   await page.goto('/setup');
   await page.fill('input[type=email]', 'admin@example.com');
-  // First text input is "Name"
   const nameInput = page.locator('input').nth(0);
   await nameInput.fill('Admin');
   await page.fill('input[type=password]', 'longadminpassword42');
   await page.click('button[type=submit]');
-  // The setup form redirects to '/' (the home dashboard) on success.
   await page.waitForURL(/localhost:3000\/?$/);
   await page.waitForLoadState('networkidle');
 

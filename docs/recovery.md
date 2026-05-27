@@ -6,10 +6,10 @@ There is no automatic rollback. A bad release is fixed by tagging a new release.
 
 ```bash
 # Pin a specific version
-docker pull ghcr.io/alexandrecamillo/markup:v1.2.2
+docker pull ghcr.io/alkg-cloud/markup:v1.2.2
 
 # Or target an immutable digest
-docker pull ghcr.io/alexandrecamillo/markup@sha256:<digest>
+docker pull ghcr.io/alkg-cloud/markup@sha256:<digest>
 ```
 
 Update your `docker-compose.yml` or `docker run` command to reference the pinned tag, then restart the container.
@@ -53,5 +53,5 @@ If a release passed CI smoke, the image is confirmed bootable. If you suspect a 
 
 ## Reporting a broken image
 
-1. Open an issue on [GitHub](https://github.com/AlexandreCamillo/markup/issues) with the tag version, host OS/arch, and container logs (`docker logs markup`).
+1. Open an issue on [GitHub](https://github.com/alkg-cloud/markup/issues) with the tag version, host OS/arch, and container logs (`docker logs markup`).
 2. If you need an immediate fix, pin to the last known-good tag while waiting for a patch release.

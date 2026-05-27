@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 <div align="center">
-  <a href="https://github.com/AlexandreCamillo/markup">
+  <a href="https://github.com/alkg-cloud/markup">
     <img src="./docs/images/logo.svg" alt="Markup" width="128" />
   </a>
 
@@ -19,15 +19,15 @@
     <a href="#install">Install</a> ·
     <a href="docs/INDEX.md">Docs</a> ·
     <a href="#agent-api">Agent API</a> ·
-    <a href="https://github.com/AlexandreCamillo/markup/issues">Issues</a>
+    <a href="https://github.com/alkg-cloud/markup/issues">Issues</a>
   </p>
 
   <p>
     <a href="LICENSE"><img alt="License: Elastic License 2.0" src="https://img.shields.io/badge/license-ELv2-blue.svg"></a>
     <a href="https://nextjs.org/"><img alt="Built with Next.js 16" src="https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs&logoColor=white"></a>
-    <a href="https://github.com/AlexandreCamillo/markup/pkgs/container/markup"><img alt="Release" src="https://img.shields.io/github/package-json/v/AlexandreCamillo/markup?label=release"></a>
-    <a href="https://github.com/AlexandreCamillo/markup/actions/workflows/test.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/AlexandreCamillo/markup/test.yml?branch=main&label=ci"></a>
-    <a href="https://github.com/AlexandreCamillo/markup/tree/coverage-data/report"><img alt="Coverage" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/AlexandreCamillo/markup/coverage-data/badge.json"></a>
+    <a href="https://github.com/alkg-cloud/markup/pkgs/container/markup"><img alt="Release" src="https://img.shields.io/github/package-json/v/alkg-cloud/markup?label=release"></a>
+    <a href="https://github.com/alkg-cloud/markup/actions/workflows/test.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/alkg-cloud/markup/test.yml?branch=main&label=ci"></a>
+    <a href="https://github.com/alkg-cloud/markup/tree/coverage-data/report"><img alt="Coverage" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/alkg-cloud/markup/coverage-data/badge.json"></a>
   </p>
 
 </div>
@@ -52,7 +52,7 @@ docker run -d --name markup \
   -p 3000:3000 \
   -e AUTH_SECRET=$(openssl rand -hex 32) \
   -v $(pwd)/markup-data:/app/data \
-  ghcr.io/alexandrecamillo/markup:latest
+  ghcr.io/alkg-cloud/markup:latest
 ```
 
 Open `http://localhost:3000` and follow the setup wizard. The first request redirects to `/setup`; create the admin account, then subsequent visits go to `/login`. To seed agent tokens at boot, set `AGENT_TOKENS=name1:secret1,name2:secret2`. The seeder is idempotent across restarts.
@@ -66,7 +66,7 @@ docker run -d --name markup \
   -p 3000:3000 \
   -e AUTH_SECRET=$(openssl rand -hex 32) \
   -v $(pwd)/markup-data:/app/data \
-  ghcr.io/alexandrecamillo/markup:latest
+  ghcr.io/alkg-cloud/markup:latest
 ```
 
 Or with Compose. See [`docker-compose.example.yml`](docker-compose.example.yml).
@@ -74,7 +74,7 @@ Or with Compose. See [`docker-compose.example.yml`](docker-compose.example.yml).
 ### From source
 
 ```bash
-git clone https://github.com/AlexandreCamillo/markup.git
+git clone https://github.com/alkg-cloud/markup.git
 cd markup
 pnpm install
 cp .env.example .env.local
@@ -214,7 +214,7 @@ docker exec -it --user 1000:1000 markup pnpm reset:all
 
 ## Releases
 
-Every semver tag (`v*`) pushed to `main` triggers the image workflow and publishes to `ghcr.io/alexandrecamillo/markup`.
+Every semver tag (`v*`) pushed to `main` triggers the image workflow and publishes to `ghcr.io/alkg-cloud/markup`.
 
 | Tag | When published |
 |-----|----------------|
@@ -223,11 +223,11 @@ Every semver tag (`v*`) pushed to `main` triggers the image workflow and publish
 | `latest` | Points to the most recent `main`-green release. |
 | `sha-<7>` | Every `main` push for debugging. |
 
-Images pass a mandatory smoke test (`/api/health` returning 200) before the release is created. No manual approval needed: a green tag is a published release. Pull a specific version with `docker pull ghcr.io/alexandrecamillo/markup:v1.2.3`. Release notes live on the [releases page](https://github.com/AlexandreCamillo/markup/releases).
+Images pass a mandatory smoke test (`/api/health` returning 200) before the release is created. No manual approval needed: a green tag is a published release. Pull a specific version with `docker pull ghcr.io/alkg-cloud/markup:v1.2.3`. Release notes live on the [releases page](https://github.com/alkg-cloud/markup/releases).
 
 ## Support
 
-Open an [issue](https://github.com/AlexandreCamillo/markup/issues/new) for bug reports, feature requests, or questions about deploying Markup.
+Open an [issue](https://github.com/alkg-cloud/markup/issues/new) for bug reports, feature requests, or questions about deploying Markup.
 
 ## Contributing
 

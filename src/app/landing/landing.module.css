@@ -1,0 +1,11 @@
+.shell {
+  background:
+    radial-gradient(ellipse 900px 700px at 80% -10%, oklch(28% 0.08 165 / 0.35), transparent 65%),
+    radial-gradient(ellipse 800px 600px at 10% 110%, oklch(22% 0.06 322 / 0.4), transparent 60%),
+    var(--bg);
+  min-height: 100vh;
+  overflow-x: clip;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+}

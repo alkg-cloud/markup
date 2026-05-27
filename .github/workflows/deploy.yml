@@ -63,7 +63,7 @@ jobs:
           SHA: ${{ steps.sha.outputs.value }}
         run: |
           tag="${MANUAL_TAG:-${SHA:0:7}}"
-          echo "ref=ghcr.io/alexandrecamillo/markup:$tag" >> "$GITHUB_OUTPUT"
+          echo "ref=ghcr.io/alkg-cloud/markup:$tag" >> "$GITHUB_OUTPUT"
           echo "Deploying image tag: $tag"
 
       - name: Redeploy

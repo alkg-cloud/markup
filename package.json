@@ -19,7 +19,8 @@
     "reset:auth": "tsx scripts/reset-auth.ts",
     "reset:tokens": "tsx scripts/reset-tokens.ts",
     "reset:all": "tsx scripts/reset-all.ts",
-    "seed:dev": "node --conditions=react-server --env-file=.env --env-file=.env.local --import tsx scripts/seed-dev.ts"
+    "seed:dev": "node --conditions=react-server --env-file=.env --env-file=.env.local --import tsx scripts/seed-dev.ts",
+    "landing:export": "pnpm --filter ./landing-export build"
   },
   "engines": {
     "node": ">=22"
@@ -59,6 +60,8 @@
   "devDependencies": {
     "@biomejs/biome": "latest",
     "@playwright/test": "latest",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
