@@ -1,9 +1,7 @@
 .visual {
+  composes: floatingSurface from "../../styles/glass.module.css";
   position: relative;
   border-radius: 18px;
-  background: var(--surface-glass-bg);
-  backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
   padding: 14px;
   overflow: clip;
