@@ -75,7 +75,7 @@ These rules are enforced by biome + tsc + the test suite. Violating them turns t
 ### Agent-loop endpoints
 
 1. **Auth via `identify(req)`** — accepts cookie OR Bearer; returns `{kind: 'user', userId} | {kind: 'agent', tokenId}` or `null`. Never re-implement auth in a route.
-2. **Sidecar files are atomic-write candidates.** Writes to `intent.json` and `region.png` go directly to disk; if a future change needs concurrency safety, write to `*.tmp` and rename.
+2. **Sidecar files are atomic-write candidates.** Writes to `intent.json` go directly to disk; if a future change needs concurrency safety, write to `*.tmp` and rename.
 3. **Cache invalidation runs BEFORE the new write.** When a route mutates a primary blob that has derived sidecars, it deletes the stale sidecars before writing the new blob so a concurrent reader never pairs a fresh primary with a stale sidecar.
 4. **The `/context` aggregator delegates to `/intent`** by importing the GET handler directly — no HTTP loopback. This keeps tests deterministic and avoids depending on `APP_URL` being reachable from the server.
 

@@ -86,7 +86,7 @@ return token;
 App Router routes are imported and invoked as functions:
 
 ```ts
-import { GET } from '@/app/api/annotations/[id]/region/route';
+import { GET } from '@/app/api/annotations/[id]/detail/route';
 import { POST as createMockupRoute } from '@/app/api/mockups/route';
 
 const res = await GET(
@@ -116,14 +116,6 @@ const png = Buffer.from([
   0, 0, 0, 13, 73, 72, 68, 82,                       // IHDR length + tag
   0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0, 144, 119, 83, 222,
 ]);
-```
-
-For tests that need real images (`/region.png` crop, puppeteer rendering), use `sharp` to generate a buffer:
-
-```ts
-const png = await sharp({
-  create: { width: 200, height: 200, channels: 4, background: { r: 100, g: 200, b: 100, alpha: 1 } },
-}).png().toBuffer();
 ```
 
 ## Fixtures

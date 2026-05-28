@@ -4,7 +4,7 @@
 
 Read [`docs/INDEX.md`](INDEX.md) to find which docs apply to your task. If multiple docs are relevant, read all of them before starting. This is non-negotiable regardless of how simple the change appears.
 
-If the change touches an agent-loop endpoint (`/intent`, `/context`, `/version-patch`, `/region`, `/diff`, or `POST /annotations`), consult [`docs/agent-loop/`](agent-loop/INDEX.md) **before** writing code. See the [agent-loop rule](../CLAUDE.md#agent-loop-rule-strict--non-negotiable).
+If the change touches an agent-loop endpoint (`/intent`, `/context`, `/version-patch`, `/diff`, or `POST /annotations`), consult [`docs/agent-loop/`](agent-loop/INDEX.md) **before** writing code. See the [agent-loop rule](../CLAUDE.md#agent-loop-rule-strict--non-negotiable).
 
 If the change replicates a `tests/fixtures/mockups/<name>.zip` fixture (lumen-coffee, helio-pricing, drone-console), follow the [mockup-replication rule](../CLAUDE.md#mockup-replication-rule-when-the-user-points-at-a-fixture).
 

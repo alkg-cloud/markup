@@ -17,8 +17,7 @@ ${DATA_DIR}/
 │       └── annotations/
 │           └── <annotationId>/
 │               ├── screenshot.png            # base capture (immutable per annotation)
-│               ├── intent.json               # sidecar cache (regenerated on read)
-│               └── region.png                # bbox crop (regenerated on read)
+│               └── intent.json               # sidecar cache (regenerated on read)
 └── tmp/
     └── version-<cuid>.zip                    # short-lived patch composition staging
 ```
@@ -41,10 +40,6 @@ Routes and services compose paths via these helpers — never hardcode the layou
 ## Sidecar caching
 
 Files derived from the primary blobs are stored as **sidecars** in the same directory. Conventions:
-
-| Sidecar | Source | Cache key | Invalidator |
-|---|---|---|---|
-| `region.png` | `screenshot.png` + the annotation's `pinCoords` | `screenshot_mtime` (compared against `region.png`'s mtime) | regenerated when `screenshot.png` is newer than `region.png` |
 
 The sidecar wrapping format for JSON caches is:
 

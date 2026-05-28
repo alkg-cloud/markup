@@ -233,7 +233,7 @@ Currently no route streams. When a route needs to stream a large payload (e.g. a
 
 Routes that produce expensive payloads use either:
 
-- **Sidecar files** on disk (e.g. `intent.json`, `region.png`) keyed by `(input_mtime, current_version_id)` — see [Storage](storage.md)
+- **Sidecar files** on disk (e.g. `intent.json`) keyed by `(input_mtime, current_version_id)` — see [Storage](storage.md)
 - **ETag headers** for in-memory aggregations (e.g. `/agent/context`)
 
 Don't add HTTP `Cache-Control: max-age=…` to mutable resources without thinking through the invalidation path; sidecars + ETag give the same effect with explicit invalidation hooks.
