@@ -4,17 +4,21 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnnotationCard } from '@/components/AnnotationCard/AnnotationCard';
 import { AnnotationsRail } from '@/components/AnnotationsRail/AnnotationsRail';
 import { CanvasToolbar } from '@/components/CanvasToolbar/CanvasToolbar';
+import { DraftCard } from '@/components/DraftCard';
+import type { Draft, DraftStatus } from '@/components/MockupViewer/draft-types';
+import { MAX_PINS } from '@/components/MockupViewer/draft-types';
 import { useViewerFullscreen } from '@/components/MockupViewer/useViewerFullscreen';
 import { DEFAULT_VIEWPORT, type ViewportState } from '@/components/MockupViewer/viewport-presets';
 import { type PinDescriptor, PinLayer } from '@/components/PinLayer';
 import type { Anchor } from '@/lib/anchoring';
 import { Eyebrow } from '../primitives/Eyebrow';
 import { Section } from '../primitives/Section';
-import { DemoDraftCard } from './DemoDraftCard';
 import { DemoMockup } from './DemoMockup';
 import styles from './DemoStage.module.css';
 import { toBadges, toCardProps } from './demoAdapter';
 import { useDemoStore } from './useDemoStore';
+
+const REMOVE_PIN_FADE_MS = 220;
 
 export function DemoStage() {
   const { state, actions } = useDemoStore();
@@ -42,56 +46,99 @@ export function DemoStage() {
   // so the anchoring runtime re-projects pins onto the fresh layout.
   const [repositionKey, setRepositionKey] = useState(0);
 
-  // In-rail draft state — replaces `window.prompt()`, which the user
-  // couldn't see in a glance (and many browsers throttle after a few
-  // dismissals). Two-step flow: click "+" arms the draft (anchor null) →
-  // click in the mockup sets the anchor → user types in the rail card →
-  // Save commits.
-  const [draft, setDraft] = useState<{ anchor: Anchor | null; body: string } | null>(null);
+  // Draft state shaped exactly like AppMainViewer's. `draft === null`
+  // means no draft is open; while it exists, every iframe click appends
+  // an Anchor to draft.pins (up to MAX_PINS), and clicks on a draft pin
+  // remove it. Body comes from the DraftCard's textarea. Status drives
+  // the DraftCard's footer microcopy + button states.
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const [draftStatus, setDraftStatus] = useState<DraftStatus>('unsaved');
+  const [removingPinIndex, setRemovingPinIndex] = useState<number | null>(null);
 
-  // Stable callbacks — DemoMockup's iframe-load effect uses these in its
-  // dep array. Recreating them every render re-binds the iframe click
-  // listener AND re-fires onIframeLoad → setRepositionKey → re-render
-  // loop (React error #185 in prod, "Maximum update depth exceeded").
-  const onCanvasClick = useCallback(
-    (anchor: Anchor) => {
-      if (state.tool !== 'pin') return;
-      // First click in pin mode → store the anchor on the open draft so
-      // the rail card flips to "type your body". If the user starts a
-      // pin click WITHOUT first hitting "+", arm a draft on the fly.
-      setDraft((d) => ({ anchor, body: d?.body ?? '' }));
-    },
-    [state.tool],
-  );
-  const onIframeLoad = useCallback(() => setRepositionKey((k) => k + 1), []);
+  const nextColorIndex = (state.annotations.length % 5) as 0 | 1 | 2 | 3 | 4;
 
-  const startDraft = useCallback(() => {
-    actions.setTool('pin');
-    setDraft({ anchor: null, body: '' });
-  }, [actions]);
+  // ── Draft actions ──────────────────────────────────────────────────
+  const openDraft = useCallback(() => {
+    setDraft((d) => d ?? { body: '', pins: [], lastSavedAt: null, hasUnsavedChanges: false });
+    setDraftStatus('unsaved');
+  }, []);
 
   const cancelDraft = useCallback(() => {
     setDraft(null);
-    actions.setTool('select');
-  }, [actions]);
+    setDraftStatus('unsaved');
+    setRemovingPinIndex(null);
+  }, []);
 
-  const commitDraft = useCallback(() => {
-    if (!draft?.anchor || !draft.body.trim()) return;
-    actions.addAnnotation({ anchor: draft.anchor, body: draft.body });
+  const sendDraft = useCallback(() => {
+    if (!draft || draft.body.length === 0) return;
+    setDraftStatus('sending');
+    actions.addAnnotation({ pins: draft.pins, body: draft.body });
     setDraft(null);
-    actions.setTool('select');
+    setDraftStatus('unsaved');
+    setRemovingPinIndex(null);
   }, [draft, actions]);
 
+  // The product wires `onSave` to debounced localStorage persistence via
+  // `useDraftPersistence`. The demo persists only the FINALIZED
+  // annotation; the in-flight draft is local React state. Match the
+  // contract anyway so DraftCard's UI (e.g. ⌘S, "Draft saved Ns ago")
+  // shows a sensible state — we treat saves as instantaneous + a no-op.
+  const saveDraft = useCallback(() => {
+    setDraftStatus('saving');
+    setDraft((d) => (d ? { ...d, lastSavedAt: Date.now(), hasUnsavedChanges: false } : null));
+    setDraftStatus('saved');
+  }, []);
+
+  const handleBodyChange = useCallback((body: string) => {
+    setDraft((d) => (d ? { ...d, body, hasUnsavedChanges: true } : null));
+    setDraftStatus('unsaved');
+  }, []);
+
+  // Click on iframe while a draft is open → append the anchor. Until the
+  // user hits "+", clicks do nothing (matches the product — pin mode is
+  // gated by draft existence, not a separate tool flag).
+  const onCanvasClick = useCallback((anchor: Anchor) => {
+    setDraft((d) => {
+      if (!d) return d;
+      if (d.pins.length >= MAX_PINS) return d;
+      return { ...d, pins: [...d.pins, anchor], hasUnsavedChanges: true };
+    });
+    setDraftStatus('unsaved');
+  }, []);
+
+  const onIframeLoad = useCallback(() => setRepositionKey((k) => k + 1), []);
+
+  // Click on a draft pin → fade out, then splice. Mirrors AppMainViewer's
+  // `removeDraftPin`: PinLayer renders the pin with data-removing="true"
+  // while the opacity transition runs; once it's complete we drop the
+  // pin from draft.pins and clear the marker.
+  const removeDraftPin = useCallback((pinIndex: number) => {
+    setRemovingPinIndex(pinIndex);
+    setTimeout(() => {
+      setDraft((d) =>
+        d
+          ? {
+              ...d,
+              pins: d.pins.filter((_, i) => i !== pinIndex),
+              hasUnsavedChanges: true,
+            }
+          : null,
+      );
+      setRemovingPinIndex(null);
+      setDraftStatus('unsaved');
+    }, REMOVE_PIN_FADE_MS);
+  }, []);
+
   function onReset() {
-    // Functional updater reads the LATEST state, not the closure-captured
-    // value — two rapid clicks (before React re-renders) would otherwise both
-    // see `resetConfirm === false` and just re-arm without ever firing reset.
     setResetConfirm((prev) => {
       if (!prev) {
         setTimeout(() => setResetConfirm(false), 3000);
         return true;
       }
       actions.reset();
+      setDraft(null);
+      setDraftStatus('unsaved');
+      setRemovingPinIndex(null);
       return false;
     });
   }
@@ -100,13 +147,12 @@ export function DemoStage() {
     function onKey(e: KeyboardEvent) {
       const target = e.target as HTMLElement | null;
       if (target?.closest('input,textarea,[contenteditable]')) return;
-      if (e.key === 'p' || e.key === 'P') actions.setTool('pin');
-      if (e.key === 'v' || e.key === 'V') actions.setTool('select');
       if (e.key === 'r' || e.key === 'R') onReset();
+      if (e.key === 'Escape' && draft) cancelDraft();
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [resetConfirm, actions]);
+  }, [resetConfirm, draft, cancelDraft]);
 
   // Bump repositionKey whenever zoom or viewport changes — useAnchoredPins
   // also catches these via ResizeObserver, but the explicit bump avoids
@@ -129,6 +175,9 @@ export function DemoStage() {
       status: state.selectedAnnotId === a.id ? ('active' as const) : ('idle' as const),
     })),
   );
+
+  const draftActive = draft !== null;
+  const cursor = draftActive ? 'crosshair' : 'default';
 
   return (
     <Section width="wide" id="demo">
@@ -153,20 +202,25 @@ export function DemoStage() {
         <div className={styles.stage} ref={stageRef}>
           <DemoMockup
             onCanvasClick={onCanvasClick}
-            cursor={state.tool === 'pin' ? 'crosshair' : 'default'}
+            cursor={cursor}
             zoom={zoom}
             viewport={viewport}
             setViewport={setViewport}
             canvasRootRef={canvasRootRef}
             onIframeLoad={onIframeLoad}
+            iframeClickable={draftActive}
           />
           <PinLayer
             canvasRootRef={canvasRootRef}
             pins={pins}
+            draftPins={draft?.pins}
+            draftColorIndex={nextColorIndex}
+            removingPinIndex={removingPinIndex}
             onPublishedPinClick={(id) => {
               actions.selectAnnotation(id);
               setOpenThreadId(id);
             }}
+            onDraftPinClick={removeDraftPin}
             repositionKey={repositionKey}
           />
           <AnnotationsRail
@@ -177,18 +231,23 @@ export function DemoStage() {
               actions.selectAnnotation(id);
               setOpenThreadId(id);
             }}
-            onCreate={startDraft}
-            draft={draft ? { active: true } : null}
-            forceExpand={draft !== null}
-            renderDraft={() => (
-              <DemoDraftCard
-                anchor={draft?.anchor ?? null}
-                body={draft?.body ?? ''}
-                onBodyChange={(body) => setDraft((d) => (d ? { ...d, body } : d))}
-                onCancel={cancelDraft}
-                onSave={commitDraft}
-              />
-            )}
+            onCreate={openDraft}
+            draft={draftActive ? { active: true } : null}
+            forceExpand={draftActive}
+            renderDraft={
+              draft
+                ? () => (
+                    <DraftCard
+                      draft={draft}
+                      status={draftStatus}
+                      onBodyChange={handleBodyChange}
+                      onCancel={cancelDraft}
+                      onSave={saveDraft}
+                      onSend={sendDraft}
+                    />
+                  )
+                : undefined
+            }
           >
             {state.annotations.map((a, i) => {
               const props = toCardProps(state, a, i, {

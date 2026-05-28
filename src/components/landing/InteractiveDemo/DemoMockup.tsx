@@ -28,6 +28,11 @@ type Props = {
   /** Bumped after every iframe (re)load so the pin layer's reposition
    *  hook reruns against the fresh document. */
   onIframeLoad?: () => void;
+  /** When true, the iframe accepts pointer events so clicks land in the
+   *  iframe document and `onCanvasClick` fires. Off by default so the
+   *  pin layer + rail capture clicks the way the product does (only the
+   *  draft state machine opens the iframe to clicks). */
+  iframeClickable?: boolean;
 };
 
 function computeFit(
@@ -67,6 +72,7 @@ export function DemoMockup({
   setViewport,
   canvasRootRef,
   onIframeLoad,
+  iframeClickable = false,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -203,7 +209,7 @@ export function DemoMockup({
             srcDoc={SAMPLE_HTML}
             sandbox="allow-same-origin"
             className={styles.iframe}
-            style={{ pointerEvents: cursor === 'crosshair' ? 'auto' : undefined }}
+            style={{ pointerEvents: iframeClickable ? 'auto' : 'none' }}
           />
           <ViewportHandles
             viewport={viewport}

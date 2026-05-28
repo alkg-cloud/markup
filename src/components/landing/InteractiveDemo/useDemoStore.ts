@@ -129,17 +129,19 @@ export function useDemoStore() {
     });
   }, []);
 
-  const addAnnotation = useCallback((args: { anchor: Anchor; body: string }) => {
+  const addAnnotation = useCallback((args: { pins: Anchor[]; body: string }) => {
     setState((s) => {
       const now = Date.now();
       const annId = `a-${now}-${RID()}`;
       const threadId = `t-${now}-${RID()}`;
-      const pinId = `p-${now}-${RID()}`;
       const colorIndex = (s.annotations.length % 5) as 0 | 1 | 2 | 3 | 4;
+      // Multi-pin: each anchor in `args.pins` becomes its own DemoPin so
+      // rendered annotations match the product's `anchors: AnchorRecord[]`
+      // shape (one annotation can light up several places in the mockup).
       const annot: DemoAnnotation = {
         id: annId,
         threadId,
-        pins: [{ id: pinId, anchor: args.anchor }],
+        pins: args.pins.map((anchor, i) => ({ id: `p-${now}-${i}-${RID()}`, anchor })),
         colorIndex,
         createdAt: now,
       };
