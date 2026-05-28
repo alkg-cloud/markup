@@ -101,6 +101,20 @@
   height: 680px;
   overflow: clip;
 }
+
+/* Fullscreen — the shell takes over the screen via the Fullscreen API,
+   the stage stretches to fill the remaining height under the topbar.
+   Background matches the iframe letterbox token so the surrounding area
+   doesn't look like a popup over a dim sheet. */
+.shell:fullscreen {
+  background: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+}
+.shell:fullscreen .stage {
+  flex: 1 1 auto;
+  height: auto;
+}
 @media (max-width: 768px) {
   .topbar {
     padding: 10px 14px;

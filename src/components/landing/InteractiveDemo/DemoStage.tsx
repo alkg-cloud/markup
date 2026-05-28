@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnnotationCard } from '@/components/AnnotationCard/AnnotationCard';
 import { AnnotationsRail } from '@/components/AnnotationsRail/AnnotationsRail';
 import { CanvasToolbar } from '@/components/CanvasToolbar/CanvasToolbar';
+import { useViewerFullscreen } from '@/components/MockupViewer/useViewerFullscreen';
 import { DEFAULT_VIEWPORT, type ViewportState } from '@/components/MockupViewer/viewport-presets';
 import { Eyebrow } from '../primitives/Eyebrow';
 import { Section } from '../primitives/Section';
@@ -21,15 +22,16 @@ export function DemoStage() {
   // at a time. Defaults to the selected annotation on mount.
   const [openThreadId, setOpenThreadId] = useState<string | null>(state.selectedAnnotId);
   const stageRef = useRef<HTMLDivElement | null>(null);
-  // The real CanvasToolbar accepts a zoom callback. We track it locally so
-  // the iframe's transform: scale() ties to the toolbar — for the demo
-  // it's mostly cosmetic since the iframe is fixed-size, but the visual
-  // dock comes for free.
+  // The shell (topbar + stage) is what the Fullscreen API targets — that
+  // way the topbar stays visible in fullscreen and the user keeps Reset
+  // demo within reach.
+  const shellRef = useRef<HTMLDivElement | null>(null);
+  // Zoom + viewport state matches what the product's AppMainViewer keeps
+  // in `useState`/`useViewport` — DemoMockup mirrors ViewerCanvas's
+  // outer/inner scaling structure so the same numbers flow through.
   const [zoom, setZoom] = useState(1);
-  // Viewport selector — drives the device-frame size in DemoMockup.
-  // `fit` is the default so the demo opens edge-to-edge; switching to
-  // desktop/tablet/mobile sizes the iframe to that fixed preset.
   const [viewport, setViewport] = useState<ViewportState>(DEFAULT_VIEWPORT);
+  const { isFullscreen, toggle: toggleFullscreen } = useViewerFullscreen(shellRef);
 
   function onCanvasClick(xPct: number, yPct: number) {
     if (state.tool !== 'pin') return;
@@ -74,7 +76,7 @@ export function DemoStage() {
         everything persists in <code>localStorage</code> so the next visitor finds a clean slate.{' '}
         <strong>Reset</strong> any time.
       </p>
-      <div className={styles.shell}>
+      <div className={styles.shell} ref={shellRef}>
         <div className={styles.topbar}>
           <span className={styles.badge}>Demo mode</span>
           <span className={styles.title}>Lumen Coffee — Hero v3</span>
@@ -91,6 +93,7 @@ export function DemoStage() {
             cursor={state.tool === 'pin' ? 'crosshair' : 'default'}
             zoom={zoom}
             viewport={viewport}
+            setViewport={setViewport}
           >
             <DemoPinLayer
               annotations={state.annotations}
@@ -129,7 +132,8 @@ export function DemoStage() {
           <CanvasToolbar
             boundsRef={stageRef}
             onZoomChange={setZoom}
-            isFullscreen={false}
+            isFullscreen={isFullscreen}
+            onFullscreenToggle={toggleFullscreen}
             viewport={viewport}
             setViewport={setViewport}
           />

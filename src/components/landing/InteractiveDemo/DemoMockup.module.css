@@ -1,44 +1,25 @@
 .wrap {
   position: relative;
-  background: oklch(96% 0.005 165);
-  overflow: clip;
+  background: var(--bg-iframe);
+  overflow: auto;
   contain: paint;
   min-width: 0;
   height: 100%;
-  /* No flex/grid centering — both treat children with intrinsic content
-     (the iframe) as min-content and ignore an explicit width. The frame
-     is absolutely positioned and centered via inset:0 + margin:auto. */
 }
-.framed {
-  /* Subtle checkerboard so the letterbox reads as "this is a viewport
-     preview" instead of "broken background". */
-  background:
-    linear-gradient(45deg, oklch(92% 0.005 165) 25%, transparent 25%) 0 0 / 16px 16px,
-    linear-gradient(-45deg, oklch(92% 0.005 165) 25%, transparent 25%) 0 8px / 16px 16px,
-    linear-gradient(45deg, transparent 75%, oklch(92% 0.005 165) 75%) 8px -8px / 16px 16px,
-    linear-gradient(-45deg, transparent 75%, oklch(92% 0.005 165) 75%) 8px 0 / 16px 16px,
-    oklch(96% 0.005 165);
+
+.outer {
+  flex-shrink: 0;
 }
-.frame {
-  /* Absolute + 50%/50%/translate = centered in the wrap. We avoid
-     `inset: 0` because when both left/right are pinned the explicit
-     `width` is competing with the inset constraint and the inset wins,
-     stretching the frame full-width regardless of the declared size. */
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.outerFramed {
+  /* Floating device surface — same shadow recipe the product's
+     ViewerCanvas applies via inline `boxShadow: var(--shadow-md)`. */
+  box-shadow: var(--shadow-md);
+  border-radius: 4px;
   overflow: hidden;
-  background: oklch(98% 0.005 165);
 }
-.framed .frame {
-  /* Floating device surface — drop shadow + rounded edges so the framed
-     preview reads as elevated against the checkerboard. */
-  border-radius: 12px;
-  border: 1px solid var(--border-strong);
-  box-shadow:
-    0 8px 24px oklch(15% 0 0 / 0.18),
-    0 2px 6px oklch(15% 0 0 / 0.08);
+.inner {
+  position: relative;
+  background: oklch(98% 0.005 165);
 }
 .iframe {
   width: 100%;
