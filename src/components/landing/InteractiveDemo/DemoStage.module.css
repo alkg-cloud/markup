@@ -98,7 +98,7 @@
      viewport; we replicate the same containing-block here so the
      boundsRef-based drag clamping has somewhere to clamp against. */
   position: relative;
-  height: 540px;
+  height: 680px;
   overflow: clip;
 }
 .foot {
@@ -128,7 +128,7 @@
     margin-left: 0;
   }
   .stage {
-    height: 480px;
+    height: 560px;
   }
   .foot {
     padding: 10px 14px;
