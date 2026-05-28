@@ -9,7 +9,7 @@ import { VIEWPORT_PRESETS, type ViewportMode, type ViewportState } from './viewp
 const FIT_MARGIN = 10;
 
 interface ViewerCanvasProps {
-  mockupSrc: string;
+  mockupSrc: { kind: 'src'; url: string } | { kind: 'srcDoc'; html: string };
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   canvasRootRef: React.RefObject<Element | null>;
   iframeGen: number;
@@ -140,14 +140,15 @@ function ViewerCanvasInner({
           >
             <iframe
               ref={iframeRef}
-              src={mockupSrc}
               title="Mockup"
+              sandbox="allow-same-origin"
               style={{
                 width: '100%',
                 height: '100%',
                 border: 0,
                 display: 'block',
               }}
+              {...(mockupSrc.kind === 'src' ? { src: mockupSrc.url } : { srcDoc: mockupSrc.html })}
             />
             <ViewportHandles
               viewport={viewport}

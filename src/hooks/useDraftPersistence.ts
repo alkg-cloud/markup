@@ -16,6 +16,10 @@ export interface UseDraftPersistenceArgs {
   draft: DraftState;
   onRestore: (stored: StoredDraft) => void;
   onFlushed: (lastSavedAt: number) => void;
+  /** When false, the hook skips every localStorage read/write and never
+   *  invokes `onRestore` / `onFlushed`. The state-machine wiring in the
+   *  caller still runs — only the persistence backing store is disabled. */
+  enabled?: boolean;
 }
 
 export interface UseDraftPersistenceReturn {
@@ -62,12 +66,13 @@ function removeStored(key: string): void {
 }
 
 export function useDraftPersistence(args: UseDraftPersistenceArgs): UseDraftPersistenceReturn {
-  const { mockupId, userId, draft, onRestore, onFlushed } = args;
+  const { mockupId, userId, draft, onRestore, onFlushed, enabled = true } = args;
   const key = storageKey(mockupId, userId);
   const restoredRef = useRef(false);
 
   // 1) Restore on mount (once per key).
   useEffect(() => {
+    if (!enabled) return;
     if (restoredRef.current) return;
     restoredRef.current = true;
     if (typeof window === 'undefined') return;
@@ -78,7 +83,7 @@ export function useDraftPersistence(args: UseDraftPersistenceArgs): UseDraftPers
       removeStored(key);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, enabled]);
 
   // 2) Debounced auto-save on draft change.
   const debouncedSave = useDebounce((d: Draft) => {
@@ -88,16 +93,18 @@ export function useDraftPersistence(args: UseDraftPersistenceArgs): UseDraftPers
   }, DRAFT_DEBOUNCE_MS);
 
   useEffect(() => {
+    if (!enabled) return;
     if (!draft) return;
     if (!draft.hasUnsavedChanges) return;
     debouncedSave(draft);
-  }, [draft, debouncedSave]);
+  }, [draft, debouncedSave, enabled]);
 
   // 3) Flush on visibilitychange + beforeunload.
   useEffect(() => {
+    if (!enabled) return;
     if (typeof window === 'undefined') return;
     function flushIfDirty() {
-      if (!draft || !draft.hasUnsavedChanges) return;
+      if (!draft?.hasUnsavedChanges) return;
       const now = Date.now();
       writeStored(key, draft, now);
       onFlushed(now);
@@ -111,18 +118,20 @@ export function useDraftPersistence(args: UseDraftPersistenceArgs): UseDraftPers
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('beforeunload', flushIfDirty);
     };
-  }, [draft, key, onFlushed]);
+  }, [draft, key, onFlushed, enabled]);
 
   const flush = useCallback(() => {
+    if (!enabled) return;
     if (!draft) return;
     const now = Date.now();
     writeStored(key, draft, now);
     onFlushed(now);
-  }, [draft, key, onFlushed]);
+  }, [draft, key, onFlushed, enabled]);
 
   const clear = useCallback(() => {
+    if (!enabled) return;
     removeStored(key);
-  }, [key]);
+  }, [key, enabled]);
 
   return { flush, clear };
 }

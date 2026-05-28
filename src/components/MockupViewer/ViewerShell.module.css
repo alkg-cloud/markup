@@ -1,7 +1,15 @@
-/* AppMainViewer — local styles owned by the viewer composition.
+/* ViewerShell — geometry + canvas-hint pill.
  *
- * Only the canvas-hint pill lives here for now; everything else is
- * inline (the iframe wrapper) or owned by child components. */
+ * Owns the root absolutely-positioned wrap that hosts the canvas iframe,
+ * the rail, the toolbar, and the draft-active hint pill. The historic
+ * banner mounts above this wrap via the `renderHistoricBanner` slot.
+ */
+
+.shell {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-iframe);
+}
 
 /* Canvas hint banner — shown only while a draft is active. Sits at the
  * top-center of the canvas with a pointer-events: none pill so it never

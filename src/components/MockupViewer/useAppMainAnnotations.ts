@@ -45,8 +45,17 @@ export function useAppMainAnnotations({
   // refresh — the per-mutation path is the optimistic `setAnnotations`
   // inside `postReply` / `editComment` / `deleteComment` / `toggleReaction`
   // / `changeStatus` / `deleteAnnotation` / `prependCreated` below.
+  //
+  // Locally-prepended optimistic records that now appear in the seed (by id)
+  // are dropped — the seed copy wins. Local rows whose id is not yet in the
+  // seed (e.g. mid-flight optimistic inserts during a parent refetch) are
+  // preserved at the head of the list.
   useEffect(() => {
-    setAnnotations(initialAnnotations);
+    setAnnotations((prev) => {
+      const seedIds = new Set(initialAnnotations.map((a) => a.id));
+      const localOnly = prev.filter((a) => !seedIds.has(a.id));
+      return [...localOnly, ...initialAnnotations];
+    });
   }, [initialAnnotations]);
 
   const nextColorIndex = useMemo(() => {
@@ -192,7 +201,15 @@ export function useAppMainAnnotations({
   );
 
   const prependCreated = useCallback((created: AppMainAnnotation) => {
-    setAnnotations((prev) => [created, ...prev]);
+    setAnnotations((prev) => {
+      const existing = prev.findIndex((a) => a.id === created.id);
+      if (existing >= 0) {
+        const next = [...prev];
+        next[existing] = created;
+        return next;
+      }
+      return [created, ...prev];
+    });
   }, []);
 
   return {
