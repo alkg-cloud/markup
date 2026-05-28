@@ -31,7 +31,7 @@ Use a scope that maps to the surface being changed:
 
 - **Schema**: `schema`, `migration`
 - **API**: `api`, `auth`, `routes`
-- **Lib helpers**: `intent`, `diff`, `region`, `tldraw`, `mockup`, `annotation`
+- **Lib helpers**: `intent`, `diff`, `region`, `mockup`, `annotation`
 - **UI**: `ui`, `design`
 - **Domain**: `agent-loop`
 - **Infrastructure**: `tooling`, `tsconfig`, `deps`, `scripts`
@@ -43,7 +43,6 @@ Use a scope that maps to the surface being changed:
 # Good — natural and descriptive
 git commit -m "feat(api): GET /annotations/:id/intent with puppeteer + sidecar cache"
 git commit -m "fix(routing): rename _mockups → /m/ (Next 16 private folder bug)"
-git commit -m "feat(annotation): strip screenshot base64 before tldraw save"
 git commit -m "test: elaborate mockup fixtures + coverage-gaps integration tests"
 git commit -m "chore(deps): add puppeteer for server-side DOM resolution"
 

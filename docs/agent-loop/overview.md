@@ -6,9 +6,9 @@ The unit of work is **one annotation → one fix → one reply**:
 
 1. **User comments**
    - Open `/mockups/[id]` in the browser
-   - Click `+ Comment` to capture the iframe + open the modal
-   - Draw + write a free-text comment
-   - Save → creates `Annotation` + `Thread` + first `Message`; tldraw snapshot saved with screenshot base64 stripped; `createdOnVersionId` stamped on the annotation row
+   - Click `+ Comment` to drop one or more anchored pins
+   - Write a free-text comment in the draft card
+   - Send → creates `Annotation` + `Thread` + first `Message`; `createdOnVersionId` stamped on the annotation row
 
 2. **Agent reads context**
    - `GET /api/agent/context/[annotationId]` (Bearer or cookie auth) returns a single payload: annotation metadata + thread + current version source inline + `diff_since_creation`
@@ -39,12 +39,11 @@ Without `/context`, the legacy flow needed:
 
 1. `GET /api/annotations/[id]` — annotation metadata
 2. `GET /api/annotations/[id]/screenshot` — full screenshot (~600 KB)
-3. Read `tldraw.json` somehow (no public endpoint; the agent had to query SQLite directly or fetch via `/m/` and parse the iframe)
-4. Read the mockup HTML via `/m/[id]/index.html`
-5. `GET /api/threads/[id]` — thread state
-6. `POST /api/mockups/[id]/version` — full zip rebuild
+3. Read the mockup HTML via `/m/[id]/index.html`
+4. `GET /api/threads/[id]` — thread state
+5. `POST /api/mockups/[id]/version` — full zip rebuild
 
-That's six round-trips, ~660 KB upstream. The new flow collapses 1–5 into a single `GET /context` and replaces 6 with a 1–5 KB `PATCH /version-patch`. See [INDEX](INDEX.md) for the byte budget.
+That's five round-trips, ~660 KB upstream. The new flow collapses 1–4 into a single `GET /context` and replaces 5 with a 1–5 KB `PATCH /version-patch`. See [INDEX](INDEX.md) for the byte budget.
 
 ## Why patch-style versioning
 

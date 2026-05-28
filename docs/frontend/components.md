@@ -261,13 +261,8 @@ When adding a new surface, write the strings in EN directly in JSX (no `t()` hel
 
 - **Pages are client components** that fetch data via `fetch('/api/…')` in `useEffect` and render loading / error / success states. They do not import Prisma; they do not call `identify()`.
 - **Client islands receive plain data** — never functions or Prisma rows. Servers return ISO-string dates; clients render them.
-- **Effects run twice in dev** (React Strict Mode). Anything that mutates state (creating a tldraw asset, fetching) must be idempotent. See [tldraw](tldraw.md#strictmode-dedup). For pages, the `useEffect` cleanup MUST abort the in-flight fetch via an `AbortController` (the catch handler ignores `AbortError`) so a fast unmount or param change doesn't write to a dead component AND doesn't waste a server response.
-- **Refs** for imperative APIs (e.g. tldraw's `editor` instance) live in the client island, exposed via an `onMount` callback to a sibling control:
-
-```tsx
-const editorRef = useRef<Editor | null>(null);
-<AnnotationCanvas onEditorMount={(ed) => { editorRef.current = ed; }} />
-```
+- **Effects run twice in dev** (React Strict Mode). Anything that mutates state (fetching, persisting drafts) must be idempotent. For pages, the `useEffect` cleanup MUST abort the in-flight fetch via an `AbortController` (the catch handler ignores `AbortError`) so a fast unmount or param change doesn't write to a dead component AND doesn't waste a server response.
+- **Refs** for imperative APIs live in the client island, exposed via an `onMount` callback to a sibling control when an outer component needs to drive the inner instance.
 
 ## Styling: CSS Modules + tokens
 

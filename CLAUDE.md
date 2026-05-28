@@ -64,7 +64,6 @@ The endpoints that compose the agent loop are documented in [`docs/agent-loop/`]
 - `PATCH /api/mockups/[id]` (mockup metadata: status, placement, name)
 - `GET /api/annotations/[id]/region` (bbox-cropped screenshot)
 - `GET /api/mockups/[id]/diff` (text-mode diff API)
-- `PUT /api/annotations/[id]/tldraw` (drawing edit persistence)
 
 …the agent must:
 

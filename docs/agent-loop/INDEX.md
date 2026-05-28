@@ -9,7 +9,7 @@ Silent drift in any of these endpoints breaks consumers. See the [agent-loop rul
 ## Read first
 
 - [Overview](overview.md) — the cycle end-to-end with byte costs
-- [Endpoints](endpoints.md) — `/context`, `/version-patch`, `/region`, `/diff`, `/tldraw`
+- [Endpoints](endpoints.md) — `/context`, `/version-patch`, `/region`, `/diff`
 - [Uploads](uploads.md) — `POST /api/mockups`, `POST /api/mockups/[id]/version` (raw HTML + zip, size cap)
 - [Patch format](patch-format.md) — unified-diff conventions for `/version-patch`
 
@@ -21,11 +21,10 @@ A complete cycle from user comment to agent reply:
 USER (browser)                    AGENT (Bearer or cookie)
 ─────────────                     ──────────────────
 + Comment                         │
-draw + textarea + save            │
+pin + textarea + send             │
    POST /annotations              │
    creates Annotation +           │
-   Thread + Message + tldraw.json │
-   (base64 stripped)              │
+   Thread + Message               │
                                   GET /api/agent/context/[aid]
                                    ↓ aggregator (item C)
                                    ├─ annotation

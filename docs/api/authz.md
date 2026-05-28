@@ -81,7 +81,6 @@ Beyond DELETE, the following routes also gate by `requireOwnerOrAdmin`:
 | `POST /api/folders/[id]/move` | the Folder |
 | `PATCH /api/mockups/[id]` (all fields) | the Mockup |
 | `POST /api/mockups/[id]/move` | the Mockup |
-| `PUT /api/annotations/[id]/tldraw` | the Annotation |
 | `POST /api/threads/[id]/resolve` | the parent Annotation |
 | `POST /api/threads/[id]/reopen` | the parent Annotation |
 

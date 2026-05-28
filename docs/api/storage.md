@@ -1,6 +1,6 @@
 # Storage
 
-All persistent blobs (mockup zips, extracted versions, annotation screenshots, drawing snapshots, sidecar caches) live under a single root path: `${DATA_DIR}/`.
+All persistent blobs (mockup zips, extracted versions, annotation screenshots, sidecar caches) live under a single root path: `${DATA_DIR}/`.
 
 ## Directory layout
 
@@ -17,7 +17,6 @@ ${DATA_DIR}/
 │       └── annotations/
 │           └── <annotationId>/
 │               ├── screenshot.png            # base capture (immutable per annotation)
-│               ├── tldraw.json               # drawing snapshot (mutable via PUT)
 │               ├── intent.json               # sidecar cache (regenerated on read)
 │               └── region.png                # bbox crop (regenerated on read)
 └── tmp/
@@ -45,7 +44,6 @@ Files derived from the primary blobs are stored as **sidecars** in the same dire
 
 | Sidecar | Source | Cache key | Invalidator |
 |---|---|---|---|
-| `intent.json` | `tldraw.json` + the mockup's current version's HTML | `(tldraw_mtime, current_version_id)` | `updateAnnotationTldraw` deletes it before writing the new tldraw; current-version changes naturally bypass via the key |
 | `region.png` | `screenshot.png` + the annotation's `pinCoords` | `screenshot_mtime` (compared against `region.png`'s mtime) | regenerated when `screenshot.png` is newer than `region.png` |
 
 The sidecar wrapping format for JSON caches is:

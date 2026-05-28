@@ -140,15 +140,6 @@ Smaller bugs get fixed inline; this doc is for work that needs its own spec / pl
 
 ## P3 — infrastructure / external concerns
 
-### 14. tldraw production license
-**Where:** `AnnotationModal.tsx` + `AnnotationCanvas.tsx`.
-
-**Today:** the eval watermark "Get a license for production" shows in the bottom-right of every drawing canvas. Acceptable for personal/internal use; not shippable to a wider audience.
-
-**Fix:** acquire a tldraw SDK license, plumb the license key through the editor mount, OR replace the drawing layer with an in-house SVG / canvas implementation if the licensing cost is prohibitive.
-
-**Size:** licensing decision + ~1 day of integration work.
-
 ### 15. Built-in TLS / Let's Encrypt
 **Where:** Dockerfile / entrypoint / env.
 
@@ -209,7 +200,7 @@ Items deferred from the v1.3 brainstorm `analyze-iteration-and-optimize`. Tier 1
 
 **Today:** v1.3 ships G1 — a manual chip selector in the annotation modal that asks the user to tag the intent (`low_contrast`, `layout`, `copy`, `state`, `freeform`). Useful but optional; many users will leave it on freeform.
 
-**Fix:** when an annotation is saved, kick off an async classification job that feeds (drawing summary + comment text + screenshot crop at the bbox) to a small LLM call. The model returns a structured payload: `{intent_type, severity (low/med/high), suggested_target_selector, summary, suggested_specialties: ["designer", "engineer"]}`. Persist as `Annotation.aiIntent`. Surfaced in the annotation page below the user's comment as "Suggested classification" with a small confidence badge.
+**Fix:** when an annotation is saved, kick off an async classification job that feeds (comment text + anchored DOM snippet + screenshot crop at the bbox) to a small LLM call. The model returns a structured payload: `{intent_type, severity (low/med/high), suggested_target_selector, summary, suggested_specialties: ["designer", "engineer"]}`. Persist as `Annotation.aiIntent`. Surfaced in the annotation page below the user's comment as "Suggested classification" with a small confidence badge.
 
 **Why park it:** requires Anthropic / OpenAI SDK + API key plumbing + cost tracking + retry/cache logic. The G1 chip alone covers the common case at zero per-call cost; G2 is the upgrade path when (a) freeform comments dominate and (b) the team is comfortable with per-annotation LLM cost.
 
@@ -252,20 +243,8 @@ Items deferred from the v1.3 brainstorm `analyze-iteration-and-optimize`. Tier 1
 ## AppMain redesign — parked surfaces
 
 Surfaces removed from the mockup viewer in the 2026-05 redesign. The
-viewer focuses on commenting; drawing/diff/edit-mode return as separate
+viewer focuses on commenting; diff and edit-mode return as separate
 specs. Spec: `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md`.
-
-### 23. Drawing canvas (tldraw)
-
-**Where:** annotation modal canvas, annotation detail canvas, edit-mode toggle, save flow.
-
-**Today:** annotations are comment-only. Pins anchor to DOM elements via the anchoring strategy. No freehand drawings or shapes.
-
-**Fix:** reintroduce the tldraw overlay as an OPTIONAL annotation kind. The current Annotation row keeps `anchors[]` for pin-based annotations; a new `kind` discriminator distinguishes "comment" (anchors) from "drawing" (tldraw blob). Restore the screenshot capture + tldraw save flow when needed.
-
-**Why park it:** mockups change frequently; drawings drift from content faster than DOM-anchored pins. Comment-only is the high-signal default.
-
-**Size:** ~2 days (mostly UI restoration — tldraw worked previously).
 
 ### 24. View diff modal
 
@@ -285,11 +264,11 @@ specs. Spec: `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md`.
 
 **Today:** the viewer has a single mode (comment). No pan / select / fit-to-screen tools.
 
-**Fix:** edit-mode returns with drawing (#23). Pan / Select / Fit are nice-to-haves but the floating-cockpit design with zoom + fullscreen covers the common cases.
+**Fix:** Pan / Select / Fit are nice-to-haves but the floating-cockpit design with zoom + fullscreen covers the common cases.
 
-**Why park it:** depends on #23. Pan/Select tools without drawing don't add enough value to justify the toolbar real estate.
+**Why park it:** Pan/Select tools don't add enough value over zoom + fullscreen to justify the toolbar real estate.
 
-**Size:** comes with #23, +1 day for pan/select/fit if desired.
+**Size:** ~1 day for pan/select/fit if desired.
 
 ### 26. Global keyboard-shortcut hook (`useShortcuts`)
 

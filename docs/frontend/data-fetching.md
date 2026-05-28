@@ -154,7 +154,7 @@ Pages that need a dense payload (viewer, annotation detail) call a single aggreg
 | `GET /api/projects/[slug]/view` | `/projects/[slug]` | project metadata + root folders + root mockups |
 | `GET /api/projects/[slug]/resolve?path=…` | `/projects/[slug]/[...path]` | resolved folder OR mockup + breadcrumb data |
 | `GET /api/mockups/[id]/viewer` | `/projects/[slug]/.../<mockup>` | mockup + versions + annotations + thread tree + resolved display names |
-| `GET /api/annotations/[id]/detail` | `/annotations/[id]` | annotation + screenshot dims + tldraw JSON + thread + resolved names + mockup blurb + viewerHref |
+| `GET /api/annotations/[id]/detail` | `/annotations/[id]` | annotation + screenshot dims + thread + resolved names + mockup blurb + viewerHref |
 | `GET /api/mockups/[id]/diff-versions?from=&to=` | `/mockups/[id]/diff` | resolved from/to version pair + viewerHref |
 
 These endpoints replace the heavy data transformation that used to happen inside server components. The same shape is returned as JSON now; pages call it via `fetch` and render the result.
@@ -168,7 +168,7 @@ The product is single-tenant, the data graph is shallow, and most pages need exa
 `useEffect` is an escape hatch from React's declarative model — every effect is a fresh render that the harness has to schedule, run, clean up, and re-run when deps change. Reach for it only when the work it does cannot happen during render:
 
 - **Fetching on mount** (the canonical pattern above).
-- **Subscribing to a non-React signal** — `window`/`document` event listeners, `ResizeObserver`, `IntersectionObserver`, `MutationObserver`, iframe `load`, tldraw store changes.
+- **Subscribing to a non-React signal** — `window`/`document` event listeners, `ResizeObserver`, `IntersectionObserver`, `MutationObserver`, iframe `load`.
 - **Persisting state into storage** (cookie, `localStorage`) when the source-of-truth state changes.
 - **Imperative DOM commands** — focus/blur, scroll-into-view, `showPopover`, fullscreen API.
 - **Timer / animation frame lifecycles** — `setInterval`, `setTimeout`, `requestAnimationFrame`, plus matching cleanup.

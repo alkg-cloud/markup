@@ -9,7 +9,6 @@ The HTML response Next serves for any page route is a minimal shell that boots t
 - [Components](components.md) — server vs client split (root `layout.tsx` only), file layout, composition rules
 - [Data fetching](data-fetching.md) — `useApi`, `useRequireAuth`, loading + error patterns
 - [Styling](styling.md) — `tokens.css`, OKLCH palette, `:focus-visible` global rule, `prefers-reduced-motion`
-- [Tldraw integration](tldraw.md) — snapshot model, base64 strip, StrictMode dedup, edit mode
 
 ## Pages
 
@@ -25,7 +24,7 @@ Every page is a client component that fetches its data via `fetch('/api/…')`. 
 | `/projects/[slug]/[...path]` | `GET /api/projects/[slug]/resolve?path=…` | Folder or mockup viewer (resolved server-side) |
 | `/mockups/[id]` (legacy) | redirect to `/projects` | Backwards-compat redirect |
 | `/mockups/[id]/diff` | `GET /api/mockups/[id]/diff-versions?from=&to=` | Side-by-side / overlay version compare |
-| `/annotations/[id]` | `GET /api/annotations/[id]/detail` | Drawing canvas + thread |
+| `/annotations/[id]` | `GET /api/annotations/[id]/detail` | Annotation screenshot + thread |
 | `/settings/agents` | `GET /api/agent-tokens` | List + create + revoke agent tokens inside the standard sidebar + topbar shell |
 
 The route group `(app)` mounts `AppShell` once (via `(app)/layout.tsx`) so the sidebar tree and other client state inside it survive in-shell navigations. Full-page surfaces (`/login`, `/setup`, `/mockups/[id]/diff`) render outside `(app)`.
@@ -37,8 +36,7 @@ The route group `(app)` mounts `AppShell` once (via `(app)/layout.tsx`) so the s
 | Component | File | Purpose |
 |---|---|---|
 | `AppNav` | `src/components/AppNav/AppNav.tsx` | Top-right "Mockups | Agents" pills with active state via `usePathname()` |
-| `AnnotationModal` | `src/components/AnnotationModal/AnnotationModal.tsx` | "+ Comment" modal with tldraw canvas + chip strip + textarea |
-| `AnnotationCanvas` | `src/components/AnnotationCanvas/AnnotationCanvas.tsx` | Tldraw wrapper — handles screenshot bg, edit mode, StrictMode dedup |
+| `AnnotationModal` | `src/components/AnnotationModal/AnnotationModal.tsx` | "+ Comment" modal — chip strip + textarea for creating an annotation |
 | `AnnotationPin` | `src/components/AnnotationPin/AnnotationPin.tsx` | Numbered teardrop pin overlaid on iframe coordinates |
 | `ThreadTimeline` | `src/components/ThreadTimeline/ThreadTimeline.tsx` | Message list with avatar chips and reply textarea |
 | `ToastProvider` | `src/components/Toast/Toast.tsx` | Root-level toast notification provider; `useToast()` hook for success/error/warning/info |

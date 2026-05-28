@@ -60,7 +60,7 @@ try {
 
 Owner-or-admin routes call `requireOwnerOrAdmin(ident, entity)`. The helper fetches `user.role`; if `admin`, passes; otherwise checks the entity's `(createdBy, createdByType)` pair against `(ident.userId | ident.tokenId, ident.kind)`. Returns 403 `forbidden_owner` on failure for both user and agent callers. See [authz.md](authz.md) for the full DELETE permissions matrix and cascade rules.
 
-Beyond the matrix DELETE routes, `requireOwnerOrAdmin` also gates PATCH and move/tldraw/thread-resolve mutations on Project, Folder, Mockup, and Annotation — see [authz.md § Modify gate](authz.md#modify-gate-patch--move--status-routes).
+Beyond the matrix DELETE routes, `requireOwnerOrAdmin` also gates PATCH and move/thread-resolve mutations on Project, Folder, Mockup, and Annotation — see [authz.md § Modify gate](authz.md#modify-gate-patch--move--status-routes).
 
 ## Author attribution
 
