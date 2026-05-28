@@ -92,20 +92,20 @@
   color: var(--text-bright);
   border-color: var(--border-strong);
 }
+/* Stage — the positioned container that hosts `<ViewerShell>`. ViewerShell
+   uses `position: absolute; inset: 0` and needs a sized, positioned
+   ancestor (prod's `<AppMain variant="viewer">` plays this role). The
+   fixed height matches what the demo previously rendered at; on mobile
+   we trim it down. */
 .stage {
-  /* Positioning context for the floating AnnotationsRail + CanvasToolbar.
-     The real product places these as absolute children of the AppMain
-     viewport; we replicate the same containing-block here so the
-     boundsRef-based drag clamping has somewhere to clamp against. */
   position: relative;
   height: 680px;
   overflow: clip;
 }
 
 /* Fullscreen — the shell takes over the screen via the Fullscreen API,
-   the stage stretches to fill the remaining height under the topbar.
-   Background matches the iframe letterbox token so the surrounding area
-   doesn't look like a popup over a dim sheet. */
+   the background matches the iframe letterbox token so the surrounding
+   area doesn't look like a popup over a dim sheet. */
 .shell:fullscreen {
   background: var(--bg-elevated);
   display: flex;
@@ -114,14 +114,6 @@
 .shell:fullscreen .stage {
   flex: 1 1 auto;
   height: auto;
-}
-/* Hide the keyboard-shortcut chip in the rail's "+ New annotation" button —
-   the demo doesn't bind ⌘⇧N, and the chip just creates noise. CSS-module
-   :global pierces the AnnotationsRail's hashed class so we don't have to
-   thread a new prop through the shared product component. */
-.shell :global([class*="AnnotationsRail-module"][class*="addLabel"])
-  :global([class*="Kbd-module"]) {
-  display: none;
 }
 
 @media (max-width: 768px) {

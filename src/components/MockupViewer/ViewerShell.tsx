@@ -397,7 +397,7 @@ export function ViewerShell({
   );
 
   return (
-    <div ref={shellRef} className={styles.shell}>
+    <div ref={shellRef} className={styles.shell} data-viewer-shell="">
       {renderHistoricBanner?.()}
 
       <ViewerCanvas

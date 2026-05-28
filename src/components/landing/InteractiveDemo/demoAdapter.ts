@@ -5,14 +5,20 @@
  * single-sourced — components don't know they're running in demo mode.
  */
 
+import { useCallback, useMemo } from 'react';
 import type {
   AnnotationCardProps,
   ThreadComment,
 } from '@/components/AnnotationCard/AnnotationCard';
 import type { AnnotationsRailBadge } from '@/components/AnnotationsRail/AnnotationsRail';
 import type { CommentReaction } from '@/components/Comment/Comment';
+import type { AppMainAnnotation } from '@/components/MockupViewer/AppMainViewer';
+import type { ViewerShellProps } from '@/components/MockupViewer/ViewerShell';
 import type { AnnotationStatus } from '@/lib/annotation/status';
-import type { DemoAnnotation, DemoMessage, DemoReaction, DemoState, DemoThread } from './types';
+import type { DemoAnnotation, DemoMessage, DemoReaction, DemoState } from './types';
+import type { useDemoStore } from './useDemoStore';
+
+type DemoActions = ReturnType<typeof useDemoStore>['actions'];
 
 export const DEMO_CURRENT_USER = 'you';
 const AGENT_USER = 'agent';
@@ -129,4 +135,154 @@ export function toCardProps(
     onCommentReact: callbacks.onCommentReact,
     onAnnotationStatusChange: callbacks.onStatusChange,
   };
+}
+
+/**
+ * Map a single DemoAnnotation onto the `AppMainAnnotation` shape that
+ * `ViewerShell` consumes. The shape mirrors `toCardProps` above but
+ * drops the rail-card callbacks (the shell owns those) and adds the
+ * fields the shell + AnnotationCard need (`anchors`, `authorColorIndex`,
+ * `threadId`). Returns null if the thread or primary message is missing
+ * — same defensive shape the rail logic uses.
+ */
+export function toAppMainAnnotation(
+  state: DemoState,
+  annotation: DemoAnnotation,
+  index: number,
+): AppMainAnnotation | null {
+  const thread = state.threads.find((t) => t.id === annotation.threadId);
+  if (!thread) return null;
+  const msgs = state.messages.filter((m) => m.threadId === thread.id);
+  if (msgs.length === 0) return null;
+
+  const anchorTs = Math.max(...msgs.map((m) => m.createdAt));
+  const primary = messageToThreadComment(msgs[0], anchorTs, toReactions(state, msgs[0].id));
+  const replies = msgs
+    .slice(1)
+    .map((m) => messageToThreadComment(m, anchorTs, toReactions(state, m.id)));
+
+  return {
+    id: annotation.id,
+    threadId: thread.id,
+    label: index + 1,
+    colorIndex: annotation.colorIndex,
+    status: thread.status satisfies AnnotationStatus,
+    author: primary.author,
+    authorColorIndex: primary.authorColorIndex,
+    date: formatTimestamp(annotation.createdAt, anchorTs),
+    primary,
+    replies,
+    anchors: annotation.pins.map((p) => p.anchor),
+  };
+}
+
+/**
+ * Adapter hook that pairs `useDemoStore` with `ViewerShell`'s prop
+ * contract. Returns the projected annotation list + the handler set
+ * the shell expects. Handlers are stable (memoised) so the shell can
+ * skip re-renders on identity-checks. Demo-only no-op handlers
+ * (`onCommentEdit`, `onCommentDelete`, `onAnnotationDelete`) return
+ * `false` to signal "not supported"; the shell preserves the optimistic
+ * state on a `false` return.
+ */
+export function useDemoAdapter(state: DemoState, actions: DemoActions) {
+  const annotations = useMemo<AppMainAnnotation[]>(
+    () =>
+      state.annotations
+        .map((a, i) => toAppMainAnnotation(state, a, i))
+        .filter((a): a is AppMainAnnotation => a !== null),
+    [state],
+  );
+
+  const onCreateAnnotation: NonNullable<ViewerShellProps['onCreateAnnotation']> = useCallback(
+    async ({ body, anchors, colorIndex }) => {
+      const { annotation, thread, message } = actions.addAnnotation({
+        pins: anchors,
+        body,
+        colorIndex,
+      });
+      // Synthesize an AppMainAnnotation from the freshly-created records
+      // so the shell can prepend it without waiting for the next
+      // `state`-driven recomputation of `annotations`. The adapter's
+      // memoised `annotations` will re-emit the same record on the next
+      // render; `useAppMainAnnotations` dedupes by id, so no double-insert.
+      const primary: ThreadComment = messageToThreadComment(message, message.createdAt);
+      return {
+        id: annotation.id,
+        threadId: thread.id,
+        label: state.annotations.length + 1,
+        colorIndex: annotation.colorIndex,
+        status: thread.status satisfies AnnotationStatus,
+        author: primary.author,
+        authorColorIndex: primary.authorColorIndex,
+        date: formatTimestamp(annotation.createdAt, message.createdAt),
+        primary,
+        replies: [],
+        anchors: annotation.pins.map((p) => p.anchor),
+      };
+    },
+    [state.annotations.length, actions],
+  );
+
+  const onPostReply: NonNullable<ViewerShellProps['onPostReply']> = useCallback(
+    async (annotationId, body) => {
+      const target = state.annotations.find((a) => a.id === annotationId);
+      if (!target) return null;
+      actions.addReply(target.threadId, body);
+      // `addReply` is void — synthesize a ThreadComment from known
+      // data. The shell's optimistic state will be reconciled on the
+      // next prop refresh, when the real message rolls through
+      // `toAppMainAnnotation`.
+      return {
+        id: `synthesized-${Date.now()}`,
+        author: 'You',
+        authorColorIndex: 0,
+        isOwn: true,
+        timestamp: 'just now',
+        body: body.trim(),
+        reactions: [],
+      };
+    },
+    [state.annotations, actions],
+  );
+
+  const onReactionToggle: NonNullable<ViewerShellProps['onReactionToggle']> = useCallback(
+    async (commentId, emoji) => {
+      actions.toggleReaction(commentId, emoji);
+    },
+    [actions],
+  );
+
+  const onAnnotationStatusChange: NonNullable<ViewerShellProps['onAnnotationStatusChange']> =
+    useCallback(
+      async (annotationId, _status) => {
+        const target = state.annotations.find((a) => a.id === annotationId);
+        if (!target) return false;
+        // The demo store only exposes a cyclical status transition; the
+        // requested target status is ignored. The rail's optimistic state
+        // is already set to the intended next status when this resolves,
+        // but `cycleStatus` walks open → needs review → resolved → open
+        // in lockstep with that cycle, so the next prop refresh matches.
+        actions.cycleStatus(target.threadId);
+        return true;
+      },
+      [state.annotations, actions],
+    );
+
+  const handlers = useMemo(
+    () => ({
+      onCreateAnnotation,
+      onPostReply,
+      onReactionToggle,
+      // Demo doesn't support editing or deletion — return false so the
+      // shell rolls back any optimistic mutation it applied.
+      onCommentEdit: async (_commentId: string, _newBody: string) => false,
+      onCommentDelete: async (_commentId: string) => false,
+      onAnnotationStatusChange,
+      onAnnotationDelete: async (_annotationId: string) => false,
+    }),
+    [onCreateAnnotation, onPostReply, onReactionToggle, onAnnotationStatusChange],
+  );
+
+  return { annotations, handlers };
 }
