@@ -106,8 +106,6 @@ Shared components live in `src/components/<ComponentName>/<ComponentName>.tsx`. 
 src/components/
   AppNav/
     AppNav.tsx              # 'use client' — usePathname for active state
-  AnnotationCanvas/
-    AnnotationCanvas.tsx    # 'use client' — wraps <Tldraw>
   AnnotationModal/
     AnnotationModal.tsx     # 'use client' — modal + chip strip
   AnnotationPin/
@@ -218,12 +216,12 @@ src/app/
     mockups/
       [id]/
         page.tsx             # 'use client' — fetches /api/mockups/[id]/viewer
-        MockupViewer.tsx     # 'use client' — iframe + pin overlay
+        # viewer renders via <AppMainViewerWired> → src/components/MockupViewer/; see ViewerShell section
         Versions.tsx         # 'use client' — sidebar version list
     annotations/
       [id]/
         page.tsx             # 'use client' — fetches /api/annotations/[id]/detail
-        ReadOnlyAnnotation.tsx  # 'use client' — read-only canvas
+        ReadOnlyAnnotation.tsx  # 'use client' — read-only screenshot view
     settings/
       agents/
         page.tsx             # 'use client' — fetches /api/agent-tokens
@@ -247,7 +245,44 @@ src/app/
   setup/                     # full-page, no shell (still client)
 ```
 
-The page-scoped pattern means `MockupViewer.tsx` is co-located with its `page.tsx` under `(app)/mockups/[id]/`. This keeps the import surface obvious and prevents `src/components/` from accumulating one-off pieces.
+The page-scoped pattern keeps single-use pieces (e.g. `DiffViewer.tsx`, `ReadOnlyAnnotation.tsx`) co-located with their `page.tsx` so `src/components/` stays the home of genuinely shared parts. The mockup viewer itself is the exception — it lives in `src/components/MockupViewer/` because the landing-page demo composes the same shell. See the next section.
+
+## ViewerShell + AppMainShell
+
+The mockup viewer is split in two layers so the production app and the landing-page interactive demo render the **same** canvas + rail + toolbar composition. Divergence is structurally impossible — there is no second implementation.
+
+```
+src/components/MockupViewer/
+  ViewerShell.tsx        # bare shell — geometry + draft state + pin layer + rail + toolbar
+  AppMainShell.tsx       # prod wrapper — adds version chip + historic banner via render-prop slots
+  AppMainViewer.tsx      # thin pass-through preserving the public API consumed by AppMainViewerWired
+  AppMainViewerWired.tsx # data adapter — wires fetch/mutations to the AppMainViewer callback contract
+  ViewerCanvas.tsx       # three-layer iframe geometry (wrap / outer / inner with scale transform)
+```
+
+`ViewerShell` owns:
+
+- iframe geometry, `ResizeObserver`, viewport modes (fit / preset / custom) via `useViewport(scopeId)`
+- the entire draft state machine: `draft`, `status`, `removingPinIndex`, `MAX_PINS` enforcement, 220 ms fade on pin removal
+- draft persistence via `useDraftPersistence` (configurable through the `draftPersistence` prop)
+- iframe click capture + classification (draft-pin / published-pin / miss) via `useViewerCanvas`
+- pin layer composition with `repositionKey` derived from zoom + viewport + fullscreen
+- rail composition with `<DraftCard>` slot, toolbar composition with an `extra` slot
+- annotation list mutations via `useAppMainAnnotations` (postReply, edit, delete, react, status, prependCreated with dedup)
+- keyboard shortcuts via `useDraftKeyboard`
+
+`ViewerShell` does NOT own:
+
+- network calls — every mutation goes through a callback prop (`onCreateAnnotation`, `onPostReply`, …)
+- draft persistence storage — the prop is `{ enabled?, storageKey?, debounceMs? }`; demo passes `{ enabled: false }`
+- versions / historic mode — caller injects via `renderHistoricBanner` / `renderToolbarChip` render-prop slots
+- mockup URL composition — caller resolves to a fully-formed `mockupSrc: { kind: 'src'; url } | { kind: 'srcDoc'; html }`
+
+`AppMainShell` wraps `ViewerShell` for production: derives `isHistoric` from `viewingVid !== currentVid`, composes the iframe URL with the `?v=` query param when historic, calls `useInvalidViewingVidNotifier`, and populates the two render-prop slots with `<HistoricBanner>` and `<VersionChip>`.
+
+The landing demo (`src/components/landing/InteractiveDemo/DemoStage.tsx`) skips `AppMainShell` and renders `<ViewerShell>` directly with `mockupSrc={{ kind: 'srcDoc', html: SAMPLE_HTML }}`, `draftPersistence={{ enabled: false }}`, and a localStorage-backed adapter (`useDemoAdapter`) that maps store mutations onto the same callback contract.
+
+The seam — callbacks in, presentation out — is the rule. Any new viewer behaviour belongs in `ViewerShell`; any new prod-only feature belongs in `AppMainShell`. The demo gets every shell change for free.
 
 `AppShell.tsx` lives directly under `src/app/` (not inside `(app)/`) because the route-group layout imports it via a relative path.
 
@@ -349,7 +384,6 @@ There is no form library. Inputs are uncontrolled or controlled with `useState` 
 
 - Transitions use `var(--motion-fast)` (160ms), `var(--motion-base)` (220ms), `var(--motion-slow)` (320ms) with `var(--ease-standard)` or `var(--ease-spring)`
 - New `@keyframes` rules ship with a matching `@media (prefers-reduced-motion: reduce)` override that zeros the animation
-- Tldraw owns its own animations; we don't try to override them
 
 ## Mobile shell pattern
 

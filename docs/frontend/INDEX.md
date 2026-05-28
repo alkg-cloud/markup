@@ -36,6 +36,7 @@ The route group `(app)` mounts `AppShell` once (via `(app)/layout.tsx`) so the s
 | Component | File | Purpose |
 |---|---|---|
 | `AppNav` | `src/components/AppNav/AppNav.tsx` | Top-right "Mockups | Agents" pills with active state via `usePathname()` |
+| `ViewerShell` / `AppMainShell` | `src/components/MockupViewer/` | Bare shell + prod wrapper for the mockup viewer. Shared with the landing-page demo. See [Components → ViewerShell + AppMainShell](components.md#viewershell--appmainshell) |
 | `AnnotationModal` | `src/components/AnnotationModal/AnnotationModal.tsx` | "+ Comment" modal — chip strip + textarea for creating an annotation |
 | `AnnotationPin` | `src/components/AnnotationPin/AnnotationPin.tsx` | Numbered teardrop pin overlaid on iframe coordinates |
 | `ThreadTimeline` | `src/components/ThreadTimeline/ThreadTimeline.tsx` | Message list with avatar chips and reply textarea |
