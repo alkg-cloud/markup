@@ -27,7 +27,9 @@ async function walkAndUnlink(dir: string): Promise<number> {
 async function main() {
   const annotationsRoot = path.join(DATA_DIR, 'mockups');
   const removed = await walkAndUnlink(annotationsRoot);
-  console.log(`[cleanup-tldraw-sidecars] removed ${removed} tldraw.json files under ${annotationsRoot}`);
+  console.log(
+    `[cleanup-tldraw-sidecars] removed ${removed} tldraw.json files under ${annotationsRoot}`,
+  );
 }
 
 main().catch((err) => {
