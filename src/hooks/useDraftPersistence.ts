@@ -17,8 +17,10 @@ export interface UseDraftPersistenceArgs {
   onRestore: (stored: StoredDraft) => void;
   onFlushed: (lastSavedAt: number) => void;
   /** When false, the hook skips every localStorage read/write and never
-   *  invokes `onRestore` / `onFlushed`. The state-machine wiring in the
-   *  caller still runs — only the persistence backing store is disabled. */
+   *  invokes `onRestore` / `onFlushed`. Callers depending on `onFlushed`
+   *  to advance status from `'saving'` → `'saved'` (or to refresh
+   *  `lastSavedAt`) must handle the disabled case explicitly — those
+   *  transitions never fire when persistence is off. */
   enabled?: boolean;
 }
 

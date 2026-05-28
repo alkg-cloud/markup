@@ -72,11 +72,8 @@ function messageToThreadComment(
 
 /**
  * Map a single DemoAnnotation onto the `AppMainAnnotation` shape that
- * `ViewerShell` consumes. The shape mirrors `toCardProps` above but
- * drops the rail-card callbacks (the shell owns those) and adds the
- * fields the shell + AnnotationCard need (`anchors`, `authorColorIndex`,
- * `threadId`). Returns null if the thread or primary message is missing
- * — same defensive shape the rail logic uses.
+ * `ViewerShell` consumes. Returns null if the thread or primary message
+ * is missing — defensive against malformed seeded state.
  */
 export function toAppMainAnnotation(
   state: DemoState,

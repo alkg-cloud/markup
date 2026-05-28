@@ -26,6 +26,10 @@ export function DemoStage() {
   // click commits. Avoids accidental wipes when a user lands near the
   // topbar.
   const [resetConfirm, setResetConfirm] = useState(false);
+  // ViewerShell owns the draft + transient UI state internally. Bumping
+  // this on reset remounts the shell so a half-written draft doesn't
+  // survive the wipe.
+  const [resetKey, setResetKey] = useState(0);
 
   function onReset() {
     setResetConfirm((prev) => {
@@ -34,6 +38,7 @@ export function DemoStage() {
         return true;
       }
       actions.reset();
+      setResetKey((k) => k + 1);
       return false;
     });
   }
@@ -60,6 +65,7 @@ export function DemoStage() {
         </div>
         <div className={styles.stage}>
           <ViewerShell
+            key={resetKey}
             scopeId="demo"
             userId={DEMO_CURRENT_USER}
             mockupSrc={{ kind: 'srcDoc', html: SAMPLE_HTML }}

@@ -267,14 +267,14 @@ src/components/MockupViewer/
 - draft persistence via `useDraftPersistence` (configurable through the `draftPersistence` prop)
 - iframe click capture + classification (draft-pin / published-pin / miss) via `useViewerCanvas`
 - pin layer composition with `repositionKey` derived from zoom + viewport + fullscreen
-- rail composition with `<DraftCard>` slot, toolbar composition with an `extra` slot
+- rail composition with `<DraftCard>` slot, toolbar composition with a `versionChip` slot (caller injects via `renderToolbarChip`)
 - annotation list mutations via `useAppMainAnnotations` (postReply, edit, delete, react, status, prependCreated with dedup)
 - keyboard shortcuts via `useDraftKeyboard`
 
 `ViewerShell` does NOT own:
 
 - network calls — every mutation goes through a callback prop (`onCreateAnnotation`, `onPostReply`, …)
-- draft persistence storage — the prop is `{ enabled?, storageKey?, debounceMs? }`; demo passes `{ enabled: false }`
+- draft persistence storage — the prop is `{ enabled? }`; demo passes `{ enabled: false }` to skip localStorage reads/writes while keeping the rest of the draft state machine intact
 - versions / historic mode — caller injects via `renderHistoricBanner` / `renderToolbarChip` render-prop slots
 - mockup URL composition — caller resolves to a fully-formed `mockupSrc: { kind: 'src'; url } | { kind: 'srcDoc'; html }`
 

@@ -33,9 +33,9 @@ import { ViewerCanvas } from './ViewerCanvas';
 import styles from './ViewerShell.module.css';
 import type { ViewportState } from './viewport-presets';
 
-/** Time (ms) for the draft-pin fade-out CSS transition. The pin stays in
- *  the array under `data-removing="true"` for the duration of the fade,
- *  then is spliced out. Must match the `opacity` transition in PinLayer. */
+/** How long the draft pin sits under `data-removing="true"` before it's
+ *  spliced out — 200ms CSS opacity transition in `Pin.module.css` plus
+ *  20ms slack so the transition is guaranteed complete before unmount. */
 const REMOVE_PIN_FADE_MS = 220;
 
 export interface CreateAnnotationInput {
@@ -70,8 +70,11 @@ export interface ViewerShellProps {
   viewerIsAdmin?: boolean;
 
   /** Internal `useDraftPersistence` runs only when `enabled !== false`.
-   *  Demo passes `{ enabled: false }` so writes are skipped while the
-   *  state machine (status transitions, lastSavedAt updates) still runs. */
+   *  Demo passes `{ enabled: false }` — reads, writes, and the
+   *  `onFlushed` callback are all skipped. The body / pins / cancel /
+   *  send mutations still run; only the `'saving' → 'saved'` transition
+   *  and `lastSavedAt` updates (both driven by `onFlushed`) are
+   *  suppressed. */
   draftPersistence?: {
     enabled?: boolean;
   };
