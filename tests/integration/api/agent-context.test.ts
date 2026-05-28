@@ -1,9 +1,8 @@
 import path from 'node:path';
-import sharp from 'sharp';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { GET } from '@/app/api/agent/context/[annotationId]/route';
 import { POST as setup } from '@/app/api/auth/setup/route';
-import { createAnnotation } from '@/lib/annotation/service';
+import { createCommentAnnotation } from '@/lib/annotation/service';
 import { addVersion, createMockupFromZip } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
 
@@ -23,19 +22,6 @@ async function adminCookie() {
   return r.headers.get('set-cookie')!.match(/mk_session=([^;]+)/)![1];
 }
 
-async function makePng() {
-  return sharp({
-    create: {
-      width: 100,
-      height: 100,
-      channels: 4,
-      background: { r: 50, g: 100, b: 50, alpha: 1 },
-    },
-  })
-    .png()
-    .toBuffer();
-}
-
 async function makeAnnotation(opts?: { projectId?: string; folderId?: string }) {
   const m = await createMockupFromZip({
     name: 'CtxTest',
@@ -47,12 +33,11 @@ async function makeAnnotation(opts?: { projectId?: string; folderId?: string }) 
     projectId: opts?.projectId,
     folderId: opts?.folderId,
   });
-  const png = await makePng();
-  const r = await createAnnotation({
+  const r = await createCommentAnnotation({
     mockupId: m.mockup.id,
-    screenshotPng: png,
-    tldrawJson: { document: { store: {} } },
-    message: 'do something',
+    body: 'do something',
+    anchors: [],
+    colorIndex: 0,
     authorId: 'u',
     authorType: 'user',
   });

@@ -191,7 +191,6 @@ model Annotation {
   mockupId           String
   mockup             Mockup         @relation(fields: [mockupId], references: [id], onDelete: Cascade)
   screenshotPath     String
-  tldrawPath         String
   pinCoords          String?
   anchors            String         @default("[]")
   colorIndex         Int            @default(0)
@@ -207,7 +206,7 @@ model Annotation {
 }
 ```
 
-- `screenshotPath` and `tldrawPath` are relative paths under `${DATA_DIR}` to sidecar files in the annotation's directory. Comment-only annotations (AppMain redesign) reference empty placeholders so the JSON columns stay non-null.
+- `screenshotPath` is a relative path under `${DATA_DIR}` to the screenshot sidecar in the annotation's directory. Comment-only annotations reference an empty placeholder so the column stays non-null.
 - `pinCoords` is the legacy JSON-encoded bbox `{ scrollX, scrollY, viewportWidth, viewportHeight, bboxX, bboxY, bboxW, bboxH }` — null when the annotation has no drawn shapes. Preserved for backfill; comment annotations leave it null and pin positioning derives from `anchors` instead.
 - `anchors` is JSON-encoded `Anchor[]` — each entry is either a text-anchor (`{ path, textOffset, subX, subY }`) or an element-anchor (`{ path, offsetX, offsetY }`). Up to 20 entries per annotation. Defaults to `"[]"` for legacy rows. Defined by the pin-anchoring strategy spec.
 - `colorIndex` is `0..15` into the rotating per-annotation palette. Shared across every pin of the annotation plus the rail badge and the avatar tint.

@@ -12,6 +12,7 @@ prisma/test.db*
 test-data
 playwright-report
 test-results
+tmp
 coverage
 tsconfig.tsbuildinfo
 *.tsbuildinfo

@@ -77,11 +77,12 @@ describe('useDemoStore', () => {
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
-  it('addAnnotation creates an annotation + thread + first message together', () => {
+  it('addAnnotation creates and returns annotation + thread + first message together', () => {
     const { result } = renderHook(() => useDemoStore());
     const beforeAnnots = result.current.state.annotations.length;
+    let created: ReturnType<typeof result.current.actions.addAnnotation> | undefined;
     act(() => {
-      result.current.actions.addAnnotation({
+      created = result.current.actions.addAnnotation({
         pins: [{ path: ':scope>body>section>h1', offsetX: 0.5, offsetY: 0.5 }],
         body: 'New comment',
       });
@@ -92,6 +93,27 @@ describe('useDemoStore', () => {
     const newThread = result.current.state.threads.find((t) => t.annotationId === newAnnot?.id);
     expect(newThread?.status).toBe('open');
     expect(result.current.state.messages.some((m) => m.threadId === newThread?.id)).toBe(true);
+
+    // The action returns the created records so callers (e.g. the
+    // ViewerShell adapter) can synthesize an AppMainAnnotation
+    // synchronously from a single call.
+    expect(created?.annotation.id).toBeDefined();
+    expect(created?.thread.annotationId).toBe(created?.annotation.id);
+    expect(created?.message.threadId).toBe(created?.thread.id);
+    expect(created?.message.body).toBe('New comment');
+  });
+
+  it('addAnnotation honors an explicit colorIndex argument (mod 16)', () => {
+    const { result } = renderHook(() => useDemoStore());
+    let created: ReturnType<typeof result.current.actions.addAnnotation> | undefined;
+    act(() => {
+      created = result.current.actions.addAnnotation({
+        pins: [{ path: ':scope>body>section>h1', offsetX: 0.5, offsetY: 0.5 }],
+        body: 'with color',
+        colorIndex: 17, // 17 % 16 === 1
+      });
+    });
+    expect(created?.annotation.colorIndex).toBe(1);
   });
 
   it('toggleReaction decrements count and clears mine when others also reacted', () => {

@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createAnnotation, getAnnotation, listAnnotations } from '@/lib/annotation/service';
+import { createCommentAnnotation, getAnnotation, listAnnotations } from '@/lib/annotation/service';
 import { createMockupFromZip } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
 
@@ -24,11 +24,11 @@ describe('annotation service', () => {
       versionCreatedBy: 'u',
       versionCreatedByType: 'user',
     });
-    const result = await createAnnotation({
+    const result = await createCommentAnnotation({
       mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
-      tldrawJson: { schema: 'placeholder' },
-      message: 'Navbar too large',
+      body: 'Navbar too large',
+      anchors: [],
+      colorIndex: 0,
       authorId: 'user1',
       authorType: 'user',
     });
@@ -46,11 +46,11 @@ describe('annotation service', () => {
       versionCreatedBy: 'u',
       versionCreatedByType: 'user',
     });
-    await createAnnotation({
+    await createCommentAnnotation({
       mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0]),
-      tldrawJson: {},
-      message: 'first',
+      body: 'first',
+      anchors: [],
+      colorIndex: 0,
       authorId: 'u',
       authorType: 'user',
     });
@@ -69,11 +69,11 @@ describe('annotation service', () => {
       versionCreatedBy: 'u',
       versionCreatedByType: 'user',
     });
-    await createAnnotation({
+    await createCommentAnnotation({
       mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0]),
-      tldrawJson: {},
-      message: 'x',
+      body: 'x',
+      anchors: [],
+      colorIndex: 0,
       authorId: 'u',
       authorType: 'user',
     });
@@ -92,11 +92,11 @@ describe('annotation service', () => {
       versionCreatedBy: 'u',
       versionCreatedByType: 'user',
     });
-    const r = await createAnnotation({
+    const r = await createCommentAnnotation({
       mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0]),
-      tldrawJson: {},
-      message: 'hi',
+      body: 'hi',
+      anchors: [],
+      colorIndex: 0,
       authorId: 'u',
       authorType: 'user',
     });
@@ -114,11 +114,11 @@ describe('annotation service', () => {
       versionCreatedBy: 'u',
       versionCreatedByType: 'user',
     });
-    const r = await createAnnotation({
+    const r = await createCommentAnnotation({
       mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
-      tldrawJson: { document: { store: {} } },
-      message: 'visual change needed',
+      body: 'visual change needed',
+      anchors: [],
+      colorIndex: 0,
       authorId: 'u',
       authorType: 'user',
       createdOnVersionId: m.version.id,
@@ -135,46 +135,14 @@ describe('annotation service', () => {
       versionCreatedBy: 'u',
       versionCreatedByType: 'user',
     });
-    const r = await createAnnotation({
+    const r = await createCommentAnnotation({
       mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
-      tldrawJson: { document: { store: {} } },
-      message: 'no chip picked',
+      body: 'no chip picked',
+      anchors: [],
+      colorIndex: 0,
       authorId: 'u',
       authorType: 'user',
     });
     expect(r.annotation.createdOnVersionId).toBe(m.version.id);
-  });
-
-  it('persists arbitrary tldraw JSON verbatim (no placeholder rewriting)', async () => {
-    const m = await createMockupFromZip({
-      name: 'Q',
-      zipPath: fixture('valid-simple.zip'),
-      createdBy: 'u',
-      createdByType: 'user',
-      versionCreatedBy: 'u',
-      versionCreatedByType: 'user',
-    });
-    const realisticSnapshot = {
-      schema: { schemaVersion: 2 },
-      store: {
-        'shape:abc': { id: 'shape:abc', type: 'draw', x: 10, y: 20, props: {} },
-      },
-    };
-    const r = await createAnnotation({
-      mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
-      tldrawJson: realisticSnapshot,
-      message: 'check this',
-      authorId: 'u',
-      authorType: 'user',
-    });
-    const got = await getAnnotation(r.annotation.id);
-    // Read back the persisted JSON file
-    const fs = await import('node:fs');
-    const path = await import('node:path');
-    const { env } = await import('@/lib/env');
-    const persistedRaw = fs.readFileSync(path.join(env().DATA_DIR, got!.tldrawPath), 'utf8');
-    expect(JSON.parse(persistedRaw)).toEqual(realisticSnapshot);
   });
 });

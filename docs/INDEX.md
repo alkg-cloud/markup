@@ -37,13 +37,12 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 - [Components](frontend/components.md) — CSR-only convention, file layout, composition rules
 - [Data fetching](frontend/data-fetching.md) — `useRequireAuth`, fetch + useEffect pattern, aggregator endpoints
 - [Styling](frontend/styling.md) — `tokens.css`, OKLCH palette, `:focus-visible` global rule, `prefers-reduced-motion` policy
-- [Tldraw integration](frontend/tldraw.md) — snapshot model, base64 strip, StrictMode dedup, edit-mode toggle
 
 ## Agent loop (STRICT contract surface)
 
 - [Agent-loop INDEX](agent-loop/INDEX.md) — overview + endpoint map
 - [Overview](agent-loop/overview.md) — the user→agent→user cycle
-- [Endpoints](agent-loop/endpoints.md) — `/intent`, `/context`, `/version-patch`, `/region`, `/diff`, `/tldraw`
+- [Endpoints](agent-loop/endpoints.md) — `/intent`, `/context`, `/version-patch`, `/region`, `/diff`
 - [Intent payload](agent-loop/intent-payload.md) — what `/intent` returns, sidecar caching, invalidation
 - [Patch format](agent-loop/patch-format.md) — unified-diff conventions for `/version-patch`
 - [Chips](agent-loop/chips.md) — G1 intent vocabulary (`visual` / `copy` / `behavior` / `other`)

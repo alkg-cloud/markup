@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SEEDED_STATE, STORAGE_KEY } from './seeds';
 import type {
   Anchor,
+  ColorIndex,
   DemoAnnotation,
   DemoDraft,
   DemoMessage,
@@ -12,6 +13,13 @@ import type {
   ThreadStatus,
   ToolMode,
 } from './types';
+
+export type AddAnnotationArgs = { pins: Anchor[]; body: string; colorIndex?: number };
+export type AddAnnotationResult = {
+  annotation: DemoAnnotation;
+  thread: DemoThread;
+  message: DemoMessage;
+};
 
 const RID = () => Math.random().toString(36).slice(2, 7);
 
@@ -129,16 +137,20 @@ export function useDemoStore() {
     });
   }, []);
 
-  const addAnnotation = useCallback((args: { pins: Anchor[]; body: string }) => {
-    setState((s) => {
+  const addAnnotation = useCallback(
+    (args: AddAnnotationArgs): AddAnnotationResult => {
       const now = Date.now();
       const annId = `a-${now}-${RID()}`;
       const threadId = `t-${now}-${RID()}`;
-      const colorIndex = (s.annotations.length % 5) as 0 | 1 | 2 | 3 | 4;
+      const msgId = `m-${now}-${RID()}`;
+      // Demo previously cycled a 5-color palette; production uses 16. Widen
+      // the demo to match so visual variety stays aligned with prod when
+      // users dogfood the demo.
+      const colorIndex = ((args.colorIndex ?? state.annotations.length) % 16) as ColorIndex;
       // Multi-pin: each anchor in `args.pins` becomes its own DemoPin so
       // rendered annotations match the product's `anchors: AnchorRecord[]`
       // shape (one annotation can light up several places in the mockup).
-      const annot: DemoAnnotation = {
+      const annotation: DemoAnnotation = {
         id: annId,
         threadId,
         pins: args.pins.map((anchor, i) => ({ id: `p-${now}-${i}-${RID()}`, anchor })),
@@ -147,22 +159,24 @@ export function useDemoStore() {
       };
       const thread: DemoThread = { id: threadId, annotationId: annId, status: 'open' };
       const message: DemoMessage = {
-        id: `m-${now}-${RID()}`,
+        id: msgId,
         threadId,
         body: args.body.trim(),
         author: 'you',
         createdAt: now,
       };
-      return {
+      setState((s) => ({
         ...s,
-        annotations: [...s.annotations, annot],
+        annotations: [...s.annotations, annotation],
         threads: [...s.threads, thread],
         messages: [...s.messages, message],
         draft: null,
         selectedAnnotId: annId,
-      };
-    });
-  }, []);
+      }));
+      return { annotation, thread, message };
+    },
+    [state.annotations.length],
+  );
 
   const setDraft = useCallback((draft: DemoDraft | null) => {
     setState((s) => ({ ...s, draft }));

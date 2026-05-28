@@ -138,12 +138,12 @@ Default to writing none. Add a comment only when the **why** is non-obvious — 
 
 ```ts
 // Avoid
-const tldrawAbs = path.join(env().DATA_DIR, annotation.tldrawPath); // build absolute path
+const screenshotAbs = path.join(env().DATA_DIR, annotation.screenshotPath); // build absolute path
 
 // Prefer (comment carries non-obvious intent)
-// Invalidate intent sidecar BEFORE writing the new tldraw — readers that
-// see the new mtime should never get a stale intent.json with the old key.
-deleteIntentCache(annDir);
+// Verify the mockup row exists before writing the annotation so the caller gets
+// a clean 404 instead of a Prisma FK constraint 500 (which leaks ORM details).
+const exists = await prisma.mockup.findUnique({ where: { id: mockupId }, select: { id: true } });
 ```
 
 ## Tooltips: one primitive, no exceptions

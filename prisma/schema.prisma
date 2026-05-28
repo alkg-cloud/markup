@@ -143,7 +143,6 @@ model Annotation {
   mockupId           String
   mockup             Mockup         @relation(fields: [mockupId], references: [id], onDelete: Cascade)
   screenshotPath     String
-  tldrawPath         String
   // Legacy pin coords (scroll/viewport/bbox JSON) — preserved for backfill;
   // dropped in Phase 13 after the anchors[] migration is verified.
   pinCoords          String?

@@ -50,7 +50,7 @@ These rules are enforced by biome + tsc + the test suite. Violating them turns t
 
 ### TypeScript
 
-1. **No `any` in production code without a justification comment.** Biome treats `any` as a warning by default; we treat it as an error in `src/`. The few legitimate uses (untyped third-party schemas like tldraw v3 store records, non-standard DOM APIs like `caretRangeFromPoint`) carry an inline `// biome-ignore lint/suspicious/noExplicitAny: <reason>` comment with the reason.
+1. **No `any` in production code without a justification comment.** Biome treats `any` as a warning by default; we treat it as an error in `src/`. The few legitimate uses (non-standard DOM APIs like `caretRangeFromPoint`) carry an inline `// biome-ignore lint/suspicious/noExplicitAny: <reason>` comment with the reason.
 2. **Discriminated unions over string-typed `kind` fields.** `kind: 'rectangle' | string` collapses with sibling variants and breaks narrowing. Use `kind: 'arrow'` / `kind: 'geo'` / etc. as literal tags and put the open-ended detail in a separate field (e.g. `geo: 'rectangle' | 'ellipse' | string`).
 3. **Path alias `@/*` maps to `./src/*`.** Configured in `tsconfig.json` and matched by Vitest. Use it for cross-folder imports; don't reach across with `../../../`.
 
@@ -82,7 +82,7 @@ These rules are enforced by biome + tsc + the test suite. Violating them turns t
 
 1. **Auth via `identify(req)`** — accepts cookie OR Bearer; returns `{kind: 'user', userId} | {kind: 'agent', tokenId}` or `null`. Never re-implement auth in a route.
 2. **Sidecar files are atomic-write candidates.** Writes to `intent.json` and `region.png` go directly to disk; if a future change needs concurrency safety, write to `*.tmp` and rename.
-3. **Cache invalidation runs BEFORE the new write.** `updateAnnotationTldraw` deletes `intent.json` before writing the new `tldraw.json` so a concurrent reader never sees a fresh `tldraw.json` paired with a stale `intent.json`.
+3. **Cache invalidation runs BEFORE the new write.** When a route mutates a primary blob that has derived sidecars, it deletes the stale sidecars before writing the new blob so a concurrent reader never pairs a fresh primary with a stale sidecar.
 4. **The `/context` aggregator delegates to `/intent`** by importing the GET handler directly — no HTTP loopback. This keeps tests deterministic and avoids depending on `APP_URL` being reachable from the server.
 
 ## Dependency policy
@@ -95,4 +95,4 @@ These rules are enforced by biome + tsc + the test suite. Violating them turns t
 
 - **`.env.local`** holds dev-mode env vars. Required: `AUTH_SECRET` (≥32 chars), `DATA_DIR`. The schema lives in `src/lib/env.ts`.
 - **`prisma/dev.db`** is the default DB when `DATABASE_URL` is unset. `prisma/test.db` is the test target; `tests/setup.ts` sets `DATABASE_URL` for vitest.
-- **`{DATA_DIR}/`** holds mockup uploads, version builds, annotation screenshots/tldraw/sidecars. Never commit anything from there.
+- **`{DATA_DIR}/`** holds mockup uploads, version builds, annotation screenshots, and sidecars. Never commit anything from there.

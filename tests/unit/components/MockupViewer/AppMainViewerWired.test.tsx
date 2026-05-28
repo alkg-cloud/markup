@@ -51,7 +51,8 @@ vi.mock('@/components/Toast/useToast', () => ({
 }));
 
 vi.mock('@/components/CanvasToolbar', () => ({
-  // Render the versionChip slot so the VersionChip <li> rows appear in the DOM.
+  // Render the toolbar's versionChip slot so the VersionChip <li> rows appear
+  // in the DOM. ViewerShell threads `renderToolbarChip()` through this slot.
   CanvasToolbar: ({ versionChip }: { versionChip?: React.ReactNode }) => versionChip ?? null,
 }));
 

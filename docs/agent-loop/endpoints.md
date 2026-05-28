@@ -61,7 +61,7 @@ Single-call aggregator. Reads everything an agent needs to start working on a fi
 
 **`folder_path`** is the `/`-separated path from the project root to the mockup's folder (e.g. `"Landing Page/Hero Section"`). Empty string when the mockup is at the project root or has no folder.
 
-**ETag:** `"<sha256(tldraw_mtime + current_version_id + last_message_id) prefix>"`. Use `If-None-Match` to short-circuit:
+**ETag:** `"<sha256(current_version_id + last_message_id) prefix>"`. Use `If-None-Match` to short-circuit:
 
 ```
 GET /api/agent/context/cmox…
@@ -246,43 +246,13 @@ Text-mode unified diff between two versions of a mockup.
 
 **File coverage:** text files are diffed; binaries get a placeholder. The text allowlist matches `/version-patch`.
 
-## `PUT /api/annotations/[id]/tldraw`
-
-Persist an updated drawing snapshot. Used when the user enters edit mode on an existing annotation.
-
-**Auth:** cookie OR Bearer.
-
-**Request body (JSON):** the full `TLEditorSnapshot` returned by `editor.getSnapshot()`.
-
-**Response 200:**
-
-```jsonc
-{ "id": "cmox…" }
-```
-
-**Errors:**
-
-| Status | `error` | When |
-|---|---|---|
-| 400 | `invalid_json` | Body isn't parseable JSON |
-| 400 | `invalid_body` | Body isn't an object |
-| 401 | `unauthorized` | No identity |
-| 404 | `not_found` | Annotation row doesn't exist |
-
-**Side effects:**
-- Strips the screenshot base64 from the snapshot before persisting
-- Does NOT update `pinCoords` — the stored bbox stays at the original drawing's extent. (Future improvement: recompute from the new snapshot's shape bounds.)
-
 ## `POST /api/mockups/[id]/annotations`
 
-Create an annotation. Branches on `Content-Type`:
+Create an annotation. The endpoint accepts JSON only.
 
-- `application/json` → comment-flow (preferred; the only mode the AppMain redesign uses)
-- `multipart/form-data` → legacy drawing-flow (preserved for backward compatibility with older agents; do not use in new clients)
+**Auth:** cookie OR Bearer; CSRF-guarded via `assertSameOrigin`.
 
-Both modes share the `mockupId` URL parameter, the auth model, and the response status (`201` on success). The body, response shape, and error codes differ — both are documented below.
-
-### JSON body — comment-flow (preferred)
+**Request body (JSON):**
 
 `Content-Type: application/json`
 
@@ -311,7 +281,7 @@ Both modes share the `mockupId` URL parameter, the auth model, and the response 
 }
 ```
 
-**Errors (JSON mode):**
+**Errors:**
 
 | Status | `error` | When |
 |---|---|---|
@@ -319,41 +289,9 @@ Both modes share the `mockupId` URL parameter, the auth model, and the response 
 | 401 | `unauthorized` | No identity |
 | 403 | `forbidden_origin` | Cross-origin request (CSRF guard via `assertSameOrigin`) |
 | 404 | `mockup_not_found` | `mockupId` doesn't exist (check is explicit, avoids leaking a Prisma FK 500) |
+| 415 | `unsupported_media_type` | `Content-Type` is not `application/json` |
 
-### Multipart body — legacy drawing-flow
-
-`Content-Type: multipart/form-data`
-
-Preserved for backward compatibility with older agents that still upload screenshot + tldraw payloads. New clients (the AppMain viewer and all post-2026-05 agents) use the JSON mode above; drawing-based annotations will return as an optional annotation kind later — see `docs/future-features.md` #23.
-
-| Field | Type | Required |
-|---|---|---|
-| `screenshot` | `Blob` (PNG) | yes |
-| `tldraw` | string (JSON-encoded snapshot) | yes |
-| `message` | string | yes |
-| `pinCoords` | string (JSON-encoded `PinCoords`) | no |
-
-**Response 201:**
-
-```jsonc
-{ "id": "cmox…", "threadId": "cmox…" }
-```
-
-**Errors (multipart mode):**
-
-| Status | `error` | When |
-|---|---|---|
-| 400 | `invalid_body` | Multipart fields missing or wrong type |
-| 400 | `empty_message` | `message.trim() === ''` |
-| 400 | `invalid_tldraw_json` | tldraw field doesn't parse as JSON |
-| 400 | `invalid_pin_coords` | `pinCoords` JSON malformed |
-| 401 | `unauthorized` | No identity |
-| 403 | `forbidden_origin` | Cross-origin request (CSRF guard via `assertSameOrigin`) |
-
-**Auth (both modes):** cookie OR Bearer.
-
-**Side effects (both modes):**
-- Strips screenshot base64 from the tldraw snapshot before writing (multipart only — the JSON mode never persists tldraw)
+**Side effects:**
 - Stamps `createdOnVersionId` to the mockup's current version (or the explicit `createdOnVersionId` field if passed; reserved for tooling)
 - Creates a `Thread` row with `status: 'open'` and a first `Message`
 

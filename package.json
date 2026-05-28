@@ -16,6 +16,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
+    "cleanup:tldraw-sidecars": "tsx scripts/cleanup-tldraw-sidecars.ts",
     "reset:auth": "tsx scripts/reset-auth.ts",
     "reset:tokens": "tsx scripts/reset-tokens.ts",
     "reset:all": "tsx scripts/reset-all.ts",
@@ -36,7 +37,6 @@
     "@radix-ui/react-portal": "^1.1.10",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-toast": "^1.2.15",
-    "@tldraw/tldraw": "5.0.0",
     "bcryptjs": "latest",
     "better-sqlite3": "^12.9.0",
     "cuid": "latest",
@@ -82,9 +82,6 @@
       "prisma",
       "puppeteer",
       "sharp"
-    ],
-    "patchedDependencies": {
-      "@tldraw/editor": "patches/@tldraw__editor.patch"
-    }
+    ]
   }
 }

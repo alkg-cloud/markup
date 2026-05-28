@@ -121,13 +121,11 @@ describe('coverage gaps — uncovered route handlers', () => {
       fs.mkdirSync(dir, { recursive: true });
       const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
       fs.writeFileSync(path.join(dir, 'screenshot.png'), png);
-      fs.writeFileSync(path.join(dir, 'tldraw.json'), JSON.stringify({ schema: 'x', records: [] }));
       const ann = await prisma.annotation.create({
         data: {
           id: aid,
           mockupId: created.id,
           screenshotPath: `mockups/${created.id}/annotations/${aid}/screenshot.png`,
-          tldrawPath: `mockups/${created.id}/annotations/${aid}/tldraw.json`,
           pinCoords: JSON.stringify({
             scrollX: 0,
             scrollY: 100,
@@ -168,7 +166,6 @@ describe('coverage gaps — uncovered route handlers', () => {
       expect(body.thread).toBeTruthy();
       expect(body.thread.messages.length).toBe(1);
       expect(body.pinCoords).toMatchObject({ bboxX: 50, bboxY: 60 });
-      expect(body.tldraw).toBeTruthy();
     });
 
     it('404s an unknown id', async () => {
@@ -198,13 +195,11 @@ describe('coverage gaps — uncovered route handlers', () => {
         0, 0, 1, 8, 2, 0, 0, 0, 144, 119, 83, 222,
       ]);
       fs.writeFileSync(path.join(dir, 'screenshot.png'), png);
-      fs.writeFileSync(path.join(dir, 'tldraw.json'), '{}');
       await prisma.annotation.create({
         data: {
           id: aid,
           mockupId: created.id,
           screenshotPath: `mockups/${created.id}/annotations/${aid}/screenshot.png`,
-          tldrawPath: `mockups/${created.id}/annotations/${aid}/tldraw.json`,
           createdBy: 'cov-gaps-seed',
           createdByType: 'user',
         },

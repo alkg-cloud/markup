@@ -146,7 +146,6 @@ describe('buildViewerPayload', () => {
         data: {
           mockupId: mockup.id,
           screenshotPath: '',
-          tldrawPath: '',
           anchors: '[]',
           colorIndex: 0,
           status: 'open',

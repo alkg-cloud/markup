@@ -29,7 +29,7 @@ Run these from inside the container (`docker exec -it --user 1000:1000 markup <c
 Markup stores all state in two places:
 
 - `$DATA_DIR/markup.db` — SQLite database (users, mockups metadata, tokens)
-- `$DATA_DIR/` — mockup blobs (HTML, screenshots, tldraw annotations)
+- `$DATA_DIR/` — mockup blobs (HTML, screenshots)
 
 Restore from backup:
 
@@ -39,6 +39,16 @@ cp backup/markup.db $DATA_DIR/markup.db
 cp -r backup/mockups/ $DATA_DIR/
 docker start markup
 ```
+
+## Tldraw sidecar cleanup
+
+Run once after a deploy that upgrades past the `drop_annotation_tldraw_path` migration:
+
+```bash
+pnpm cleanup:tldraw-sidecars
+```
+
+The script walks `$DATA_DIR/mockups/*/annotations/*/tldraw.json` and unlinks each file. It is idempotent: running it on a host where the column is already dropped and the sidecars are absent exits 0 with no errors.
 
 ## Image smoke test
 

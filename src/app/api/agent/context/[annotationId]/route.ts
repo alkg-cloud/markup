@@ -73,12 +73,10 @@ export async function GET(req: Request, ctx: { params: Promise<{ annotationId: s
     return NextResponse.json({ error: 'no_current_version' }, { status: 404 });
   }
 
-  const tldrawAbs = path.join(env().DATA_DIR, annotation.tldrawPath);
-  const tldrawMtime = fs.existsSync(tldrawAbs) ? fs.statSync(tldrawAbs).mtimeMs : 0;
   const lastMessageId = annotation.thread?.messages.at(-1)?.id ?? '';
   const etag = `"${crypto
     .createHash('sha256')
-    .update(`${tldrawMtime}:${mockup.currentVersionId}:${lastMessageId}`)
+    .update(`${mockup.currentVersionId}:${lastMessageId}`)
     .digest('hex')
     .slice(0, 16)}"`;
   if (req.headers.get('if-none-match') === etag) {

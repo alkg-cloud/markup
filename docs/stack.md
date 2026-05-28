@@ -28,12 +28,6 @@ Markup is a single-process Next.js application served from a Docker container. T
 - **CSS Modules are not used** — components are styled via inline `style={{...}}` referencing tokens via `var(--…)`. Global rules live in `src/app/globals.css`.
 - **`:focus-visible`** is the global focus indicator; component-level `outline:none` is allowed only when the global rule still wins by specificity
 
-## Annotation drawing layer
-
-- **tldraw v5** via `@tldraw/tldraw` for the on-screen drawing canvas (annotation modal + edit mode on the detail page)
-- Snapshots are persisted as JSON sidecars next to the screenshot PNG
-- Screenshot base64 is stripped from the snapshot at save time and rehydrated on read — see [`docs/frontend/tldraw.md`](frontend/tldraw.md)
-
 ## Server-side image + DOM
 
 - **`sharp`** for PNG cropping (`/api/annotations/[id]/region`)
@@ -73,7 +67,7 @@ src/
   app/                      # Next.js App Router
     api/                    # API routes (route.ts files)
       agent/context/[annotationId]/route.ts
-      annotations/[id]/{intent,region,screenshot,tldraw,messages}/route.ts
+      annotations/[id]/{intent,region,screenshot,messages}/route.ts
       mockups/[id]/{version,version-patch,diff,thumbnail,annotations,versions/[vid]/{source,promote}}/route.ts
       threads/[id]/{reply,resolve,reopen}/route.ts
       auth/{login,logout,setup}/route.ts
@@ -85,19 +79,17 @@ src/
     m/[mockupId]/[...path]/route.ts  # Public-ish serve route (auth-checked) for mockup HTML
     layout.tsx, globals.css, page.tsx
   components/               # Shared React components
-    AnnotationCanvas/       # tldraw wrapper
     AnnotationModal/        # + Comment modal
     AnnotationPin/          # numbered pins overlaid on iframes
     AppNav/                 # shared top nav
     ThreadTimeline/         # message list
   lib/
-    annotation/service.ts   # createAnnotation, updateAnnotationTldraw
+    annotation/service.ts   # createCommentAnnotation, listAnnotations, getAnnotation
     auth/                   # identify, session, password, resolve-display-name
     diff/                   # apply-unified, render-unified
     intent/                 # parser, contrast, cache, puppeteer singleton
     mockup/                 # service, storage, zip-extractor
     region/crop.ts          # sharp-based bbox crop
-    tldraw/snapshot-screenshot.ts  # strip + rehydrate
     boot.ts, env.ts, logger.ts, prisma.ts
   styles/tokens.css
 prisma/
@@ -106,7 +98,7 @@ prisma/
 scripts/                    # one-shot maintenance scripts (tsx-run)
 tests/
   integration/{annotation,api,auth,lib,mockup}/*.test.ts
-  unit/lib/{intent,diff,region,tldraw,…}/*.test.ts
+  unit/lib/{intent,diff,region,…}/*.test.ts
   fixtures/mockups/*.zip
   setup.ts
 docs/                       # this directory
