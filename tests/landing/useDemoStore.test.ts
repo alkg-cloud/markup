@@ -95,6 +95,22 @@ describe('useDemoStore', () => {
     expect(result.current.state.messages.some((m) => m.threadId === newThread?.id)).toBe(true);
   });
 
+  it('toggleReaction decrements count and clears mine when others also reacted', () => {
+    const { result } = renderHook(() => useDemoStore());
+    // Seeded { threadId: 't1', emoji: '👍', count: 3, mine: true } —
+    // toggling should decrement (you + 2 agents → 2 agents), not remove
+    // the pill entirely.
+    act(() => {
+      result.current.actions.toggleReaction('t1', '👍');
+    });
+    const after = result.current.state.reactions.find(
+      (r) => r.threadId === 't1' && r.emoji === '👍',
+    );
+    expect(after).toBeDefined();
+    expect(after?.count).toBe(2);
+    expect(after?.mine).toBe(false);
+  });
+
   it('toggleReaction increments count and sets mine on a not-mine reaction (branch 3)', () => {
     const { result } = renderHook(() => useDemoStore());
     // The seeded reaction { threadId: 't1', emoji: '🔥', count: 1, mine: false } is branch 3.

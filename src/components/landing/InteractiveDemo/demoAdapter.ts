@@ -114,7 +114,11 @@ export function toCardProps(
     date: formatTimestamp(annotation.createdAt, anchorTs),
     primary,
     replies,
-    currentUser: 'You',
+    // Must match DEMO_CURRENT_USER (the literal pushed into reactedBy when
+    // `mine` is true). Comment computes isCurrentUser via
+    // reactedBy.includes(currentUser); a case mismatch silently turns off
+    // the "mine" highlight on every ReactionPill.
+    currentUser: DEMO_CURRENT_USER,
     active: state.selectedAnnotId === annotation.id,
     threadOpen: callbacks.threadOpen,
     onThreadToggle: callbacks.onThreadToggle,

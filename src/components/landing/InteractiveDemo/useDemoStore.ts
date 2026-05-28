@@ -82,9 +82,23 @@ export function useDemoStore() {
         };
       }
       if (existing.mine) {
+        // If the user is the only reactor, drop the pill entirely.
+        // Otherwise just remove the user's vote — leave the others' counts
+        // intact (matches the real product's per-user reaction model and
+        // avoids the "click 👍 once, all 3 reactors disappear" surprise).
+        if (existing.count <= 1) {
+          return {
+            ...s,
+            reactions: s.reactions.filter((r) => !(r.threadId === threadId && r.emoji === emoji)),
+          };
+        }
         return {
           ...s,
-          reactions: s.reactions.filter((r) => !(r.threadId === threadId && r.emoji === emoji)),
+          reactions: s.reactions.map((r) =>
+            r.threadId === threadId && r.emoji === emoji
+              ? { ...r, count: r.count - 1, mine: false }
+              : r,
+          ),
         };
       }
       return {
