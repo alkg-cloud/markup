@@ -10,6 +10,7 @@ import { type PinDescriptor, PinLayer } from '@/components/PinLayer';
 import type { Anchor } from '@/lib/anchoring';
 import { Eyebrow } from '../primitives/Eyebrow';
 import { Section } from '../primitives/Section';
+import { DemoDraftCard } from './DemoDraftCard';
 import { DemoMockup } from './DemoMockup';
 import styles from './DemoStage.module.css';
 import { toBadges, toCardProps } from './demoAdapter';
@@ -41,6 +42,13 @@ export function DemoStage() {
   // so the anchoring runtime re-projects pins onto the fresh layout.
   const [repositionKey, setRepositionKey] = useState(0);
 
+  // In-rail draft state — replaces `window.prompt()`, which the user
+  // couldn't see in a glance (and many browsers throttle after a few
+  // dismissals). Two-step flow: click "+" arms the draft (anchor null) →
+  // click in the mockup sets the anchor → user types in the rail card →
+  // Save commits.
+  const [draft, setDraft] = useState<{ anchor: Anchor | null; body: string } | null>(null);
+
   // Stable callbacks — DemoMockup's iframe-load effect uses these in its
   // dep array. Recreating them every render re-binds the iframe click
   // listener AND re-fires onIframeLoad → setRepositionKey → re-render
@@ -48,14 +56,31 @@ export function DemoStage() {
   const onCanvasClick = useCallback(
     (anchor: Anchor) => {
       if (state.tool !== 'pin') return;
-      const body = window.prompt('Annotation body:');
-      if (!body?.trim()) return;
-      actions.addAnnotation({ anchor, body });
-      actions.setTool('select');
+      // First click in pin mode → store the anchor on the open draft so
+      // the rail card flips to "type your body". If the user starts a
+      // pin click WITHOUT first hitting "+", arm a draft on the fly.
+      setDraft((d) => ({ anchor, body: d?.body ?? '' }));
     },
-    [state.tool, actions],
+    [state.tool],
   );
   const onIframeLoad = useCallback(() => setRepositionKey((k) => k + 1), []);
+
+  const startDraft = useCallback(() => {
+    actions.setTool('pin');
+    setDraft({ anchor: null, body: '' });
+  }, [actions]);
+
+  const cancelDraft = useCallback(() => {
+    setDraft(null);
+    actions.setTool('select');
+  }, [actions]);
+
+  const commitDraft = useCallback(() => {
+    if (!draft?.anchor || !draft.body.trim()) return;
+    actions.addAnnotation({ anchor: draft.anchor, body: draft.body });
+    setDraft(null);
+    actions.setTool('select');
+  }, [draft, actions]);
 
   function onReset() {
     // Functional updater reads the LATEST state, not the closure-captured
@@ -152,7 +177,18 @@ export function DemoStage() {
               actions.selectAnnotation(id);
               setOpenThreadId(id);
             }}
-            onCreate={() => actions.setTool('pin')}
+            onCreate={startDraft}
+            draft={draft ? { active: true } : null}
+            forceExpand={draft !== null}
+            renderDraft={() => (
+              <DemoDraftCard
+                anchor={draft?.anchor ?? null}
+                body={draft?.body ?? ''}
+                onBodyChange={(body) => setDraft((d) => (d ? { ...d, body } : d))}
+                onCancel={cancelDraft}
+                onSave={commitDraft}
+              />
+            )}
           >
             {state.annotations.map((a, i) => {
               const props = toCardProps(state, a, i, {

@@ -115,6 +115,15 @@
   flex: 1 1 auto;
   height: auto;
 }
+/* Hide the keyboard-shortcut chip in the rail's "+ New annotation" button —
+   the demo doesn't bind ⌘⇧N, and the chip just creates noise. CSS-module
+   :global pierces the AnnotationsRail's hashed class so we don't have to
+   thread a new prop through the shared product component. */
+.shell :global([class*="AnnotationsRail-module"][class*="addLabel"])
+  :global([class*="Kbd-module"]) {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .topbar {
     padding: 10px 14px;
