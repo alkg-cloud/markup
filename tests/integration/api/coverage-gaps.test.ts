@@ -126,7 +126,6 @@ describe('coverage gaps — uncovered route handlers', () => {
           id: aid,
           mockupId: created.id,
           screenshotPath: `mockups/${created.id}/annotations/${aid}/screenshot.png`,
-          tldrawPath: '',
           pinCoords: JSON.stringify({
             scrollX: 0,
             scrollY: 100,
@@ -201,7 +200,6 @@ describe('coverage gaps — uncovered route handlers', () => {
           id: aid,
           mockupId: created.id,
           screenshotPath: `mockups/${created.id}/annotations/${aid}/screenshot.png`,
-          tldrawPath: '',
           createdBy: 'cov-gaps-seed',
           createdByType: 'user',
         },

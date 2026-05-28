@@ -50,7 +50,6 @@ export async function createAnnotation(input: CreateInput) {
         id: aid,
         mockupId: input.mockupId,
         screenshotPath,
-        tldrawPath: '',
         createdBy: input.authorId,
         createdByType: input.authorType,
         pinCoords: input.pinCoords ? serializePinCoords(input.pinCoords) : null,
@@ -124,9 +123,9 @@ interface CreateCommentAnnotationInput {
 /**
  * AppMain redesign: comment-only annotation creation flow.
  *
- * No screenshot, no tldraw drawing — pins anchor to DOM elements inside
- * the mockup. The legacy `screenshotPath` and `tldrawPath` columns are
- * filled with empty strings (still NOT NULL until Phase 13 drops them).
+ * No screenshot — pins anchor to DOM elements inside the mockup. The legacy
+ * `screenshotPath` column remains NOT NULL and is filled with an empty
+ * marker for comment-only annotations.
  *
  * See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §7
  * and `docs/superpowers/specs/2026-05-18-pin-anchoring-strategy.md`.
@@ -145,10 +144,9 @@ export async function createCommentAnnotation(input: CreateCommentAnnotationInpu
     const annotation = await tx.annotation.create({
       data: {
         mockupId: input.mockupId,
-        // Legacy columns required NOT NULL — store empty markers until
-        // Phase 13 drops them.
+        // Legacy column required NOT NULL — comment-only annotations
+        // store an empty marker.
         screenshotPath: '',
-        tldrawPath: '',
         anchors: JSON.stringify(input.anchors),
         colorIndex: input.colorIndex,
         status: input.status ?? 'open',

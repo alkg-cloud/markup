@@ -16,6 +16,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
+    "cleanup:tldraw-sidecars": "tsx scripts/cleanup-tldraw-sidecars.ts",
     "reset:auth": "tsx scripts/reset-auth.ts",
     "reset:tokens": "tsx scripts/reset-tokens.ts",
     "reset:all": "tsx scripts/reset-all.ts",
