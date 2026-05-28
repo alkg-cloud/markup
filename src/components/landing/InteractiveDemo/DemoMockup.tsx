@@ -9,9 +9,13 @@ type Props = {
   onCanvasClick?: (xPct: number, yPct: number) => void;
   children?: ReactNode;
   cursor?: CSSProperties['cursor'];
+  /** Zoom factor — applied as `transform: scale(zoom)` on the iframe so
+   *  the toolbar's +/-/100% buttons feel live. Pin overlay uses % coords
+   *  so its alignment to the wrap doesn't drift with zoom. */
+  zoom?: number;
 };
 
-export function DemoMockup({ onCanvasClick, children, cursor = 'default' }: Props) {
+export function DemoMockup({ onCanvasClick, children, cursor = 'default', zoom = 1 }: Props) {
   const wrap = useRef<HTMLDivElement>(null);
 
   function computeClick(clientX: number, clientY: number) {
@@ -46,7 +50,15 @@ export function DemoMockup({ onCanvasClick, children, cursor = 'default' }: Prop
       onKeyDown={handleKeyDown}
       style={{ cursor }}
     >
-      <iframe title="Sample mockup" srcDoc={SAMPLE_HTML} sandbox="" className={styles.iframe} />
+      <iframe
+        title="Sample mockup"
+        srcDoc={SAMPLE_HTML}
+        sandbox=""
+        className={styles.iframe}
+        style={
+          zoom === 1 ? undefined : { transform: `scale(${zoom})`, transformOrigin: 'top left' }
+        }
+      />
       <div className={styles.pinLayer}>{children}</div>
     </div>
   );

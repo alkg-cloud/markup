@@ -93,9 +93,13 @@
   border-color: var(--border-strong);
 }
 .stage {
-  display: grid;
-  grid-template-columns: 1fr 320px;
+  /* Positioning context for the floating AnnotationsRail + CanvasToolbar.
+     The real product places these as absolute children of the AppMain
+     viewport; we replicate the same containing-block here so the
+     boundsRef-based drag clamping has somewhere to clamp against. */
+  position: relative;
   height: 540px;
+  overflow: clip;
 }
 .foot {
   padding: 10px 18px;
@@ -110,11 +114,6 @@
   gap: 8px;
 }
 
-@media (max-width: 1024px) {
-  .stage {
-    grid-template-columns: 1fr 280px;
-  }
-}
 @media (max-width: 768px) {
   .topbar {
     padding: 10px 14px;
@@ -129,8 +128,7 @@
     margin-left: 0;
   }
   .stage {
-    grid-template-columns: 1fr;
-    height: auto;
+    height: 480px;
   }
   .foot {
     padding: 10px 14px;

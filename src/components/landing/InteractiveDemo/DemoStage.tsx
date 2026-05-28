@@ -1,19 +1,31 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { AnnotationCard } from '@/components/AnnotationCard/AnnotationCard';
+import { AnnotationsRail } from '@/components/AnnotationsRail/AnnotationsRail';
+import { CanvasToolbar } from '@/components/CanvasToolbar/CanvasToolbar';
 import { Eyebrow } from '../primitives/Eyebrow';
 import { Section } from '../primitives/Section';
 import { DemoMockup } from './DemoMockup';
 import { DemoPinLayer } from './DemoPinLayer';
-import { DemoRail } from './DemoRail';
 import styles from './DemoStage.module.css';
-import { DemoToolbar } from './DemoToolbar';
+import { toBadges, toCardProps } from './demoAdapter';
 import { STORAGE_KEY } from './seeds';
 import { useDemoStore } from './useDemoStore';
 
 export function DemoStage() {
   const { state, actions } = useDemoStore();
   const [resetConfirm, setResetConfirm] = useState(false);
+  // The real AnnotationCard treats `threadOpen` as a parent-owned
+  // accordion — track which card is expanded so only one thread is open
+  // at a time. Defaults to the selected annotation on mount.
+  const [openThreadId, setOpenThreadId] = useState<string | null>(state.selectedAnnotId);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  // The real CanvasToolbar accepts a zoom callback. We track it locally so
+  // the iframe's transform: scale() ties to the toolbar — for the demo
+  // it's mostly cosmetic since the iframe is fixed-size, but the visual
+  // dock comes for free.
+  const [zoom, setZoom] = useState(1);
 
   function onCanvasClick(xPct: number, yPct: number) {
     if (state.tool !== 'pin') return;
@@ -72,29 +84,47 @@ export function DemoStage() {
             </button>
           </div>
         </div>
-        <DemoToolbar tool={state.tool} onChange={actions.setTool} />
-        <div className={styles.stage}>
+        <div className={styles.stage} ref={stageRef}>
           <DemoMockup
             onCanvasClick={onCanvasClick}
             cursor={state.tool === 'pin' ? 'crosshair' : 'default'}
+            zoom={zoom}
           >
             <DemoPinLayer
               annotations={state.annotations}
               selectedId={state.selectedAnnotId}
-              onSelect={actions.selectAnnotation}
+              onSelect={(id) => {
+                actions.selectAnnotation(id);
+                setOpenThreadId(id);
+              }}
             />
           </DemoMockup>
-          <DemoRail
-            annotations={state.annotations}
-            threads={state.threads}
-            messages={state.messages}
-            reactions={state.reactions}
-            selectedId={state.selectedAnnotId}
-            onSelect={actions.selectAnnotation}
-            onCycleStatus={actions.cycleStatus}
-            onToggleReaction={actions.toggleReaction}
-            onAddReply={actions.addReply}
-          />
+          <AnnotationsRail
+            boundsRef={stageRef}
+            badges={toBadges(state)}
+            activeAnnotationId={state.selectedAnnotId}
+            onBadgeClick={(id) => {
+              actions.selectAnnotation(id);
+              setOpenThreadId(id);
+            }}
+          >
+            {state.annotations.map((a, i) => {
+              const props = toCardProps(state, a, i, {
+                onActivate: () => {
+                  actions.selectAnnotation(a.id);
+                  setOpenThreadId(a.id);
+                },
+                onPostReply: (body) => actions.addReply(a.threadId, body),
+                onCommentReact: (_commentId, emoji) => actions.toggleReaction(a.threadId, emoji),
+                onStatusChange: () => actions.cycleStatus(a.threadId),
+                threadOpen: openThreadId === a.id,
+                onThreadToggle: () => setOpenThreadId((prev) => (prev === a.id ? null : a.id)),
+              });
+              if (!props) return null;
+              return <AnnotationCard key={a.id} {...props} />;
+            })}
+          </AnnotationsRail>
+          <CanvasToolbar boundsRef={stageRef} onZoomChange={setZoom} isFullscreen={false} />
         </div>
         <div className={styles.foot}>
           <span>
@@ -102,8 +132,8 @@ export function DemoStage() {
             {resolvedCount} resolved · stored at <code>localStorage.{STORAGE_KEY}</code>
           </span>
           <span className={styles.footRight}>
-            Real <code>&lt;Toolbar&gt;</code>, <code>&lt;AnnotationCard&gt;</code>,{' '}
-            <code>&lt;ReactionPicker&gt;</code> components
+            Real <code>&lt;AnnotationsRail&gt;</code>, <code>&lt;AnnotationCard&gt;</code>,{' '}
+            <code>&lt;CanvasToolbar&gt;</code> from the product
           </span>
         </div>
       </div>
