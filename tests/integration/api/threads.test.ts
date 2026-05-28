@@ -4,7 +4,7 @@ import { POST as setup } from '@/app/api/auth/setup/route';
 import { POST as reopen } from '@/app/api/threads/[id]/reopen/route';
 import { POST as reply } from '@/app/api/threads/[id]/reply/route';
 import { POST as resolve } from '@/app/api/threads/[id]/resolve/route';
-import { createAnnotation } from '@/lib/annotation/service';
+import { createCommentAnnotation } from '@/lib/annotation/service';
 import { createMockupFromZip } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
 
@@ -40,10 +40,11 @@ async function bootstrap() {
     versionCreatedBy: 'u',
     versionCreatedByType: 'user',
   });
-  const annotation = await createAnnotation({
+  const annotation = await createCommentAnnotation({
     mockupId: mockup.mockup.id,
-    screenshotPng: Buffer.from([0x89]),
-    message: 'initial',
+    body: 'initial',
+    anchors: [],
+    colorIndex: 0,
     authorId: 'u',
     authorType: 'user',
   });

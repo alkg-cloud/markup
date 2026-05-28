@@ -84,7 +84,7 @@ src/
     AppNav/                 # shared top nav
     ThreadTimeline/         # message list
   lib/
-    annotation/service.ts   # createAnnotation
+    annotation/service.ts   # createCommentAnnotation, listAnnotations, getAnnotation
     auth/                   # identify, session, password, resolve-display-name
     diff/                   # apply-unified, render-unified
     intent/                 # parser, contrast, cache, puppeteer singleton

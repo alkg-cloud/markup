@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createAnnotation, getAnnotation, listAnnotations } from '@/lib/annotation/service';
+import { createCommentAnnotation, getAnnotation, listAnnotations } from '@/lib/annotation/service';
 import { createMockupFromZip } from '@/lib/mockup/service';
 import { prisma } from '@/lib/prisma';
 
@@ -24,10 +24,11 @@ describe('annotation service', () => {
       versionCreatedBy: 'u',
       versionCreatedByType: 'user',
     });
-    const result = await createAnnotation({
+    const result = await createCommentAnnotation({
       mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
-      message: 'Navbar too large',
+      body: 'Navbar too large',
+      anchors: [],
+      colorIndex: 0,
       authorId: 'user1',
       authorType: 'user',
     });
@@ -45,10 +46,11 @@ describe('annotation service', () => {
       versionCreatedBy: 'u',
       versionCreatedByType: 'user',
     });
-    await createAnnotation({
+    await createCommentAnnotation({
       mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0]),
-      message: 'first',
+      body: 'first',
+      anchors: [],
+      colorIndex: 0,
       authorId: 'u',
       authorType: 'user',
     });
@@ -67,10 +69,11 @@ describe('annotation service', () => {
       versionCreatedBy: 'u',
       versionCreatedByType: 'user',
     });
-    await createAnnotation({
+    await createCommentAnnotation({
       mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0]),
-      message: 'x',
+      body: 'x',
+      anchors: [],
+      colorIndex: 0,
       authorId: 'u',
       authorType: 'user',
     });
@@ -89,10 +92,11 @@ describe('annotation service', () => {
       versionCreatedBy: 'u',
       versionCreatedByType: 'user',
     });
-    const r = await createAnnotation({
+    const r = await createCommentAnnotation({
       mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0]),
-      message: 'hi',
+      body: 'hi',
+      anchors: [],
+      colorIndex: 0,
       authorId: 'u',
       authorType: 'user',
     });
@@ -110,10 +114,11 @@ describe('annotation service', () => {
       versionCreatedBy: 'u',
       versionCreatedByType: 'user',
     });
-    const r = await createAnnotation({
+    const r = await createCommentAnnotation({
       mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
-      message: 'visual change needed',
+      body: 'visual change needed',
+      anchors: [],
+      colorIndex: 0,
       authorId: 'u',
       authorType: 'user',
       createdOnVersionId: m.version.id,
@@ -130,10 +135,11 @@ describe('annotation service', () => {
       versionCreatedBy: 'u',
       versionCreatedByType: 'user',
     });
-    const r = await createAnnotation({
+    const r = await createCommentAnnotation({
       mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
-      message: 'no chip picked',
+      body: 'no chip picked',
+      anchors: [],
+      colorIndex: 0,
       authorId: 'u',
       authorType: 'user',
     });
