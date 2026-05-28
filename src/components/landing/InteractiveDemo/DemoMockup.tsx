@@ -105,9 +105,19 @@ export function DemoMockup({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasSize.w, canvasSize.h]);
 
-  // Wire iframe-load → canvasRootRef + click capture. Captures clicks on
-  // the iframe's contentDocument so `target` lands inside the mockup
-  // DOM, which is what buildAnchorFromClick needs.
+  // Hold the latest `onCanvasClick` in a ref so the iframe-load effect
+  // can stay mount-only. Closing over the prop directly would cause the
+  // effect to re-fire every render that gave us a new function, which
+  // would also re-fire `onIframeLoad` (→ setRepositionKey → re-render →
+  // infinite loop, React #185).
+  const onCanvasClickRef = useRef(onCanvasClick);
+  useEffect(() => {
+    onCanvasClickRef.current = onCanvasClick;
+  }, [onCanvasClick]);
+
+  // Mount-only: wire iframe load → canvasRootRef + click capture. Click
+  // listener reads ref.current so it always sees the freshest handler
+  // without re-binding.
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
@@ -115,15 +125,16 @@ export function DemoMockup({
     function attach() {
       const doc = iframe?.contentDocument;
       if (!doc) return;
-      // Document inside srcdoc + sandbox="allow-same-origin" — fully
-      // readable. The documentElement IS the canvas root (paths resolve
-      // from `:scope>body>section>…` against html).
+      // srcdoc + sandbox="allow-same-origin" — fully readable. The
+      // documentElement IS the canvas root (paths resolve from
+      // `:scope>body>section>…` against html).
       canvasRootRef.current = doc.documentElement;
       onIframeLoad?.();
       doc.addEventListener('click', handleIframeClick);
     }
     function handleIframeClick(e: Event) {
-      if (!onCanvasClick) return;
+      const handler = onCanvasClickRef.current;
+      if (!handler) return;
       const me = e as MouseEvent;
       const target = me.target as Element | null;
       const canvas = canvasRootRef.current;
@@ -134,12 +145,11 @@ export function DemoMockup({
         clientX: me.clientX,
         clientY: me.clientY,
       });
-      if (anchor) onCanvasClick(anchor);
+      if (anchor) handler(anchor);
     }
 
-    // srcdoc is already loaded by the time we attach if React renders
-    // before the iframe's load event fires; check readyState to cover
-    // both ordering cases.
+    // srcdoc may already be ready by the time React attaches the
+    // listener — check both ordering paths.
     if (iframe.contentDocument?.readyState === 'complete') {
       attach();
     } else {
@@ -150,7 +160,8 @@ export function DemoMockup({
       doc?.removeEventListener('click', handleIframeClick);
       iframe.removeEventListener('load', attach);
     };
-  }, [onCanvasClick, canvasRootRef, onIframeLoad]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only
+  }, []);
 
   const effectiveScale = lockedScale * zoom;
   const outerW = isFit ? '100%' : `${(viewport.width ?? 0) * effectiveScale}px`;

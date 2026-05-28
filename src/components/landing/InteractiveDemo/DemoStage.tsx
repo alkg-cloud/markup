@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnnotationCard } from '@/components/AnnotationCard/AnnotationCard';
 import { AnnotationsRail } from '@/components/AnnotationsRail/AnnotationsRail';
 import { CanvasToolbar } from '@/components/CanvasToolbar/CanvasToolbar';
@@ -41,13 +41,21 @@ export function DemoStage() {
   // so the anchoring runtime re-projects pins onto the fresh layout.
   const [repositionKey, setRepositionKey] = useState(0);
 
-  function onCanvasClick(anchor: Anchor) {
-    if (state.tool !== 'pin') return;
-    const body = window.prompt('Annotation body:');
-    if (!body?.trim()) return;
-    actions.addAnnotation({ anchor, body });
-    actions.setTool('select');
-  }
+  // Stable callbacks — DemoMockup's iframe-load effect uses these in its
+  // dep array. Recreating them every render re-binds the iframe click
+  // listener AND re-fires onIframeLoad → setRepositionKey → re-render
+  // loop (React error #185 in prod, "Maximum update depth exceeded").
+  const onCanvasClick = useCallback(
+    (anchor: Anchor) => {
+      if (state.tool !== 'pin') return;
+      const body = window.prompt('Annotation body:');
+      if (!body?.trim()) return;
+      actions.addAnnotation({ anchor, body });
+      actions.setTool('select');
+    },
+    [state.tool, actions],
+  );
+  const onIframeLoad = useCallback(() => setRepositionKey((k) => k + 1), []);
 
   function onReset() {
     // Functional updater reads the LATEST state, not the closure-captured
@@ -125,7 +133,7 @@ export function DemoStage() {
             viewport={viewport}
             setViewport={setViewport}
             canvasRootRef={canvasRootRef}
-            onIframeLoad={() => setRepositionKey((k) => k + 1)}
+            onIframeLoad={onIframeLoad}
           />
           <PinLayer
             canvasRootRef={canvasRootRef}
