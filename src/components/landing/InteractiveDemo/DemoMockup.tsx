@@ -136,6 +136,10 @@ export function DemoMockup({
       const handler = onCanvasClickRef.current;
       if (!handler) return;
       const me = e as MouseEvent;
+      // Suppress link navigations and form submits — clicks here mean
+      // "drop a pin", not "follow this anchor".
+      e.preventDefault();
+      e.stopPropagation();
       const target = me.target as Element | null;
       const canvas = canvasRootRef.current;
       if (!canvas || !target) return;

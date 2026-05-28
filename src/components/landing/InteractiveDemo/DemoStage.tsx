@@ -152,6 +152,7 @@ export function DemoStage() {
               actions.selectAnnotation(id);
               setOpenThreadId(id);
             }}
+            onCreate={() => actions.setTool('pin')}
           >
             {state.annotations.map((a, i) => {
               const props = toCardProps(state, a, i, {
