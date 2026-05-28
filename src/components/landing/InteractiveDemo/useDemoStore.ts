@@ -72,13 +72,13 @@ export function useDemoStore() {
     }));
   }, []);
 
-  const toggleReaction = useCallback((threadId: string, emoji: string) => {
+  const toggleReaction = useCallback((messageId: string, emoji: string) => {
     setState((s) => {
-      const existing = s.reactions.find((r) => r.threadId === threadId && r.emoji === emoji);
+      const existing = s.reactions.find((r) => r.messageId === messageId && r.emoji === emoji);
       if (!existing) {
         return {
           ...s,
-          reactions: [...s.reactions, { threadId, emoji, count: 1, mine: true }],
+          reactions: [...s.reactions, { messageId, emoji, count: 1, mine: true }],
         };
       }
       if (existing.mine) {
@@ -89,13 +89,13 @@ export function useDemoStore() {
         if (existing.count <= 1) {
           return {
             ...s,
-            reactions: s.reactions.filter((r) => !(r.threadId === threadId && r.emoji === emoji)),
+            reactions: s.reactions.filter((r) => !(r.messageId === messageId && r.emoji === emoji)),
           };
         }
         return {
           ...s,
           reactions: s.reactions.map((r) =>
-            r.threadId === threadId && r.emoji === emoji
+            r.messageId === messageId && r.emoji === emoji
               ? { ...r, count: r.count - 1, mine: false }
               : r,
           ),
@@ -104,7 +104,7 @@ export function useDemoStore() {
       return {
         ...s,
         reactions: s.reactions.map((r) =>
-          r.threadId === threadId && r.emoji === emoji
+          r.messageId === messageId && r.emoji === emoji
             ? { ...r, count: r.count + 1, mine: true }
             : r,
         ),

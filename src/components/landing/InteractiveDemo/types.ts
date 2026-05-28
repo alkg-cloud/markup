@@ -31,7 +31,11 @@ export type DemoMessage = {
 };
 
 export type DemoReaction = {
-  threadId: string;
+  // Reactions are per-message, not per-thread — the real Comment renders
+  // an EmojiPicker on every comment (primary AND each reply), each with
+  // its own onReactionToggle. Keying by threadId would route every reply
+  // reaction to the primary, which is the bug this shape prevents.
+  messageId: string;
   emoji: string;
   count: number;
   mine: boolean;

@@ -74,11 +74,19 @@ export const SEEDED_STATE: DemoState = {
     },
   ],
   reactions: [
-    { threadId: 't1', emoji: '👍', count: 3, mine: true },
-    { threadId: 't1', emoji: '🔥', count: 1, mine: false },
-    { threadId: 't2', emoji: '✅', count: 1, mine: false },
-    { threadId: 't3', emoji: '🙌', count: 2, mine: false },
+    // Primary comments — same surface the v1 seeds covered.
+    { messageId: 'm1', emoji: '👍', count: 3, mine: true },
+    { messageId: 'm1', emoji: '🔥', count: 1, mine: false },
+    { messageId: 'm2', emoji: '✅', count: 1, mine: false },
+    { messageId: 'm3', emoji: '🙌', count: 2, mine: false },
+    // A reply reaction so the per-message affordance is visible up front —
+    // without this the demo looked like reactions only lived on the
+    // primary comment.
+    { messageId: 'm1r2', emoji: '🎉', count: 1, mine: false },
   ],
 };
 
-export const STORAGE_KEY = 'markup-demo:v1';
+// Bumped to v2 when reactions migrated from threadId → messageId.
+// Old cached state under v1 stays in localStorage harmlessly (different
+// key) and gets ignored.
+export const STORAGE_KEY = 'markup-demo:v2';

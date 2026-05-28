@@ -115,7 +115,7 @@ export function DemoStage() {
                   setOpenThreadId(a.id);
                 },
                 onPostReply: (body) => actions.addReply(a.threadId, body),
-                onCommentReact: (_commentId, emoji) => actions.toggleReaction(a.threadId, emoji),
+                onCommentReact: (commentId, emoji) => actions.toggleReaction(commentId, emoji),
                 onStatusChange: () => actions.cycleStatus(a.threadId),
                 threadOpen: openThreadId === a.id,
                 onThreadToggle: () => setOpenThreadId((prev) => (prev === a.id ? null : a.id)),

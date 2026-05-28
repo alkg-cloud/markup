@@ -34,9 +34,9 @@ function formatTimestamp(createdAt: number, anchor: number): string {
   return `${hrs}h ago`;
 }
 
-function toReactions(state: DemoState, threadId: string): CommentReaction[] {
+function toReactions(state: DemoState, messageId: string): CommentReaction[] {
   return state.reactions
-    .filter((r) => r.threadId === threadId)
+    .filter((r) => r.messageId === messageId)
     .map((r) => emojiToCommentReaction(r));
 }
 
@@ -98,12 +98,14 @@ export function toCardProps(
   // thread so seeded entries get sensible "Nm ago" labels.
   const anchorTs = Math.max(...msgs.map((m) => m.createdAt));
 
-  const threadReactions = toReactions(state, thread.id);
-  // Put all thread-level reactions on the primary comment — that's the
-  // surface the real product uses; the demo's thread-level shape is a
-  // simplification.
-  const primary = messageToThreadComment(msgs[0], anchorTs, threadReactions);
-  const replies = msgs.slice(1).map((m) => messageToThreadComment(m, anchorTs));
+  // Per-message reactions — the real Comment renders an EmojiPicker on
+  // both primary and replies, each with its own onReactionToggle. Pulling
+  // by msg.id keeps the pill rendered on the exact comment the user
+  // reacted to (instead of always pinning it to the primary).
+  const primary = messageToThreadComment(msgs[0], anchorTs, toReactions(state, msgs[0].id));
+  const replies = msgs
+    .slice(1)
+    .map((m) => messageToThreadComment(m, anchorTs, toReactions(state, m.id)));
 
   return {
     annotationId: annotation.id,

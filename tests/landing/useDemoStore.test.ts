@@ -48,18 +48,18 @@ describe('useDemoStore', () => {
   it('toggleReaction adds, increments mine, then removes on second click', () => {
     const { result } = renderHook(() => useDemoStore());
     act(() => {
-      result.current.actions.toggleReaction('t2', '👀');
+      result.current.actions.toggleReaction('m2', '👀');
     });
     const after = result.current.state.reactions.find(
-      (r) => r.threadId === 't2' && r.emoji === '👀',
+      (r) => r.messageId === 'm2' && r.emoji === '👀',
     );
     expect(after?.mine).toBe(true);
     expect(after?.count).toBe(1);
     act(() => {
-      result.current.actions.toggleReaction('t2', '👀');
+      result.current.actions.toggleReaction('m2', '👀');
     });
     const removed = result.current.state.reactions.find(
-      (r) => r.threadId === 't2' && r.emoji === '👀',
+      (r) => r.messageId === 'm2' && r.emoji === '👀',
     );
     expect(removed).toBeUndefined();
   });
@@ -97,14 +97,14 @@ describe('useDemoStore', () => {
 
   it('toggleReaction decrements count and clears mine when others also reacted', () => {
     const { result } = renderHook(() => useDemoStore());
-    // Seeded { threadId: 't1', emoji: '👍', count: 3, mine: true } —
+    // Seeded { messageId: 'm1', emoji: '👍', count: 3, mine: true } —
     // toggling should decrement (you + 2 agents → 2 agents), not remove
     // the pill entirely.
     act(() => {
-      result.current.actions.toggleReaction('t1', '👍');
+      result.current.actions.toggleReaction('m1', '👍');
     });
     const after = result.current.state.reactions.find(
-      (r) => r.threadId === 't1' && r.emoji === '👍',
+      (r) => r.messageId === 'm1' && r.emoji === '👍',
     );
     expect(after).toBeDefined();
     expect(after?.count).toBe(2);
@@ -113,15 +113,33 @@ describe('useDemoStore', () => {
 
   it('toggleReaction increments count and sets mine on a not-mine reaction (branch 3)', () => {
     const { result } = renderHook(() => useDemoStore());
-    // The seeded reaction { threadId: 't1', emoji: '🔥', count: 1, mine: false } is branch 3.
+    // The seeded reaction { messageId: 'm1', emoji: '🔥', count: 1, mine: false } is branch 3.
     act(() => {
-      result.current.actions.toggleReaction('t1', '🔥');
+      result.current.actions.toggleReaction('m1', '🔥');
     });
     const after = result.current.state.reactions.find(
-      (r) => r.threadId === 't1' && r.emoji === '🔥',
+      (r) => r.messageId === 'm1' && r.emoji === '🔥',
     );
     expect(after?.mine).toBe(true);
     expect(after?.count).toBe(2);
+  });
+
+  it('toggleReaction on a reply message does NOT touch primary reactions', () => {
+    const { result } = renderHook(() => useDemoStore());
+    // Reply m1r1 has no seeded reaction. Adding one must NOT change m1's
+    // existing reactions — this is the threadId→messageId migration's
+    // load-bearing invariant: reply reactions stay on the reply.
+    const primaryBefore = result.current.state.reactions.filter((r) => r.messageId === 'm1');
+    act(() => {
+      result.current.actions.toggleReaction('m1r1', '👀');
+    });
+    const replyAfter = result.current.state.reactions.find(
+      (r) => r.messageId === 'm1r1' && r.emoji === '👀',
+    );
+    const primaryAfter = result.current.state.reactions.filter((r) => r.messageId === 'm1');
+    expect(replyAfter?.mine).toBe(true);
+    expect(replyAfter?.count).toBe(1);
+    expect(primaryAfter).toEqual(primaryBefore);
   });
 
   it('addReply ignores empty bodies and appends a message on a real body', () => {
