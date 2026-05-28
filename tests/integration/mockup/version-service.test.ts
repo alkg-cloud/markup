@@ -108,7 +108,7 @@ describe('version-service', () => {
         id: 'a1',
         mockupId: m.mockup.id,
         screenshotPath: 'x',
-        tldrawPath: 'y',
+        tldrawPath: '',
         createdBy: 'u',
         createdByType: 'user',
       },

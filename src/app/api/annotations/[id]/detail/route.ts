@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { TLEditorSnapshot } from '@tldraw/tldraw';
 import { NextResponse } from 'next/server';
 import { getAnnotation } from '@/lib/annotation/service';
 import { identify } from '@/lib/auth/identify';
@@ -8,13 +7,12 @@ import { resolveDisplayName, resolveDisplayNames } from '@/lib/auth/resolve-disp
 import { env } from '@/lib/env';
 import { pathForMockup } from '@/lib/mockup/url';
 import { prisma } from '@/lib/prisma';
-import { rehydrateScreenshotBase64 } from '@/lib/tldraw/snapshot-screenshot';
 
 // Aggregator for `/annotations/[id]` — returns the annotation + its
 // thread + resolved display names + the screenshot dimensions read from
-// the PNG header + the rehydrated tldraw snapshot + the mockup name and
-// canonical viewer href. The client page renders this directly; nothing
-// here is recomputed on the client.
+// the PNG header + the mockup name and canonical viewer href. The
+// client page renders this directly; nothing here is recomputed on the
+// client.
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const ident = await identify(req);
   if (!ident) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -45,20 +43,11 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   const mockupName = mockup?.name ?? annotation.mockupId;
   const viewerHref = (await pathForMockup(annotation.mockupId)) ?? '/';
 
-  // Tldraw + screenshot dimensions come straight from disk — the client
-  // can't read DATA_DIR. Empty / corrupt files fall back to a null
-  // snapshot; the page renders a placeholder in that case.
-  let tldraw: TLEditorSnapshot | null = null;
+  // Screenshot dimensions come straight from disk — the client can't
+  // read DATA_DIR. Missing / corrupt PNGs fall back to width/height 0;
+  // the page renders a placeholder in that case.
   let width = 0;
   let height = 0;
-  try {
-    const tldrawAbs = path.join(env().DATA_DIR, annotation.tldrawPath);
-    const raw = JSON.parse(fs.readFileSync(tldrawAbs, 'utf8'));
-    tldraw = rehydrateScreenshotBase64(
-      raw,
-      `/api/annotations/${annotation.id}/screenshot`,
-    ) as TLEditorSnapshot;
-  } catch {}
   try {
     const screenshotAbs = path.join(env().DATA_DIR, annotation.screenshotPath);
     const buf = fs.readFileSync(screenshotAbs);
@@ -88,7 +77,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     authorNamesById,
     mockup: { name: mockupName, viewerHref },
     screenshot: { url: `/api/annotations/${annotation.id}/screenshot`, width, height },
-    tldraw,
   });
 }
 

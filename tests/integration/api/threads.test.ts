@@ -43,7 +43,6 @@ async function bootstrap() {
   const annotation = await createAnnotation({
     mockupId: mockup.mockup.id,
     screenshotPng: Buffer.from([0x89]),
-    tldrawJson: {},
     message: 'initial',
     authorId: 'u',
     authorType: 'user',

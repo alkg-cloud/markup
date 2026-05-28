@@ -1,6 +1,5 @@
 'use client';
 
-import type { TLEditorSnapshot } from '@tldraw/tldraw';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -32,7 +31,6 @@ interface DetailPayload {
   authorNamesById: Record<string, string>;
   mockup: { name: string; viewerHref: string };
   screenshot: { url: string; width: number; height: number };
-  tldraw: TLEditorSnapshot | null;
 }
 
 export default function AnnotationDetailPage() {
@@ -87,7 +85,7 @@ export default function AnnotationDetailPage() {
     return <LoadingState />;
   }
 
-  const { annotation, author, thread, authorNamesById, mockup, screenshot, tldraw } = data;
+  const { annotation, author, thread, authorNamesById, mockup, screenshot } = data;
 
   return (
     <>
@@ -202,11 +200,9 @@ export default function AnnotationDetailPage() {
               }}
             >
               <ReadOnlyAnnotation
-                annotationId={annotation.id}
                 screenshotUrl={screenshot.url}
                 width={screenshot.width}
                 height={screenshot.height}
-                tldraw={tldraw}
               />
             </div>
           </div>

@@ -51,7 +51,6 @@ async function makeAnnotation(opts?: { projectId?: string; folderId?: string }) 
   const r = await createAnnotation({
     mockupId: m.mockup.id,
     screenshotPng: png,
-    tldrawJson: { document: { store: {} } },
     message: 'do something',
     authorId: 'u',
     authorType: 'user',

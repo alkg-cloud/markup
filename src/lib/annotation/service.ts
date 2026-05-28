@@ -9,14 +9,12 @@ import { env } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { annotationDir } from '@/lib/mockup/storage';
 import { prisma } from '@/lib/prisma';
-import { stripScreenshotBase64 } from '@/lib/tldraw/snapshot-screenshot';
 
 const log = logger.child({ name: 'annotation-service' });
 
 interface CreateInput {
   mockupId: string;
   screenshotPng: Buffer;
-  tldrawJson: unknown;
   message: string;
   authorId: string;
   authorType: 'user' | 'agent';
@@ -29,8 +27,6 @@ export async function createAnnotation(input: CreateInput) {
   const dir = annotationDir(env().DATA_DIR, input.mockupId, aid);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'screenshot.png'), input.screenshotPng);
-  const strippedTldraw = stripScreenshotBase64(input.tldrawJson);
-  fs.writeFileSync(path.join(dir, 'tldraw.json'), JSON.stringify(strippedTldraw));
   const screenshotPath = path.posix.join(
     'mockups',
     input.mockupId,
@@ -38,7 +34,6 @@ export async function createAnnotation(input: CreateInput) {
     aid,
     'screenshot.png',
   );
-  const tldrawPath = path.posix.join('mockups', input.mockupId, 'annotations', aid, 'tldraw.json');
 
   let createdOnVersionId = input.createdOnVersionId ?? null;
   if (createdOnVersionId === null) {
@@ -55,7 +50,7 @@ export async function createAnnotation(input: CreateInput) {
         id: aid,
         mockupId: input.mockupId,
         screenshotPath,
-        tldrawPath,
+        tldrawPath: '',
         createdBy: input.authorId,
         createdByType: input.authorType,
         pinCoords: input.pinCoords ? serializePinCoords(input.pinCoords) : null,
@@ -78,7 +73,7 @@ export async function createAnnotation(input: CreateInput) {
       annotationId: result.annotation.id,
       mockupId: input.mockupId,
       authorType: input.authorType,
-      kind: 'drawing',
+      kind: 'screenshot',
     },
     'annotation_created',
   );
@@ -98,18 +93,6 @@ export async function getAnnotation(id: string) {
     where: { id },
     include: { thread: { include: { messages: { orderBy: { createdAt: 'asc' } } } } },
   });
-}
-
-export async function updateAnnotationTldraw(id: string, snapshot: unknown) {
-  const annotation = await prisma.annotation.findUnique({ where: { id } });
-  if (!annotation) return null;
-  // Comment-only annotations (AppMain redesign) reference an empty
-  // tldrawPath placeholder — no drawing to update.
-  if (!annotation.tldrawPath) return { error: 'no_drawing' as const };
-  const abs = path.join(env().DATA_DIR, annotation.tldrawPath);
-  const stripped = stripScreenshotBase64(snapshot);
-  fs.writeFileSync(abs, JSON.stringify(stripped));
-  return annotation;
 }
 
 /** Anchor record persisted in `Annotation.anchors` (JSON array).

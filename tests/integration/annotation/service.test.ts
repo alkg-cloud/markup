@@ -27,7 +27,6 @@ describe('annotation service', () => {
     const result = await createAnnotation({
       mockupId: m.mockup.id,
       screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
-      tldrawJson: { schema: 'placeholder' },
       message: 'Navbar too large',
       authorId: 'user1',
       authorType: 'user',
@@ -49,7 +48,6 @@ describe('annotation service', () => {
     await createAnnotation({
       mockupId: m.mockup.id,
       screenshotPng: Buffer.from([0]),
-      tldrawJson: {},
       message: 'first',
       authorId: 'u',
       authorType: 'user',
@@ -72,7 +70,6 @@ describe('annotation service', () => {
     await createAnnotation({
       mockupId: m.mockup.id,
       screenshotPng: Buffer.from([0]),
-      tldrawJson: {},
       message: 'x',
       authorId: 'u',
       authorType: 'user',
@@ -95,7 +92,6 @@ describe('annotation service', () => {
     const r = await createAnnotation({
       mockupId: m.mockup.id,
       screenshotPng: Buffer.from([0]),
-      tldrawJson: {},
       message: 'hi',
       authorId: 'u',
       authorType: 'user',
@@ -117,7 +113,6 @@ describe('annotation service', () => {
     const r = await createAnnotation({
       mockupId: m.mockup.id,
       screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
-      tldrawJson: { document: { store: {} } },
       message: 'visual change needed',
       authorId: 'u',
       authorType: 'user',
@@ -138,43 +133,10 @@ describe('annotation service', () => {
     const r = await createAnnotation({
       mockupId: m.mockup.id,
       screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
-      tldrawJson: { document: { store: {} } },
       message: 'no chip picked',
       authorId: 'u',
       authorType: 'user',
     });
     expect(r.annotation.createdOnVersionId).toBe(m.version.id);
-  });
-
-  it('persists arbitrary tldraw JSON verbatim (no placeholder rewriting)', async () => {
-    const m = await createMockupFromZip({
-      name: 'Q',
-      zipPath: fixture('valid-simple.zip'),
-      createdBy: 'u',
-      createdByType: 'user',
-      versionCreatedBy: 'u',
-      versionCreatedByType: 'user',
-    });
-    const realisticSnapshot = {
-      schema: { schemaVersion: 2 },
-      store: {
-        'shape:abc': { id: 'shape:abc', type: 'draw', x: 10, y: 20, props: {} },
-      },
-    };
-    const r = await createAnnotation({
-      mockupId: m.mockup.id,
-      screenshotPng: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
-      tldrawJson: realisticSnapshot,
-      message: 'check this',
-      authorId: 'u',
-      authorType: 'user',
-    });
-    const got = await getAnnotation(r.annotation.id);
-    // Read back the persisted JSON file
-    const fs = await import('node:fs');
-    const path = await import('node:path');
-    const { env } = await import('@/lib/env');
-    const persistedRaw = fs.readFileSync(path.join(env().DATA_DIR, got!.tldrawPath), 'utf8');
-    expect(JSON.parse(persistedRaw)).toEqual(realisticSnapshot);
   });
 });

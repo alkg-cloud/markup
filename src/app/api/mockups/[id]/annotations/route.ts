@@ -37,8 +37,6 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   if (!id) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { id: mockupId } = await ctx.params;
 
-  // JSON-only: comment annotation (no screenshot, no tldraw). The legacy
-  // drawing-based formData path was dropped with the draft-annotation redesign.
   const contentType = req.headers.get('content-type') ?? '';
   if (!contentType.includes('application/json')) {
     return NextResponse.json({ error: 'unsupported_media_type' }, { status: 415 });

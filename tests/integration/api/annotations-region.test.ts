@@ -47,7 +47,6 @@ async function makeAnnotation(opts: { withPinCoords: boolean }) {
   const r = await createAnnotation({
     mockupId: m.mockup.id,
     screenshotPng: png,
-    tldrawJson: { document: { store: {} } },
     message: 'msg',
     authorId: 'u',
     authorType: 'user',

@@ -45,39 +45,23 @@ test.fixme('setup → upload → comment → resolve', async ({ page, request })
   await page.goto(`/projects/unsorted/${created.slug}`);
   await page.waitForSelector('iframe');
 
-  // Comment flow
-  await page.click('[data-testid=comment-button]');
-  await page.fill('textarea', 'navbar too large');
+  // Comment-only annotation flow: open the draft, drop a pin by clicking the
+  // mockup iframe, type the body, send. The draft card and rail use semantic
+  // locators (aria-label, role) since the surfaces do not expose data-testid
+  // attributes — see DraftCard.tsx ("Annotation body" Form.Label, "Send"
+  // aria-label) and AnnotationsRail.tsx ("New annotation (…)" aria-label).
+  await page.getByRole('button', { name: /new annotation/i }).click();
+  await page
+    .frameLocator('iframe[title="Mockup"]')
+    .locator('body')
+    .click({ position: { x: 20, y: 20 } });
+  await page.getByRole('textbox', { name: /annotation body/i }).fill('e2e annotation body');
+  await page.getByRole('button', { name: /^send$/i }).click();
 
-  // Draw a small stroke on the tldraw canvas so the persisted JSON is non-empty.
-  const canvas = page.locator('canvas').first();
-  const box = await canvas.boundingBox();
-  if (!box) throw new Error('canvas not visible');
-  await page.mouse.move(box.x + 50, box.y + 50);
-  await page.mouse.down();
-  await page.mouse.move(box.x + 200, box.y + 120, { steps: 10 });
-  await page.mouse.up();
-
-  await page.click('[data-testid=annotation-save]');
-
-  // Wait for the iframe to settle, then assert the new pin is rendered overlaid.
-  await page.waitForLoadState('networkidle');
-  await expect(page.locator('[data-testid^=pin-]')).toHaveCount(1);
-
-  // Click the pin to navigate to the annotation detail page (exercises the new pin feature).
-  await page.locator('[data-testid^=pin-]').first().click();
-  await page.waitForURL(/\/annotations\//);
-
-  // Pull the annotation row from the API and assert tldraw JSON is non-empty.
-  const detail = await request.get(`/api/annotations/${(await page.url()).split('/').pop()}`, {
-    headers: { cookie: `mk_session=${sessCookie!.value}` },
-  });
-  const detailBody = await detail.json();
-  expect(detailBody.tldraw).toBeTruthy();
-  expect(JSON.stringify(detailBody.tldraw).length).toBeGreaterThan(50);
-
-  // Detail page now overlays a tldraw read-only canvas
-  await expect(page.locator('[data-testid=annotation-readonly-canvas]')).toBeVisible();
+  // The created annotation surfaces as an <li data-pin-target="..."> in the rail
+  // (AnnotationCard root). Asserting visibility here confirms the create round
+  // tripped through the API and rendered in the rail without navigating away.
+  await expect(page.locator('[data-pin-target]').first()).toBeVisible();
 
   await page.click('[data-testid=thread-resolve]');
   await expect(page.locator('[data-testid=thread-status]')).toHaveText(/resolved/i);

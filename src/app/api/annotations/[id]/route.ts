@@ -1,5 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { parsePinCoords } from '@/lib/annotation/pin-coords';
@@ -8,7 +6,6 @@ import { ANNOTATION_STATUSES } from '@/lib/annotation/status';
 import { handleAuthError, identify } from '@/lib/auth/identify';
 import { assertSameOrigin } from '@/lib/auth/origin';
 import { requireOwnerOrAdmin } from '@/lib/auth/require-owner-or-admin';
-import { env } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 
@@ -22,13 +19,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   const { id } = await ctx.params;
   const annotation = await getAnnotation(id);
   if (!annotation) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-  let tldraw: unknown = null;
-  try {
-    const tldrawAbs = path.join(env().DATA_DIR, annotation.tldrawPath);
-    tldraw = JSON.parse(fs.readFileSync(tldrawAbs, 'utf8'));
-  } catch {
-    // missing tldraw is non-fatal
-  }
   return NextResponse.json({
     id: annotation.id,
     mockupId: annotation.mockupId,
@@ -36,7 +26,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     createdBy: annotation.createdBy,
     createdByType: annotation.createdByType,
     screenshotUrl: `/api/annotations/${annotation.id}/screenshot`,
-    tldraw,
     pinCoords: parsePinCoords(annotation.pinCoords),
     thread: annotation.thread
       ? {
