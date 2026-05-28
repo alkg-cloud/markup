@@ -1,4 +1,3 @@
-// scripts/cleanup-tldraw-sidecars.ts
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 

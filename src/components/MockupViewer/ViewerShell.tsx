@@ -74,8 +74,6 @@ export interface ViewerShellProps {
    *  state machine (status transitions, lastSavedAt updates) still runs. */
   draftPersistence?: {
     enabled?: boolean;
-    storageKey?: string;
-    debounceMs?: number;
   };
 
   /** Banner rendered above the canvas (e.g. "Viewing older version — exit").
@@ -84,7 +82,7 @@ export interface ViewerShellProps {
    *  shortcuts are disabled — the caller's historic mode is detected from
    *  the slot's presence, not a separate flag. */
   renderHistoricBanner?: () => ReactNode;
-  /** Chip rendered in CanvasToolbar's `extra` slot (e.g. version selector). */
+  /** Chip rendered in CanvasToolbar's `versionChip` slot (e.g. version selector). */
   renderToolbarChip?: () => ReactNode;
 
   /** Toast callback. Default: `console.warn(message)`. */
@@ -193,12 +191,7 @@ export function ViewerShell({
     setStatus('saved');
   }, []);
 
-  // The hook composes its storage key from `mockupId` + `userId` as
-  // `markup:draft:${mockupId}:${userId}` — which matches the spec's
-  // default `markup:draft:${scopeId}:${userId}` when we pass scopeId
-  // through as `mockupId`. The `draftPersistence.storageKey` override is
-  // not threaded into the hook yet — callers needing a non-default key
-  // would extend the hook signature.
+  // Storage key composed by the hook as `markup:draft:${scopeId}:${userId}`.
   const persistEnabled = draftPersistence?.enabled !== false;
 
   const { flush, clear } = useDraftPersistence({
@@ -484,7 +477,7 @@ export function ViewerShell({
         resetPositionKey={layoutKey}
         viewport={viewport}
         setViewport={handleViewportChange}
-        extra={renderToolbarChip?.()}
+        versionChip={renderToolbarChip?.()}
       />
 
       {!historicActive && draftActive && (

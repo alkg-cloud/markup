@@ -17,12 +17,9 @@ export interface CanvasToolbarProps {
   onFullscreenToggle?: () => void;
   /** Whether the element is currently in fullscreen. */
   isFullscreen?: boolean;
-  /** Slot for the version chip (rendered after the zoom group). */
+  /** Slot for chip-style content (version selector, demo extras) rendered
+   *  after the zoom + fullscreen groups. */
   versionChip?: ReactNode;
-  /** Generic slot rendered alongside (after) the version chip group.
-   *  Lets shells inject chip-style content (e.g. version selectors) without
-   *  exposing the toolbar to product-specific concerns. */
-  extra?: ReactNode;
   /** Token whose change clears the toolbar's dragged position so it
    *  returns to the spec-default centered-bottom coordinates. See
    *  AnnotationsRail's identical prop. */
@@ -50,7 +47,6 @@ export function CanvasToolbar({
   onFullscreenToggle,
   isFullscreen,
   versionChip,
-  extra,
   resetPositionKey,
   viewport,
   setViewport,
@@ -209,7 +205,6 @@ export function CanvasToolbar({
       </div>
 
       {versionChip ? <div className={styles.group}>{versionChip}</div> : null}
-      {extra ? <div className={styles.group}>{extra}</div> : null}
 
       <button
         type="button"

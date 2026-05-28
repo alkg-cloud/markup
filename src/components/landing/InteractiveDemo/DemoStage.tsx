@@ -15,7 +15,7 @@ import { ViewerShell } from '@/components/MockupViewer/ViewerShell';
 import { Eyebrow } from '../primitives/Eyebrow';
 import { Section } from '../primitives/Section';
 import styles from './DemoStage.module.css';
-import { useDemoAdapter } from './demoAdapter';
+import { DEMO_CURRENT_USER, useDemoAdapter } from './demoAdapter';
 import { SAMPLE_HTML } from './sample-mockup.html';
 import { useDemoStore } from './useDemoStore';
 
@@ -61,7 +61,7 @@ export function DemoStage() {
         <div className={styles.stage}>
           <ViewerShell
             scopeId="demo"
-            userId="demo-user"
+            userId={DEMO_CURRENT_USER}
             mockupSrc={{ kind: 'srcDoc', html: SAMPLE_HTML }}
             annotations={adapter.annotations}
             draftPersistence={{ enabled: false }}

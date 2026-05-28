@@ -204,6 +204,7 @@ export function useAppMainAnnotations({
     setAnnotations((prev) => {
       const existing = prev.findIndex((a) => a.id === created.id);
       if (existing >= 0) {
+        if (prev[existing] === created) return prev;
         const next = [...prev];
         next[existing] = created;
         return next;

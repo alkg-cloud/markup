@@ -141,14 +141,15 @@ function ViewerCanvasInner({
             <iframe
               ref={iframeRef}
               title="Mockup"
-              sandbox="allow-same-origin"
               style={{
                 width: '100%',
                 height: '100%',
                 border: 0,
                 display: 'block',
               }}
-              {...(mockupSrc.kind === 'src' ? { src: mockupSrc.url } : { srcDoc: mockupSrc.html })}
+              {...(mockupSrc.kind === 'src'
+                ? { src: mockupSrc.url }
+                : { srcDoc: mockupSrc.html, sandbox: 'allow-same-origin' })}
             />
             <ViewportHandles
               viewport={viewport}

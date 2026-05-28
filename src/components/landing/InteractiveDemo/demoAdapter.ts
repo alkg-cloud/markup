@@ -6,11 +6,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import type {
-  AnnotationCardProps,
-  ThreadComment,
-} from '@/components/AnnotationCard/AnnotationCard';
-import type { AnnotationsRailBadge } from '@/components/AnnotationsRail/AnnotationsRail';
+import type { ThreadComment } from '@/components/AnnotationCard/AnnotationCard';
 import type { CommentReaction } from '@/components/Comment/Comment';
 import type { AppMainAnnotation } from '@/components/MockupViewer/AppMainViewer';
 import type { ViewerShellProps } from '@/components/MockupViewer/ViewerShell';
@@ -71,69 +67,6 @@ function messageToThreadComment(
     timestamp: formatTimestamp(msg.createdAt, anchor),
     body: msg.body,
     reactions,
-  };
-}
-
-export function toBadges(state: DemoState): AnnotationsRailBadge[] {
-  return state.annotations.map((a, i) => ({
-    annotationId: a.id,
-    colorIndex: a.colorIndex,
-    label: i + 1,
-  }));
-}
-
-export function toCardProps(
-  state: DemoState,
-  annotation: DemoAnnotation,
-  index: number,
-  callbacks: {
-    onActivate: () => void;
-    onPostReply: (body: string) => void;
-    onCommentReact: (commentId: string, emoji: string) => void;
-    onStatusChange: (status: AnnotationStatus) => void;
-    threadOpen: boolean;
-    onThreadToggle: () => void;
-  },
-): AnnotationCardProps | null {
-  const thread = state.threads.find((t) => t.id === annotation.threadId);
-  if (!thread) return null;
-  const msgs = state.messages.filter((m) => m.threadId === thread.id);
-  if (msgs.length === 0) return null;
-
-  // Anchor the relative timestamps off the largest createdAt seen in this
-  // thread so seeded entries get sensible "Nm ago" labels.
-  const anchorTs = Math.max(...msgs.map((m) => m.createdAt));
-
-  // Per-message reactions — the real Comment renders an EmojiPicker on
-  // both primary and replies, each with its own onReactionToggle. Pulling
-  // by msg.id keeps the pill rendered on the exact comment the user
-  // reacted to (instead of always pinning it to the primary).
-  const primary = messageToThreadComment(msgs[0], anchorTs, toReactions(state, msgs[0].id));
-  const replies = msgs
-    .slice(1)
-    .map((m) => messageToThreadComment(m, anchorTs, toReactions(state, m.id)));
-
-  return {
-    annotationId: annotation.id,
-    label: index + 1,
-    colorIndex: annotation.colorIndex,
-    status: thread.status satisfies AnnotationStatus,
-    author: primary.author,
-    date: formatTimestamp(annotation.createdAt, anchorTs),
-    primary,
-    replies,
-    // Must match DEMO_CURRENT_USER (the literal pushed into reactedBy when
-    // `mine` is true). Comment computes isCurrentUser via
-    // reactedBy.includes(currentUser); a case mismatch silently turns off
-    // the "mine" highlight on every ReactionPill.
-    currentUser: DEMO_CURRENT_USER,
-    active: state.selectedAnnotId === annotation.id,
-    threadOpen: callbacks.threadOpen,
-    onThreadToggle: callbacks.onThreadToggle,
-    onActivate: callbacks.onActivate,
-    onPostReply: callbacks.onPostReply,
-    onCommentReact: callbacks.onCommentReact,
-    onAnnotationStatusChange: callbacks.onStatusChange,
   };
 }
 
