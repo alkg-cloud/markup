@@ -5,15 +5,24 @@ test('view historic version → URL ?v, banner, read-only, exit, deep-link', asy
   page,
   request,
 }) => {
-  // Setup wizard — runs on a fresh DB. happy-path is `test.fixme`'d, so
-  // historic-viewing is the only spec that exercises setup against this
-  // dev-server instance and there's no admin-already-exists race.
+  // Setup wizard or login form, depending on whether a prior spec already
+  // seeded the shared dev-server DB. On a clean run, /setup renders the
+  // first-run wizard (3 inputs: name, email, password); on a re-run it
+  // redirects to /login (2 inputs). Drive whichever form is mounted so
+  // this spec is order-independent with happy-path.
   await page.goto('/setup');
-  await page.fill('input[type=email]', 'admin@example.com');
-  const nameInput = page.locator('input').nth(0);
-  await nameInput.fill('Admin');
-  await page.fill('input[type=password]', 'longadminpassword42');
-  await page.click('button[type=submit]');
+  await page.waitForLoadState('networkidle');
+  if (/\/login(\?|$)/.test(page.url())) {
+    await page.fill('input[type=email]', 'admin@example.com');
+    await page.fill('input[type=password]', 'longadminpassword42');
+    await page.click('button[type=submit]');
+  } else {
+    await page.fill('input[type=email]', 'admin@example.com');
+    const nameInput = page.locator('input').nth(0);
+    await nameInput.fill('Admin');
+    await page.fill('input[type=password]', 'longadminpassword42');
+    await page.click('button[type=submit]');
+  }
   await page.waitForURL(/localhost:3000\/?$/);
   await page.waitForLoadState('networkidle');
 
