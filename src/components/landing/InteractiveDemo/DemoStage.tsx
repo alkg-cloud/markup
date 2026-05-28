@@ -4,13 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { AnnotationCard } from '@/components/AnnotationCard/AnnotationCard';
 import { AnnotationsRail } from '@/components/AnnotationsRail/AnnotationsRail';
 import { CanvasToolbar } from '@/components/CanvasToolbar/CanvasToolbar';
+import { DEFAULT_VIEWPORT, type ViewportState } from '@/components/MockupViewer/viewport-presets';
 import { Eyebrow } from '../primitives/Eyebrow';
 import { Section } from '../primitives/Section';
 import { DemoMockup } from './DemoMockup';
 import { DemoPinLayer } from './DemoPinLayer';
 import styles from './DemoStage.module.css';
 import { toBadges, toCardProps } from './demoAdapter';
-import { STORAGE_KEY } from './seeds';
 import { useDemoStore } from './useDemoStore';
 
 export function DemoStage() {
@@ -26,6 +26,10 @@ export function DemoStage() {
   // it's mostly cosmetic since the iframe is fixed-size, but the visual
   // dock comes for free.
   const [zoom, setZoom] = useState(1);
+  // Viewport selector — drives the device-frame size in DemoMockup.
+  // `fit` is the default so the demo opens edge-to-edge; switching to
+  // desktop/tablet/mobile sizes the iframe to that fixed preset.
+  const [viewport, setViewport] = useState<ViewportState>(DEFAULT_VIEWPORT);
 
   function onCanvasClick(xPct: number, yPct: number) {
     if (state.tool !== 'pin') return;
@@ -61,9 +65,6 @@ export function DemoStage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [resetConfirm, actions]);
 
-  const openCount = state.threads.filter((t) => t.status === 'open').length;
-  const resolvedCount = state.threads.filter((t) => t.status === 'resolved').length;
-
   return (
     <Section width="wide" id="demo">
       <Eyebrow>Try without signing up</Eyebrow>
@@ -89,6 +90,7 @@ export function DemoStage() {
             onCanvasClick={onCanvasClick}
             cursor={state.tool === 'pin' ? 'crosshair' : 'default'}
             zoom={zoom}
+            viewport={viewport}
           >
             <DemoPinLayer
               annotations={state.annotations}
@@ -124,17 +126,13 @@ export function DemoStage() {
               return <AnnotationCard key={a.id} {...props} />;
             })}
           </AnnotationsRail>
-          <CanvasToolbar boundsRef={stageRef} onZoomChange={setZoom} isFullscreen={false} />
-        </div>
-        <div className={styles.foot}>
-          <span>
-            <strong>{state.annotations.length} annotations</strong> · {openCount} open ·{' '}
-            {resolvedCount} resolved · stored at <code>localStorage.{STORAGE_KEY}</code>
-          </span>
-          <span className={styles.footRight}>
-            Real <code>&lt;AnnotationsRail&gt;</code>, <code>&lt;AnnotationCard&gt;</code>,{' '}
-            <code>&lt;CanvasToolbar&gt;</code> from the product
-          </span>
+          <CanvasToolbar
+            boundsRef={stageRef}
+            onZoomChange={setZoom}
+            isFullscreen={false}
+            viewport={viewport}
+            setViewport={setViewport}
+          />
         </div>
       </div>
     </Section>
