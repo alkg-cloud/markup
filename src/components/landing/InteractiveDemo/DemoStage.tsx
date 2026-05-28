@@ -6,10 +6,11 @@ import { AnnotationsRail } from '@/components/AnnotationsRail/AnnotationsRail';
 import { CanvasToolbar } from '@/components/CanvasToolbar/CanvasToolbar';
 import { useViewerFullscreen } from '@/components/MockupViewer/useViewerFullscreen';
 import { DEFAULT_VIEWPORT, type ViewportState } from '@/components/MockupViewer/viewport-presets';
+import { type PinDescriptor, PinLayer } from '@/components/PinLayer';
+import type { Anchor } from '@/lib/anchoring';
 import { Eyebrow } from '../primitives/Eyebrow';
 import { Section } from '../primitives/Section';
 import { DemoMockup } from './DemoMockup';
-import { DemoPinLayer } from './DemoPinLayer';
 import styles from './DemoStage.module.css';
 import { toBadges, toCardProps } from './demoAdapter';
 import { useDemoStore } from './useDemoStore';
@@ -32,12 +33,19 @@ export function DemoStage() {
   const [zoom, setZoom] = useState(1);
   const [viewport, setViewport] = useState<ViewportState>(DEFAULT_VIEWPORT);
   const { isFullscreen, toggle: toggleFullscreen } = useViewerFullscreen(shellRef);
+  // DemoMockup writes the iframe's documentElement into this ref on load.
+  // `<PinLayer>` reads from it via `canvasRootRef` to resolve anchors
+  // against the mockup DOM — same wiring AppMainViewer uses.
+  const canvasRootRef = useRef<Element | null>(null);
+  // Bumped by DemoMockup on iframe load AND when zoom/viewport change,
+  // so the anchoring runtime re-projects pins onto the fresh layout.
+  const [repositionKey, setRepositionKey] = useState(0);
 
-  function onCanvasClick(xPct: number, yPct: number) {
+  function onCanvasClick(anchor: Anchor) {
     if (state.tool !== 'pin') return;
     const body = window.prompt('Annotation body:');
     if (!body?.trim()) return;
-    actions.addAnnotation({ xPct, yPct, body });
+    actions.addAnnotation({ anchor, body });
     actions.setTool('select');
   }
 
@@ -67,6 +75,28 @@ export function DemoStage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [resetConfirm, actions]);
 
+  // Bump repositionKey whenever zoom or viewport changes — useAnchoredPins
+  // also catches these via ResizeObserver, but the explicit bump avoids
+  // a one-frame stale-position flash on the rAF-less synchronous path.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(
+    () => setRepositionKey((k) => k + 1),
+    [zoom, viewport.mode, viewport.width, viewport.height],
+  );
+
+  // Build PinDescriptor[] from the demo state. Color, label, and status
+  // mirror the AppMain wiring — selected annotation gets `status: active`
+  // so the published pin highlights.
+  const pins: PinDescriptor[] = state.annotations.flatMap((a, idx) =>
+    a.pins.map((p) => ({
+      annotationId: a.id,
+      colorIndex: a.colorIndex,
+      label: idx + 1,
+      anchor: p.anchor,
+      status: state.selectedAnnotId === a.id ? ('active' as const) : ('idle' as const),
+    })),
+  );
+
   return (
     <Section width="wide" id="demo">
       <Eyebrow>Try without signing up</Eyebrow>
@@ -94,16 +124,18 @@ export function DemoStage() {
             zoom={zoom}
             viewport={viewport}
             setViewport={setViewport}
-          >
-            <DemoPinLayer
-              annotations={state.annotations}
-              selectedId={state.selectedAnnotId}
-              onSelect={(id) => {
-                actions.selectAnnotation(id);
-                setOpenThreadId(id);
-              }}
-            />
-          </DemoMockup>
+            canvasRootRef={canvasRootRef}
+            onIframeLoad={() => setRepositionKey((k) => k + 1)}
+          />
+          <PinLayer
+            canvasRootRef={canvasRootRef}
+            pins={pins}
+            onPublishedPinClick={(id) => {
+              actions.selectAnnotation(id);
+              setOpenThreadId(id);
+            }}
+            repositionKey={repositionKey}
+          />
           <AnnotationsRail
             boundsRef={stageRef}
             badges={toBadges(state)}

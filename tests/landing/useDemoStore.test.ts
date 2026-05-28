@@ -82,8 +82,7 @@ describe('useDemoStore', () => {
     const beforeAnnots = result.current.state.annotations.length;
     act(() => {
       result.current.actions.addAnnotation({
-        xPct: 50,
-        yPct: 50,
+        anchor: { path: ':scope>body>section>h1', offsetX: 0.5, offsetY: 0.5 },
         body: 'New comment',
       });
     });

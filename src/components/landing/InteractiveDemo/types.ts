@@ -1,12 +1,16 @@
 export type ColorIndex = 0 | 1 | 2 | 3 | 4;
 export type ThreadStatus = 'open' | 'needs review' | 'resolved';
 
+import type { Anchor } from '@/lib/anchoring';
+
 export type DemoPin = {
   id: string;
-  // % coordinates relative to the iframe canvas
-  xPct: number;
-  yPct: number;
+  /** DOM-anchored position — same shape the product uses. Resolves
+   *  against the iframe's documentElement at render time. */
+  anchor: Anchor;
 };
+
+export type { Anchor };
 
 export type DemoAnnotation = {
   id: string;

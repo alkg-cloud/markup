@@ -8,21 +8,41 @@ export const SEEDED_STATE: DemoState = {
     {
       id: 'a1',
       threadId: 't1',
-      pins: [{ id: 'p1', xPct: 8, yPct: 14 }],
+      // Pin on the h1 "Coffee, slow." — element anchor at the heading's
+      // center. Path scheme matches buildAnchorPath() output: scope =
+      // documentElement, then body > section > h1.
+      pins: [
+        {
+          id: 'p1',
+          anchor: { path: ':scope>body>section>h1', offsetX: 0.4, offsetY: 0.5 },
+        },
+      ],
       colorIndex: 0,
       createdAt: 0,
     },
     {
       id: 'a2',
       threadId: 't2',
-      pins: [{ id: 'p2', xPct: 38, yPct: 36 }],
+      // Pin near the start of the sub-copy paragraph.
+      pins: [
+        {
+          id: 'p2',
+          anchor: { path: ':scope>body>section>p', offsetX: 0.15, offsetY: 0.5 },
+        },
+      ],
       colorIndex: 1,
       createdAt: 1,
     },
     {
       id: 'a3',
       threadId: 't3',
-      pins: [{ id: 'p3', xPct: 84, yPct: 64 }],
+      // Pin on the CTA pill.
+      pins: [
+        {
+          id: 'p3',
+          anchor: { path: ':scope>body>section>a', offsetX: 0.5, offsetY: 0.5 },
+        },
+      ],
       colorIndex: 2,
       createdAt: 2,
     },
@@ -86,7 +106,7 @@ export const SEEDED_STATE: DemoState = {
   ],
 };
 
-// Bumped to v2 when reactions migrated from threadId → messageId.
-// Old cached state under v1 stays in localStorage harmlessly (different
-// key) and gets ignored.
-export const STORAGE_KEY = 'markup-demo:v2';
+// Bumped to v3 when pins migrated from xPct/yPct → DOM-anchored paths
+// (same scheme as the product). v2 cached state stays in localStorage
+// under its old key, harmlessly ignored.
+export const STORAGE_KEY = 'markup-demo:v3';

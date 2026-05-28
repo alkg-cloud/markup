@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SEEDED_STATE, STORAGE_KEY } from './seeds';
 import type {
+  Anchor,
   DemoAnnotation,
   DemoDraft,
   DemoMessage,
@@ -128,7 +129,7 @@ export function useDemoStore() {
     });
   }, []);
 
-  const addAnnotation = useCallback((args: { xPct: number; yPct: number; body: string }) => {
+  const addAnnotation = useCallback((args: { anchor: Anchor; body: string }) => {
     setState((s) => {
       const now = Date.now();
       const annId = `a-${now}-${RID()}`;
@@ -138,7 +139,7 @@ export function useDemoStore() {
       const annot: DemoAnnotation = {
         id: annId,
         threadId,
-        pins: [{ id: pinId, xPct: args.xPct, yPct: args.yPct }],
+        pins: [{ id: pinId, anchor: args.anchor }],
         colorIndex,
         createdAt: now,
       };
