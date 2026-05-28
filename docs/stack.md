@@ -30,7 +30,6 @@ Markup is a single-process Next.js application served from a Docker container. T
 
 ## Server-side image + DOM
 
-- **`sharp`** for PNG cropping (`/api/annotations/[id]/region`)
 - **`puppeteer`** (with bundled chromium, ~150 MB) for server-side DOM resolution at the bbox the user drew (`/api/annotations/[id]/intent`)
 - **`diff`** + **`@types/diff`** for unified-diff apply/render (`/api/mockups/[id]/version-patch`, `/api/mockups/[id]/diff`)
 - **`jszip`** for in-memory zip composition when applying patches
@@ -67,7 +66,7 @@ src/
   app/                      # Next.js App Router
     api/                    # API routes (route.ts files)
       agent/context/[annotationId]/route.ts
-      annotations/[id]/{intent,region,screenshot,messages}/route.ts
+      annotations/[id]/{intent,screenshot,messages}/route.ts
       mockups/[id]/{version,version-patch,diff,thumbnail,annotations,versions/[vid]/{source,promote}}/route.ts
       threads/[id]/{reply,resolve,reopen}/route.ts
       auth/{login,logout,setup}/route.ts
@@ -89,7 +88,6 @@ src/
     diff/                   # apply-unified, render-unified
     intent/                 # parser, contrast, cache, puppeteer singleton
     mockup/                 # service, storage, zip-extractor
-    region/crop.ts          # sharp-based bbox crop
     boot.ts, env.ts, logger.ts, prisma.ts
   styles/tokens.css
 prisma/
@@ -98,7 +96,7 @@ prisma/
 scripts/                    # one-shot maintenance scripts (tsx-run)
 tests/
   integration/{annotation,api,auth,lib,mockup}/*.test.ts
-  unit/lib/{intent,diff,region,…}/*.test.ts
+  unit/lib/{intent,diff,…}/*.test.ts
   fixtures/mockups/*.zip
   setup.ts
 docs/                       # this directory

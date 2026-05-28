@@ -80,7 +80,6 @@ The Markup API is a set of Next.js App Router route handlers under `src/app/api/
 | `POST` | `/api/mockups/[id]/annotations` | Create (JSON: body + anchors + colorIndex) |
 | `GET` | `/api/annotations/[id]` | Single annotation metadata |
 | `GET` | `/api/annotations/[id]/screenshot` | Full PNG screenshot |
-| `GET` | `/api/annotations/[id]/region` | Bbox-cropped PNG (sidecar-cached) |
 | `GET` | `/api/annotations/[id]/detail` | Aggregator for `/annotations/[id]` — annotation + screenshot dims + thread + names + mockup blurb + viewerHref |
 
 ### Agent

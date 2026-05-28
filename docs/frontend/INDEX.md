@@ -46,7 +46,6 @@ The route group `(app)` mounts `AppShell` once (via `(app)/layout.tsx`) so the s
 
 - Mockup card thumbnails are served from `/api/mockups/[id]/thumbnail`. The route serves the file when ≥ 64 bytes and a valid PNG; smaller / corrupt files trigger a 404 and the card falls back to a deterministic monogram (palette-cycled hue from a 6-entry list keyed off the mockup id)
 - Annotation screenshots come from `/api/annotations/[id]/screenshot` — full PNG, no transformation
-- Bbox-cropped screenshots come from `/api/annotations/[id]/region` — see [`docs/agent-loop/endpoints.md`](../agent-loop/endpoints.md)
 
 ## State ownership
 

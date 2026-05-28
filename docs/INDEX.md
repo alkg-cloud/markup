@@ -42,7 +42,7 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 
 - [Agent-loop INDEX](agent-loop/INDEX.md) — overview + endpoint map
 - [Overview](agent-loop/overview.md) — the user→agent→user cycle
-- [Endpoints](agent-loop/endpoints.md) — `/intent`, `/context`, `/version-patch`, `/region`, `/diff`
+- [Endpoints](agent-loop/endpoints.md) — `/intent`, `/context`, `/version-patch`, `/diff`
 - [Intent payload](agent-loop/intent-payload.md) — what `/intent` returns, sidecar caching, invalidation
 - [Patch format](agent-loop/patch-format.md) — unified-diff conventions for `/version-patch`
 - [Chips](agent-loop/chips.md) — G1 intent vocabulary (`visual` / `copy` / `behavior` / `other`)

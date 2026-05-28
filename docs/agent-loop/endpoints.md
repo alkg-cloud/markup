@@ -185,33 +185,6 @@ Step 4 is orchestrator-decided. Most fix cycles do not close the mockup (more an
 
 **Rename caveat:** `name` changes the slug (the canonical URL). The owner-or-admin gate means agents can only rename mockups they themselves uploaded. If the slug changes, existing orchestrator bookmarks to `/projects/<slug>/…` break.
 
-## `GET /api/annotations/[id]/region`
-
-Bbox-cropped PNG of the annotation's screenshot. Sidecar-cached.
-
-**Auth:** cookie OR Bearer.
-
-**Response 200:**
-- `Content-Type: image/png`
-- `Cache-Control: private, max-age=300`
-- Body: cropped PNG (typically 5–50 KB vs 200–700 KB for the full screenshot)
-
-**Errors:**
-
-| Status | `error` | When |
-|---|---|---|
-| 401 | `unauthorized` | No identity |
-| 404 | `not_found` | Annotation row doesn't exist |
-| 404 | `no_pin_coords` | Annotation has `pinCoords: null` (no drawn shapes) |
-| 404 | `screenshot_missing` | Filesystem state corrupted |
-| 500 | `invalid_pin_coords` | Stored `pinCoords` JSON is malformed |
-
-**Bbox source:** `Annotation.pinCoords.{bboxX, bboxY, bboxW, bboxH}`, with a fixed 20px padding around the bbox clamped at image edges.
-
-**No query params:** the bbox is fully derived from the stored pin coords. A future `?bbox=x,y,w,h` override would let agents request a different crop, but adding it would mean splitting the cache key — out of scope for v1.3.
-
-**Caching:** sidecar `region.png`. Regenerated when `screenshot.png`'s mtime is newer than `region.png`'s. Edits to `pinCoords` (none today; pinCoords are immutable per annotation) would need a cache-key extension.
-
 ## `GET /api/mockups/[id]/diff`
 
 Text-mode unified diff between two versions of a mockup.
