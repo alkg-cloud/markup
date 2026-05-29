@@ -235,4 +235,4 @@ Contributions of any size are welcome. The full flow, including the one-comment 
 
 ## License
 
-[Elastic License 2.0](LICENSE) © Alexandre Camillo. Free for any use, including internal use within an organization, **except** offering Markup to third parties as a hosted or managed service. See [`LICENSE`](LICENSE) for full terms. Contributors agree to the [Contributor License Agreement](CLA.md); the flow is described in [`CONTRIBUTING.md`](CONTRIBUTING.md).
+[Elastic License 2.0](LICENSE) © ALKG. Free for any use, including internal use within an organization, **except** offering Markup to third parties as a hosted or managed service. See [`LICENSE`](LICENSE) for full terms. Contributors agree to the [Contributor License Agreement](CLA.md); the flow is described in [`CONTRIBUTING.md`](CONTRIBUTING.md).

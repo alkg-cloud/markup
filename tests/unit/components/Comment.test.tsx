@@ -7,7 +7,7 @@ import { initialsForName } from '@/lib/avatar';
 
 describe('initialsForName', () => {
   it('returns first letter of first + last word', () => {
-    expect(initialsForName('Alexandre Camillo')).toBe('AC');
+    expect(initialsForName('Jane Doe')).toBe('JD');
     expect(initialsForName('Marina Sá')).toBe('MS');
     expect(initialsForName('Sam Marlowe')).toBe('SM');
   });
@@ -59,7 +59,7 @@ describe('Comment — reply variant', () => {
   });
 
   it('shows kebab (not reply icon) for own comments', () => {
-    const html = renderToStaticMarkup(<Comment {...baseProps} author="Alexandre Camillo" isOwn />);
+    const html = renderToStaticMarkup(<Comment {...baseProps} author="ALKG" isOwn />);
     expect(html).toContain('data-tooltip="More actions"');
   });
 

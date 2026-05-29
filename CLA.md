@@ -11,7 +11,7 @@ By submitting a contribution to this repository (a "Contribution"), you ("Contri
 ### 1. Definitions
 
 - **Project** — the software in this repository, currently distributed under the [Elastic License 2.0](LICENSE).
-- **Maintainer** — Alexandre Camillo, the project owner who controls the upstream repository.
+- **Maintainer** — ALKG, the project owner who controls the upstream repository.
 - **Contribution** — any original work of authorship you submit to the Project by any means, including pull requests, patches, issues containing code, or discussion-thread suggestions.
 
 ### 2. Copyright License

@@ -36,7 +36,7 @@ Single-call aggregator. Reads everything an agent needs to start working on a fi
         "id": "cmox…",
         "author_type": "user",
         "author_id": "cmox…",
-        "author_display_name": "Alexandre Camillo",
+        "author_display_name": "ALKG",
         "body": "…",
         "created_at": "…"
       }

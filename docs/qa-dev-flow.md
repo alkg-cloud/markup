@@ -72,7 +72,7 @@ The seeder reproduces a representative QA state covering every visible surface i
 
 ### Users + auth
 
-- 1 admin user: `qa@markup.dev` / `markup-dev-2026` (role `admin`, display name `Alexandre Camillo` so the avatar resolves to `AC`)
+- 1 admin user: `qa@markup.dev` / `markup-dev-2026` (role `admin`, display name `ALKG` so the avatar resolves to `AL`)
 - 1 agent token (`qa-agent`) — the secret prints to stdout at seed time so you can grab it for API tests
 
 ### Projects + folders

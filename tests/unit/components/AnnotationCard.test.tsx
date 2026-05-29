@@ -20,13 +20,13 @@ describe('AnnotationCard', () => {
         label={1}
         colorIndex={0}
         status="open"
-        author="Alexandre Camillo"
+        author="ALKG"
         date="12/05/2026 · 19:30"
         primary={PRIMARY}
-        currentUser="Alexandre"
+        currentUser="ALKG"
       />,
     );
-    expect(html).toContain('Alexandre Camillo');
+    expect(html).toContain('ALKG');
     expect(html).toContain('>open<');
     expect(html).toContain('data-color="0"');
   });

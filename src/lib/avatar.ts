@@ -4,7 +4,7 @@
  * See `docs/superpowers/specs/2026-05-18-app-main-redesign-spec.md` §9.
  *
  * Algorithm:
- *   - "Alexandre Camillo" → "AC" (first letter of first + last word)
+ *   - "Jane Doe"          → "JD" (first letter of first + last word)
  *   - "Marina Sá"        → "MS"
  *   - "designer-bot"     → "DB" (when no space, falls back to slice(0,2))
  *   - ""                 → "?"

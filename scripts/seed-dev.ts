@@ -32,7 +32,7 @@ import { prisma } from '../src/lib/prisma';
 
 const TEST_EMAIL = 'qa@markup.dev';
 const TEST_PASSWORD = 'markup-dev-2026';
-const TEST_NAME = 'Alexandre Camillo';
+const TEST_NAME = 'ALKG';
 
 // Secondary user — gives the seeded thread a believable two-author
 // shape so the reactions UI can be exercised with both "react with my
