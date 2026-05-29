@@ -41,10 +41,13 @@ test.describe('Landing page', () => {
     await expect(annotCards).toHaveCount(4);
 
     // Two-step confirm: first click arms the confirm, second click resets.
-    // Match BOTH the rest-state ("Reset demo") and the armed-state
-    // ("Click again to confirm") so the second click doesn't wait for the
+    // Match BOTH the rest-state ("↻ Reset demo") and the armed-state
+    // ("⚠ Click again to confirm") so the second click doesn't wait for the
     // 3s confirm window to expire before the locator resolves again.
-    const reset = page.getByRole('button', { name: /Reset|Click again/i });
+    // The regex is scoped to "Reset demo" (not just "Reset") to avoid
+    // colliding with the toolbar's zoom-reset button aria-label
+    // ("Current zoom 100% — click to reset").
+    const reset = page.getByRole('button', { name: /Reset demo|Click again/i });
     await reset.click();
     await reset.click();
     await expect(annotCards).toHaveCount(3);
