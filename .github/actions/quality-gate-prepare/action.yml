@@ -3,7 +3,7 @@ description: >-
   Set up the toolchain, run the test suite with coverage, build the pinned
   quality-gate engine, and run the adapter. Shared by the PR and baseline
   workflows so the prelude and engine build stay in one place. The adapter
-  writes its six metric files to ${{ runner.temp }}/qg.
+  writes its six metric files to the runner temp dir (runner.temp/qg).
 
 inputs:
   engine-sha:
@@ -46,9 +46,8 @@ runs:
       if: steps.cache-qg.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        git init /tmp/qg-core
+        git clone --depth 1 https://github.com/alkg-cloud/quality-gate /tmp/qg-core
         cd /tmp/qg-core
-        git remote add origin https://github.com/alkg-cloud/quality-gate
         git fetch --depth 1 origin ${{ inputs.engine-sha }}
         git checkout ${{ inputs.engine-sha }}
         pnpm install --frozen-lockfile
