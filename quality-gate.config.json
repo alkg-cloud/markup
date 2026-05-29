@@ -10,11 +10,11 @@
     "epsilon": 0.1
   },
   "metrics": {
-    "coverage":    { "enabled": true },
+    "coverage": { "enabled": true },
     "duplication": { "enabled": true },
-    "lint":        { "enabled": true },
-    "file_size":   { "enabled": true },
-    "security":    {
+    "lint": { "enabled": true },
+    "file_size": { "enabled": true },
+    "security": {
       "enabled": true,
       "block_severities": ["critical"],
       "warn_severities": ["high"]
