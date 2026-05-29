@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/17</span>
+                <span class='fraction'>17/17</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/10</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/16</span>
+                <span class='fraction'>16/16</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -130,32 +130,32 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">export type PopoverAlign = 'left' | 'right' | 'center';
 &nbsp;
@@ -171,38 +171,38 @@
  * Clamped to the viewport with a 4 px gutter. Writes `top` / `left`
  * inline on the popover so it works with `position: fixed`.
  */
-export function <span class="fstat-no" title="function not covered" >positionPopover(</span>
+export function positionPopover(
   popover: HTMLElement,
   trigger: HTMLElement,
-  align: PopoverAlign = <span class="branch-0 cbranch-no" title="branch not covered" >'left',</span>
-  gap = <span class="branch-0 cbranch-no" title="branch not covered" >6,</span>
+  align: PopoverAlign = 'left',
+  gap = 6,
 ): void {
-  const triggerRect = <span class="cstat-no" title="statement not covered" >trigger.getBoundingClientRect();</span>
-  const popoverRect = <span class="cstat-no" title="statement not covered" >popover.getBoundingClientRect();</span>
+  const triggerRect = trigger.getBoundingClientRect();
+  const popoverRect = popover.getBoundingClientRect();
 &nbsp;
-  let top = <span class="cstat-no" title="statement not covered" >triggerRect.bottom + gap;</span>
+  let top = triggerRect.bottom + gap;
   let left: number;
-<span class="cstat-no" title="statement not covered" >  if (align === 'right') {</span>
-<span class="cstat-no" title="statement not covered" >    left = triggerRect.right - popoverRect.width;</span>
-  } else <span class="cstat-no" title="statement not covered" >if (align === 'center') {</span>
-<span class="cstat-no" title="statement not covered" >    left = triggerRect.left + (triggerRect.width - popoverRect.width) / 2;</span>
+  if (align === 'right') {
+    left = triggerRect.right - popoverRect.width;
+  } else if (align === 'center') {
+    left = triggerRect.left + (triggerRect.width - popoverRect.width) / 2;
   } else {
-<span class="cstat-no" title="statement not covered" >    left = triggerRect.left;</span>
+    left = triggerRect.left;
   }
 &nbsp;
   // Flip above the trigger if there's no room below.
-<span class="cstat-no" title="statement not covered" >  if (top + popoverRect.height &gt; window.innerHeight - 4) {</span>
-<span class="cstat-no" title="statement not covered" >    top = triggerRect.top - popoverRect.height - gap;</span>
+  if (top + popoverRect.height &gt; window.innerHeight - 4) {
+    top = triggerRect.top - popoverRect.height - gap;
   }
   // Clamp to viewport horizontally.
-  const margin = <span class="cstat-no" title="statement not covered" >4;</span>
-  const maxLeft = <span class="cstat-no" title="statement not covered" >window.innerWidth - popoverRect.width - margin;</span>
-<span class="cstat-no" title="statement not covered" >  left = Math.max(margin, Math.min(left, maxLeft));</span>
+  const margin = 4;
+  const maxLeft = window.innerWidth - popoverRect.width - margin;
+  left = Math.max(margin, Math.min(left, maxLeft));
   // Final vertical clamp so the popover never starts above the viewport.
-<span class="cstat-no" title="statement not covered" >  if (top &lt; margin) <span class="cstat-no" title="statement not covered" >top = margin;</span></span>
+  if (top &lt; margin) top = margin;
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  popover.style.top = `${Math.round(top)}px`;</span>
-<span class="cstat-no" title="statement not covered" >  popover.style.left = `${Math.round(left)}px`;</span>
+  popover.style.top = `${Math.round(top)}px`;
+  popover.style.left = `${Math.round(left)}px`;
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -211,7 +211,7 @@ export function <span class="fstat-no" title="function not covered" >positionPop
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-27T23:16:09.268Z
+                at 2026-05-29T04:13:43.974Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

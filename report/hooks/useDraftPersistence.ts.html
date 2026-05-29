@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">84.5% </span>
+                <span class="strong">80.24% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>60/71</span>
+                <span class='fraction'>65/81</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.87% </span>
+                <span class="strong">65.85% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>23/32</span>
+                <span class='fraction'>27/41</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">94.73% </span>
+                <span class="strong">95.16% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>54/57</span>
+                <span class='fraction'>59/62</span>
             </div>
         
             
@@ -191,7 +191,24 @@
 <a name='L126'></a><a href='#L126'>126</a>
 <a name='L127'></a><a href='#L127'>127</a>
 <a name='L128'></a><a href='#L128'>128</a>
-<a name='L129'></a><a href='#L129'>129</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -261,6 +278,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">10x</span>
@@ -282,6 +300,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -289,6 +308,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -311,9 +331,11 @@
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -337,6 +359,12 @@ export interface UseDraftPersistenceArgs {
   draft: DraftState;
   onRestore: (stored: StoredDraft) =&gt; void;
   onFlushed: (lastSavedAt: number) =&gt; void;
+  /** When false, the hook skips every localStorage read/write and never
+   *  invokes `onRestore` / `onFlushed`. Callers depending on `onFlushed`
+   *  to advance status from `'saving'` → `'saved'` (or to refresh
+   *  `lastSavedAt`) must handle the disabled case explicitly — those
+   *  transitions never fire when persistence is off. */
+  enabled?: boolean;
 }
 &nbsp;
 export interface UseDraftPersistenceReturn {
@@ -383,12 +411,13 @@ function removeStored(key: string): void {
 }
 &nbsp;
 export function useDraftPersistence(args: UseDraftPersistenceArgs): UseDraftPersistenceReturn {
-  const { mockupId, userId, draft, onRestore, onFlushed } = args;
+  const { mockupId, userId, draft, onRestore, onFlushed, enabled = true } = args;
   const key = storageKey(mockupId, userId);
   const restoredRef = useRef(false);
 &nbsp;
   // 1) Restore on mount (once per key).
   useEffect(() =&gt; {
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!enabled) <span class="cstat-no" title="statement not covered" >return;</span>
     <span class="missing-if-branch" title="if path not taken" >I</span>if (restoredRef.current) <span class="cstat-no" title="statement not covered" >return;</span>
     restoredRef.current = true;
     <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof window === 'undefined') <span class="cstat-no" title="statement not covered" >return;</span>
@@ -399,7 +428,7 @@ export function useDraftPersistence(args: UseDraftPersistenceArgs): UseDraftPers
       removeStored(key);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, enabled]);
 &nbsp;
   // 2) Debounced auto-save on draft change.
   const debouncedSave = useDebounce((d: Draft) =&gt; {
@@ -409,16 +438,18 @@ export function useDraftPersistence(args: UseDraftPersistenceArgs): UseDraftPers
   }, DRAFT_DEBOUNCE_MS);
 &nbsp;
   useEffect(() =&gt; {
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!enabled) <span class="cstat-no" title="statement not covered" >return;</span>
     if (!draft) return;
     if (!draft.hasUnsavedChanges) return;
     debouncedSave(draft);
-  }, [draft, debouncedSave]);
+  }, [draft, debouncedSave, enabled]);
 &nbsp;
   // 3) Flush on visibilitychange + beforeunload.
   useEffect(() =&gt; {
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!enabled) <span class="cstat-no" title="statement not covered" >return;</span>
     <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof window === 'undefined') <span class="cstat-no" title="statement not covered" >return;</span>
     function flushIfDirty() {
-      <span class="missing-if-branch" title="if path not taken" >I</span>if (!draft || !draft.hasUnsavedChanges) <span class="cstat-no" title="statement not covered" >return;</span>
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (!draft?.hasUnsavedChanges) <span class="cstat-no" title="statement not covered" >return;</span>
       const now = Date.now();
       writeStored(key, draft, now);
       onFlushed(now);
@@ -432,18 +463,20 @@ export function useDraftPersistence(args: UseDraftPersistenceArgs): UseDraftPers
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('beforeunload', flushIfDirty);
     };
-  }, [draft, key, onFlushed]);
+  }, [draft, key, onFlushed, enabled]);
 &nbsp;
   const flush = useCallback(() =&gt; {
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!enabled) <span class="cstat-no" title="statement not covered" >return;</span>
     <span class="missing-if-branch" title="if path not taken" >I</span>if (!draft) <span class="cstat-no" title="statement not covered" >return;</span>
     const now = Date.now();
     writeStored(key, draft, now);
     onFlushed(now);
-  }, [draft, key, onFlushed]);
+  }, [draft, key, onFlushed, enabled]);
 &nbsp;
   const clear = useCallback(() =&gt; {
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!enabled) <span class="cstat-no" title="statement not covered" >return;</span>
     removeStored(key);
-  }, [key]);
+  }, [key, enabled]);
 &nbsp;
   return { flush, clear };
 }
@@ -454,7 +487,7 @@ export function useDraftPersistence(args: UseDraftPersistenceArgs): UseDraftPers
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-27T23:16:09.268Z
+                at 2026-05-29T04:13:43.974Z
             </div>
         <script src="../prettify.js"></script>
         <script>
