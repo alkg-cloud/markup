@@ -67,6 +67,7 @@
     "@types/yauzl": "latest",
     "@types/yazl": "^3.3.1",
     "@vitest/coverage-v8": "latest",
+    "jscpd": "^4.2.4",
     "jsdom": "^29.1.1",
     "tsx": "latest",
     "typescript": "latest",

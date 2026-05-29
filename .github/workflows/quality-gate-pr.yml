@@ -18,56 +18,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm prisma generate
-      - run: pnpm prisma migrate deploy
-        env:
-          DATABASE_URL: file:./prisma/test.db
-      - run: pnpm tsx tests/fixtures/build-fixtures.ts
-
-      # Run vitest with coverage so the adapter has coverage-summary.json to consume.
-      - run: pnpm test --coverage
-        env:
-          DATABASE_URL: file:./prisma/test.db
-
-      - name: Restore quality-gate engine build
-        id: cache-qg
-        uses: actions/cache/restore@v4
-        with:
-          path: /tmp/qg-core
-          key: qg-core-192fcaf386cf5bbb464dca53a26949078240c100
-
-      - name: Build quality-gate engine (upstream not on npm)
-        if: steps.cache-qg.outputs.cache-hit != 'true'
-        run: |
-          git clone --depth 1 https://github.com/alkg-cloud/quality-gate /tmp/qg-core
-          cd /tmp/qg-core
-          git fetch --depth 1 origin 192fcaf386cf5bbb464dca53a26949078240c100
-          git checkout 192fcaf386cf5bbb464dca53a26949078240c100
-          pnpm install --frozen-lockfile
-          pnpm run build
-
-      # Save only after a clean build, so a crashed install/build never caches a
-      # partial /tmp/qg-core (missing dist/cli.js) under the fixed-SHA key — which
-      # would make every later run hit the poisoned cache and skip the rebuild.
-      - name: Save quality-gate engine build
-        if: steps.cache-qg.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: /tmp/qg-core
-          key: qg-core-192fcaf386cf5bbb464dca53a26949078240c100
-
-      - name: Run adapter
-        run: ./.quality-gate/adapter.sh
-        env:
-          QG_OUTPUT_DIR: ${{ runner.temp }}/qg
-          QG_CONFIG: ./quality-gate.config.json
+      - uses: ./.github/actions/quality-gate-prepare
 
       - name: Run quality gate
         run: |

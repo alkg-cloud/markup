@@ -2,7 +2,7 @@
 
 Merges to `main` are gated by `@quality-gate/core` (upstream: [`alkg-cloud/quality-gate`](https://github.com/alkg-cloud/quality-gate), pinned commit `192fcaf386cf5bbb464dca53a26949078240c100`). The gate ratchets five metrics against a baseline stored on the orphan branch `quality-metrics` in this repo.
 
-The upstream package is not published to npm. Both gate workflows clone the repo at the pinned commit and build the CLI on each run. To bump the pin, edit the SHA in both `.github/workflows/quality-gate-*.yml` files.
+The upstream package is not published to npm. Both gate workflows share the composite action `.github/actions/quality-gate-prepare`, which clones the repo at the pinned commit and builds the CLI on each run (the build is cached on the SHA). To bump the pin, edit the `engine-sha` default in that action.
 
 ## Metrics and rules
 
@@ -10,7 +10,7 @@ The upstream package is not published to npm. Both gate workflows clone the repo
 |---|---|---|
 | `coverage` | `coverage/coverage-summary.json` from vitest (v8 provider) | Global `lines_pct` drops > `epsilon` (0.10pp) below baseline. New file with coverage below `MIN_NEW_FILE_COVERAGE` (60%) also blocks. |
 | `lint` | `pnpm exec biome check . --reporter=json` | Total diagnostic count rises above baseline; OR any per-file count rises; OR any new file contributes ≥1 diagnostic. |
-| `duplication` | `npx jscpd` | Global `pct` rises > `epsilon` above baseline. |
+| `duplication` | `pnpm exec jscpd` (pinned devDependency) | Global `pct` rises > `epsilon` above baseline. |
 | `file_size` | `find src/ tests/` with line count | Existing file's line count rises above its baseline count (when already above `MAX_FILE_LINES`, currently 500). New file with `lines >= MAX_FILE_LINES` blocks. |
 | `security` | `pnpm audit --json` | Any vulnerability in `block_severities` (currently `["critical"]`). `high` is a warning, not a block. |
 
@@ -48,7 +48,7 @@ node /tmp/qg-core/dist/cli.js compare --metrics /tmp/qg/metrics.json --baseline 
 - `.github/workflows/quality-gate-pr.yml` — runs on `pull_request` to `main`. Computes metrics, compares against baseline on `quality-metrics`, posts a sticky PR comment, fails the job on regression.
 - `.github/workflows/quality-gate-main.yml` — runs on `push` to `main`. Recomputes metrics and force-pushes the new baseline + badges to the `quality-metrics` orphan branch.
 
-Both workflows clone and build the upstream engine at the pinned commit at the start of each run.
+Both workflows run the shared `.github/actions/quality-gate-prepare` composite action, which sets up the toolchain, runs the suite with coverage, builds the pinned upstream engine, and runs the adapter.
 
 The PR-mode workflow's job name is `quality-gate / quality-gate` — this is the required check for branch protection.
 
