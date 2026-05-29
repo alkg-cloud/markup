@@ -47,5 +47,28 @@ else
     > "$QG_OUTPUT_DIR/coverage.json"
 fi
 
+# --- 2. Lint (biome --reporter=json; biome exits 1 with violations, hence || true) ---
+pnpm exec biome check . --reporter=json 2>/dev/null > .biome-report.json || true
+if [ -s .biome-report.json ] && jq -e '.diagnostics' .biome-report.json > /dev/null 2>&1; then
+  jq --arg root "$ROOT/" '
+    # Aggregate diagnostics by file path; biome paths can be absolute or relative.
+    # Biome 2.x emits .location.path as a string; older shapes used {file: "..."}.
+    # Handle both defensively.
+    reduce .diagnostics[] as $d ({};
+      (($d.location.path | if type == "object" then .file else . end) // "unknown") as $raw
+      | ($raw | sub("^" + ($root | @text); "")) as $rel
+      | .[$rel] = ((.[$rel] // 0) + 1)
+    )
+    | {
+        total: ([.[]] | add // 0),
+        by_file: [
+          to_entries[] | { path: .key, count: .value }
+        ] | sort_by(.path)
+      }
+  ' .biome-report.json > "$QG_OUTPUT_DIR/lint.json"
+else
+  echo '{"_skipped":"biome produced no parseable JSON report"}' > "$QG_OUTPUT_DIR/lint.json"
+fi
+
 # --- _meta.json (placeholder — final task overwrites with real tool list) ---
 echo '{"adapter":"markup","adapter_version":"0.1.0","tools":[]}' > "$QG_OUTPUT_DIR/_meta.json"
