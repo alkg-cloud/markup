@@ -2,6 +2,7 @@
 
 import { CompareTable } from '@/components/landing/CompareTable';
 import { Contributors } from '@/components/landing/Contributors';
+import { DesignFeatureFlow } from '@/components/landing/DesignFeatureFlow';
 import { FAQ } from '@/components/landing/FAQ';
 import { FeatureGrid } from '@/components/landing/FeatureGrid';
 import { FixLoopSteps } from '@/components/landing/FixLoopSteps';
@@ -21,6 +22,7 @@ export default function LandingPage() {
       <ThreeUp />
       <DemoStage />
       <FixLoopSteps />
+      <DesignFeatureFlow />
       <FeatureGrid />
       <CompareTable />
       <Quickstart />

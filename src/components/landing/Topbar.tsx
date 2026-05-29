@@ -14,6 +14,7 @@ export function Topbar() {
         <div className={styles.nav}>
           <a href="#demo">Demo</a>
           <a href="#how-it-works">How it works</a>
+          <a href="#design-loop">Design loop</a>
           <a href="#quickstart">Quickstart</a>
           <a href="#faq">FAQ</a>
         </div>
