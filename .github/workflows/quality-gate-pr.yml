@@ -36,7 +36,15 @@ jobs:
         env:
           DATABASE_URL: file:./prisma/test.db
 
+      - name: Cache quality-gate engine build
+        id: cache-qg
+        uses: actions/cache@v4
+        with:
+          path: /tmp/qg-core
+          key: qg-core-192fcaf386cf5bbb464dca53a26949078240c100
+
       - name: Build quality-gate engine (upstream not on npm)
+        if: steps.cache-qg.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://github.com/alkg-cloud/quality-gate /tmp/qg-core
           cd /tmp/qg-core
@@ -49,7 +57,6 @@ jobs:
         run: ./.quality-gate/adapter.sh
         env:
           QG_OUTPUT_DIR: ${{ runner.temp }}/qg
-          QG_MODE: pr
           QG_CONFIG: ./quality-gate.config.json
 
       - name: Run quality gate

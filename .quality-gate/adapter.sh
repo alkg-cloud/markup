@@ -122,10 +122,10 @@ else
 fi
 
 # --- 6. _meta (must list the tools the adapter actually invoked) ---
-cat > "$QG_OUTPUT_DIR/_meta.json" <<'JSON'
-{
-  "adapter": "markup",
-  "adapter_version": "0.1.0",
-  "tools": ["vitest", "biome", "jscpd", "pnpm-audit"]
-}
-JSON
+# adapter/version derive from quality-gate.config.json so the _meta the engine
+# ingests cannot drift from the config_snapshot it stores in baseline.json.
+jq '{
+  adapter: .adapter.name,
+  adapter_version: .adapter.version,
+  tools: ["vitest", "biome", "jscpd", "pnpm-audit"]
+}' "$QG_CONFIG" > "$QG_OUTPUT_DIR/_meta.json"
