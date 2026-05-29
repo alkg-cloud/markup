@@ -87,5 +87,26 @@ else
   echo '{"_skipped":"jscpd produced no report"}' > "$QG_OUTPUT_DIR/duplication.json"
 fi
 
+# --- 4. File size (walk src/ and tests/, count lines, emit violations) ---
+{
+  find src tests \
+    -type f \
+    \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.mjs" -o -name "*.cjs" \) \
+    -not -path "src/app/landing/*" \
+    -not -path "src/components/landing/*" \
+    -not -path "*/landing-export/*" \
+    -not -path "*/node_modules/*" \
+    2>/dev/null \
+  || true
+} | while read -r f; do
+    lines=$(wc -l < "$f")
+    if [ "$lines" -ge "$MAX_FILE_LINES" ]; then
+      printf '{"path":"%s","lines":%d}\n' "$f" "$lines"
+    fi
+  done | jq -s --argjson max "$MAX_FILE_LINES" '{
+    max_lines: $max,
+    violations: (sort_by(.path))
+  }' > "$QG_OUTPUT_DIR/file_size.json"
+
 # --- _meta.json (placeholder — final task overwrites with real tool list) ---
 echo '{"adapter":"markup","adapter_version":"0.1.0","tools":[]}' > "$QG_OUTPUT_DIR/_meta.json"
