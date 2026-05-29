@@ -48,14 +48,14 @@ export function DemoStage() {
       <Eyebrow>Try without signing up</Eyebrow>
       <h2 className={styles.h2}>Pin it yourself.</h2>
       <p className={styles.lead}>
-        A live Markup surface, running on your browser. Drop pins, write annotations, react, reply —
-        everything persists in <code>localStorage</code> so the next visitor finds a clean slate.{' '}
+        A live Markup surface, running on your browser. Drop pins, write annotations, react, reply.
+        Everything persists in <code>localStorage</code> so the next visitor finds a clean slate.{' '}
         <strong>Reset</strong> any time.
       </p>
       <div className={styles.shell}>
         <div className={styles.topbar}>
           <span className={styles.badge}>Demo mode</span>
-          <span className={styles.title}>Lumen Coffee — Hero v3</span>
+          <span className={styles.title}>Lumen Coffee · Hero v3</span>
           <div className={styles.status}>
             <span className={styles.live}>localStorage only · no server</span>
             <button type="button" className={styles.reset} onClick={onReset}>

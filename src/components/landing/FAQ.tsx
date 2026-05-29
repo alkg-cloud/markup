@@ -5,7 +5,7 @@ import { Section } from './primitives/Section';
 const FAQS = [
   {
     q: 'Does it work without an LLM?',
-    a: "Yes. The cookie-session reviewer UI is the same surface, with no required AI. The agent API is opt-in — issue a bearer token only if you want an automated client (or just don't issue any).",
+    a: "Yes. The cookie-session reviewer UI is the same surface, with no required AI. The agent API is opt-in. Issue a bearer token only if you want an automated client (or just don't issue any).",
     open: true,
   },
   {
@@ -14,11 +14,7 @@ const FAQS = [
   },
   {
     q: 'Can I use it with Claude Code / Cursor / Aider?',
-    a: 'Yes. The agent API is just an HTTP contract — bearer token in, annotation context out, unified diff back. Any dev assistant that can call curl can drive Markup. The docs show example loops.',
-  },
-  {
-    q: 'How are pin coordinates persistent?',
-    a: 'Pins anchor to DOM nodes via text-anchor and element-anchor selectors that are resilient to layout drift. The server resolves them on render so the pin reflows naturally with viewport, zoom, fullscreen, and visual updates.',
+    a: 'Yes. The agent API is just an HTTP contract: bearer token in, annotation context out, unified diff back. Any dev assistant that can call curl can drive Markup. The docs show example loops.',
   },
 ];
 

@@ -23,7 +23,7 @@ export function Hero() {
           </p>
           <div className={styles.cta}>
             <PillButton onClick={scrollToQuickstart}>
-              Spin it up <span className={styles.kbd}>docker</span>
+              Get started <span className={styles.kbd}>docker</span>
             </PillButton>
             <PillLink variant="ghost" href="#demo">
               Try the demo →

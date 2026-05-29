@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import styles from './DesignFeatureFlow.module.css';
 import { Eyebrow } from './primitives/Eyebrow';
 import { PillLink } from './primitives/PillButton';
@@ -9,56 +8,52 @@ const SKILL_REPO_URL = 'https://github.com/alkg-cloud/design-skills';
 type Phase = {
   index: string;
   title: string;
-  body: ReactNode;
-  markup: ReactNode;
+  body: string;
+  markup: string;
 };
 
 const PHASES: Phase[] = [
   {
     index: '00',
     title: 'Discovery',
-    body: 'Detect framework + ecosystem, surface CLAUDE.md rules, pick a UI strategy.',
-    markup: 'Strategy persists per repo. Future features reuse it.',
+    body: 'The agent scans your stack, your conventions, and your design rules before suggesting anything.',
+    markup:
+      'With Markup, the chosen direction is saved to the project so future features start from the same baseline.',
   },
   {
     index: '01',
     title: 'Design brainstorm',
-    body: 'One self-contained HTML mockup with a live tweaker for variants, density, accent.',
-    markup: 'Hosted URL. Reviewers drop DOM-anchored pins instead of pasting screenshots.',
+    body: 'The agent proposes several visual directions in a single live mockup. You pick variant, density, accent.',
+    markup:
+      'With Markup, the mockup goes online with one click. Reviewers leave pins straight on the artwork instead of pasting screenshots into chat.',
   },
   {
     index: '02',
-    title: 'Promote',
-    body: 'Bake locked tweaker choices, strip scaffolding, become a Design System file.',
-    markup: 'Every iteration is a version. The promotion diff is the audit trail.',
+    title: 'Lock the design',
+    body: 'When you approve, the chosen options are baked in. The mockup graduates to your Design System.',
+    markup:
+      'With Markup, every round of iteration is a saved version. You can scrub back to any earlier proposal at any time.',
   },
   {
     index: '03',
     title: 'Tech brainstorm',
-    body: 'Architecture spec scoped to the DS file. No UI re-design at this layer.',
-    markup: (
-      <>
-        Agent calls <code>GET /api/agent/context/[id]</code> — annotation + HTML + diff in one
-        request.
-      </>
-    ),
+    body: 'The implementation conversation only opens after the design is locked. No UI re-design at this layer.',
+    markup:
+      'With Markup, the agent already sees the final mockup and the full review thread before the technical discussion starts.',
   },
   {
     index: '04',
-    title: 'Plan + execute',
-    body: 'TDD plan; subagents implement; DS edits are first-class plan tasks.',
-    markup: (
-      <>
-        Patches land via <code>PATCH /api/mockups/[id]/version-patch</code>. Reviewer sees the diff
-        inline.
-      </>
-    ),
+    title: 'Plan + build',
+    body: 'A TDD plan splits the work into small tasks. Sub-agents implement them in parallel against the locked design.',
+    markup:
+      'With Markup, the agent ships each change as a versioned patch. You see exactly what was changed and reply on the original thread.',
   },
   {
     index: '05',
     title: 'Visual + behavior QA',
-    body: 'Live route vs DS reference. Chrome MCP drives the state matrix; deltas loop until parity.',
-    markup: 'Regressions reopen the loop on the same pin. Same surface, same protocol, no rebuild.',
+    body: 'A browser-driven check compares the live build against the Design System reference and loops on any drift.',
+    markup:
+      'With Markup, any regression reopens the same review surface. You drop a new pin and the loop starts again, no rebuild needed.',
   },
 ];
 
@@ -105,9 +100,9 @@ export function DesignFeatureFlow() {
       </ol>
 
       <p className={styles.coda}>
-        Mockup hosted on the same surface as production. Pins anchor to the same DOM. The agent
-        reads context, patches HTML, and replies on the thread — every step in <code>0→5</code>{' '}
-        leaves an addressable trail.
+        The mockup lives on the same surface as production. Pins anchor to the same DOM. The agent
+        reads context, patches HTML, and replies on the thread, so every step from <code>0</code> to{' '}
+        <code>5</code> leaves an addressable trail.
       </p>
     </Section>
   );

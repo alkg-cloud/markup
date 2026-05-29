@@ -56,7 +56,7 @@ export const SEEDED_STATE: DemoState = {
     {
       id: 'm1',
       threadId: 't1',
-      body: 'Headline kerning is loose. Try letter-spacing: -0.025em — the current display tracking eats the rhythm at this size.',
+      body: 'Headline kerning is loose. Try letter-spacing: -0.025em. The current display tracking eats the rhythm at this size.',
       author: 'you',
       createdAt: 0,
     },
@@ -88,7 +88,7 @@ export const SEEDED_STATE: DemoState = {
     {
       id: 'm3r3',
       threadId: 't3',
-      body: 'Re-tested with axe — passing.',
+      body: 'Re-tested with axe: passing.',
       author: 'agent',
       createdAt: 3,
     },
