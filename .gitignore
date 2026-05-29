@@ -41,3 +41,10 @@ public/_qa-mobile.html
 # landing-export build artifacts
 landing-export/.next/
 landing-export/out/
+
+# quality-gate adapter scratch files
+.jscpd/
+.biome-report.json
+.npm-audit.json
+.pnpm-audit.json
+/qg-output/
