@@ -27,7 +27,8 @@
     <a href="https://nextjs.org/"><img alt="Built with Next.js 16" src="https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs&logoColor=white"></a>
     <a href="https://github.com/alkg-cloud/markup/pkgs/container/markup"><img alt="Release" src="https://img.shields.io/github/package-json/v/alkg-cloud/markup?label=release"></a>
     <a href="https://github.com/alkg-cloud/markup/actions/workflows/test.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/alkg-cloud/markup/test.yml?branch=main&label=ci"></a>
-    <a href="https://github.com/alkg-cloud/markup/tree/coverage-data/report"><img alt="Coverage" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/alkg-cloud/markup/coverage-data/badge.json"></a>
+    <img alt="coverage" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/alkg-cloud/markup/quality-metrics/badges/coverage.json">
+    <img alt="quality" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/alkg-cloud/markup/quality-metrics/badges/quality.json">
   </p>
 
 </div>
