@@ -9,7 +9,7 @@ type Phase = {
   index: string;
   title: string;
   body: string;
-  markup: string;
+  markup?: string;
 };
 
 const PHASES: Phase[] = [
@@ -17,15 +17,13 @@ const PHASES: Phase[] = [
     index: '00',
     title: 'Discovery',
     body: 'The agent scans your stack, your conventions, and your design rules before suggesting anything.',
-    markup:
-      'With Markup, the chosen direction is saved to the project so future features start from the same baseline.',
   },
   {
     index: '01',
     title: 'Design brainstorm',
     body: 'The agent proposes several visual directions in a single live mockup. You pick variant, density, accent.',
     markup:
-      'With Markup, the mockup goes online with one click. Reviewers leave pins straight on the artwork instead of pasting screenshots into chat.',
+      'With Markup, every iteration is uploaded for you. Reviewers leave pins straight on the live mockup. No screenshots, no chat pasting.',
   },
   {
     index: '02',
@@ -45,15 +43,11 @@ const PHASES: Phase[] = [
     index: '04',
     title: 'Plan + build',
     body: 'A TDD plan splits the work into small tasks. Sub-agents implement them in parallel against the locked design.',
-    markup:
-      'With Markup, the agent ships each change as a versioned patch. You see exactly what was changed and reply on the original thread.',
   },
   {
     index: '05',
     title: 'Visual + behavior QA',
     body: 'A browser-driven check compares the live build against the Design System reference and loops on any drift.',
-    markup:
-      'With Markup, any regression reopens the same review surface. You drop a new pin and the loop starts again, no rebuild needed.',
   },
 ];
 
@@ -94,7 +88,7 @@ export function DesignFeatureFlow() {
               <h4 className={styles.cardTitle}>{p.title}</h4>
             </div>
             <p className={styles.cardBody}>{p.body}</p>
-            <div className={styles.boost}>{p.markup}</div>
+            {p.markup && <div className={styles.boost}>{p.markup}</div>}
           </li>
         ))}
       </ol>
