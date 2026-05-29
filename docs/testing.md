@@ -140,15 +140,4 @@ When a future test needs to exercise puppeteer, reuse the singleton from `src/li
 
 ## Coverage and the ratchet
 
-CI runs `pnpm test --coverage` and feeds the summary into `scripts/coverage-ratchet.ts`. The script:
-
-1. Fetches `baseline.json` from the orphan branch `coverage-data`.
-2. Compares each metric (lines, statements, functions, branches) against the baseline.
-3. On PRs, fails the build if any metric drops more than 0.10pp below baseline.
-4. On `main` push, force-writes the new baseline + `badge.json` + `report/` (lcov-html) back to `coverage-data`.
-
-The 0.10pp tolerance absorbs noise from denominator shifts when source files are added without proportional test additions. Real regressions surface quickly because the baseline tracks `main`.
-
-The lcov HTML report for the latest `main` is browsable at <https://github.com/alkg-cloud/markup/tree/coverage-data/report> (the README "coverage" badge links there). To browse it locally, run `pnpm test --coverage` and open `coverage/index.html`.
-
-The orphan branch is force-pushed on every `main` run; it never accumulates history. If you need it locally: `git fetch origin coverage-data:coverage-data`.
+CI runs `pnpm test --coverage` and the resulting `coverage/coverage-summary.json` is consumed by the Quality Gate adapter (`./.quality-gate/adapter.sh`). The merge gate is the `quality-gate / quality-gate` check defined in `.github/workflows/quality-gate-pr.yml`. See [`docs/quality-gate.md`](quality-gate.md) for the full ratchet rules and the orphan-branch contract.

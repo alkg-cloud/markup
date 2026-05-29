@@ -6,6 +6,7 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 
 - [Task Rules](task-rules.md) — what to do before/after every task; the per-area checklist
 - [CI and coding rules](ci.md) — what fails CI, the pre-push checklist, and the conventions the agent must follow to keep `main` green
+- [Quality Gate](quality-gate.md) — multi-metric ratchet (coverage, lint, duplication, file size, security) against the `quality-metrics` orphan branch
 - [Documentation Standards](doc-standards.md) — how to write and maintain docs (snapshot-only, declarative present tense)
 - [Git Conventions](git/conventions.md) — commit messages and workflow
 
