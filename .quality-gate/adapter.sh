@@ -108,5 +108,18 @@ fi
     violations: (sort_by(.path))
   }' > "$QG_OUTPUT_DIR/file_size.json"
 
+# --- 5. Security (pnpm audit) ---
+pnpm audit --json > .pnpm-audit.json 2>/dev/null || true
+if [ -s .pnpm-audit.json ] && jq -e '.metadata.vulnerabilities' .pnpm-audit.json > /dev/null 2>&1; then
+  jq '.metadata.vulnerabilities | {
+    critical: (.critical // 0),
+    high:     (.high     // 0),
+    moderate: (.moderate // 0),
+    low:      (.low      // 0)
+  }' .pnpm-audit.json > "$QG_OUTPUT_DIR/security.json"
+else
+  echo '{"_skipped":"pnpm audit produced no metadata.vulnerabilities"}' > "$QG_OUTPUT_DIR/security.json"
+fi
+
 # --- _meta.json (placeholder — final task overwrites with real tool list) ---
 echo '{"adapter":"markup","adapter_version":"0.1.0","tools":[]}' > "$QG_OUTPUT_DIR/_meta.json"
