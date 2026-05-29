@@ -20,7 +20,7 @@ const FAQS = [
 
 export function FAQ() {
   return (
-    <Section width="narrow" id="faq">
+    <Section id="faq">
       <Eyebrow muted>Frequently asked</Eyebrow>
       <h2 className={styles.h2}>The questions reviewers always ask.</h2>
       <div className={styles.list}>

@@ -12,7 +12,7 @@ docker run -d --name markup \\
 
 export function Quickstart() {
   return (
-    <Section width="narrow" id="quickstart">
+    <Section id="quickstart">
       <Eyebrow>Quickstart</Eyebrow>
       <h2 className={styles.h2}>Run it in 30 seconds.</h2>
       <CodeCard filename="~/markup/start.sh" copyText={DOCKER_RAW}>
