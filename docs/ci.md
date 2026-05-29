@@ -13,6 +13,26 @@ The single CI workflow runs `lint + typecheck + test + build` on every push. Rea
 
 `pnpm test` runs sequentially (`fileParallelism: false, maxWorkers: 1`) because integration tests share `prisma/test.db`. See [Testing](testing.md) for why and what would replace it.
 
+## Quality gate (ratchet)
+
+Alongside the pass/fail pipeline above, a ratchet-based quality gate (the [`alkg-cloud/quality-gate`](https://github.com/alkg-cloud/quality-gate) engine) runs on every PR and fails it on regression. It is **additive** — it does not replace lint/typecheck/test/build. Per-PR metrics are compared against a baseline stored on the orphan `quality-metrics` branch; the baseline is refreshed on every push to `main`.
+
+| Piece | Location | Notes |
+|---|---|---|
+| Config | `quality-gate.config.json` | Strict ratchet (`epsilon 0`), `MAX_FILE_LINES` 300, `MIN_NEW_FILE_COVERAGE` 60, blocks on `critical` security advisories and warns on `high`. |
+| Adapter | `.quality-gate/adapter.sh` | Emits six canonical metric files (`coverage`, `duplication`, `lint`, `file_size`, `security`, `_meta`). A metric whose tool is unavailable emits `{"_skipped":"…"}` rather than a fabricated value. |
+| Workflows | `.github/workflows/quality-gate-pr.yml`, `quality-gate-main.yml` | PR gate (posts a sticky comment) and baseline refresh. Both pin Node 22 to match `engines.node` and install the engine from source via the published `install.sh`. |
+
+The adapter bootstraps its own environment (pnpm via corepack, `pnpm install`, `prisma generate`, fixtures) because the gate workflows check out the repo with Node only, then collects metrics with the project's own tools:
+
+- **Coverage** — Vitest with the v8 provider (`coverage/coverage-summary.json`, lines %), running the full unit + integration suite. It is produced last so the generated `coverage/` directory is absent during the lint scan.
+- **Lint** — `biome check .` (the same command as `pnpm lint`), counting errors + warnings per file. Adding a new Biome warning (e.g. an unjustified `any`) is a ratchet regression.
+- **Duplication** — `jscpd` over `src/`, fetched on demand.
+- **File size** — tracked source files (`git ls-files`) at or above `MAX_FILE_LINES`.
+- **Security** — `pnpm audit` severity counts.
+
+The required status check is `quality-gate / quality-gate`; merging the bootstrap PR creates the orphan branch and the first baseline.
+
 ## Pre-push checklist
 
 ```bash

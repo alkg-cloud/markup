@@ -1,0 +1,60 @@
+name: quality-gate
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  # github.workflow keeps per-workspace workflow copies (distinct names) isolated.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+
+      - name: Install quality-gate engine
+        # shell: bash makes the runner use `bash -o pipefail`, so a failed curl
+        # (the default `bash -e` has no pipefail) doesn't pass as a green step.
+        shell: bash
+        run: curl -fsSL https://raw.githubusercontent.com/alkg-cloud/quality-gate/main/install.sh | bash
+        env:
+          # Pin a tag or commit SHA for reproducible CI; defaults to main.
+          QG_REF: main
+
+      - name: Read adapter command from config
+        id: cfg
+        run: |
+          adapter_cmd=$(node -e "console.log(JSON.parse(require('fs').readFileSync('./quality-gate.config.json','utf-8')).adapter.command)")
+          echo "adapter_cmd=$adapter_cmd" >> "$GITHUB_OUTPUT"
+
+      - name: Run adapter
+        run: ${{ steps.cfg.outputs.adapter_cmd }}
+        env:
+          QG_OUTPUT_DIR: ${{ runner.temp }}/qg
+          QG_MODE: pr
+          QG_CONFIG: ./quality-gate.config.json
+
+      - name: Run quality gate
+        run: qg-core pr --config ./quality-gate.config.json --output-dir ${{ runner.temp }}/qg
+
+      - name: Post sticky PR comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: quality-gate-marker-v1
+          path: ${{ runner.temp }}/qg/pr-comment.md
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-report
+          path: ${{ runner.temp }}/qg
