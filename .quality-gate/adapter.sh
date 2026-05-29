@@ -121,5 +121,11 @@ else
   echo '{"_skipped":"pnpm audit produced no metadata.vulnerabilities"}' > "$QG_OUTPUT_DIR/security.json"
 fi
 
-# --- _meta.json (placeholder — final task overwrites with real tool list) ---
-echo '{"adapter":"markup","adapter_version":"0.1.0","tools":[]}' > "$QG_OUTPUT_DIR/_meta.json"
+# --- 6. _meta (must list the tools the adapter actually invoked) ---
+cat > "$QG_OUTPUT_DIR/_meta.json" <<'JSON'
+{
+  "adapter": "markup",
+  "adapter_version": "0.1.0",
+  "tools": ["vitest", "biome", "jscpd", "pnpm-audit"]
+}
+JSON
