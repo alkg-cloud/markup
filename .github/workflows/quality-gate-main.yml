@@ -1,0 +1,29 @@
+name: quality-gate-baseline
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: quality-gate-main
+  cancel-in-progress: false
+
+jobs:
+  update-baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/quality-gate-prepare
+
+      - name: Update baseline on orphan branch
+        run: |
+          node /tmp/qg-core/dist/cli.js update-baseline \
+            --config ./quality-gate.config.json \
+            --output-dir ${{ runner.temp }}/qg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

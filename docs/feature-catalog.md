@@ -831,7 +831,6 @@ Surfaces that compose the agent automation cycle. These are API-driven but have 
 | `agent-context-read` | Single-call context aggregator: annotation + thread + inline source + diff_since_creation + project + folder_path. ETag for short-circuit | N/A (agent-only) | `GET /api/agent/context/[annotationId]` |
 | `agent-version-patch` | Diff-based version update with `base_version_id`. Binary files reused by reference. 409 on conflict (stale base) | new version in `mockup-viewer-versions` | `PATCH /api/mockups/[id]/version-patch` |
 | `agent-mockup-patch` | Mockup-metadata mutation. All fields (`name`, `status`, `projectId`, `folderId`, `position`) are gated by `requireOwnerOrAdmin`: the caller must be the recorded `(createdBy, createdByType)` of the mockup OR an admin. Agents can rename/move/status-change mockups they uploaded; they receive 403 `forbidden_owner` on mockups created by others. Optional close-out step after the last thread on a mockup is resolved. | `mockup-status-pill`, `mockup-actions-menu` (existing UI surfaces) | `PATCH /api/mockups/[id]` |
-| `agent-region-crop` | Bbox-cropped screenshot (sidecar-cached) | N/A (agent-only) | `GET /api/annotations/[id]/region` |
 | `agent-diff-text` | Text-mode unified or JSON diff between versions | used by `diff-viewer` | `GET /api/mockups/[id]/diff` |
 | `agent-thread-reply` | Agent replies in thread (`authorType: 'agent'`) | `thread-timeline-message` | `POST /api/threads/[id]/reply` |
 | `agent-thread-resolve` | Thread resolution | `thread-timeline-resolve-btn` | `POST /api/threads/[id]/resolve` |

@@ -1,0 +1,55 @@
+name: quality-gate
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: quality-gate-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/quality-gate-prepare
+
+      - name: Run quality gate
+        run: |
+          node /tmp/qg-core/dist/cli.js pr \
+            --config ./quality-gate.config.json \
+            --output-dir ${{ runner.temp }}/qg
+
+      # The comment file only exists once the engine has run; on an earlier
+      # failure (e.g. the suite or engine build) it is absent, so skip the
+      # comment step rather than letting it fail and bury the real error.
+      - name: Check for gate comment
+        id: gate-comment
+        if: always()
+        run: |
+          if [ -f "${{ runner.temp }}/qg/pr-comment.md" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post sticky PR comment
+        if: always() && steps.gate-comment.outputs.exists == 'true'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: quality-gate-marker-v1
+          path: ${{ runner.temp }}/qg/pr-comment.md
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-report
+          path: ${{ runner.temp }}/qg

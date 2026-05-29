@@ -41,3 +41,6 @@ public/_qa-mobile.html
 # landing-export build artifacts
 landing-export/.next/
 landing-export/out/
+
+# quality-gate adapter local output dir
+/qg-output/

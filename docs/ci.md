@@ -9,21 +9,15 @@ The single CI workflow runs five jobs on every push. Read this before changing a
 | `lint` | `pnpm exec biome check .` | Any lint error or format diff. Warnings do not fail CI; errors do. |
 | `typecheck` | `pnpm exec tsc --noEmit` | Any TS error. The pre-existing `baseUrl` deprecation warning is informational. |
 | `build` | `pnpm build` (Next 16 + Turbopack) | TS errors that only surface at build time, missing imports, or build-config issues. |
-| `test-coverage` | `pnpm test --coverage` + `scripts/coverage-ratchet.ts` | Any failing assertion across unit + integration suites, OR a coverage drop of more than 0.10pp on any of lines/statements/functions/branches vs the baseline on the `coverage-data` branch. |
+| `test-coverage` | `pnpm test --coverage` | Any failing assertion across unit + integration suites. Coverage drift is gated separately by the [Quality Gate](quality-gate.md). |
 | `e2e` | `pnpm test:e2e` (Playwright) | Any failing e2e assertion. The job installs Chromium via `playwright install --with-deps`. |
+| `quality-gate` | `./.quality-gate/adapter.sh` + `node /tmp/qg-core/dist/cli.js pr` | Coverage drop > 0.10pp, lint count rise, duplication rise, file-size rise, or any `critical` audit vulnerability vs the baseline on the `quality-metrics` orphan branch. See [Quality Gate](quality-gate.md). |
 
-All five jobs run in parallel from the same `actions/checkout` + `pnpm install` prelude.
+All five jobs run in parallel from the same `actions/checkout` + `pnpm install` prelude. `quality-gate` runs in its own workflow but in parallel with the rest.
 
-## Coverage
+## Coverage and quality ratchet
 
-`test-coverage` gates merges on a ratchet: each metric (lines, statements, functions, branches) must not drop more than 0.10pp below the baseline stored in the orphan branch `coverage-data`. On every `main` push, the job force-pushes the new baseline + a `shields.io`-shaped `badge.json` + the lcov HTML report to that branch.
-
-The README coverage badge reads `badge.json` via raw GitHub. Two implications:
-
-- The orphan branch never accumulates history (force-pushed). Fine for an artifact branch.
-- The badge 404s until the first `main` push writes the `coverage-data` branch.
-
-See [`docs/testing.md`](testing.md) for the engineer-facing details.
+Coverage is one of five ratcheted metrics. The full ratchet logic — including the baseline branch (`quality-metrics`), the bootstrap rule, and per-metric failure conditions — lives in [`docs/quality-gate.md`](quality-gate.md). The pre-push checklist below still runs `pnpm test` for fast feedback, but the merge gate is the `quality-gate / quality-gate` check.
 
 ## Pre-push checklist
 
@@ -81,7 +75,7 @@ These rules are enforced by biome + tsc + the test suite. Violating them turns t
 ### Agent-loop endpoints
 
 1. **Auth via `identify(req)`** — accepts cookie OR Bearer; returns `{kind: 'user', userId} | {kind: 'agent', tokenId}` or `null`. Never re-implement auth in a route.
-2. **Sidecar files are atomic-write candidates.** Writes to `intent.json` and `region.png` go directly to disk; if a future change needs concurrency safety, write to `*.tmp` and rename.
+2. **Sidecar files are atomic-write candidates.** Writes to `intent.json` go directly to disk; if a future change needs concurrency safety, write to `*.tmp` and rename.
 3. **Cache invalidation runs BEFORE the new write.** When a route mutates a primary blob that has derived sidecars, it deletes the stale sidecars before writing the new blob so a concurrent reader never pairs a fresh primary with a stale sidecar.
 4. **The `/context` aggregator delegates to `/intent`** by importing the GET handler directly — no HTTP loopback. This keeps tests deterministic and avoids depending on `APP_URL` being reachable from the server.
 

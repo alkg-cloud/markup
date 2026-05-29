@@ -6,6 +6,7 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 
 - [Task Rules](task-rules.md) — what to do before/after every task; the per-area checklist
 - [CI and coding rules](ci.md) — what fails CI, the pre-push checklist, and the conventions the agent must follow to keep `main` green
+- [Quality Gate](quality-gate.md) — multi-metric ratchet (coverage, lint, duplication, file size, security) against the `quality-metrics` orphan branch
 - [Documentation Standards](doc-standards.md) — how to write and maintain docs (snapshot-only, declarative present tense)
 - [Git Conventions](git/conventions.md) — commit messages and workflow
 
@@ -42,7 +43,7 @@ Start here to find which docs apply to your task. If multiple docs are relevant,
 
 - [Agent-loop INDEX](agent-loop/INDEX.md) — overview + endpoint map
 - [Overview](agent-loop/overview.md) — the user→agent→user cycle
-- [Endpoints](agent-loop/endpoints.md) — `/intent`, `/context`, `/version-patch`, `/region`, `/diff`
+- [Endpoints](agent-loop/endpoints.md) — `/intent`, `/context`, `/version-patch`, `/diff`
 - [Intent payload](agent-loop/intent-payload.md) — what `/intent` returns, sidecar caching, invalidation
 - [Patch format](agent-loop/patch-format.md) — unified-diff conventions for `/version-patch`
 - [Chips](agent-loop/chips.md) — G1 intent vocabulary (`visual` / `copy` / `behavior` / `other`)
