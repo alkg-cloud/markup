@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
 import styles from './DesignFeatureFlow.module.css';
 import { Eyebrow } from './primitives/Eyebrow';
+import { PillLink } from './primitives/PillButton';
 import { Section } from './primitives/Section';
+
+const SKILL_REPO_URL = 'https://github.com/AlexandreCamillo/markup-design-toolkit';
 
 type Phase = {
   index: string;
@@ -62,16 +65,29 @@ const PHASES: Phase[] = [
 export function DesignFeatureFlow() {
   return (
     <Section id="design-loop">
-      <Eyebrow>The design-feature skill</Eyebrow>
-      <h2 className={styles.h2}>Six phases. Hosted, pinned, patched.</h2>
+      <Eyebrow>Pair Markup with a skill</Eyebrow>
+      <h2 className={styles.h2}>Lock the design before you discuss the build.</h2>
       <p className={styles.lead}>
-        <code>design-feature</code> orchestrates the whole lifecycle of a user-visible feature —
-        from "I want a pricing card" to a parity check against the Design System. Markup is the
-        substrate that turns every phase into a hosted, addressable artifact: a pin, a version, a
-        diff.
+        <code>design-feature</code> is a community skill that gets the most out of your AI agent and
+        Markup. It runs the agent through a UI/UX brainstorm, hands you a live tweaker to explore
+        every option it proposes, and only opens the implementation conversation once the design is
+        locked.
       </p>
 
-      <DiagramRail />
+      <div className={styles.ctaRow}>
+        <PillLink
+          variant="ghost"
+          href={SKILL_REPO_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.repoLink}
+        >
+          markup-design-toolkit <span aria-hidden="true">↗</span>
+        </PillLink>
+        <span className={styles.ctaHint}>
+          Drop the skill into your agent and run it on this repo.
+        </span>
+      </div>
 
       <ol className={styles.grid}>
         {PHASES.map((p) => (
@@ -83,12 +99,7 @@ export function DesignFeatureFlow() {
               <h4 className={styles.cardTitle}>{p.title}</h4>
             </div>
             <p className={styles.cardBody}>{p.body}</p>
-            <div className={styles.boost}>
-              <span className={styles.boostLabel} aria-hidden="true">
-                Markup ↗
-              </span>
-              <span className={styles.boostText}>{p.markup}</span>
-            </div>
+            <div className={styles.boost}>{p.markup}</div>
           </li>
         ))}
       </ol>
@@ -99,61 +110,5 @@ export function DesignFeatureFlow() {
         leaves an addressable trail.
       </p>
     </Section>
-  );
-}
-
-function DiagramRail() {
-  return (
-    <svg
-      className={styles.rail}
-      viewBox="0 0 1200 96"
-      preserveAspectRatio="none"
-      role="img"
-      aria-label="Six-phase pipeline: discovery, brainstorm, promote, tech spec, build, QA."
-    >
-      <defs>
-        <linearGradient id="dff-line" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.05" />
-          <stop offset="12%" stopColor="var(--accent)" stopOpacity="0.55" />
-          <stop offset="88%" stopColor="var(--accent)" stopOpacity="0.55" />
-          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.05" />
-        </linearGradient>
-      </defs>
-      <line
-        x1="60"
-        x2="1140"
-        y1="48"
-        y2="48"
-        stroke="url(#dff-line)"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-      {[100, 280, 460, 640, 820, 1000].map((cx, i) => (
-        <g key={cx}>
-          <circle
-            cx={cx}
-            cy="48"
-            r="14"
-            fill="var(--bg-elevated)"
-            stroke="var(--accent)"
-            strokeWidth="1"
-            strokeOpacity="0.45"
-          />
-          <text
-            x={cx}
-            y="52"
-            textAnchor="middle"
-            className={styles.railText}
-            fontSize="10"
-            fill="var(--accent)"
-            fontFamily="var(--font-mono)"
-          >
-            0{i}
-          </text>
-        </g>
-      ))}
-      {/* terminal arrow */}
-      <path d="M 1140 48 L 1132 44 L 1132 52 Z" fill="var(--accent)" fillOpacity="0.55" />
-    </svg>
   );
 }
