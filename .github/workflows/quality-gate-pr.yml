@@ -1,0 +1,73 @@
+name: quality-gate
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: quality-gate-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma generate
+      - run: pnpm prisma migrate deploy
+        env:
+          DATABASE_URL: file:./prisma/test.db
+      - run: pnpm tsx tests/fixtures/build-fixtures.ts
+
+      # Run vitest with coverage so the adapter has coverage-summary.json to consume.
+      - run: pnpm test --coverage
+        env:
+          DATABASE_URL: file:./prisma/test.db
+
+      - name: Build quality-gate engine (upstream not on npm)
+        run: |
+          git clone --depth 1 https://github.com/alkg-cloud/quality-gate /tmp/qg-core
+          cd /tmp/qg-core
+          git fetch --depth 1 origin 192fcaf386cf5bbb464dca53a26949078240c100
+          git checkout 192fcaf386cf5bbb464dca53a26949078240c100
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Run adapter
+        run: ./.quality-gate/adapter.sh
+        env:
+          QG_OUTPUT_DIR: ${{ runner.temp }}/qg
+          QG_MODE: pr
+          QG_CONFIG: ./quality-gate.config.json
+
+      - name: Run quality gate
+        run: |
+          node /tmp/qg-core/dist/cli.js pr \
+            --config ./quality-gate.config.json \
+            --output-dir ${{ runner.temp }}/qg
+
+      - name: Post sticky PR comment
+        if: always()
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: quality-gate-marker-v1
+          path: ${{ runner.temp }}/qg/pr-comment.md
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-report
+          path: ${{ runner.temp }}/qg
