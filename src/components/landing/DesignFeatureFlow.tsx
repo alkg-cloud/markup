@@ -4,7 +4,7 @@ import { Eyebrow } from './primitives/Eyebrow';
 import { PillLink } from './primitives/PillButton';
 import { Section } from './primitives/Section';
 
-const SKILL_REPO_URL = 'https://github.com/AlexandreCamillo/markup-design-toolkit';
+const SKILL_REPO_URL = 'https://github.com/alkg-cloud/design-skills';
 
 type Phase = {
   index: string;
@@ -82,7 +82,7 @@ export function DesignFeatureFlow() {
           rel="noopener noreferrer"
           className={styles.repoLink}
         >
-          markup-design-toolkit <span aria-hidden="true">↗</span>
+          alkg-cloud/design-skills <span aria-hidden="true">↗</span>
         </PillLink>
         <span className={styles.ctaHint}>
           Drop the skill into your agent and run it on this repo.
