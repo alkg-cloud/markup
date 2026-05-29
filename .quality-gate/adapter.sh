@@ -25,5 +25,27 @@ MAX_FILE_LINES=$(jq -r '.thresholds.MAX_FILE_LINES' "$QG_CONFIG")
 # Sections must produce a strictly schema-compliant file even on tool failure
 # (use the {"_skipped":"…"} fallback to keep the gate green for that metric).
 
+# --- 1. Coverage (consumes coverage/coverage-summary.json produced by vitest) ---
+if [ -f coverage/coverage-summary.json ]; then
+  jq --arg root "$ROOT/" '
+    .total.lines.pct as $total
+    | {
+        lines_pct: ($total // 0),
+        files: [
+          to_entries[]
+          | select(.key != "total")
+          | {
+              path: (.key | sub("^" + ($root | @text); "")),
+              lines_pct: (.value.lines.pct // 0)
+            }
+        ]
+        | sort_by(.path)
+      }
+  ' coverage/coverage-summary.json > "$QG_OUTPUT_DIR/coverage.json"
+else
+  echo '{"_skipped":"coverage/coverage-summary.json missing — did the workflow run pnpm test --coverage?"}' \
+    > "$QG_OUTPUT_DIR/coverage.json"
+fi
+
 # --- _meta.json (placeholder — final task overwrites with real tool list) ---
 echo '{"adapter":"markup","adapter_version":"0.1.0","tools":[]}' > "$QG_OUTPUT_DIR/_meta.json"
