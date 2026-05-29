@@ -44,8 +44,8 @@ export function DemoStage() {
   }
 
   return (
-    <Section width="wide" id="demo">
-      <Eyebrow>Try without signing up</Eyebrow>
+    <Section id="demo">
+      <Eyebrow>Try without installing it</Eyebrow>
       <h2 className={styles.h2}>Pin it yourself.</h2>
       <p className={styles.lead}>
         A live Markup surface, running on your browser. Drop pins, write annotations, react, reply.
