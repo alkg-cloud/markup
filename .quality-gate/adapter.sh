@@ -70,5 +70,22 @@ else
   echo '{"_skipped":"biome produced no parseable JSON report"}' > "$QG_OUTPUT_DIR/lint.json"
 fi
 
+# --- 3. Duplication (jscpd) ---
+# Ignore paths beyond defaults: .next build cache, prisma generated client,
+# vitest scratch dirs, the landing static export, and tests fixtures (binary zips).
+rm -rf .jscpd && mkdir -p .jscpd
+npx --yes jscpd@4 . --reporters json --output .jscpd \
+  --ignore "**/node_modules/**,**/dist/**,**/coverage/**,**/.jscpd/**,**/.next/**,**/landing-export/**,**/prisma/migrations/**,**/tests/fixtures/**,**/.git/**" \
+  --silent 2>/dev/null || true
+
+if [ -f .jscpd/jscpd-report.json ]; then
+  jq '{
+    pct: (.statistics.total.percentage // 0),
+    clones: (.statistics.total.clones // 0)
+  }' .jscpd/jscpd-report.json > "$QG_OUTPUT_DIR/duplication.json"
+else
+  echo '{"_skipped":"jscpd produced no report"}' > "$QG_OUTPUT_DIR/duplication.json"
+fi
+
 # --- _meta.json (placeholder — final task overwrites with real tool list) ---
 echo '{"adapter":"markup","adapter_version":"0.1.0","tools":[]}' > "$QG_OUTPUT_DIR/_meta.json"
