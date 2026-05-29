@@ -9,44 +9,48 @@ test.describe('Landing page', () => {
 
   test('demo accepts a pin drop and persists across reload', async ({ page }) => {
     await page.goto('/landing#demo');
-    await page.evaluate(() => {
-      window.prompt = () => 'Smoke test annotation';
-    });
-    const annotItems = page.locator('ul li[aria-label^="Annotation "]');
-    const before = await annotItems.count();
-    await page.getByRole('button', { name: /Drop pin/i }).click();
-    const canvas = page.locator('[role="application"][aria-label*="Mockup canvas"]');
-    await canvas.click({ position: { x: 200, y: 200 } });
-    await expect(annotItems).toHaveCount(before + 1);
+    const annotCards = page.locator('[data-pin-target]');
+    const before = await annotCards.count();
+
+    await page.getByRole('button', { name: /new annotation/i }).click();
+    await page
+      .frameLocator('iframe[title="Mockup"]')
+      .locator('body')
+      .click({ position: { x: 200, y: 200 } });
+    await page.getByRole('textbox', { name: /annotation body/i }).fill('Smoke test annotation');
+    await page.getByRole('button', { name: /^send$/i }).click();
+
+    await expect(annotCards).toHaveCount(before + 1);
     await page.reload();
-    await expect(annotItems).toHaveCount(before + 1);
+    await expect(annotCards).toHaveCount(before + 1);
   });
 
   test('reset demo restores seeded state after confirmation', async ({ page }) => {
     await page.goto('/landing#demo');
-    // window.prompt is mocked so the pin-drop flow doesn't block the test.
-    await page.evaluate(() => {
-      window.prompt = () => 'Extra annotation';
-    });
-    await expect(page.locator('ul li[aria-label^="Annotation "]')).toHaveCount(3);
+    const annotCards = page.locator('[data-pin-target]');
+    await expect(annotCards).toHaveCount(3);
 
-    // Drop a 4th pin via the UI so reset has something to clear. This avoids
-    // the previous approach of editing localStorage + reloading (which caused
-    // a React hydration mismatch because the server-rendered tree used
-    // seeded state while the client read the populated localStorage).
-    await page.getByRole('button', { name: /Drop pin/i }).click();
-    const canvas = page.locator('[role="application"][aria-label*="Mockup canvas"]');
-    await canvas.click({ position: { x: 150, y: 150 } });
-    await expect(page.locator('ul li[aria-label^="Annotation "]')).toHaveCount(4);
+    // Drop a 4th annotation via the draft flow so reset has something to clear.
+    await page.getByRole('button', { name: /new annotation/i }).click();
+    await page
+      .frameLocator('iframe[title="Mockup"]')
+      .locator('body')
+      .click({ position: { x: 150, y: 150 } });
+    await page.getByRole('textbox', { name: /annotation body/i }).fill('Extra annotation');
+    await page.getByRole('button', { name: /^send$/i }).click();
+    await expect(annotCards).toHaveCount(4);
 
     // Two-step confirm: first click arms the confirm, second click resets.
-    // Match BOTH the rest-state ("Reset demo") and the armed-state
-    // ("Click again to confirm") so the second click doesn't wait for the
+    // Match BOTH the rest-state ("↻ Reset demo") and the armed-state
+    // ("⚠ Click again to confirm") so the second click doesn't wait for the
     // 3s confirm window to expire before the locator resolves again.
-    const reset = page.getByRole('button', { name: /Reset|Click again/i });
+    // The regex is scoped to "Reset demo" (not just "Reset") to avoid
+    // colliding with the toolbar's zoom-reset button aria-label
+    // ("Current zoom 100% — click to reset").
+    const reset = page.getByRole('button', { name: /Reset demo|Click again/i });
     await reset.click();
     await reset.click();
-    await expect(page.locator('ul li[aria-label^="Annotation "]')).toHaveCount(3);
+    await expect(annotCards).toHaveCount(3);
   });
 
   test('no horizontal scroll on mobile viewport', async ({ page }) => {

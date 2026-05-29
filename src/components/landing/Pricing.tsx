@@ -4,7 +4,7 @@ import { Section } from './primitives/Section';
 
 export function Pricing() {
   return (
-    <Section width="narrow">
+    <Section>
       <Eyebrow muted>Licensing, plainly</Eyebrow>
       <h2 className={styles.h2}>Free to self-host. Free for your team.</h2>
       <div className={styles.grid}>

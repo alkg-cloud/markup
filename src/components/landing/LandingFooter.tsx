@@ -20,7 +20,7 @@ export function LandingFooter() {
               <a href="#demo">Demo</a>
             </li>
             <li>
-              <a href="#how-it-works">Agent API</a>
+              <a href="#design-loop">Design loop</a>
             </li>
             <li>
               <a href="#quickstart">Quickstart</a>
@@ -69,7 +69,7 @@ export function LandingFooter() {
         </div>
       </div>
       <div className={styles.bottom}>
-        <span>© Alexandre Camillo · Elastic License 2.0</span>
+        <span>© ALKG · Elastic License 2.0</span>
         <span>Made for review loops that actually close.</span>
       </div>
     </footer>

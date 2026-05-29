@@ -5,7 +5,7 @@ import styles from './Section.module.css';
 type Props = {
   children: ReactNode;
   id?: string;
-  width?: 'default' | 'narrow' | 'wide';
+  width?: 'default' | 'wide';
   className?: string;
 };
 

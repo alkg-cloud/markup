@@ -72,7 +72,6 @@ export function Contributors() {
 
   return (
     <Section
-      width="narrow"
       className={
         shouldShow ? `${styles.section} ${styles.hasContributors} has-contributors` : styles.section
       }
