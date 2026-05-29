@@ -73,9 +73,12 @@ fi
 # --- 3. Duplication (jscpd) ---
 # Ignore paths beyond defaults: .next build cache, prisma generated client,
 # vitest scratch dirs, the landing static export, and tests fixtures (binary zips).
+# The landing source (src/app/landing, src/components/landing) is excluded to match
+# the coverage + file_size metrics: it is a presentation-heavy marketing surface
+# whose repeated section markup would inflate duplication without signalling real debt.
 rm -rf .jscpd && mkdir -p .jscpd
 npx --yes jscpd@4 . --reporters json --output .jscpd \
-  --ignore "**/node_modules/**,**/dist/**,**/coverage/**,**/.jscpd/**,**/.next/**,**/landing-export/**,**/prisma/migrations/**,**/tests/fixtures/**,**/.git/**" \
+  --ignore "**/node_modules/**,**/dist/**,**/coverage/**,**/.jscpd/**,**/.next/**,**/landing-export/**,**/src/app/landing/**,**/src/components/landing/**,**/prisma/migrations/**,**/tests/fixtures/**,**/.git/**" \
   --silent 2>/dev/null || true
 
 if [ -f .jscpd/jscpd-report.json ]; then

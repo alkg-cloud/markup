@@ -34,9 +34,9 @@ jobs:
         env:
           DATABASE_URL: file:./prisma/test.db
 
-      - name: Cache quality-gate engine build
+      - name: Restore quality-gate engine build
         id: cache-qg
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /tmp/qg-core
           key: qg-core-192fcaf386cf5bbb464dca53a26949078240c100
@@ -50,6 +50,16 @@ jobs:
           git checkout 192fcaf386cf5bbb464dca53a26949078240c100
           pnpm install --frozen-lockfile
           pnpm run build
+
+      # Save only after a clean build, so a crashed install/build never caches a
+      # partial /tmp/qg-core (missing dist/cli.js) under the fixed-SHA key — which
+      # would make every later run hit the poisoned cache and skip the rebuild.
+      - name: Save quality-gate engine build
+        if: steps.cache-qg.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/qg-core
+          key: qg-core-192fcaf386cf5bbb464dca53a26949078240c100
 
       - name: Run adapter
         run: ./.quality-gate/adapter.sh
